@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script lang="text/javascript">
+    let user = {
+        "name":"张三",
+        "age":16
+    }
+    // 生成user的代理对象
+
+    let userProxy = new Proxy(user,{
+        get(target,property){
+            // target = 被代理对象 user
+            // property = 请求的属性名 console.log(userProxy.name) 时: property = name
+            // 此处不能使用 target.property 因为 . 后面应该跟属性名,而不应该是变量
+            return target[property];
+        },
+        set(target,property,param){
+            // target = 被代理对象 user
+            // property = 请求的属性名 console.log(userProxy.name) 时: property = name
+            // param 传参 userProxy.name = "李四"; 在这里是 李四
+            target[property] = param;
+        }
+    })
+
+    console.log(userProxy.name)
+    userProxy.name = "李四";
+    // 成功设置成了 李四
+    console.log(userProxy.name)
+</script>
+</html>

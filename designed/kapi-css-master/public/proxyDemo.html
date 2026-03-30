@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- oninput="inpChange(this.value)" -->
+    <input type="text" id="inp">
+    <p id="con"></p>
+</body>
+<script lang="text/javascript">
+    // 可以直接 id.属性
+    // let inp = document.getElementById("inp");
+    // let con = document.getElementById("con");
+
+    let ipdVal = {
+        "value":"初始化绑定"
+    }
+
+    function myReactive(ipdVal){
+        return new Proxy(ipdVal,{
+            get(target,property){
+                return target[property];
+            },
+            set(target,property,param){
+                inp.value = param;
+                con.innerHTML = param;
+                target[property] = param;
+            }
+        })
+    };
+
+    let objRet = myReactive(ipdVal);
+    inp.value = ipdVal.value;
+    con.innerHTML = ipdVal.value;
+
+    inp.addEventListener("input",e=>{
+        // 触发set
+        objRet.value = e.target.value;
+    })
+</script>
+</html>

@@ -1,0 +1,1 @@
+后续由 Python 生成 posts.json 时的字段约定草案。

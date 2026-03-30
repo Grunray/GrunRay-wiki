@@ -1,0 +1,74 @@
+[
+  {
+    "id": "proj-demo-app",
+    "slug": "demo-app",
+    "locale": "zh",
+    "title": "示例作品：数据面板",
+    "summary": "用于验证项目列表、详情块与主题壳层的演示项目。",
+    "tags": ["Vue", "TypeScript", "可视化"],
+    "status": "published",
+    "featured": true,
+    "year": 2025,
+    "layout": [
+      {
+        "type": "overview",
+        "title": "概览",
+        "body": "本项目演示「同一项目多块展示」：数据来自 JSON，块类型由注册表解析，新增块无需改页面路由。"
+      },
+      {
+        "type": "demo",
+        "title": "在线演示",
+        "demoUrl": "https://example.com",
+        "body": "实际部署时可替换为真实 Demo 地址或嵌入说明。"
+      },
+      {
+        "type": "gallery",
+        "title": "截图占位",
+        "images": [
+          "https://picsum.photos/seed/grunray1/480/280",
+          "https://picsum.photos/seed/grunray2/480/280"
+        ]
+      },
+      {
+        "type": "changelog",
+        "title": "更新记录",
+        "body": "- v0.1 初始结构\n- v0.2 接入主题与博客聚合"
+      }
+    ]
+  },
+  {
+    "id": "proj-archived-lib",
+    "slug": "archived-lib",
+    "locale": "zh",
+    "title": "已归档：小型工具库",
+    "summary": "展示归档状态与角标。",
+    "tags": ["工具"],
+    "status": "archived",
+    "featured": false,
+    "year": 2023,
+    "layout": [
+      {
+        "type": "overview",
+        "title": "说明",
+        "body": "此项目为归档示例，笔记仍可出现但总览可带「归档」提示。"
+      }
+    ]
+  },
+  {
+    "id": "proj-secret",
+    "slug": "secret-internal",
+    "locale": "zh",
+    "title": "隐藏项目（不应出现在列表）",
+    "summary": "用于校验隐藏规则。",
+    "tags": [],
+    "status": "hidden",
+    "featured": false,
+    "year": 2024,
+    "layout": [
+      {
+        "type": "markdown",
+        "body": "若直接访问 slug 应 404（与规范一致）。"
+      }
+    ]
+  }
+]

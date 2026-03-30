@@ -1,0 +1,52 @@
+{
+  "nav": {
+    "home": "首页",
+    "projects": "项目",
+    "blog": "博客",
+    "algorithms": "算法",
+    "about": "关于"
+  },
+  "home": {
+    "tagline": "个人成果与笔记：项目、开发记录与算法心得。",
+    "featured": "精选项目",
+    "enterBlog": "进入博客",
+    "enterAlgorithms": "算法文章"
+  },
+  "projects": {
+    "title": "项目",
+    "includeArchived": "显示已归档",
+    "filterTags": "按标签筛选",
+    "allTags": "全部",
+    "archived": "已归档",
+    "notes": "笔记"
+  },
+  "blog": {
+    "title": "博客",
+    "subtitle": "项目笔记与算法文章（聚合视图）",
+    "pinned": "置顶"
+  },
+  "algorithms": {
+    "title": "算法",
+    "subtitle": "独立 schema 的算法类文章"
+  },
+  "post": {
+    "projectNote": "项目笔记",
+    "algorithm": "算法",
+    "series": "系列",
+    "difficulty": "难度",
+    "oj": "平台",
+    "problem": "题号"
+  },
+  "ui": {
+    "theme": "界面风格",
+    "themeLight": "浅色",
+    "themeDark": "深色",
+    "themeAbstract": "抽象",
+    "cursorTrail": "光标拖尾",
+    "locale": "语言"
+  },
+  "common": {
+    "back": "返回",
+    "notFound": "未找到页面或内容已隐藏。"
+  }
+}

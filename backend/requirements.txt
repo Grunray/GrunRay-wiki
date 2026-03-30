@@ -1,0 +1,14 @@
+# 后端直接依赖（在 backend 目录：pip install -r requirements.txt）
+# 运行脚本前请先激活 venv：.\venv\Scripts\Activate.ps1
+
+# API
+flask>=3.0,<4
+flask-cors>=4.0,<5
+
+# MySQL（app/db.py、scripts/run_sql.py 等）
+pymysql>=1.1,<2
+# MySQL 8 默认 caching_sha2_password 时 PyMySQL 需要（否则报 cryptography package is required）
+cryptography>=42,<46
+
+# .env 加载（app/config.py）
+python-dotenv>=1.0,<2

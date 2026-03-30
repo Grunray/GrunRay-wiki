@@ -1,0 +1,52 @@
+{
+  "nav": {
+    "home": "Home",
+    "projects": "Projects",
+    "blog": "Blog",
+    "algorithms": "Algorithms",
+    "about": "About"
+  },
+  "home": {
+    "tagline": "Portfolio, build notes, and algorithm write-ups.",
+    "featured": "Featured projects",
+    "enterBlog": "Blog",
+    "enterAlgorithms": "Algorithms"
+  },
+  "projects": {
+    "title": "Projects",
+    "includeArchived": "Show archived",
+    "filterTags": "Filter by tag",
+    "allTags": "All",
+    "archived": "Archived",
+    "notes": "Notes"
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Project notes and algorithm posts",
+    "pinned": "Pinned"
+  },
+  "algorithms": {
+    "title": "Algorithms",
+    "subtitle": "Algorithm posts with extended fields"
+  },
+  "post": {
+    "projectNote": "Project note",
+    "algorithm": "Algorithm",
+    "series": "Series",
+    "difficulty": "Difficulty",
+    "oj": "Platform",
+    "problem": "Problem"
+  },
+  "ui": {
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeAbstract": "Abstract",
+    "cursorTrail": "Cursor trail",
+    "locale": "Language"
+  },
+  "common": {
+    "back": "Back",
+    "notFound": "Not found or content is hidden."
+  }
+}
