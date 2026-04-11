@@ -1,5 +1,11 @@
 """
-从 frontend/src/content/data/posts.json 导入 MySQL，并写入 Markdown 文件。
+【开发/迁移用】从 JSON 全量导入 post 表（会清空 post）。
+
+默认路径：仓库根下 frontend/src/content/data/posts.json（该文件已移除；
+若仍要从 JSON 种子，请自行恢复或修改本脚本中的 _POSTS_JSON）。
+
+正式流程请使用：python scripts/import_markdown_posts.py
+（Markdown + YAML 见 designed/template.md）
 
 用法（在 backend 目录下，已配置 .env）:
   python scripts/seed_from_json.py
@@ -62,7 +68,12 @@ def iso_to_mysql_dt(s: str | None) -> str | None:
 
 def main():
     if not _POSTS_JSON.is_file():
-        print("找不到", _POSTS_JSON)
+        print(
+            "未找到 posts.json（前端已移除临时文章数据）。\n"
+            "请使用：python scripts/import_markdown_posts.py（Markdown 见 backend/import/markdown/）\n"
+            "若需从 JSON 种子，请恢复 posts.json 或修改本脚本中的 _POSTS_JSON。",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     data = json.loads(_POSTS_JSON.read_text(encoding="utf-8"))

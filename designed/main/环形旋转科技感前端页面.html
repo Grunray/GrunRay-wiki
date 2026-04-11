@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>环形旋转科技UI</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #f3e8ff, #ffffff);
+      overflow: hidden;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    .scene {
+      position: relative;
+      width: 520px;
+      height: 520px;
+    }
+
+    /* 中心圆 */
+    .center-circle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 180px;
+      height: 180px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 10px 30px rgba(128, 90, 213, 0.2);
+      z-index: 2;
+    }
+
+    /* 关键：每个卡片自己做「公转+反向」组合变换（不会自转） */
+    .card {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 120px;
+      height: 80px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(200,180,255,0.6), rgba(255,255,255,0.4));
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 20px rgba(150, 120, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6b46c1;
+      font-size: 14px;
+      font-weight: 500;
+
+      /* 半径 */
+      --r: 200px;
+      /* 初始角度（每个卡片不同） */
+      --start: 0deg;
+
+      transform-origin: center;
+      animation: orbit 20s linear infinite;
+      animation-delay: var(--delay, 0s);
+    }
+
+    /* 核心公式：rotate(a) translate(r) rotate(-a) */
+    @keyframes orbit {
+      from {
+        transform: translate(-50%, -50%) rotate(var(--start)) translate(var(--r)) rotate(calc(-1 * var(--start)));
+      }
+      to {
+        transform: translate(-50%, -50%) rotate(calc(var(--start) + 360deg)) translate(var(--r)) rotate(calc(-1 * (var(--start) + 360deg)));
+      }
+    }
+
+    /* 为6个卡片分配不同起始角度与时间偏移（均匀分布） */
+    .card:nth-child(1) { --start: 0deg;   --delay: 0s; }
+    .card:nth-child(2) { --start: 60deg;  --delay: -3.333s; }
+    .card:nth-child(3) { --start: 120deg; --delay: -6.666s; }
+    .card:nth-child(4) { --start: 180deg; --delay: -10s; }
+    .card:nth-child(5) { --start: 240deg; --delay: -13.333s; }
+    .card:nth-child(6) { --start: 300deg; --delay: -16.666s; }
+
+  </style>
+</head>
+<body>
+  <div class="scene">
+    <div class="center-circle"></div>
+
+    <div class="card">数据 A</div>
+    <div class="card">数据 B</div>
+    <div class="card">数据 C</div>
+    <div class="card">数据 D</div>
+    <div class="card">数据 E</div>
+    <div class="card">数据 F</div>
+  </div>
+</body>
+</html>

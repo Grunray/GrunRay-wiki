@@ -8,6 +8,7 @@
   },
   "home": {
     "tagline": "Portfolio, build notes, and algorithm write-ups.",
+    "meme": "Meme",
     "featured": "Featured projects",
     "enterBlog": "Blog",
     "enterAlgorithms": "Algorithms"

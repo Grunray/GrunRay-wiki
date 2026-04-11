@@ -67,6 +67,16 @@ a:hover {
   padding: 1.25rem 1.25rem 3rem;
 }
 
+/*
+ * 可复用：让当前页面内容区突破默认居中容器，铺满可用视口宽度。
+ * 通过路由 meta 控制挂载，不影响其他页面。
+ */
+.app-main.app-main--full-viewport {
+  max-width: none;
+  margin: 0;
+  padding: 1rem;
+}
+
 /* 液态玻璃卡片（参考 designed/LiquidGlass post-card 思路：半透明 + backdrop-filter） */
 .card {
   position: relative;

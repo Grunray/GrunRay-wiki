@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>极简布局演示</title>
+<style>
+    * { box-sizing: border-box; }
+    body {
+        background: #e8f5e9;
+        font-family: sans-serif;
+        padding: 20px;
+        display: flex;
+        gap: 20px;
+    }
+
+    /* 左侧：完整椭圆 + 文字居中 */
+    .left-ellipse {
+        width: 220px;
+        height: 460px;
+        border: 2px solid #000;
+        border-radius: 110px;
+        background: #c8e6c9;
+        /* 文字居中 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        text-align: center;
+        padding: 20px;
+    }
+
+    /* 中间区域：头像、小人、弔图 */
+    .center {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        align-items: center;
+    }
+    .avatar {
+        width: 180px;
+        height: 180px;
+        border: 2px solid #000;
+        border-radius: 50%;
+        background: #c8e6c9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+    .cursor {
+        width: 400px;
+        height: 120px;
+        border: 2px solid #000;
+        background: #c8e6c9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+    .meme {
+        width: 400px;
+        height: 120px;
+        border: 2px solid #000;
+        background: #c8e6c9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+
+    /* 右侧区域：电影轮播竖播区 */
+    .right {
+        width: 320px;
+        border: 2px solid #000;
+        background: #c8e6c9;
+        padding: 20px;
+        font-size: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+</style>
+</head>
+<body>
+
+<!-- 左侧：椭圆 + 文字说明 -->
+<div class="left-ellipse">预留空间，暂不做处理</div>
+
+<!-- 中间：头像 + 跟踪小人 + 弔图 -->
+<div class="center">
+    <div class="avatar">头像</div>
+    <div class="cursor">预留：一个跟踪光标的小人</div>
+    <div class="meme">弔图</div>
+</div>
+
+<!-- 右侧：电影轮播竖播区 -->
+<div class="right">
+    <div>像电影播放的轮番滑动图片</div>
+    <div>竖直播放图片</div>
+    <div>二次元图片</div>
+</div>
+
+</body>
+</html>

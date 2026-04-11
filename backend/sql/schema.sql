@@ -3,6 +3,7 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS `post`;
+DROP TABLE IF EXISTS `media`;
 DROP TABLE IF EXISTS `category`;
 
 SET FOREIGN_KEY_CHECKS = 1;
@@ -46,4 +47,21 @@ CREATE TABLE `post` (
   KEY `idx_post_category` (`category_id`),
   KEY `idx_post_published` (`published_at`),
   CONSTRAINT `fk_post_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `media` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `url` VARCHAR(1024) NOT NULL COMMENT '资源 URL，不存文件本体',
+  `type` ENUM('image', 'gif', 'video') NOT NULL,
+  `title` VARCHAR(255) NULL DEFAULT NULL,
+  `article_id` BIGINT NULL DEFAULT NULL COMMENT '关联 post.id，可为空',
+  `tags` JSON NULL COMMENT '标签数组',
+  `views` INT NOT NULL DEFAULT 0 COMMENT '预留扩展：浏览量',
+  `likes` INT NOT NULL DEFAULT 0 COMMENT '预留扩展：点赞量',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_media_type` (`type`),
+  KEY `idx_media_article` (`article_id`),
+  KEY `idx_media_created` (`created_at`),
+  CONSTRAINT `fk_media_post` FOREIGN KEY (`article_id`) REFERENCES `post` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

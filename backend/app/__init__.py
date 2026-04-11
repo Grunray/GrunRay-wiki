@@ -2,7 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 
 from app.config import config
-from app.routes.api import bp as api_bp
+from app.routes.read_api import bp as api_bp
 
 
 def create_app() -> Flask:

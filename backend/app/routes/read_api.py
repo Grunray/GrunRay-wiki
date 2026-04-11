@@ -3,9 +3,11 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, send_from_directory
 
+from app.config import config
 from app.db import cursor
+from app.markdown_util import render_markdown_to_html
 from app.search import passes_scheme_c, score_post, split_terms
 from app.serialize import row_to_post
 
@@ -13,6 +15,7 @@ bp = Blueprint("api", __name__, url_prefix="/api")
 
 # 前端 type 字符串 → DB type int
 FRONT_TO_DB_TYPE = {"article": 0, "project_note": 1, "algorithm": 2}
+FILMFEED_FOLDER_WHITELIST = "film/homeView/right_panel"
 
 
 def _fetch_all_posts(cur) -> list[dict]:
@@ -51,6 +54,14 @@ def _parse_extra(row: dict) -> dict:
     return e if isinstance(e, dict) else {}
 
 
+def _ok(data: Any, message: str = ""):
+    return jsonify({"code": 0, "data": data, "message": message})
+
+
+def _error(message: str, code: int = 1, status: int = 400):
+    return jsonify({"code": code, "data": [], "message": message}), status
+
+
 @bp.get("/health")
 def health():
     return jsonify({"ok": True})
@@ -82,6 +93,8 @@ def list_posts():
 
 @bp.get("/posts/<slug>")
 def get_post(slug: str):
+    want_html = request.args.get("html", "").lower() in ("1", "true", "yes")
+
     with cursor() as cur:
         cur.execute(
             """
@@ -96,7 +109,10 @@ def get_post(slug: str):
     if not row:
         return jsonify({"error": "not_found"}), 404
 
-    return jsonify(row_to_post(row, include_body=True))
+    data = row_to_post(row, include_body=True)
+    if want_html:
+        data["body_html"] = render_markdown_to_html(data.get("body") or "")
+    return jsonify(data)
 
 
 @bp.get("/search")
@@ -165,3 +181,124 @@ def related(slug: str):
     ranked.sort(key=lambda x: (-x[0], -x[1], x[2].get("published_at") or ""))
     top = [row_to_post(r, include_body=False) for _, _, r in ranked[:lim]]
     return jsonify({"posts": top})
+
+
+@bp.get("/media/files/<path:filename>")
+def media_file(filename: str):
+    media_dir = config.CONTENT_ROOT / "media"
+    return send_from_directory(str(media_dir), filename)
+
+
+@bp.get("/media/list")
+def media_list():
+    try:
+        page = max(1, int(request.args.get("page", "1")))
+        size = max(1, min(100, int(request.args.get("size", "20"))))
+    except ValueError:
+        return _error("invalid page/size")
+
+    media_type = (request.args.get("type") or "").strip().lower()
+    tag = (request.args.get("tag") or "").strip()
+    article_id = request.args.get("article_id")
+    folder = (request.args.get("folder") or "").strip().strip("/")
+    offset = (page - 1) * size
+
+    where = []
+    params: list[Any] = []
+    if media_type:
+        where.append("type = %s")
+        params.append(media_type)
+    if article_id:
+        try:
+            aid = int(article_id)
+            where.append("article_id = %s")
+            params.append(aid)
+        except ValueError:
+            return _error("invalid article_id")
+    if tag:
+        where.append("JSON_SEARCH(tags, 'one', %s) IS NOT NULL")
+        params.append(tag)
+    if folder:
+        # 严格按导入目录过滤，例如 folder=film/homeView/right_panel
+        where.append("url LIKE %s")
+        params.append(f"/api/media/files/{folder}/%")
+
+    where_sql = f"WHERE {' AND '.join(where)}" if where else ""
+    with cursor() as cur:
+        cur.execute(
+            f"""
+            SELECT id, url, type, title, article_id, tags, created_at
+            FROM media
+            {where_sql}
+            ORDER BY created_at DESC, id DESC
+            LIMIT %s OFFSET %s
+            """,
+            (*params, size, offset),
+        )
+        rows = cur.fetchall()
+
+    out = []
+    for row in rows:
+        tags = row.get("tags")
+        if isinstance(tags, str):
+            try:
+                tags = json.loads(tags)
+            except json.JSONDecodeError:
+                tags = []
+        out.append(
+            {
+                "id": row["id"],
+                "url": row["url"],
+                "type": row["type"],
+                "title": row.get("title"),
+                "article_id": row.get("article_id"),
+                "tags": tags if isinstance(tags, list) else [],
+                "created_at": str(row.get("created_at") or ""),
+            }
+        )
+    return _ok(out)
+
+
+@bp.get("/media/list/filmfeed")
+def media_list_filmfeed():
+    """FilmFeed 专用白名单接口：仅允许 right_panel 目录。"""
+    try:
+        page = max(1, int(request.args.get("page", "1")))
+        size = max(1, min(100, int(request.args.get("size", "50"))))
+    except ValueError:
+        return _error("invalid page/size")
+
+    offset = (page - 1) * size
+    with cursor() as cur:
+        cur.execute(
+            """
+            SELECT id, url, type, title, article_id, tags, created_at
+            FROM media
+            WHERE url LIKE %s
+            ORDER BY created_at DESC, id DESC
+            LIMIT %s OFFSET %s
+            """,
+            (f"/api/media/files/{FILMFEED_FOLDER_WHITELIST}/%", size, offset),
+        )
+        rows = cur.fetchall()
+
+    out = []
+    for row in rows:
+        tags = row.get("tags")
+        if isinstance(tags, str):
+            try:
+                tags = json.loads(tags)
+            except json.JSONDecodeError:
+                tags = []
+        out.append(
+            {
+                "id": row["id"],
+                "url": row["url"],
+                "type": row["type"],
+                "title": row.get("title"),
+                "article_id": row.get("article_id"),
+                "tags": tags if isinstance(tags, list) else [],
+                "created_at": str(row.get("created_at") or ""),
+            }
+        )
+    return _ok(out)

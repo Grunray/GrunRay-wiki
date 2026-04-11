@@ -17,7 +17,7 @@ const router = createRouter({
       path: '/',
       component: AppShell,
       children: [
-        { path: '', name: 'home', component: HomeView },
+        { path: '', name: 'home', component: HomeView, meta: { appMainLayout: 'full-viewport' } },
         { path: 'projects', name: 'projects', component: ProjectsView },
         { path: 'projects/:slug', name: 'project-detail', component: ProjectDetailView },
         { path: 'projects/:slug/notes', name: 'project-notes', component: ProjectNotesView },

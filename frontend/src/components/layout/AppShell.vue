@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
-import { RouterLink, RouterView } from 'vue-router'
+import { computed, onMounted, onUnmounted } from 'vue'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
 import { useNavScrollCompact } from '@/composables/useNavScrollCompact'
@@ -15,6 +15,10 @@ import { useUiStore } from '@/stores/ui'
 const { t, locale } = useI18n()
 const ui = useUiStore()
 const { compact: navCompact } = useNavScrollCompact()
+const route = useRoute()
+const appMainClasses = computed(() => ({
+  'app-main--full-viewport': route.meta.appMainLayout === 'full-viewport',
+}))
 
 let mql: MediaQueryList | null = null
 
@@ -62,7 +66,7 @@ onUnmounted(() => {
       </div>
     </header>
 
-    <main class="app-main">
+    <main class="app-main" :class="appMainClasses">
       <RouterView />
     </main>
 

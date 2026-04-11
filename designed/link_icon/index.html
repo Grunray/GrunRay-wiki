@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Bilibili Glass Button</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+body {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a2e, #3a3a5e);
+}
+
+.icon-btn {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  cursor: pointer;
+  transition: 0.3s;
+  color: rgba(255,255,255,0.6);
+}
+
+/* 玻璃背景 */
+.glass-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(20px);
+
+  box-shadow:
+    inset 0 4px 10px rgba(255,255,255,0.4),
+    inset 0 -6px 12px rgba(0,0,0,0.2),
+    0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* 高光 */
+.glass-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0.6),
+    transparent 40%
+  );
+  opacity: 0.6;
+}
+
+/* 外框 */
+.icon-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.3);
+  transition: 0.3s;
+}
+
+/* SVG */
+.icon {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 55%;
+  height: 55%;
+}
+
+/* 🔥 核心：fill 用 currentColor */
+.icon path {
+  fill: currentColor;
+  transition: 0.3s;
+}
+
+/* hover */
+.icon-btn:hover {
+  color: #fff;
+  transform: scale(1.08);
+}
+
+.icon-btn:hover::after {
+  border-color: #fff;
+  box-shadow: 0 0 12px rgba(255,255,255,0.8);
+}
+
+.icon-btn:hover .icon {
+  filter: drop-shadow(0 0 8px rgba(255,255,255,0.9));
+}
+
+.icon-btn:active {
+  transform: scale(0.95);
+}
+
+  </style>
+</head>
+<body>
+
+<div class="icon-btn">
+  <div class="glass-bg"></div>
+  <!-- Github -->
+  <!-- #151B23 -->
+  <svg viewBox = "0 0 1024 1024" class="icon">
+    <path d = ""></path>
+  </svg>
+</div>
+
+<div class="icon-btn">
+  <div class="glass-bg"></div>
+  <!-- Bilibili -->
+  <!-- #00AEEC -->
+  <svg viewBox="0 0 1024 1024" class="icon">
+    <path d=""/>
+  </svg>
+</div>
+
+<div class="icon-btn">
+  <div class="glass-bg"></div>
+  <!-- 网易云音乐 -->
+  <!-- FF0000 -->
+  <svg viewBox = "0 0 1024 1024" class="icon">
+    <path d = ""></path>
+  </svg>
+</div>
+
+<div class="icon-btn">
+  <div class="glass-bg"></div>
+  <!-- Email -->
+  <!-- 随便用一个颜色 -->
+  <svg viewBox = "0 0 1024 1024" class="icon">
+    <path d = ""></path>
+  </svg>
+</div>
+
+</body>
+</html>

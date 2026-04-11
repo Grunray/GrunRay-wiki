@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilibili Glass Button</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #181818; /* 深色背景 */
+            font-family: sans-serif;
+        }
+
+        /* 按钮容器 */
+        .btn-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        /* 圆形图标区域 */
+        .icon-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #ff6b6b; /* 红色描边 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            background: rgba(255, 107, 107, 0.1); /* 轻微的背景色 */
+        }
+
+        /* 图标 SVG 样式 */
+        .icon-circle svg {
+            width: 24px;
+            height: 24px;
+            fill: #ff6b6b;
+            transition: all 0.3s ease;
+        }
+
+        /* 悬浮时的图标效果 */
+        .btn-container:hover .icon-circle {
+            background: #ff6b6b;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-container:hover .icon-circle svg {
+            fill: #fff; /* 悬浮时图标变白 */
+        }
+
+        /* 下方的文字标签 (默认隐藏) */
+        .label-text {
+            position: absolute;
+            top: 60px; /* 位于图标下方 */
+            background: rgba(255, 255, 255, 0.1); /* 玻璃拟态背景 */
+            backdrop-filter: blur(5px);
+            padding: 6px 16px;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            
+            /* 隐藏状态 */
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            white-space: nowrap;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 悬浮时显示文字 */
+        .btn-container:hover .label-text {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="btn-container">
+        <!-- 红色圆圈图标 -->
+        <div class="icon-circle">
+            <!-- 信封 SVG 图标 -->
+            <svg viewBox="0 0 24 24">
+                <path d="M20,4H4C2.897,4,2,4.897,2,6v12c0,1.103,0.897,2,2,2h16c1.103,0,2-0.897,2-2V6C22,4.897,21.103,4,20,4z M20,6v0.511 l-8,6.223L4,6.512V6H20z M4,18V9.044l7.386,5.745C11.566,14.93,11.783,15,12,15s0.434-0.07,0.614-0.211L20,9.044L20.002,18H4z"/>
+            </svg>
+        </div>
+        
+        <!-- 悬浮显示的文字 -->
+        <div class="label-text">Email</div>
+    </div>
+
+</body>
+</html>
