@@ -19,11 +19,11 @@ const rootRef = ref<HTMLElement | null>(null)
 
 const chars = computed(() => props.text.split(''))
 
-let moveHandler: ((e: MouseEvent) => void) | null = null
+let moveHandler: ((e: PointerEvent) => void) | null = null
 
 function teardown() {
   if (moveHandler) {
-    window.removeEventListener('mousemove', moveHandler)
+    window.removeEventListener('pointermove', moveHandler)
     moveHandler = null
   }
   const el = rootRef.value
@@ -40,7 +40,8 @@ function bindTrail() {
   const arr = Array.from(el.querySelectorAll('.cursor-trail__char')) as HTMLElement[]
   if (!arr.length) return
 
-  moveHandler = (e: MouseEvent) => {
+  moveHandler = (e: PointerEvent) => {
+    if (!e.isPrimary) return
     gsap.to(arr, {
       x: e.clientX,
       y: e.clientY,
@@ -48,7 +49,7 @@ function bindTrail() {
       overwrite: 'auto',
     })
   }
-  window.addEventListener('mousemove', moveHandler, { passive: true })
+  window.addEventListener('pointermove', moveHandler, { passive: true })
 }
 
 watch(

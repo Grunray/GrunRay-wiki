@@ -30,6 +30,10 @@ function toggleLocale() {
   persistLocale(locale.value === 'zh' ? 'en' : 'zh')
 }
 
+function toggleCursorTrail() {
+  ui.cursorTrailEnabled = !ui.cursorTrailEnabled
+}
+
 onMounted(() => {
   syncMotion()
   mql = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -53,10 +57,16 @@ onUnmounted(() => {
         </div>
         <div class="header-right">
           <ThemeDayNightToggle class="header-theme-toggle" />
-          <label class="check">
-            <input v-model="ui.cursorTrailEnabled" type="checkbox" />
-            <span>{{ t('ui.cursorTrail') }}</span>
-          </label>
+          <button
+            type="button"
+            class="trail-toggle"
+            :class="{ 'is-active': ui.cursorTrailEnabled }"
+            :aria-pressed="ui.cursorTrailEnabled ? 'true' : 'false'"
+            :title="ui.cursorTrailEnabled ? '点击关闭光标拖尾' : '点击开启光标拖尾'"
+            @click="toggleCursorTrail"
+          >
+            <span class="trail-toggle-icon" aria-hidden="true">✨</span>
+          </button>
           <button type="button" class="locale-btn" :aria-label="t('ui.locale')" @click="toggleLocale">
             {{ locale === 'zh' ? 'EN' : '中文' }}
           </button>
@@ -124,14 +134,57 @@ onUnmounted(() => {
   font-size: 1.05rem;
 }
 
-.check {
+.trail-toggle {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--glass-nav-border);
+  background: color-mix(in srgb, var(--glass-nav-bg) 76%, #8a8a8a);
+  color: #8d9298;
+  border-radius: 50%;
+  padding: 0;
   cursor: pointer;
-  white-space: nowrap;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.trail-toggle:hover {
+  transform: scale(1.08);
+  border-color: color-mix(in srgb, var(--color-accent) 42%, var(--glass-nav-border));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+
+.trail-toggle-icon {
+  font-size: 0.94rem;
+  line-height: 1;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.trail-toggle:hover .trail-toggle-icon {
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--color-accent) 55%, transparent));
+  transform: scale(1.03);
+}
+
+.trail-toggle.is-active {
+  color: #fff6cf;
+  border-color: color-mix(in srgb, var(--color-accent) 55%, var(--glass-nav-border));
+  background: linear-gradient(135deg, #8f7cff 0%, #4fc3ff 46%, #7fffd0 100%);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 35%, transparent),
+    0 0 14px color-mix(in srgb, var(--color-accent) 45%, transparent);
+}
+
+.trail-toggle.is-active .trail-toggle-icon {
+  filter:
+    drop-shadow(0 0 6px color-mix(in srgb, var(--color-accent) 80%, white))
+    drop-shadow(0 0 14px color-mix(in srgb, var(--color-accent) 58%, transparent));
 }
 
 .locale-btn {

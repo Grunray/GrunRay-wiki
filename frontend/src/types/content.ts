@@ -53,6 +53,8 @@ export interface PostBase {
   cover?: string
   /** 正文（Markdown 源，详情页渲染可后续换解析器） */
   body?: string
+  /** 服务端渲染后的 HTML（GET /api/posts/:slug?html=1） */
+  body_html?: string
 }
 
 export interface ArticlePost extends PostBase {

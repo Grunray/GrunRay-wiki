@@ -25,6 +25,18 @@ body {
   line-height: 1.55;
 }
 
+/* 全局隐藏滚动条（保留滚动能力） */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge Legacy */
+}
+
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* Chrome/Safari/Edge Chromium */
+}
+
 /* 主题切换扩散层 Teleport 在 body 下且 z-index:0，保证整站内容叠在其上方、不被遮住 */
 #app {
   position: relative;

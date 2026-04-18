@@ -11,7 +11,9 @@
     "meme": "Meme",
     "featured": "Featured projects",
     "enterBlog": "Blog",
-    "enterAlgorithms": "Algorithms"
+    "enterAlgorithms": "Algorithms",
+    "greeting": "Hi, I'm GrunRay.",
+    "internshipNote": "Still looking for an internship."
   },
   "projects": {
     "title": "Projects",

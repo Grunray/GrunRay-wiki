@@ -113,7 +113,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .film-container {
   height: 100%;
-  width: min(82%, 280px);
+  width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -123,7 +123,10 @@ onBeforeUnmount(() => {
 .film {
   position: relative;
   height: 100%;
-  background: #111;
+  background: color-mix(in srgb, var(--glass-card-bg) 84%, transparent);
+  backdrop-filter: blur(calc(var(--glass-blur) * 0.85)) saturate(122%);
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 0.85)) saturate(122%);
+  border-radius: var(--radius-md);
   display: flex;
   justify-content: center;
   overflow: hidden;
@@ -190,8 +193,9 @@ onBeforeUnmount(() => {
   width: 11px;
   height: 14px;
   margin: auto;
-  background: #fff;
+  background: color-mix(in srgb, var(--color-text) 36%, white);
   border-radius: 2px;
+  opacity: 0.62;
 }
 
 .track {
@@ -220,15 +224,35 @@ onBeforeUnmount(() => {
 .frame {
   width: 100%;
   min-height: 180px;
-  border: 6px solid #fff;
-  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--glass-card-border) 92%, white);
+  border-radius: var(--radius-sm);
   overflow: hidden;
-  background: #000;
+  background: color-mix(in srgb, var(--color-bg-surface) 84%, #0f1418);
   cursor: zoom-in;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgb(0 0 0 / 0.45);
+  box-shadow: 0 10px 22px -16px rgb(0 0 0 / 0.48);
+  transition:
+    transform 0.25s ease,
+    filter 0.25s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.track:hover .frame {
+  filter: blur(1.2px) saturate(0.88) brightness(0.88);
+  transform: scale(0.985);
+}
+
+.track:hover .frame:hover {
+  filter: none;
+  transform: scale(1.045);
+  border-color: color-mix(in srgb, var(--color-accent) 45%, var(--glass-card-border));
+  box-shadow:
+    0 14px 34px -18px rgb(0 0 0 / 0.6),
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 28%, transparent);
+  z-index: 2;
 }
 
 .frame img,
@@ -243,10 +267,12 @@ onBeforeUnmount(() => {
 .status-box {
   width: calc(100% - 54px);
   margin-top: 1rem;
-  border: 1px dashed #777;
-  color: #ddd;
+  border: 1px dashed color-mix(in srgb, var(--glass-card-border) 88%, transparent);
+  color: var(--color-text-muted);
   text-align: center;
   padding: 0.75rem;
+  background: color-mix(in srgb, var(--glass-card-bg) 78%, transparent);
+  border-radius: var(--radius-sm);
 }
 
 .viewer {

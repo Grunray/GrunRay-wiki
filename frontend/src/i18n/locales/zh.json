@@ -11,7 +11,9 @@
     "meme": "弔图",
     "featured": "精选项目",
     "enterBlog": "进入博客",
-    "enterAlgorithms": "算法文章"
+    "enterAlgorithms": "算法文章",
+    "greeting": "你好，我是GrunRay",
+    "internshipNote": "找不到实习捏"
   },
   "projects": {
     "title": "项目",

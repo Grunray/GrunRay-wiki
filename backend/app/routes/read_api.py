@@ -91,6 +91,43 @@ def list_posts():
     return jsonify({"posts": out})
 
 
+@bp.get("/posts/latest-updated")
+def latest_updated_post():
+    with cursor() as cur:
+        cur.execute(
+            """
+            SELECT id, legacy_id, slug, title, md_url, summary, keywords, category_id, type,
+                   views, created_at, updated_at, published_at, locale, pinned, pinned_order, cover, extra
+            FROM post
+            ORDER BY COALESCE(updated_at, published_at, created_at) DESC, id DESC
+            LIMIT 3
+            """
+        )
+        rows = cur.fetchall()
+
+    posts = [row_to_post(row, include_body=False) for row in rows]
+    return jsonify({"posts": posts})
+
+
+@bp.get("/posts/random-recommend")
+def random_recommend_post():
+    with cursor() as cur:
+        cur.execute(
+            """
+            SELECT id, legacy_id, slug, title, md_url, summary, keywords, category_id, type,
+                   views, created_at, updated_at, published_at, locale, pinned, pinned_order, cover, extra
+            FROM post
+            ORDER BY RAND()
+            LIMIT 1
+            """
+        )
+        row = cur.fetchone()
+
+    if not row:
+        return jsonify({"error": "not_found"}), 404
+    return jsonify({"post": row_to_post(row, include_body=False)})
+
+
 @bp.get("/posts/<slug>")
 def get_post(slug: str):
     want_html = request.args.get("html", "").lower() in ("1", "true", "yes")
@@ -254,6 +291,75 @@ def media_list():
                 "article_id": row.get("article_id"),
                 "tags": tags if isinstance(tags, list) else [],
                 "created_at": str(row.get("created_at") or ""),
+            }
+        )
+    return _ok(out)
+
+
+def _parse_tags_json(tags: Any) -> list[Any]:
+    if tags is None:
+        return []
+    if isinstance(tags, str):
+        try:
+            tags = json.loads(tags)
+        except json.JSONDecodeError:
+            return []
+    return list(tags) if isinstance(tags, list) else []
+
+
+@bp.get("/music/tracks")
+def music_tracks():
+    try:
+        page = max(1, int(request.args.get("page", "1")))
+        size = max(1, min(100, int(request.args.get("size", "50"))))
+    except ValueError:
+        return _error("invalid page/size")
+
+    tag = (request.args.get("tag") or "").strip()
+    post_id = request.args.get("post_id")
+    offset = (page - 1) * size
+
+    where: list[str] = []
+    params: list[Any] = []
+    if post_id is not None and str(post_id).strip() != "":
+        try:
+            pid = int(post_id)
+            where.append("post_id = %s")
+            params.append(pid)
+        except ValueError:
+            return _error("invalid post_id")
+    if tag:
+        where.append("JSON_SEARCH(tags, 'one', %s) IS NOT NULL")
+        params.append(tag)
+
+    where_sql = f"WHERE {' AND '.join(where)}" if where else ""
+    with cursor() as cur:
+        cur.execute(
+            f"""
+            SELECT id, url, title, artist, duration_sec, post_id, tags, sort_order, created_at, updated_at
+            FROM music_track
+            {where_sql}
+            ORDER BY sort_order ASC, id ASC
+            LIMIT %s OFFSET %s
+            """,
+            (*params, size, offset),
+        )
+        rows = cur.fetchall()
+
+    out = []
+    for row in rows:
+        out.append(
+            {
+                "id": row["id"],
+                "url": row["url"],
+                "title": row.get("title"),
+                "artist": row.get("artist"),
+                "duration_sec": row.get("duration_sec"),
+                "post_id": row.get("post_id"),
+                "tags": _parse_tags_json(row.get("tags")),
+                "sort_order": int(row.get("sort_order") or 0),
+                "created_at": str(row.get("created_at") or ""),
+                "updated_at": str(row.get("updated_at") or ""),
             }
         )
     return _ok(out)

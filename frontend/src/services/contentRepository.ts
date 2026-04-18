@@ -86,7 +86,7 @@ export async function listPostsForProjectSlug(projectSlug: string): Promise<Post
 
 export async function getPostBySlug(slug: string): Promise<Post | undefined> {
   try {
-    return await apiGet<Post>(`/api/posts/${encodeURIComponent(slug)}`)
+    return await apiGet<Post>(`/api/posts/${encodeURIComponent(slug)}?html=1`)
   } catch (e) {
     const status = (e as Error & { status?: number }).status
     if (status === 404) return undefined

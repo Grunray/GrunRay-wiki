@@ -74,6 +74,8 @@ python run.py
 | GET | `/api/posts/<slug>` | 详情（含 `body` Markdown）；加 `?html=1` 多返回 `body_html` |
 | GET | `/api/search?q=` | 搜索（方案 C + 应用层评分） |
 | GET | `/api/posts/<slug>/related?limit=5` | 关键词相似推荐 |
+| GET | `/api/music/tracks` | BGM 列表；`page` / `size` / `tag` / `post_id` |
+| GET | `/api/media/files/<path>` | `content/media/` 下静态文件（含 `music/…`） |
 
 前端开发：在 `frontend` 目录 `npm run dev`，Vite 已将 `/api` 代理到本服务。
 
@@ -94,3 +96,17 @@ python run.py
 脚本详细说明见：`scripts/content_tools/README.md`。
 
 Markdown 导入流程与字段约定见仓库根目录 `designed/template.md`。
+
+## 背景音乐（music_track）
+
+- 表：`music_track`（全量见 `sql/schema.sql`；已有库可执行增量 `sql/music_track.sql`：`python scripts/run_sql.py --file music_track.sql`）。
+- 文件：将 `.mp3` 放入 `import/music/`（可含子目录），导入后复制到 `content/media/music/...`，与现有静态路由 **`GET /api/media/files/<path>`** 同源访问（例如 `/api/media/files/music/foo.mp3`）。
+- 列表接口：**`GET /api/music/tracks`**，支持 `page`、`size`、`tag`、`post_id`；按 `sort_order ASC, id ASC` 排序。
+- 导入脚本：
+
+```bash
+cd backend
+python scripts/music_tools/import_music.py
+python scripts/music_tools/import_music.py --dry-run
+python scripts/music_tools/import_music.py --tags bgm,site
+```

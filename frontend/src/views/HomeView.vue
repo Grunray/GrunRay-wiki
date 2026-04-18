@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { RouterLink } from 'vue-router'
+
 import FilmFeed from '@/components/media/FilmFeed.vue'
+import type { Post } from '@/types/content'
 
 const { t } = useI18n()
 
@@ -22,7 +25,7 @@ const externalLinks = [
     path: 'M850.346667 155.008a42.666667 42.666667 0 0 0-22.741334-23.509333c-8.704-3.754667-85.717333-33.322667-200.32 39.168H396.714667c-114.773333-72.618667-191.701333-42.922667-200.32-39.168a42.88 42.88 0 0 0-22.741334 23.466666c-26.197333 66.218667-18.048 136.448-7.850666 176.896C134.272 374.016 128 413.098667 128 469.333333c0 177.877333 127.104 227.882667 226.730667 246.272a189.568 189.568 0 0 0-13.013334 46.549334A44.373333 44.373333 0 0 0 341.333333 768v38.613333c-19.498667-4.138667-41.002667-11.946667-55.168-26.112C238.08 732.416 188.330667 682.666667 128 682.666667v85.333333c25.002667 0 65.365333 40.362667 97.834667 72.832 51.029333 51.029333 129.066667 55.253333 153.386666 55.253333 3.114667 0 5.376-0.085333 6.528-0.128A42.666667 42.666667 0 0 0 426.666667 853.333333v-82.090666c4.266667-24.746667 20.224-49.621333 27.946666-56.362667a42.666667 42.666667 0 0 0-23.125333-74.581333C293.333333 624.554667 213.333333 591.488 213.333333 469.333333c0-53.12 5.632-70.741333 31.573334-99.285333 11.008-12.117333 14.08-29.568 7.978666-44.8-4.821333-11.904-18.773333-65.450667-6.485333-117.546667 20.650667-1.578667 59.904 4.565333 113.706667 40.96C367.104 253.44 375.466667 256 384 256h256a42.666667 42.666667 0 0 0 23.936-7.338667c54.016-36.522667 92.970667-41.770667 113.664-41.130666 12.330667 52.224-1.578667 105.770667-6.4 117.674666a42.666667 42.666667 0 0 0 8.021333 44.928C805.077333 398.464 810.666667 416.085333 810.666667 469.333333c0 122.581333-79.957333 155.52-218.069334 170.922667a42.666667 42.666667 0 0 0-23.125333 74.709333c19.797333 17.066667 27.861333 32.469333 27.861333 53.034667v128h85.333334v-128c0-20.437333-3.925333-38.101333-9.770667-53.12C769.92 695.765333 896 643.712 896 469.333333c0-56.362667-6.272-95.530667-37.76-137.514666 10.197333-40.405333 18.261333-110.506667-7.893333-176.810667z',
   },
   {
-    href: 'https://www.bilibili.com/',
+    href: 'https://space.bilibili.com/63001342?spm_id_from=333.1007.0.0',
     label: 'Bilibili',
     color: '#00AEEC',
     viewBox: '0 0 1024 1024',
@@ -38,6 +41,8 @@ const externalLinks = [
 ]
 
 const avatarUrl = ref('')
+const latestUpdatedPosts = ref<Post[]>([])
+const randomRecommendedPost = ref<Post | null>(null)
 const copyToastVisible = ref(false)
 const copyToastColor = ref('#9B7BFF')
 let copyToastTimer: ReturnType<typeof setTimeout> | null = null
@@ -95,15 +100,91 @@ async function loadAvatar() {
   }
 }
 
+async function loadLatestUpdatedPost() {
+  try {
+    const res = await fetch('/api/posts/latest-updated')
+    if (!res.ok) return
+    const json = (await res.json()) as { posts?: Post[] }
+    latestUpdatedPosts.value = json.posts ?? []
+  } catch {
+    latestUpdatedPosts.value = []
+  }
+}
+
+async function loadRandomRecommendedPost() {
+  try {
+    const res = await fetch('/api/posts/random-recommend')
+    if (!res.ok) return
+    const json = (await res.json()) as { post?: Post }
+    randomRecommendedPost.value = json.post ?? null
+  } catch {
+    randomRecommendedPost.value = null
+  }
+}
+
+function formatDateYmd(input?: string): string {
+  if (!input) return ''
+  const d = new Date(input)
+  if (Number.isNaN(d.getTime())) return ''
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}/${m}/${day}`
+}
+
 onMounted(() => {
   loadAvatar()
+  loadLatestUpdatedPost()
+  loadRandomRecommendedPost()
 })
 </script>
 
 <template>
   <section class="home-layout">
     <aside class="left-ellipse">
-      <p class="left-meme">{{ t('home.meme') }}</p>
+      <div class="left-latest-panel">
+        <p class="left-section-title">最新三篇文章</p>
+        <div v-if="latestUpdatedPosts.length" class="latest-post-list">
+          <RouterLink
+            v-for="post in latestUpdatedPosts"
+            :key="post.id"
+            class="latest-post-card card"
+            :to="`/blog/${post.slug}`"
+          >
+            <h3 class="latest-post-title">{{ post.title }}</h3>
+            <p class="latest-post-keywords">
+              {{ post.tags.length ? post.tags.join(' / ') : '无关键词' }}
+            </p>
+            <p class="latest-post-summary">{{ post.summary || '暂无摘要' }}</p>
+            <p class="latest-post-date">
+              {{ formatDateYmd(post.updated_at) || '----/--/--' }}
+            </p>
+          </RouterLink>
+        </div>
+        <div v-else class="latest-post-card card latest-post-card--empty">
+          <p class="latest-post-empty">暂无可展示文章</p>
+        </div>
+      </div>
+      <div class="left-random-panel">
+        <p class="left-section-title">随机推荐</p>
+        <RouterLink
+          v-if="randomRecommendedPost"
+          class="latest-post-card card"
+          :to="`/blog/${randomRecommendedPost.slug}`"
+        >
+          <h3 class="latest-post-title">{{ randomRecommendedPost.title }}</h3>
+          <p class="latest-post-keywords">
+            {{ randomRecommendedPost.tags.length ? randomRecommendedPost.tags.join(' / ') : '无关键词' }}
+          </p>
+          <p class="latest-post-summary">{{ randomRecommendedPost.summary || '暂无摘要' }}</p>
+          <p class="latest-post-date">
+            {{ formatDateYmd(randomRecommendedPost.updated_at) || '----/--/--' }}
+          </p>
+        </RouterLink>
+        <div v-else class="latest-post-card card latest-post-card--empty">
+          <p class="latest-post-empty">暂无可展示文章</p>
+        </div>
+      </div>
     </aside>
 
     <div class="center">
@@ -111,9 +192,39 @@ onMounted(() => {
         <img v-if="avatarUrl" :src="avatarUrl" alt="头像" />
         <span v-else>头像</span>
       </div>
-      <div class="cursor-box">预留：一个跟踪光标的小人</div>
+      <div class="greeting-art card">
+        <p class="greeting-art-line">{{ t('home.greeting') }}</p>
+      </div>
+      <div class="internship-note card">{{ t('home.internshipNote') }}</div>
       <div class="self-intro-box card">
-        <p class="welcome-line" lang="en">The other Side of Paradise</p>
+        <div class="cursor-placeholder">
+          <div class="cursor-placeholder-text cursor-placeholder-tech">
+            <p class="cursor-tech-title">技术栈<br />Languages</p>
+            <p class="cursor-tech-divider">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</p>
+            <div class="cursor-tech-grid">
+              <p>● Python 0.0%</p>
+              <p>● JAVA 0.0%</p>
+              <p>● C/C++ 0.0%</p>
+              <p>● MySQL 0.0%</p>
+              <p>● Vue3 0.0%</p>
+              <p>● Linux 0.0%</p>
+              <p class="cursor-tech-ai">● Artificial Intelligence 10000.0%</p>
+            </div>
+          </div>
+          <p class="cursor-placeholder-text">
+            大三纯正全栈优质牛马，正宗新代码
+            <br />
+            从小写代码跑路长大，100%AI添加。
+            <br />
+            究极二刺螈，看番堪比吃盐。
+            <br />
+            爱好：喜欢去算法竞赛现场看男娘。
+            <br />
+            部分奖项：ICPC/CCPC不屈铜牌，省赛甚至难铜，有没有懂的。
+            <br />
+            精神状态：肘，忽略ጿ ኈ ቼ ዽ ጿ
+          </p>
+        </div>
         <div class="external-links-anchor">
           <nav
             class="external-links-row"
@@ -162,25 +273,100 @@ onMounted(() => {
 
 .left-ellipse {
   height: 100%;
-  border: 2px solid var(--color-border);
-  border-radius: 9999px;
-  background: var(--color-bg-surface);
+  width: min(96%, 380px);
+  justify-self: start;
+  border: 1px solid var(--glass-card-border);
+  border-radius: var(--radius-md);
+  background: var(--glass-card-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  box-shadow: var(--shadow-card);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  text-align: left;
+  gap: 0.9rem;
   padding: 1.25rem;
 }
 
-.left-ellipse p {
+.left-ellipse > p {
   margin: 0;
   color: var(--color-text);
   font-size: 1.05rem;
 }
 
-.left-meme {
-  font-size: 1.15rem;
+.latest-post-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  text-decoration: none;
+  color: inherit;
+  padding: 0.9rem 1rem;
+}
+
+.latest-post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.left-latest-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.left-random-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.left-section-title {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.05em;
   font-weight: 600;
+}
+
+.latest-post-card--empty {
+  justify-content: center;
+  min-height: 180px;
+}
+
+.latest-post-title {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.latest-post-keywords {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--color-accent);
+  line-height: 1.45;
+  opacity: 0.9;
+}
+
+.latest-post-summary {
+  margin: 0.1rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.latest-post-date {
+  margin: 0.3rem 0 0;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.latest-post-empty {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
 }
 
 .center {
@@ -191,8 +377,7 @@ onMounted(() => {
   height: 100%;
 }
 
-.avatar,
-.cursor-box {
+.avatar {
   flex: 1 1 0;
   width: 100%;
   border: 2px solid var(--color-border);
@@ -224,8 +409,35 @@ onMounted(() => {
   object-position: center;
 }
 
-.cursor-box {
-  height: 100%;
+.internship-note {
+  flex: 0 0 auto;
+  width: 100%;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text);
+  padding: 0.58rem 0.9rem;
+}
+
+.greeting-art {
+  flex: 0 0 auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.7rem 1rem;
+}
+
+.greeting-art-line {
+  margin: 0;
+  font-family: 'Playfair Display', 'Averia Gruesa Libre', Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.28rem, 2.6vw, 1.85rem);
+  font-weight: 600;
+  font-style: italic;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  color: var(--color-text);
 }
 
 .self-intro-box {
@@ -243,16 +455,51 @@ onMounted(() => {
   overflow-y: auto;
 }
 
-.welcome-line {
+.cursor-placeholder {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.cursor-placeholder-text {
   margin: 0;
-  font-family: 'Playfair Display', 'Averia Gruesa Libre', Georgia, 'Times New Roman', serif;
-  font-size: clamp(1.2rem, 2.8vw, 1.65rem);
-  font-weight: 500;
-  font-style: italic;
-  line-height: 1.35;
-  letter-spacing: 0.02em;
   color: var(--color-text);
-  text-align: center;
+  font-size: 0.86rem;
+  line-height: 1.62;
+  border: 1px solid color-mix(in srgb, var(--glass-card-border) 85%, transparent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--glass-card-bg) 84%, transparent);
+  padding: 0.7rem 0.75rem;
+}
+
+.cursor-tech-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.cursor-tech-divider {
+  margin: 0.1rem 0 0.35rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.02em;
+  font-size: 0.78rem;
+}
+
+.cursor-tech-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.26rem 0.65rem;
+}
+
+.cursor-tech-grid p {
+  margin: 0;
+  font-size: 0.79rem;
+  line-height: 1.48;
+}
+
+.cursor-tech-ai {
+  grid-column: 1 / -1;
 }
 
 .external-links-anchor {
@@ -401,15 +648,19 @@ onMounted(() => {
 }
 
 .right-panel {
-  width: min(82%, 280px);
+  width: min(86%, 300px);
   justify-self: end;
-  border: 2px solid var(--color-border);
-  background: #111;
+  border: 1px solid var(--glass-card-border);
+  background: var(--glass-card-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
   padding: 0;
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow: auto;
+  overflow: hidden;
 }
 
 @media (max-width: 1100px) {
@@ -420,6 +671,7 @@ onMounted(() => {
 
   .left-ellipse {
     min-height: 240px;
+    width: 100%;
     height: auto;
     border-radius: var(--radius-lg);
   }
@@ -429,7 +681,8 @@ onMounted(() => {
   }
 
   .avatar,
-  .cursor-box,
+  .greeting-art,
+  .internship-note,
   .self-intro-box {
     flex: 0 0 auto;
   }
@@ -447,6 +700,10 @@ onMounted(() => {
 }
 
 @media (max-width: 640px) {
+  .cursor-placeholder {
+    grid-template-columns: 1fr;
+  }
+
   .external-links-row {
     justify-content: center;
   }
