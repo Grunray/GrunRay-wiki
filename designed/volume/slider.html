@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>摇杆音量控制器</title>
+<style>
+  body {
+    background: #f5f7fa;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: sans-serif;
+  }
+
+.container {
+position: relative;
+width: 300px;
+height: 300px;
+}
+
+/* 大圆 */
+.base {
+position: absolute;
+width: 120px;
+height: 120px;
+border-radius: 50%;
+background: #ddd;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+}
+
+/* 摇杆（整根） */
+.arm {
+  position: absolute;
+  width: 4px;
+  height: 110px;
+  background: #333;
+
+  top: 50%;
+  left: 50%;
+
+  transform-origin: center bottom;
+  transform: translate(-50%, -100%) rotate(0deg);
+}
+
+/* 小圆 */
+.handle {
+position: absolute;
+width: 20px;
+height: 20px;
+border-radius: 50%;
+background: #00bcd4;
+top: -10px;
+left: 50%;
+transform: translateX(-50%);
+box-shadow: 0 0 10px rgba(0,188,212,0.6);
+}
+
+.info {
+position: absolute;
+bottom: -50px;
+width: 100%;
+text-align: center;
+font-size: 16px;
+} </style>
+
+</head>
+
+<body>
+
+<div class="container">
+  <div class="base"></div>
+
+  <div class="arm" id="arm">
+    <div class="handle"></div>
+  </div>
+
+  <div class="info" id="info">音量：0</div>
+</div>
+
+<script>
+  const arm = document.getElementById('arm');
+  const info = document.getElementById('info');
+
+  let dragging = false;
+
+  let prevAngle = 0;
+  let totalTurns = 0;  // 圈数
+  let volume = 0;
+
+  function getAngle(x, y) {
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+
+    const dx = x - cx;
+    const dy = y - cy;
+
+    return Math.atan2(dx, -dy) * 180 / Math.PI;
+  }
+
+  function update(angle) {
+    // 旋转摇杆
+    arm.style.transform = `rotate(${angle}deg)`;
+
+    // 判断是否跨越边界
+    if (prevAngle > 150 && angle < -150) {
+      totalTurns++;   // 顺时针一圈
+    }
+    if (prevAngle < -150 && angle > 150) {
+      totalTurns--;   // 逆时针一圈
+    }
+
+    prevAngle = angle;
+
+    volume = totalTurns;
+    info.innerText = `音量：${volume}`;
+  }
+
+  document.addEventListener('mousedown', () => dragging = true);
+  document.addEventListener('mouseup', () => dragging = false);
+
+  document.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const angle = getAngle(e.clientX, e.clientY);
+    update(angle);
+  });
+
+  // 初始化：竖直向上
+  update(0);
+</script>
+
+</body>
+</html>

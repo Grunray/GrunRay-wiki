@@ -4,7 +4,7 @@
 [data-theme='light'] {
   /* 整页背景（html 使用）；渐变自原纯色底过渡到青绿（改时请同步 src/theme/pageBackgrounds.ts） */
   /* --color-bg-base: linear-gradient(165deg, #f0f5f5 0%, #ccdddf 25%, #c1dec8 90%, #b3ced0 100%); */
-  --color-bg-base: #ccdddf;
+  --color-bg-base: #d6e4e7;
   --color-bg-surface: #e2f2e8;
   --color-bg-elevated: #d4eadc;
   --color-reading-bg: #f1f0e8;

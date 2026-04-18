@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 
 import { apiGet } from '@/api/http'
+import { useUiStore } from '@/stores/ui'
 
 /** 与 FilmFeed 全屏预览 (z-index:120) 错开 */
 const Z_PLAYER = 85
@@ -11,8 +13,12 @@ const STORAGE_PLAYING = 'musicPlayer.playing'
 const STORAGE_TIME = 'musicPlayer.currentTime'
 const STORAGE_TRACK_INDEX = 'musicPlayer.trackIndex'
 const STORAGE_VOLUME = 'musicPlayer.volume'
+const STORAGE_VOLUME_UI_MODE = 'musicPlayer.volumeUiMode'
 /** 无本地记录时的默认音量（10%） */
 const DEFAULT_VOLUME = 0.1
+
+/** 音量面板：摇杆模式（默认） | 横条模式 */
+type VolumeUiMode = 'joystick' | 'slider'
 
 const titleLine = '音乐运动员(bushi'
 
@@ -40,6 +46,10 @@ const playbackCurrent = ref(0)
 const playbackDuration = ref(0)
 const volume = ref(DEFAULT_VOLUME)
 const volumePanelOpen = ref(false)
+const volumeUiMode = ref<VolumeUiMode>('joystick')
+
+const ui = useUiStore()
+const { musicPlayerMinimized } = storeToRefs(ui)
 
 const volumeIconTier = computed(() => {
   const v = volume.value
@@ -59,16 +69,37 @@ function defaultPosition() {
   return { x: Math.max(16, w - 300), y: Math.max(16, h - 200) }
 }
 
-function clampPos(x: number, y: number) {
-  const pad = 8
+function shellLayoutSize() {
   const elW = volumePanelOpen.value ? 280 + 10 + 172 : 280
   const elH = 288
+  return { elW, elH }
+}
+
+function clampPos(x: number, y: number) {
+  const pad = 8
+  const { elW, elH } = shellLayoutSize()
   const maxX = Math.max(pad, window.innerWidth - elW - pad)
   const maxY = Math.max(pad, window.innerHeight - elH - pad)
   return {
     x: Math.min(maxX, Math.max(pad, x)),
     y: Math.min(maxY, Math.max(pad, y)),
   }
+}
+
+/** 靠近屏幕边时吸附（与 clamp 配合） */
+function snapPos(x: number, y: number) {
+  const pad = 8
+  const snap = 14
+  const { elW, elH } = shellLayoutSize()
+  const W = window.innerWidth
+  const H = window.innerHeight
+  let nx = x
+  let ny = y
+  if (nx <= pad + snap) nx = pad
+  else if (nx + elW >= W - pad - snap) nx = W - elW - pad
+  if (ny <= pad + snap) ny = pad
+  else if (ny + elH >= H - pad - snap) ny = H - elH - pad
+  return { x: nx, y: ny }
 }
 
 function loadPosition() {
@@ -138,6 +169,145 @@ function saveVolume(v: number) {
   } catch {
     /* ignore */
   }
+}
+
+function loadVolumeUiMode(): VolumeUiMode {
+  try {
+    const raw = localStorage.getItem(STORAGE_VOLUME_UI_MODE)
+    if (raw === 'slider' || raw === 'joystick') return raw
+  } catch {
+    /* ignore */
+  }
+  return 'joystick'
+}
+
+function saveVolumeUiMode() {
+  try {
+    localStorage.setItem(STORAGE_VOLUME_UI_MODE, volumeUiMode.value)
+  } catch {
+    /* ignore */
+  }
+}
+
+function toggleVolumeUiMode() {
+  const prev = volumeUiMode.value
+  volumeUiMode.value = prev === 'slider' ? 'joystick' : 'slider'
+  if (prev === 'joystick') {
+    resetJoystickInteraction()
+  }
+  saveVolumeUiMode()
+}
+
+const joystickStageRef = ref<HTMLElement | null>(null)
+const joystickDiskRef = ref<HTMLElement | null>(null)
+const joystickDragging = ref(false)
+/** 摇杆臂角度（度），0 = 竖直向上；松手归零 */
+const armAngleDeg = ref(0)
+let joystickPrevAngleDeg = 0
+/** 未凑满一圈的累计转角（度） */
+let joystickSpinRemainderDeg = 0
+let joystickCapturedPointerId: number | null = null
+
+const JOYSTICK_VOL_PER_TURN = 0.01
+
+function detachJoystickWindowListeners() {
+  window.removeEventListener('pointermove', onJoystickPointerMove)
+  window.removeEventListener('pointerup', onJoystickPointerUp)
+  window.removeEventListener('pointercancel', onJoystickPointerUp)
+}
+
+function joystickAngleFromEvent(e: PointerEvent): number {
+  const disk = joystickDiskRef.value
+  if (!disk) return 0
+  const r = disk.getBoundingClientRect()
+  const cx = r.left + r.width / 2
+  const cy = r.top + r.height / 2
+  const dx = e.clientX - cx
+  const dy = e.clientY - cy
+  return (Math.atan2(dx, -dy) * 180) / Math.PI
+}
+
+function applyVolumeStep(delta: number) {
+  const next = Math.min(1, Math.max(0, volume.value + delta))
+  if (next === volume.value) return
+  volume.value = next
+  const el = audioRef.value
+  if (el) el.volume = next
+  saveVolume(next)
+}
+
+function onJoystickPointerDown(e: PointerEvent) {
+  if (!e.isPrimary || e.button !== 0) return
+  e.stopPropagation()
+  const stage = joystickStageRef.value
+  if (!stage) return
+  joystickDragging.value = true
+  joystickCapturedPointerId = e.pointerId
+  try {
+    stage.setPointerCapture(e.pointerId)
+  } catch {
+    /* ignore */
+  }
+  const angle = joystickAngleFromEvent(e)
+  joystickPrevAngleDeg = angle
+  joystickSpinRemainderDeg = 0
+  armAngleDeg.value = angle
+  window.addEventListener('pointermove', onJoystickPointerMove)
+  window.addEventListener('pointerup', onJoystickPointerUp)
+  window.addEventListener('pointercancel', onJoystickPointerUp)
+}
+
+function onJoystickPointerMove(e: PointerEvent) {
+  if (!joystickDragging.value || !e.isPrimary) return
+  if (joystickCapturedPointerId != null && e.pointerId !== joystickCapturedPointerId) return
+  const angle = joystickAngleFromEvent(e)
+  let delta = angle - joystickPrevAngleDeg
+  if (delta > 180) delta -= 360
+  if (delta < -180) delta += 360
+  joystickSpinRemainderDeg += delta
+  joystickPrevAngleDeg = angle
+  armAngleDeg.value = angle
+
+  while (joystickSpinRemainderDeg >= 360) {
+    joystickSpinRemainderDeg -= 360
+    applyVolumeStep(JOYSTICK_VOL_PER_TURN)
+  }
+  while (joystickSpinRemainderDeg <= -360) {
+    joystickSpinRemainderDeg += 360
+    applyVolumeStep(-JOYSTICK_VOL_PER_TURN)
+  }
+}
+
+function onJoystickPointerUp(_e: PointerEvent) {
+  if (!joystickDragging.value) return
+  joystickDragging.value = false
+  const stage = joystickStageRef.value
+  if (stage && joystickCapturedPointerId != null) {
+    try {
+      stage.releasePointerCapture(joystickCapturedPointerId)
+    } catch {
+      /* ignore */
+    }
+  }
+  joystickCapturedPointerId = null
+  detachJoystickWindowListeners()
+  armAngleDeg.value = 0
+}
+
+function resetJoystickInteraction() {
+  detachJoystickWindowListeners()
+  const stage = joystickStageRef.value
+  if (stage && joystickCapturedPointerId != null) {
+    try {
+      stage.releasePointerCapture(joystickCapturedPointerId)
+    } catch {
+      /* ignore */
+    }
+  }
+  joystickCapturedPointerId = null
+  joystickDragging.value = false
+  armAngleDeg.value = 0
+  joystickSpinRemainderDeg = 0
 }
 
 function formatTime(sec: number): string {
@@ -280,10 +450,17 @@ function onProgressPointerDown(e: PointerEvent) {
 
 function toggleVolumePanel() {
   volumePanelOpen.value = !volumePanelOpen.value
+  if (!volumePanelOpen.value) {
+    resetJoystickInteraction()
+  }
   void nextTick(() => {
     pos.value = clampPos(pos.value.x, pos.value.y)
     savePosition()
   })
+}
+
+function minimizePlayer() {
+  ui.setMusicPlayerMinimized(true)
 }
 
 function onVolumeInput(e: Event) {
@@ -366,7 +543,7 @@ async function loadTrackAtIndex(index: number, autoplay: boolean, resetTime: boo
 }
 
 function onPointerDown(e: PointerEvent) {
-  if (e.button !== 0) return
+  if (!e.isPrimary || e.button !== 0) return
   /** 勿 preventDefault：会抑制兼容层 mousemove，导致仅监听 mousemove 的光标拖尾在拖拽时停摆 */
   dragging = true
   dragOffsetX = e.clientX - pos.value.x
@@ -389,7 +566,11 @@ function detachDragListeners() {
 }
 
 function onPointerUp() {
-  if (dragging) savePosition()
+  if (dragging) {
+    const s = snapPos(pos.value.x, pos.value.y)
+    pos.value = clampPos(s.x, s.y)
+    savePosition()
+  }
   dragging = false
   detachDragListeners()
 }
@@ -405,10 +586,27 @@ const playerStyle = computed(() => ({
   zIndex: Z_PLAYER,
 }))
 
+watch(isPlaying, (v) => ui.setMusicPlayerPlaying(v), { immediate: true })
+
+watch(musicPlayerMinimized, (m) => {
+  if (m) {
+    dragging = false
+    detachDragListeners()
+    volumePanelOpen.value = false
+    resetJoystickInteraction()
+  } else {
+    void nextTick(() => {
+      pos.value = clampPos(pos.value.x, pos.value.y)
+      savePosition()
+    })
+  }
+})
+
 onMounted(async () => {
   loadPosition()
   loadPlaying()
   volume.value = loadVolume()
+  volumeUiMode.value = loadVolumeUiMode()
   window.addEventListener('resize', onResize)
 
   try {
@@ -434,6 +632,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  resetJoystickInteraction()
   detachProgressPointerListeners()
   progressRailEl = null
   const el = audioRef.value
@@ -452,21 +651,39 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="floating-music__shell" :style="playerStyle">
-    <div class="floating-music" role="region" aria-label="音乐播放器">
-    <div class="floating-music__drag" @pointerdown="onPointerDown">
-      <p class="floating-music__title" lang="en">{{ titleLine }}</p>
-      <span class="floating-music__drag-hint">拖动</span>
-    </div>
-    <div class="floating-music__track-head">
+  <audio ref="audioRef" class="floating-music__audio" preload="metadata" />
+  <Transition name="music-player-shell">
+    <div
+      v-show="!musicPlayerMinimized"
+      class="floating-music__shell"
+      :class="{ 'is-dragging': dragging }"
+      :style="playerStyle"
+    >
+      <div class="floating-music" role="region" aria-label="音乐播放器">
+        <div class="floating-music__chrome">
+          <div class="floating-music__drag-bar" @pointerdown="onPointerDown" />
+          <div class="floating-music__chrome-row">
+            <p class="floating-music__title" lang="en">{{ titleLine }}</p>
+            <button
+              type="button"
+              class="floating-music__minimize-btn"
+              aria-label="收起音乐播放器"
+              title="收起"
+              @click.stop="minimizePlayer"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+        <div class="floating-music__track-head">
       <p class="floating-music__track-name">{{ loadHint }}</p>
-      <span v-if="trackCountLabel" class="floating-music__count">{{ trackCountLabel }}</span>
-    </div>
-    <div class="floating-music__transport">
-      <div class="floating-music__transport-main">
-        <button
-          type="button"
-          class="floating-music__skip"
+          <span v-if="trackCountLabel" class="floating-music__count">{{ trackCountLabel }}</span>
+        </div>
+        <div class="floating-music__transport">
+          <div class="floating-music__transport-main">
+            <button
+              type="button"
+              class="floating-music__skip"
           :disabled="!canPrevTrack"
           aria-label="上一首"
           @click.stop="onPrevTrack"
@@ -585,9 +802,8 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </div>
-    <audio ref="audioRef" class="floating-music__audio" preload="metadata" />
-    </div>
-    <aside
+      </div>
+      <aside
       v-show="volumePanelOpen"
       id="music-volume-popover"
       class="floating-music__volume-popover"
@@ -596,24 +812,93 @@ onBeforeUnmount(() => {
       @click.stop
     >
       <div class="floating-music__volume-popover-inner">
-        <span class="floating-music__volume-label" aria-hidden="true">音量</span>
-        <input
-          class="floating-music__volume-range"
-          type="range"
-          min="0"
-          max="1"
-          step="0.01"
-          :value="volume"
-          aria-label="音量滑块"
-          @input="onVolumeInput"
-        />
-        <span class="floating-music__volume-value">{{ Math.round(volume * 100) }}%</span>
+        <div class="floating-music__volume-popover-head">
+          <span class="floating-music__volume-label" aria-hidden="true">音量</span>
+          <button
+            type="button"
+            class="floating-music__volume-mode-toggle"
+            title="切换音量样式"
+            aria-label="切换音量样式"
+            @click.stop="toggleVolumeUiMode"
+          >
+            ⇄
+          </button>
+        </div>
+        <div v-show="volumeUiMode === 'slider'" class="floating-music__volume-mode-slider">
+          <input
+            class="floating-music__volume-range"
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            :value="volume"
+            aria-label="音量横条"
+            @input="onVolumeInput"
+          />
+          <span class="floating-music__volume-value">{{ Math.round(volume * 100) }}%</span>
+        </div>
+        <div v-show="volumeUiMode === 'joystick'" class="floating-music__volume-mode-joystick">
+          <!-- 摇杆模式 -->
+          <p class="floating-music__joystick-title">按住拖动调节音量哦</p>
+          <!-- <p class="floating-music__joystick-hint">
+            拖拉机摇杆：绕圆心拖动，每顺/逆时针完整一圈（均经过竖直向上）音量 ±1%；松手回中。
+          </p> -->
+          <div
+            ref="joystickStageRef"
+            class="floating-music__joystick-stage"
+            @pointerdown.stop="onJoystickPointerDown"
+          >
+            <div ref="joystickDiskRef" class="floating-music__joystick-disk">
+              <div class="floating-music__joystick-pivot">
+                <div
+                  class="floating-music__joystick-rotor"
+                  :style="{ transform: `rotate(${armAngleDeg}deg)` }"
+                >
+                  <div class="floating-music__joystick-lever">
+                    <span class="floating-music__joystick-cap floating-music__joystick-cap--knob" />
+                    <span class="floating-music__joystick-shaft" />
+                    <span class="floating-music__joystick-cap floating-music__joystick-cap--hub" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <span class="floating-music__volume-value floating-music__volume-value--center">{{
+            Math.round(volume * 100)
+          }}%</span>
+        </div>
       </div>
-    </aside>
-  </div>
+      </aside>
+    </div>
+  </Transition>
 </template>
 
 <style scoped>
+.music-player-shell-enter-active,
+.music-player-shell-leave-active {
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.music-player-shell-enter-from,
+.music-player-shell-leave-to {
+  opacity: 0;
+  transform: scale(0.94);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .music-player-shell-enter-active,
+  .music-player-shell-leave-active {
+    transition: opacity 0.14s ease;
+  }
+
+  .music-player-shell-enter-from,
+  .music-player-shell-leave-to {
+    transform: none;
+  }
+}
+
 .floating-music__shell {
   position: fixed;
   display: flex;
@@ -624,6 +909,10 @@ onBeforeUnmount(() => {
 
 .floating-music__shell > * {
   pointer-events: auto;
+}
+
+.floating-music__shell.is-dragging .floating-music__drag-bar {
+  cursor: grabbing;
 }
 
 .floating-music {
@@ -642,18 +931,65 @@ onBeforeUnmount(() => {
   box-shadow: var(--shadow-card);
 }
 
-.floating-music__drag {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.5rem;
-  cursor: grab;
-  padding-bottom: 0.35rem;
+.floating-music__chrome {
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.1rem;
   border-bottom: 1px solid color-mix(in srgb, var(--glass-card-border) 88%, transparent);
 }
 
-.floating-music__drag:active {
-  cursor: grabbing;
+.floating-music__drag-bar {
+  width: min(4.75rem, 72%);
+  height: 4px;
+  margin: 0 auto 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--glass-card-border) 72%, var(--color-text-muted) 12%);
+  cursor: grab;
+  flex-shrink: 0;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.floating-music__drag-bar:hover {
+  background: color-mix(in srgb, var(--color-accent) 38%, var(--glass-card-border));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 28%, transparent);
+}
+
+.floating-music__chrome-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.floating-music__minimize-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  margin: 0;
+  padding: 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-card-border);
+  background: color-mix(in srgb, var(--glass-card-bg) 88%, transparent);
+  color: var(--color-text-muted);
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.floating-music__minimize-btn:hover {
+  border-color: color-mix(in srgb, var(--color-accent) 40%, var(--glass-card-border));
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
 }
 
 .floating-music__title {
@@ -676,13 +1012,6 @@ onBeforeUnmount(() => {
   line-height: 1.35;
   letter-spacing: 0.01em;
   color: var(--color-text-muted);
-}
-
-.floating-music__drag-hint {
-  flex-shrink: 0;
-  font-size: 0.65rem;
-  color: var(--color-text-muted);
-  opacity: 0.75;
 }
 
 .floating-music__track-head {
@@ -896,10 +1225,51 @@ onBeforeUnmount(() => {
   gap: 0.45rem;
 }
 
+.floating-music__volume-popover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+}
+
 .floating-music__volume-label {
   flex-shrink: 0;
   font-size: 0.65rem;
   color: var(--color-text-muted);
+}
+
+.floating-music__volume-mode-toggle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  padding: 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-card-border);
+  background: color-mix(in srgb, var(--glass-card-bg) 88%, transparent);
+  color: var(--color-text);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.floating-music__volume-mode-toggle:hover {
+  border-color: color-mix(in srgb, var(--color-accent) 45%, var(--glass-card-border));
+  color: var(--color-accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 24%, transparent);
+}
+
+.floating-music__volume-mode-slider {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
 }
 
 .floating-music__volume-range {
@@ -917,6 +1287,138 @@ onBeforeUnmount(() => {
   color: var(--color-text-muted);
   width: 2.25rem;
   text-align: right;
+  align-self: flex-end;
+}
+
+.floating-music__volume-value--center {
+  align-self: center;
+  width: auto;
+  text-align: center;
+}
+
+.floating-music__volume-mode-joystick {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+
+.floating-music__joystick-title {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.floating-music__joystick-hint {
+  margin: 0;
+  font-size: 0.58rem;
+  line-height: 1.35;
+  color: var(--color-text-muted);
+}
+
+.floating-music__joystick-stage {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 0.2rem auto 0.25rem;
+  touch-action: none;
+  cursor: grab;
+}
+
+.floating-music__joystick-stage:active {
+  cursor: grabbing;
+}
+
+.floating-music__joystick-disk {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 86px;
+  height: 86px;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid var(--glass-card-border);
+  background: color-mix(in srgb, var(--glass-card-bg) 82%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 12%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, #000 8%, transparent);
+}
+
+.floating-music__joystick-pivot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+
+.floating-music__joystick-rotor {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 22px;
+  height: 46px;
+  margin-left: -11px;
+  transform-origin: 50% 100%;
+  pointer-events: none;
+}
+
+.floating-music__joystick-lever {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* 底端枢轴圆：圆心 = 圆盘中心（与 transform-origin 重合） */
+.floating-music__joystick-cap--hub {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 12px;
+  height: 12px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-sizing: border-box;
+  transform: translate(-50%, 50%);
+  border: 1px solid color-mix(in srgb, var(--glass-card-border) 90%, transparent);
+  background: color-mix(in srgb, var(--color-border) 45%, var(--color-text-muted) 22%);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 14%, transparent);
+}
+
+/* 矩形连杆：连接两圆心方向上的直线段 */
+.floating-music__joystick-shaft {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 6px;
+  height: 22px;
+  margin-left: -3px;
+  border-radius: 1px;
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, var(--glass-card-border) 75%, transparent);
+  background: color-mix(in srgb, var(--color-border) 38%, var(--color-text-muted) 18%);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 10%, transparent);
+}
+
+/* 顶端握球：正圆 + 细白边高光（参考示意） */
+.floating-music__joystick-cap--knob {
+  position: absolute;
+  left: 50%;
+  bottom: calc(6px + 22px);
+  width: 14px;
+  height: 14px;
+  aspect-ratio: 1;
+  margin-left: -7px;
+  border-radius: 50%;
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, #fff 42%, var(--glass-card-border));
+  background: color-mix(in srgb, var(--color-border) 32%, var(--color-text-muted) 15%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 22%, transparent),
+    0 1px 2px color-mix(in srgb, #000 12%, transparent);
 }
 
 .floating-music__audio {

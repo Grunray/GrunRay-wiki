@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
@@ -14,7 +15,20 @@ import { useUiStore } from '@/stores/ui'
 
 const { t, locale } = useI18n()
 const ui = useUiStore()
+const { musicPlayerMinimized, musicPlayerPlaying } = storeToRefs(ui)
 const { compact: navCompact } = useNavScrollCompact()
+
+const musicNavPlayingAnimated = computed(
+  () => musicPlayerMinimized.value && musicPlayerPlaying.value && !ui.prefersReducedMotion,
+)
+
+function onMusicNavClick() {
+  if (musicPlayerMinimized.value) {
+    ui.expandMusicPlayer()
+  } else {
+    ui.setMusicPlayerMinimized(true)
+  }
+}
 const route = useRoute()
 const appMainClasses = computed(() => ({
   'app-main--full-viewport': route.meta.appMainLayout === 'full-viewport',
@@ -65,7 +79,48 @@ onUnmounted(() => {
             :title="ui.cursorTrailEnabled ? '点击关闭光标拖尾' : '点击开启光标拖尾'"
             @click="toggleCursorTrail"
           >
-            <span class="trail-toggle-icon" aria-hidden="true">✨</span>
+            <span class="trail-toggle-icon" aria-hidden="true">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+              <!-- 鼠标光标拖尾按钮图标 -->
+                <path
+                  d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"
+                />
+                <path d="M20 3v4" />
+                <path d="M22 5h-4" />
+                <path d="M4 17v2" />
+                <path d="M5 18h-2" />
+              </svg>
+            </span>
+          </button>
+          <button
+            type="button"
+            class="music-nav-btn"
+            :class="{
+              'music-nav-btn--playing': musicNavPlayingAnimated,
+              'music-nav-btn--idle': musicPlayerMinimized && !musicPlayerPlaying,
+              'music-nav-btn--open': !musicPlayerMinimized,
+            }"
+            :aria-expanded="musicPlayerMinimized ? 'false' : 'true'"
+            :title="musicPlayerMinimized ? '展开音乐播放器' : '收起音乐播放器'"
+            :aria-label="musicPlayerMinimized ? '展开音乐播放器' : '收起音乐播放器'"
+            @click="onMusicNavClick"
+          >
+            <span class="music-nav-btn-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <!-- 音乐播放器按钮图标 -->
+                <path
+                  d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"
+                />
+              </svg>
+            </span>
           </button>
           <button type="button" class="locale-btn" :aria-label="t('ui.locale')" @click="toggleLocale">
             {{ locale === 'zh' ? 'EN' : '中文' }}
@@ -162,9 +217,17 @@ onUnmounted(() => {
 }
 
 .trail-toggle-icon {
-  font-size: 0.94rem;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
   transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.trail-toggle-icon svg {
+  width: 0.94rem;
+  height: 0.94rem;
+  display: block;
 }
 
 .trail-toggle:hover .trail-toggle-icon {
@@ -185,6 +248,116 @@ onUnmounted(() => {
   filter:
     drop-shadow(0 0 6px color-mix(in srgb, var(--color-accent) 80%, white))
     drop-shadow(0 0 14px color-mix(in srgb, var(--color-accent) 58%, transparent));
+}
+
+.music-nav-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--glass-nav-border);
+  background: color-mix(in srgb, var(--glass-nav-bg) 76%, #8a8a8a);
+  color: #8d9298;
+  border-radius: 50%;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.music-nav-btn:hover {
+  transform: scale(1.08);
+  border-color: color-mix(in srgb, var(--color-accent) 42%, var(--glass-nav-border));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+
+.music-nav-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.music-nav-btn-icon svg {
+  width: 0.92rem;
+  height: 0.92rem;
+  display: block;
+}
+
+.music-nav-btn:hover .music-nav-btn-icon {
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-accent) 50%, transparent));
+}
+
+.music-nav-btn--idle {
+  color: #7a7f85;
+  opacity: 0.82;
+}
+
+.music-nav-btn--open {
+  color: var(--color-text-muted);
+  border-color: color-mix(in srgb, var(--color-accent) 28%, var(--glass-nav-border));
+  background: color-mix(in srgb, var(--glass-nav-bg) 82%, transparent);
+}
+
+.music-nav-btn--playing {
+  color: #fff6cf;
+  border-color: color-mix(in srgb, var(--color-accent) 55%, var(--glass-nav-border));
+  background: linear-gradient(135deg, #8f7cff 0%, #4fc3ff 46%, #7fffd0 100%);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 35%, transparent),
+    0 0 14px color-mix(in srgb, var(--color-accent) 45%, transparent);
+  animation: music-nav-breathe 1.15s ease-in-out infinite;
+}
+
+.music-nav-btn--playing .music-nav-btn-icon {
+  animation: music-nav-icon-pulse 1.15s ease-in-out infinite;
+}
+
+@keyframes music-nav-icon-pulse {
+  0%,
+  100% {
+    transform: translateY(0);
+    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--color-accent) 65%, white));
+  }
+  50% {
+    transform: translateY(-1px);
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-accent) 70%, transparent));
+  }
+}
+
+@keyframes music-nav-breathe {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 32%, transparent),
+      0 0 12px color-mix(in srgb, var(--color-accent) 38%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 46%, transparent),
+      0 0 20px color-mix(in srgb, var(--color-accent) 55%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .music-nav-btn--playing {
+    animation: none;
+  }
+
+  .music-nav-btn--playing .music-nav-btn-icon {
+    animation: none;
+  }
+
+  .music-nav-btn:hover {
+    transform: none;
+  }
 }
 
 .locale-btn {

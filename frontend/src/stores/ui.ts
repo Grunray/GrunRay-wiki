@@ -25,6 +25,10 @@ export const useUiStore = defineStore('ui', () => {
   const theme = ref<ThemeId>(readTheme())
   const cursorTrailEnabled = ref(localStorage.getItem(STORAGE_CURSOR) !== '0')
   const prefersReducedMotion = ref(false)
+  /** 音乐播放器是否收起（仅隐藏 UI，不卸载音频） */
+  const musicPlayerMinimized = ref(false)
+  /** 供顶栏 🎵 状态：是否与音频播放同步 */
+  const musicPlayerPlaying = ref(false)
 
   watch(
     theme,
@@ -53,12 +57,29 @@ export const useUiStore = defineStore('ui', () => {
     theme.value = t === 'dark' ? 'dark' : 'light'
   }
 
+  function expandMusicPlayer() {
+    musicPlayerMinimized.value = false
+  }
+
+  function setMusicPlayerMinimized(v: boolean) {
+    musicPlayerMinimized.value = v
+  }
+
+  function setMusicPlayerPlaying(v: boolean) {
+    musicPlayerPlaying.value = v
+  }
+
   return {
     theme,
     cursorTrailEnabled,
     prefersReducedMotion,
     cursorTrailActive,
+    musicPlayerMinimized,
+    musicPlayerPlaying,
     setTheme,
     setReducedMotion,
+    expandMusicPlayer,
+    setMusicPlayerMinimized,
+    setMusicPlayerPlaying,
   }
 })

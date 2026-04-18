@@ -152,9 +152,12 @@ onMounted(() => {
             :to="`/blog/${post.slug}`"
           >
             <h3 class="latest-post-title">{{ post.title }}</h3>
-            <p class="latest-post-keywords">
-              {{ post.tags.length ? post.tags.join(' / ') : '无关键词' }}
-            </p>
+            <div class="tags latest-post-tags">
+              <template v-if="post.tags.length">
+                <span v-for="tag in post.tags" :key="tag" class="tag">{{ tag }}</span>
+              </template>
+              <span v-else class="tag latest-post-tag-placeholder">无关键词</span>
+            </div>
             <p class="latest-post-summary">{{ post.summary || '暂无摘要' }}</p>
             <p class="latest-post-date">
               {{ formatDateYmd(post.updated_at) || '----/--/--' }}
@@ -173,9 +176,12 @@ onMounted(() => {
           :to="`/blog/${randomRecommendedPost.slug}`"
         >
           <h3 class="latest-post-title">{{ randomRecommendedPost.title }}</h3>
-          <p class="latest-post-keywords">
-            {{ randomRecommendedPost.tags.length ? randomRecommendedPost.tags.join(' / ') : '无关键词' }}
-          </p>
+          <div class="tags latest-post-tags">
+            <template v-if="randomRecommendedPost.tags.length">
+              <span v-for="tag in randomRecommendedPost.tags" :key="tag" class="tag">{{ tag }}</span>
+            </template>
+            <span v-else class="tag latest-post-tag-placeholder">无关键词</span>
+          </div>
           <p class="latest-post-summary">{{ randomRecommendedPost.summary || '暂无摘要' }}</p>
           <p class="latest-post-date">
             {{ formatDateYmd(randomRecommendedPost.updated_at) || '----/--/--' }}
@@ -342,12 +348,12 @@ onMounted(() => {
   line-height: 1.35;
 }
 
-.latest-post-keywords {
-  margin: 0;
-  font-size: 0.78rem;
-  color: var(--color-accent);
-  line-height: 1.45;
-  opacity: 0.9;
+.latest-post-tags {
+  margin: 0.15rem 0 0.05rem;
+}
+
+.latest-post-tag-placeholder {
+  opacity: 0.78;
 }
 
 .latest-post-summary {
