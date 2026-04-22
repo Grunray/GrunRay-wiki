@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS `music_track`;
 DROP TABLE IF EXISTS `post`;
 DROP TABLE IF EXISTS `media`;
 DROP TABLE IF EXISTS `category`;
+DROP TABLE IF EXISTS `wiki_project`;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -83,4 +84,30 @@ CREATE TABLE `music_track` (
   KEY `idx_music_sort` (`sort_order`, `id`),
   KEY `idx_music_post` (`post_id`),
   CONSTRAINT `fk_music_track_post` FOREIGN KEY (`post_id`) REFERENCES `post` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `wiki_project` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `public_id` VARCHAR(64) NOT NULL COMMENT '对外 ID，与 post.extra.project_id 对齐',
+  `slug` VARCHAR(255) NOT NULL,
+  `locale` VARCHAR(8) NOT NULL DEFAULT 'zh',
+  `title` VARCHAR(512) NOT NULL,
+  `summary` TEXT NULL,
+  `tags` JSON NULL COMMENT '字符串数组',
+  `status` TINYINT NOT NULL DEFAULT 0 COMMENT '0 published 1 archived 2 hidden',
+  `featured` TINYINT(1) NOT NULL DEFAULT 0,
+  `year` SMALLINT NULL DEFAULT NULL COMMENT '可选展示用',
+  `start_date` DATE NULL DEFAULT NULL COMMENT '时间线主排序',
+  `end_date` DATE NULL DEFAULT NULL,
+  `github_url` VARCHAR(1024) NULL DEFAULT NULL,
+  `demo_url` VARCHAR(1024) NULL DEFAULT NULL COMMENT 'Demo 静态页 URL',
+  `layout` JSON NOT NULL COMMENT 'ProjectLayoutBlock[]',
+  `related_posts_json` JSON NULL COMMENT '手动精选 [{slug,label?,pinned?}]',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_wiki_project_public_id` (`public_id`),
+  UNIQUE KEY `uq_wiki_project_slug` (`slug`),
+  KEY `idx_wiki_project_status` (`status`),
+  KEY `idx_wiki_project_start_date` (`start_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

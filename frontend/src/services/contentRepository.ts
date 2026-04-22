@@ -1,14 +1,34 @@
 /**
- * 内容访问层：文章走 Flask API；项目仍读本地 JSON（后续可再接 API）。
+ * 内容访问层：文章与项目均走 Flask API。
  */
 import { apiGet } from '@/api/http'
-import projectsJson from '@/content/data/projects.json'
 import type { Post, Project, ProjectNote, ProjectStatus } from '@/types/content'
 
-const projects = projectsJson as Project[]
+let projectsCache: Project[] = []
+let projectsLoaded = false
+let projectsLoadingPromise: Promise<Project[]> | null = null
 
 function byId<T extends { id: string }>(list: T[], id: string): T | undefined {
   return list.find((x) => x.id === id)
+}
+
+export async function ensureProjectsLoaded(force = false): Promise<Project[]> {
+  if (!force && projectsLoaded) return projectsCache
+  if (!force && projectsLoadingPromise) return projectsLoadingPromise
+
+  projectsLoadingPromise = (async () => {
+    const q = new URLSearchParams({ include_archived: 'true' })
+    const data = await apiGet<{ projects: Project[] }>(`/api/projects?${q.toString()}`)
+    projectsCache = data.projects ?? []
+    projectsLoaded = true
+    return projectsCache
+  })()
+
+  try {
+    return await projectsLoadingPromise
+  } finally {
+    projectsLoadingPromise = null
+  }
 }
 
 /** 规范：置顶优先 → pinned_order 升序（缺省视为大）→ published_at 降序 */
@@ -27,17 +47,17 @@ export function sortPosts<T extends Pick<Post, 'pinned' | 'pinned_order' | 'publ
 }
 
 export function getProjectById(id: string): Project | undefined {
-  return byId(projects, id)
+  return byId(projectsCache, id)
 }
 
 export function getProjectBySlug(slug: string): Project | undefined {
-  return projects.find((p) => p.slug === slug)
+  return projectsCache.find((p) => p.slug === slug)
 }
 
 /** 公共列表：不含 hidden */
 export function listProjectsPublic(options?: { includeArchived?: boolean }): Project[] {
   const includeArchived = options?.includeArchived ?? true
-  return projects.filter((p) => {
+  return projectsCache.filter((p) => {
     if (p.status === 'hidden') return false
     if (!includeArchived && p.status === 'archived') return false
     return true
@@ -59,6 +79,7 @@ function projectStatusForNote(projectId: string): ProjectStatus | undefined {
 
 /** 博客聚合：算法与普通文章全部展示；项目笔记需所属项目非 hidden */
 export async function listPostsForBlog(): Promise<Post[]> {
+  await ensureProjectsLoaded()
   const { posts } = await apiGet<{ posts: Post[] }>('/api/posts')
   const visible = posts.filter((post) => {
     if (post.type === 'algorithm' || post.type === 'article') return true
@@ -74,6 +95,7 @@ export async function listAlgorithmPosts(): Promise<Post[]> {
 }
 
 export async function listPostsForProjectSlug(projectSlug: string): Promise<Post[]> {
+  await ensureProjectsLoaded()
   const project = getProjectBySlug(projectSlug)
   if (!project || !canAccessProjectPublic(project)) return []
   const q = new URLSearchParams({
@@ -102,7 +124,7 @@ export function canAccessPostPublic(post: Post): boolean {
 }
 
 export function getRawProjects(): Project[] {
-  return projects
+  return projectsCache
 }
 
 export async function getRawPosts(): Promise<Post[]> {

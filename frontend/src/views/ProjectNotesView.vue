@@ -4,29 +4,45 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
 import PostCard from '@/components/blog/PostCard.vue'
-import { getProjectBySlug, listPostsForProjectSlug } from '@/services/contentRepository'
-import type { Post } from '@/types/content'
+import { ensureProjectsLoaded, getProjectBySlug, listPostsForProjectSlug } from '@/services/contentRepository'
+import type { Post, Project } from '@/types/content'
 
 const route = useRoute()
 const { t } = useI18n()
 
 const slug = computed(() => route.params.slug as string)
-const project = computed(() => getProjectBySlug(slug.value))
+const project = ref<Project | null>(null)
 const ok = computed(() => project.value && project.value.status !== 'hidden')
 
 const posts = ref<Post[]>([])
+const loading = ref(false)
+const loadError = ref(false)
 
 watch(
   slug,
   async (s) => {
-    posts.value = await listPostsForProjectSlug(s)
+    loading.value = true
+    loadError.value = false
+    try {
+      await ensureProjectsLoaded()
+      project.value = getProjectBySlug(s) ?? null
+      posts.value = await listPostsForProjectSlug(s)
+    } catch {
+      loadError.value = true
+      project.value = null
+      posts.value = []
+    } finally {
+      loading.value = false
+    }
   },
   { immediate: true },
 )
 </script>
 
 <template>
-  <div v-if="ok && project">
+  <p v-if="loadError" class="empty">加载失败，请确认后端已启动并已导入项目数据。</p>
+  <p v-else-if="loading" class="empty">正在加载项目笔记...</p>
+  <div v-else-if="ok && project">
     <p class="back">
       <RouterLink :to="`/projects/${project.slug}`">← {{ project.title }}</RouterLink>
     </p>

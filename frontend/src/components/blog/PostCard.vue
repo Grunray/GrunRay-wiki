@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 
-import { getProjectById } from '@/services/contentRepository'
+import { ensureProjectsLoaded, getProjectById } from '@/services/contentRepository'
 import type { AlgorithmPost, Post, ProjectNote } from '@/types/content'
 
 const props = defineProps<{ post: Post }>()
@@ -16,6 +16,10 @@ const projectTitle = computed(() => {
 })
 
 const postLink = computed(() => `/blog/${props.post.slug}`)
+
+onMounted(() => {
+  void ensureProjectsLoaded()
+})
 </script>
 
 <template>

@@ -206,7 +206,7 @@ onMounted(() => {
         <div class="cursor-placeholder">
           <div class="cursor-placeholder-text cursor-placeholder-tech">
             <p class="cursor-tech-title">技术栈<br />Languages</p>
-            <p class="cursor-tech-divider">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</p>
+            <p class="cursor-tech-divider">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</p>
             <div class="cursor-tech-grid">
               <p>● Python 0.0%</p>
               <p>● JAVA 0.0%</p>

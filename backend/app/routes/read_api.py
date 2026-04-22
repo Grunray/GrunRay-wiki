@@ -9,6 +9,7 @@ from app.config import config
 from app.db import cursor
 from app.markdown_util import render_markdown_to_html
 from app.search import passes_scheme_c, score_post, split_terms
+from app.project_serialize import row_to_project
 from app.serialize import row_to_post
 
 bp = Blueprint("api", __name__, url_prefix="/api")
@@ -16,6 +17,10 @@ bp = Blueprint("api", __name__, url_prefix="/api")
 # 前端 type 字符串 → DB type int
 FRONT_TO_DB_TYPE = {"article": 0, "project_note": 1, "algorithm": 2}
 FILMFEED_FOLDER_WHITELIST = "film/homeView/right_panel"
+
+# wiki_project.status（与 import 脚本 STATUS_MAP 一致）
+PROJECT_STATUS_ARCHIVED = 1
+PROJECT_STATUS_HIDDEN = 2
 
 
 def _fetch_all_posts(cur) -> list[dict]:
@@ -60,6 +65,86 @@ def _ok(data: Any, message: str = ""):
 
 def _error(message: str, code: int = 1, status: int = 400):
     return jsonify({"code": code, "data": [], "message": message}), status
+
+
+def _merge_related_posts(cur, public_id: str, related_posts_json_raw: Any) -> list[dict[str, Any]]:
+    """手动 related_posts_json + 自动 project_note 合并，供详情页展示。"""
+    manual_refs: list[dict[str, Any]] = []
+    raw = related_posts_json_raw
+    if isinstance(raw, str):
+        try:
+            raw = json.loads(raw)
+        except json.JSONDecodeError:
+            raw = []
+    if isinstance(raw, list):
+        for item in raw:
+            if isinstance(item, dict) and (item.get("slug") or "").strip():
+                manual_refs.append(
+                    {
+                        "slug": str(item["slug"]).strip(),
+                        "label": str(item["label"]).strip() if item.get("label") else None,
+                        "pinned": bool(item.get("pinned")),
+                    }
+                )
+
+    cur.execute(
+        """
+        SELECT slug, title, published_at
+        FROM post
+        WHERE type = %s
+          AND JSON_UNQUOTE(JSON_EXTRACT(extra, '$.project_id')) = %s
+        ORDER BY published_at IS NULL, published_at DESC, id DESC
+        """,
+        (FRONT_TO_DB_TYPE["project_note"], public_id),
+    )
+    auto_rows = cur.fetchall() or []
+
+    seen: set[str] = set()
+    merged: list[dict[str, Any]] = []
+
+    for ref in manual_refs:
+        slug = ref["slug"]
+        if slug in seen:
+            continue
+        seen.add(slug)
+        cur.execute(
+            "SELECT title, published_at FROM post WHERE slug = %s LIMIT 1",
+            (slug,),
+        )
+        prow = cur.fetchone()
+        title = (prow.get("title") or "") if prow else ""
+        merged.append(
+            {
+                "slug": slug,
+                "title": title,
+                "label": ref.get("label"),
+                "pinned": ref["pinned"],
+                "source": "manual",
+                "published_at": str(prow.get("published_at") or "") if prow else "",
+            }
+        )
+
+    for row in auto_rows:
+        slug = row["slug"]
+        if slug in seen:
+            continue
+        seen.add(slug)
+        merged.append(
+            {
+                "slug": slug,
+                "title": row.get("title") or "",
+                "label": None,
+                "pinned": False,
+                "source": "auto",
+                "published_at": str(row.get("published_at") or ""),
+            }
+        )
+
+    manual_items = [x for x in merged if x["source"] == "manual"]
+    auto_items = [x for x in merged if x["source"] == "auto"]
+    manual_items.sort(key=lambda x: (0 if x.get("pinned") else 1,))
+    auto_items.sort(key=lambda x: x.get("published_at") or "", reverse=True)
+    return manual_items + auto_items
 
 
 @bp.get("/health")
@@ -408,3 +493,54 @@ def media_list_filmfeed():
             }
         )
     return _ok(out)
+
+
+@bp.get("/projects")
+def list_projects():
+    """项目时间线列表：不含 hidden；可选排除 archived。"""
+    include_archived = request.args.get("include_archived", "true").lower() in ("1", "true", "yes")
+    where = ["status <> %s"]
+    params: list[Any] = [PROJECT_STATUS_HIDDEN]
+    if not include_archived:
+        where.append("status <> %s")
+        params.append(PROJECT_STATUS_ARCHIVED)
+    where_sql = " AND ".join(where)
+    with cursor() as cur:
+        cur.execute(
+            f"""
+            SELECT id, public_id, slug, locale, title, summary, tags, status, featured, year,
+                   start_date, end_date, github_url, demo_url, layout, related_posts_json
+            FROM wiki_project
+            WHERE {where_sql}
+            ORDER BY start_date IS NULL, start_date DESC, id DESC
+            """,
+            params,
+        )
+        rows = cur.fetchall() or []
+    projects = [row_to_project(dict(r)) for r in rows]
+    return jsonify({"projects": projects})
+
+
+@bp.get("/projects/<slug>")
+def get_project(slug: str):
+    """项目详情：hidden 视为不可访问；返回 related_posts（手动 + 自动合并）。"""
+    with cursor() as cur:
+        cur.execute(
+            """
+            SELECT id, public_id, slug, locale, title, summary, tags, status, featured, year,
+                   start_date, end_date, github_url, demo_url, layout, related_posts_json
+            FROM wiki_project
+            WHERE slug = %s
+            LIMIT 1
+            """,
+            (slug,),
+        )
+        row = cur.fetchone()
+        if not row or int(row["status"]) == PROJECT_STATUS_HIDDEN:
+            return jsonify({"error": "not_found"}), 404
+        related = _merge_related_posts(cur, row["public_id"], row.get("related_posts_json"))
+
+    data = row_to_project(dict(row))
+    data.pop("related_posts_json", None)
+    data["related_posts"] = related
+    return jsonify(data)

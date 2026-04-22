@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
-import { canAccessPostPublic, getPostBySlug, getProjectById } from '@/services/contentRepository'
+import { canAccessPostPublic, ensureProjectsLoaded, getPostBySlug, getProjectById } from '@/services/contentRepository'
 import type { AlgorithmPost, Post, ProjectNote } from '@/types/content'
 
 const route = useRoute()
@@ -15,6 +15,7 @@ const loadError = ref(false)
 async function load(slug: string) {
   loadError.value = false
   try {
+    await ensureProjectsLoaded()
     post.value = (await getPostBySlug(slug)) ?? null
   } catch {
     loadError.value = true

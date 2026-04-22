@@ -29,6 +29,12 @@ export interface Project {
   summary: string
   tags: string[]
   status: ProjectStatus
+  /** 项目开始时间（YYYY-MM-DD），时间线主排序字段 */
+  start_date?: string
+  /** 项目结束时间（YYYY-MM-DD） */
+  end_date?: string
+  /** 外链（例如 GitHub） */
+  github_url?: string
   /** 首页精选 */
   featured?: boolean
   year?: number

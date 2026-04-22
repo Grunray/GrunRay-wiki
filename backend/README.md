@@ -75,7 +75,9 @@ python run.py
 | GET | `/api/search?q=` | 搜索（方案 C + 应用层评分） |
 | GET | `/api/posts/<slug>/related?limit=5` | 关键词相似推荐 |
 | GET | `/api/music/tracks` | BGM 列表；`page` / `size` / `tag` / `post_id` |
-| GET | `/api/media/files/<path>` | `content/media/` 下静态文件（含 `music/…`） |
+| GET | `/api/media/files/<path>` | `content/media/` 下静态文件（含 `music/…`、`demos/…`） |
+| GET | `/api/projects` | 项目列表；`include_archived=true|false`（默认 `true`） |
+| GET | `/api/projects/<slug>` | 项目详情；含 `related_posts`（手动 + `project_note` 自动合并） |
 
 前端开发：在 `frontend` 目录 `npm run dev`，Vite 已将 `/api` 代理到本服务。
 

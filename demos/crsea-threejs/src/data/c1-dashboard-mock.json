@@ -1,0 +1,47 @@
+{
+  "status": "success",
+  "message": "demo mock",
+  "data": {
+    "user_permissions": {
+      "can_admin": true,
+      "is_group_user": false,
+      "is_mine_user": false
+    },
+    "threejs_data": {
+      "tunnels": [
+        {
+          "id": "tunnel-demo-1",
+          "name": "演示轨道巷道",
+          "group_name": "演示集团",
+          "mine_name": "演示煤矿",
+          "workface_name": "0701 工作面",
+          "workface_id": "wf-demo-1",
+          "tunnel_type": "轨道巷道",
+          "tunnel_width": 4.5,
+          "tunnel_height": 3.2,
+          "cumulative_advance": 85,
+          "threeD_position": {
+            "start_position": { "x": 0, "y": 5, "z": 0 },
+            "end_position": { "x": 80, "y": 5, "z": 0 }
+          }
+        }
+      ],
+      "workfaces": [
+        {
+          "id": "wf-demo-1",
+          "name": "0701 工作面",
+          "code": "WF-0701",
+          "group_name": "演示集团",
+          "mine_name": "演示煤矿",
+          "coal_seam_thickness": 2.8,
+          "strike_length": 150,
+          "dip_length": 180,
+          "threeD_position": {
+            "reference_point": { "x": 0, "y": 0, "z": 0 },
+            "rotation_angle": 0
+          }
+        }
+      ]
+    }
+  }
+}
