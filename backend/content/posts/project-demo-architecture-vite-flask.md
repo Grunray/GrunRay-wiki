@@ -1,26 +1,8 @@
----
-title: Vite + Flask 混合栈的 Demo 展示架构建议
-slug: project-demo-architecture-vite-flask
-type: article
-tags:
-- Vue3
-- Vite
-- Flask
-- Demo
-- 架构设计
-summary: 面向“主站 + 多个项目演示”的场景，给出独立 Demo 子工程、静态托管和 iframe 加载的落地方案。
-locale: zh
-pinned: false
-pinned_order: 9999
-published_at: '2026-04-17T10:00:00'
-updated_at: '2026-04-17T10:00:00'
----
-
-demo 这部分用于展示做过的项目内容，基本是 Vue3 项目代码。后续可将代码中的前后端通信逻辑移除，并改为临时数据展示核心功能。
-
 ## 问题背景
 
-核心问题是：Demo 源码应该放前端还是后端？
+本博客(GrunRay-wiki)的 Demo 展示页，如果添加项目，需要修改主站前端代码，重新发布，非常麻烦，所以这里提出一个架构建议。
+
+核心问题其实就是：Demo 源码应该放前端还是后端？
 
 - 放前端：新增或改 Demo 时，主前端要跟着重新发布
 - 放后端：代码组织容易杂乱，后端目录语义被稀释
@@ -38,7 +20,7 @@ demo 这部分用于展示做过的项目内容，基本是 Vue3 项目代码。
 - demo 构建后上传静态托管位置（后端静态目录或对象存储/CDN）
 - 项目数据中只保存 `demo_url` 和少量元数据，不把 demo 源码塞入主站
 
-## 适配当前栈（Vite + Flask）
+## 适配我的技术栈（Vite + Flask）
 
 当前栈：
 
@@ -99,11 +81,11 @@ demo 源码放在 `demos/`，构建后发布到后端可托管静态目录（或
 #### 推荐流程（更稳）
 
 1. 本地或 CI 构建：
-   - `cd frontend && npm run build`（产出主站 `frontend/dist`）
-   - `cd frontend && npm run build:demos`（产出 demo 静态文件）
+  - `cd frontend ; npm run build`（产出主站 `frontend/dist`）
+  - `cd frontend ; npm run build:demos`（产出 demo 静态文件）
 2. 上传到服务器：
-   - `frontend/dist`
-   - `backend`（至少包含 `backend/**/demos` 的静态产物目录）
+  - `frontend/dist`
+  - `backend`（至少包含 `backend/**/demos` 的静态产物目录）
 3. 启动后端服务，前端通过 `/api/**/files/...` 访问 demo 资源。
 
 这样服务器不需要 Node 构建环境，部署链路更简单、稳定。
@@ -143,4 +125,3 @@ demo 源码放在 `demos/`，构建后发布到后端可托管静态目录（或
 **独立 demo 子工程 + 后端静态服务（或 CDN）+ iframe 加载**。
 
 这样既不需要重构主前端，也能让 demo 更新流程更灵活、更安全、更可维护。
-

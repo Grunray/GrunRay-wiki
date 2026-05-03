@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>导航栏切换动效展示</title>
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      background:#0f172a;
+      color:#e2e8f0;
+      margin:0;
+      padding:30px;
+    }
+    h2{margin-top:40px;}
+    .section{margin-bottom:60px;}
+
+    /* ===== 通用 nav ===== */
+    .nav{
+      display:flex;
+      gap:20px;
+      position:relative;
+      padding:10px;
+      background:#111827;
+      border-radius:12px;
+      width:max-content;
+    }
+    .nav-item{
+      cursor:pointer;
+      padding:8px 14px;
+      border-radius:8px;
+      position:relative;
+      z-index:1;
+      transition:all .3s;
+    }
+
+    /* ===== 1. 滑块指示器 ===== */
+    .slider{
+      position:absolute;
+      top:5px;
+      left:5px;
+      height:32px;
+      width:60px;
+      background:#3b82f6;
+      border-radius:8px;
+      transition:transform .3s ease;
+      z-index:0;
+    }
+
+    /* ===== 2. 胶囊背景 ===== */
+    .pill-bg{
+      position:absolute;
+      top:5px;
+      left:5px;
+      height:32px;
+      width:60px;
+      background:#22c55e;
+      border-radius:999px;
+      transition:all .35s ease;
+      z-index:0;
+    }
+
+    /* ===== 3. 下划线 ===== */
+    .underline{
+      position:absolute;
+      bottom:0;
+      left:0;
+      height:3px;
+      width:60px;
+      background:#f97316;
+      transition:transform .3s cubic-bezier(.2,.8,.2,1);
+    }
+
+    /* ===== 4. glow ===== */
+    .glow .active{
+      color:#a78bfa;
+      text-shadow:0 0 10px #a78bfa;
+      transform:scale(1.1);
+    }
+
+    /* ===== 5. 3D ===== */
+    .nav-3d{
+      perspective:600px;
+    }
+    .nav-3d .nav-item{
+      transition:transform .3s;
+    }
+    .nav-3d .active{
+      transform:translateY(-6px) scale(1.1);
+      background:#1f2937;
+    }
+
+  </style>
+</head>
+<body>
+
+<h1>导航栏切换动效展示</h1>
+
+<!-- 1 滑块 -->
+<div class="section">
+  <h2>1. 滑块指示器</h2>
+  <div class="nav" id="nav1">
+    <div class="slider"></div>
+    <div class="nav-item">首页</div>
+    <div class="nav-item">文章</div>
+    <div class="nav-item">项目</div>
+  </div>
+</div>
+
+<!-- 2 胶囊 -->
+<div class="section">
+  <h2>2. 胶囊背景</h2>
+  <div class="nav" id="nav2">
+    <div class="pill-bg"></div>
+    <div class="nav-item">首页</div>
+    <div class="nav-item">文章</div>
+    <div class="nav-item">项目</div>
+  </div>
+</div>
+
+<!-- 3 下划线 -->
+<div class="section">
+  <h2>3. 弹性下划线</h2>
+  <div class="nav" id="nav3">
+    <div class="underline"></div>
+    <div class="nav-item">首页</div>
+    <div class="nav-item">文章</div>
+    <div class="nav-item">项目</div>
+  </div>
+</div>
+
+<!-- 4 glow -->
+<div class="section">
+  <h2>4. 发光效果</h2>
+  <div class="nav glow" id="nav4">
+    <div class="nav-item">首页</div>
+    <div class="nav-item">文章</div>
+    <div class="nav-item">项目</div>
+  </div>
+</div>
+
+<!-- 5 3D -->
+<div class="section">
+  <h2>5. 3D 浮动</h2>
+  <div class="nav nav-3d" id="nav5">
+    <div class="nav-item">首页</div>
+    <div class="nav-item">文章</div>
+    <div class="nav-item">项目</div>
+  </div>
+</div>
+
+<script>
+function bindNav(navId, type){
+  const nav = document.getElementById(navId);
+  const items = nav.querySelectorAll('.nav-item');
+  let indicator = nav.querySelector('.slider,.pill-bg,.underline');
+
+  function move(el,index){
+    items.forEach(i=>i.classList.remove('active'));
+    el.classList.add('active');
+
+    const x = el.offsetLeft;
+
+    if(type==='slider' || type==='pill'){
+      indicator.style.transform = `translateX(${x}px)`;
+      indicator.style.width = el.offsetWidth + 'px';
+    }
+    if(type==='underline'){
+      indicator.style.transform = `translateX(${x}px)`;
+      indicator.style.width = el.offsetWidth + 'px';
+    }
+  }
+
+  items.forEach((item,i)=>{
+    item.addEventListener('click',()=>move(item,i));
+  });
+
+  move(items[0],0);
+}
+
+bindNav('nav1','slider');
+bindNav('nav2','pill');
+bindNav('nav3','underline');
+
+// glow
+const nav4 = document.querySelectorAll('#nav4 .nav-item');
+nav4.forEach((item,i)=>{
+  item.addEventListener('click',()=>{
+    nav4.forEach(n=>n.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+nav4[0].classList.add('active');
+
+// 3D
+const nav5 = document.querySelectorAll('#nav5 .nav-item');
+nav5.forEach((item,i)=>{
+  item.addEventListener('click',()=>{
+    nav5.forEach(n=>n.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+nav5[0].classList.add('active');
+
+</script>
+
+</body>
+</html>

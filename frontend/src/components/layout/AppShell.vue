@@ -7,6 +7,10 @@ import { useI18n } from 'vue-i18n'
 import { useNavScrollCompact } from '@/composables/useNavScrollCompact'
 import { persistLocale } from '@/i18n'
 
+import MusicNavIcon from '@/components/icons/MusicNavIcon.vue'
+import SnailNavIcon from '@/components/icons/SnailNavIcon.vue'
+import TrailNavIcon from '@/components/icons/TrailNavIcon.vue'
+
 import CursorTrail from './CursorTrail.vue'
 import SiteNav from './SiteNav.vue'
 import ThemeDayNightToggle from './ThemeDayNightToggle.vue'
@@ -28,6 +32,10 @@ function onMusicNavClick() {
   } else {
     ui.setMusicPlayerMinimized(true)
   }
+}
+
+function onSplashNavClick() {
+  ui.requestSplashWoniuReplay()
 }
 const route = useRoute()
 const appMainClasses = computed(() => ({
@@ -76,28 +84,12 @@ onUnmounted(() => {
             class="trail-toggle"
             :class="{ 'is-active': ui.cursorTrailEnabled }"
             :aria-pressed="ui.cursorTrailEnabled ? 'true' : 'false'"
-            :title="ui.cursorTrailEnabled ? '点击关闭光标拖尾' : '点击开启光标拖尾'"
+            :title="ui.cursorTrailEnabled ? t('nav.trailOff') : t('nav.trailOn')"
+            :aria-label="ui.cursorTrailEnabled ? t('nav.trailOff') : t('nav.trailOn')"
             @click="toggleCursorTrail"
           >
             <span class="trail-toggle-icon" aria-hidden="true">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-              <!-- 鼠标光标拖尾按钮图标 -->
-                <path
-                  d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"
-                />
-                <path d="M20 3v4" />
-                <path d="M22 5h-4" />
-                <path d="M4 17v2" />
-                <path d="M5 18h-2" />
-              </svg>
+              <TrailNavIcon />
             </span>
           </button>
           <button
@@ -109,17 +101,23 @@ onUnmounted(() => {
               'music-nav-btn--open': !musicPlayerMinimized,
             }"
             :aria-expanded="musicPlayerMinimized ? 'false' : 'true'"
-            :title="musicPlayerMinimized ? '展开音乐播放器' : '收起音乐播放器'"
-            :aria-label="musicPlayerMinimized ? '展开音乐播放器' : '收起音乐播放器'"
+            :title="musicPlayerMinimized ? t('nav.musicExpand') : t('nav.musicCollapse')"
+            :aria-label="musicPlayerMinimized ? t('nav.musicExpand') : t('nav.musicCollapse')"
             @click="onMusicNavClick"
           >
             <span class="music-nav-btn-icon" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <!-- 音乐播放器按钮图标 -->
-                <path
-                  d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"
-                />
-              </svg>
+              <MusicNavIcon />
+            </span>
+          </button>
+          <button
+            type="button"
+            class="splash-nav-btn"
+            :title="t('splash.replayTitle')"
+            :aria-label="t('splash.replayLabel')"
+            @click="onSplashNavClick"
+          >
+            <span class="splash-nav-btn-icon" aria-hidden="true">
+              <SnailNavIcon />
             </span>
           </button>
           <button type="button" class="locale-btn" :aria-label="t('ui.locale')" @click="toggleLocale">
@@ -224,12 +222,6 @@ onUnmounted(() => {
   transition: filter 0.2s ease, transform 0.2s ease;
 }
 
-.trail-toggle-icon svg {
-  width: 0.94rem;
-  height: 0.94rem;
-  display: block;
-}
-
 .trail-toggle:hover .trail-toggle-icon {
   filter: drop-shadow(0 0 7px color-mix(in srgb, var(--color-accent) 55%, transparent));
   transform: scale(1.03);
@@ -250,7 +242,8 @@ onUnmounted(() => {
     drop-shadow(0 0 14px color-mix(in srgb, var(--color-accent) 58%, transparent));
 }
 
-.music-nav-btn {
+.music-nav-btn,
+.splash-nav-btn {
   position: relative;
   display: flex;
   align-items: center;
@@ -271,10 +264,24 @@ onUnmounted(() => {
     transform 0.2s ease;
 }
 
-.music-nav-btn:hover {
+.music-nav-btn:hover,
+.splash-nav-btn:hover {
   transform: scale(1.08);
   border-color: color-mix(in srgb, var(--color-accent) 42%, var(--glass-nav-border));
   box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+
+.splash-nav-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.splash-nav-btn:hover .splash-nav-btn-icon {
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-accent) 50%, transparent));
+  transform: scale(1.06);
 }
 
 .music-nav-btn-icon {
@@ -283,12 +290,6 @@ onUnmounted(() => {
   justify-content: center;
   line-height: 0;
   transition: filter 0.2s ease, transform 0.2s ease;
-}
-
-.music-nav-btn-icon svg {
-  width: 0.92rem;
-  height: 0.92rem;
-  display: block;
 }
 
 .music-nav-btn:hover .music-nav-btn-icon {
@@ -355,7 +356,8 @@ onUnmounted(() => {
     animation: none;
   }
 
-  .music-nav-btn:hover {
+  .music-nav-btn:hover,
+  .splash-nav-btn:hover {
     transform: none;
   }
 }

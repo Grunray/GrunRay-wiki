@@ -1,0 +1,46 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f8ff;
+}
+
+.bamboo-container {
+    position: relative;
+    height: 500px;
+}
+
+.bamboo {
+    width: 30px;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        #7cfc00 0%,
+        #32cd32 10%,
+        #32cd32 90%,
+        #228b22 100%
+    );
+    border-radius: 15px;
+    position: relative;
+    box-shadow: inset -5px 0 10px rgba(0,0,0,0.2), 
+                5px 5px 15px rgba(0,0,0,0.3);
+}
+
+/* 竹节 */
+.node {
+    width: 120%;
+    height: 8px;
+    background-color: #228b22;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+/* 分布竹节位置 */
+.node:nth-child(1) { top: 20%; }
+.node:nth-child(2) { top: 40%; }
+.node:nth-child(3) { top: 60%; }
+.node:nth-child(4) { top: 80%; }

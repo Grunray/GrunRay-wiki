@@ -5,6 +5,15 @@ import type { ThemeId } from '@/types/content'
 
 const STORAGE_THEME = 'ui.theme'
 const STORAGE_CURSOR = 'ui.cursorTrail'
+/** 音乐面板是否收起：'1' 收起（关闭 UI），'0' 展开；与光标拖尾存储方式一致 */
+const STORAGE_MUSIC_MINIMIZED = 'ui.musicPlayerMinimized'
+
+function readMusicPlayerMinimized(): boolean {
+  const v = localStorage.getItem(STORAGE_MUSIC_MINIMIZED)
+  if (v === '0') return false
+  if (v === '1') return true
+  return true
+}
 
 /** 当前仅开放浅/深；历史 `abstract` 读入时回落为浅色并写回存储 */
 function readTheme(): ThemeId {
@@ -25,10 +34,14 @@ export const useUiStore = defineStore('ui', () => {
   const theme = ref<ThemeId>(readTheme())
   const cursorTrailEnabled = ref(localStorage.getItem(STORAGE_CURSOR) !== '0')
   const prefersReducedMotion = ref(false)
-  /** 音乐播放器是否收起（仅隐藏 UI，不卸载音频） */
-  const musicPlayerMinimized = ref(false)
+  /** 音乐播放器是否收起（仅隐藏 UI，不卸载音频）；持久化，刷新后保持上次开/关 */
+  const musicPlayerMinimized = ref(readMusicPlayerMinimized())
   /** 供顶栏 🎵 状态：是否与音频播放同步 */
   const musicPlayerPlaying = ref(false)
+  /** 递增以触发开屏动画重播（供顶栏 🐌 等调用） */
+  const splashWoniuReplayTick = ref(0)
+  /** 开屏头像飞入首页时为 true，首页头像暂时隐藏避免叠影 */
+  const splashAvatarHandoff = ref(false)
 
   watch(
     theme,
@@ -42,6 +55,10 @@ export const useUiStore = defineStore('ui', () => {
 
   watch(cursorTrailEnabled, (v) => {
     localStorage.setItem(STORAGE_CURSOR, v ? '1' : '0')
+  })
+
+  watch(musicPlayerMinimized, (m) => {
+    localStorage.setItem(STORAGE_MUSIC_MINIMIZED, m ? '1' : '0')
   })
 
   const cursorTrailActive = computed(
@@ -69,6 +86,14 @@ export const useUiStore = defineStore('ui', () => {
     musicPlayerPlaying.value = v
   }
 
+  function requestSplashWoniuReplay() {
+    splashWoniuReplayTick.value += 1
+  }
+
+  function setSplashAvatarHandoff(v: boolean) {
+    splashAvatarHandoff.value = v
+  }
+
   return {
     theme,
     cursorTrailEnabled,
@@ -76,10 +101,14 @@ export const useUiStore = defineStore('ui', () => {
     cursorTrailActive,
     musicPlayerMinimized,
     musicPlayerPlaying,
+    splashWoniuReplayTick,
+    splashAvatarHandoff,
     setTheme,
     setReducedMotion,
     expandMusicPlayer,
     setMusicPlayerMinimized,
     setMusicPlayerPlaying,
+    requestSplashWoniuReplay,
+    setSplashAvatarHandoff,
   }
 })

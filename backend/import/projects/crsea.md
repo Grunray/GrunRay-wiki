@@ -8,7 +8,7 @@ tags:
   - Three.js
   - 可视化
 locale: zh
-status: published
+status: archived
 featured: true
 year: 2025
 start_date: '2025-07-21'

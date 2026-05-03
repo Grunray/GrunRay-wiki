@@ -4,9 +4,11 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 
 import FilmFeed from '@/components/media/FilmFeed.vue'
+import { useUiStore } from '@/stores/ui'
 import type { Post } from '@/types/content'
 
 const { t } = useI18n()
+const ui = useUiStore()
 
 const externalLinks = [
   {
@@ -195,7 +197,13 @@ onMounted(() => {
 
     <div class="center">
       <div class="avatar">
-        <img v-if="avatarUrl" :src="avatarUrl" alt="头像" />
+        <img
+          v-if="avatarUrl"
+          data-splash-avatar-target
+          :class="{ 'home-avatar--splash-fly': ui.splashAvatarHandoff }"
+          :src="avatarUrl"
+          alt="头像"
+        />
         <span v-else>头像</span>
       </div>
       <div class="greeting-art card">
@@ -413,6 +421,12 @@ onMounted(() => {
   height: 100%;
   object-fit: cover;
   object-position: center;
+  transition: opacity 0.28s ease;
+}
+
+.home-avatar--splash-fly {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .internship-note {

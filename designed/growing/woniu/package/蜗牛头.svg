@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 1600 1600" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <g id="蜗牛头" transform="matrix(0.110063,0,0,-0.110063,362.994157,1256.809303)">
+        <g id="head" transform="matrix(9.085705,0,0,-9.085705,-3261.603733,11418.649208)">
+            <path d="M553.476,523.351C647.444,393.128 641.89,236.72 641.89,236.72C641.89,236.72 637.611,192.661 671.836,190.091C706.061,187.522 716.043,216.043 700.356,231.729C684.67,247.415 683.957,260.25 683.957,260.25C683.957,260.25 675.664,491.227 631.907,556.863C613.369,584.67 560.352,652.662 440.175,609.89C345.276,576.114 462.923,648.841 553.476,523.351Z" style="fill:none;stroke:black;stroke-width:17.6px;"/>
+        </g>
+        <g transform="matrix(9.085705,0,0,-9.085705,-3261.603733,11418.649208)">
+            <path d="M652.585,190.091C649.17,158.776 638.889,156.016 655.437,124.064" style="fill:none;stroke:black;stroke-width:17.6px;"/>
+        </g>
+        <g transform="matrix(9.085705,0,0,-9.085705,-2918.258198,11418.649208)">
+            <path d="M652.585,190.091C649.17,158.776 653.25,171.703 669.798,139.75" style="fill:none;stroke:black;stroke-width:17.6px;"/>
+        </g>
+        <g transform="matrix(2.725712,0,0,-2.725712,2442.995474,10983.55568)">
+            <circle cx="111.408" cy="203.922" r="50" style="fill:rgb(235,235,235);stroke:black;stroke-width:29.33px;"/>
+        </g>
+        <g transform="matrix(2.725712,0,0,-2.725712,2916.688843,10847.270098)">
+            <circle cx="111.408" cy="203.922" r="50" style="fill:rgb(235,235,235);stroke:black;stroke-width:29.33px;"/>
+        </g>
+    </g>
+</svg>

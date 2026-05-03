@@ -1,7 +1,7 @@
 ---
 title: C++ fill()：数组与 vector 填充备忘
 slug: cpp-fill-notes
-type: algorithm
+type: article
 tags:
 - C++
 - STL

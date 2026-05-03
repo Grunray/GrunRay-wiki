@@ -1,0 +1,102 @@
+{
+  "nodes": [
+    {
+      "id": "overview",
+      "type": "text",
+      "x": -80,
+      "y": -40,
+      "width": 520,
+      "height": 200,
+      "color": "5",
+      "text": "## GrunRay Wiki — 后端导览\n\n**Flask 只读 JSON API**：MySQL 存元数据，`content/` 存 Markdown 正文。\n\n- 受众：本地开发 / 运维初始化\n- 权威全文：右侧 **README.md** 文件卡片"
+    },
+    {
+      "id": "source-readme",
+      "type": "file",
+      "x": 500,
+      "y": -40,
+      "width": 440,
+      "height": 200,
+      "color": "4",
+      "file": "backend/README.md"
+    },
+    {
+      "id": "env",
+      "type": "text",
+      "x": -80,
+      "y": 200,
+      "width": 380,
+      "height": 160,
+      "text": "## 环境\n\n- **Python** 3.10+\n- **MySQL** 8+（推荐）"
+    },
+    {
+      "id": "init",
+      "type": "text",
+      "x": 340,
+      "y": 200,
+      "width": 600,
+      "height": 420,
+      "color": "3",
+      "text": "## 初始化（顺序）\n\n1. `cd backend` → venv → `pip install -r requirements.txt`\n2. `copy .env.example .env`，填 **MYSQL_PASSWORD**、**MYSQL_DATABASE**\n3. **建库**：`python scripts/create_database.py`\n4. **建表**：`python scripts/run_sql.py` 或 `--file schema.sql`\n5. **导入文章**：Markdown 放入 `import/markdown/`，再 `python scripts/import_markdown_posts.py`\n6. （可选）**种子**：`seed_from_json.py` 会清空 `post` 表\n\n**排错**：\n- `using password: NO` → 检查 `backend/.env`\n- `caching_sha2_password` → 确保已装 `cryptography`（requirements 已含）"
+    },
+    {
+      "id": "run",
+      "type": "text",
+      "x": -80,
+      "y": 380,
+      "width": 380,
+      "height": 120,
+      "text": "## 启动\n\n```bash\npython run.py\n```\n\n默认 **http://127.0.0.1:5000**"
+    },
+    {
+      "id": "api",
+      "type": "text",
+      "x": -80,
+      "y": 640,
+      "width": 1020,
+      "height": 320,
+      "color": "6",
+      "text": "## API 摘要\n\n| 方法 | 路径 | 说明 |\n|------|------|------|\n| GET | `/api/health` | 健康检查 |\n| GET | `/api/posts` | 列表；`type` / `project_id` |\n| GET | `/api/posts/<slug>` | 详情；`?html=1` 含 `body_html` |\n| GET | `/api/search?q=` | 搜索 |\n| GET | `/api/posts/<slug>/related` | 相关推荐 |\n| GET | `/api/music/tracks` | BGM 列表 |\n| GET | `/api/media/files/<path>` | `content/media/` 静态 |\n| GET | `/api/projects` | 项目列表 |\n| GET | `/api/projects/<slug>` | 项目详情 |\n\n前端：`frontend` 下 `npm run dev`，Vite 将 `/api` 代理到此服务。"
+    },
+    {
+      "id": "tools",
+      "type": "text",
+      "x": -80,
+      "y": 1000,
+      "width": 500,
+      "height": 260,
+      "text": "## 文章工具（代码入口）\n\n| 模块 | 作用 |\n|------|------|\n| `app/markdown_util.py` | Markdown → HTML |\n| `app/keywords_extract.py` | jieba TF-IDF |\n| `app/keywords_match.py` | 搜索打分 |\n| `scripts/content_tools/*` | CLI 工具 |\n\n更多：`scripts/content_tools/README.md`、`designed/template.md`"
+    },
+    {
+      "id": "music",
+      "type": "text",
+      "x": 460,
+      "y": 1000,
+      "width": 480,
+      "height": 280,
+      "text": "## 背景音乐 `music_track`\n\n- 表结构：`sql/schema.sql`；增量 `sql/music_track.sql`\n- 音频放 `import/music/`，导入到 `content/media/music/`\n- 访问：`GET /api/media/files/music/...`\n- 列表：`GET /api/music/tracks`\n- 导入：`python scripts/music_tools/import_music.py`（支持 `--dry-run`、`--tags`）"
+    },
+    {
+      "id": "refs",
+      "type": "text",
+      "x": -80,
+      "y": 1310,
+      "width": 1020,
+      "height": 140,
+      "color": "2",
+      "text": "## 延伸阅读\n\n- 仓库：`designed/template.md`（导入字段）\n- 脚本说明：`scripts/content_tools/README.md`"
+    }
+  ],
+  "edges": [
+    { "id": "e-overview-readme", "fromNode": "overview", "fromSide": "right", "toNode": "source-readme", "toSide": "left", "label": "源文档" },
+    { "id": "e-overview-env", "fromNode": "overview", "fromSide": "bottom", "toNode": "env", "toSide": "top" },
+    { "id": "e-env-init", "fromNode": "env", "fromSide": "right", "toNode": "init", "toSide": "left" },
+    { "id": "e-env-run", "fromNode": "env", "fromSide": "bottom", "toNode": "run", "toSide": "top" },
+    { "id": "e-init-api", "fromNode": "init", "fromSide": "bottom", "toNode": "api", "toSide": "top", "label": "跑起来之后" },
+    { "id": "e-run-api", "fromNode": "run", "fromSide": "bottom", "toNode": "api", "toSide": "top" },
+    { "id": "e-api-tools", "fromNode": "api", "fromSide": "bottom", "toNode": "tools", "toSide": "top" },
+    { "id": "e-api-music", "fromNode": "api", "fromSide": "bottom", "toNode": "music", "toSide": "top" },
+    { "id": "e-tools-refs", "fromNode": "tools", "fromSide": "bottom", "toNode": "refs", "toSide": "top" },
+    { "id": "e-music-refs", "fromNode": "music", "fromSide": "bottom", "toNode": "refs", "toSide": "top" }
+  ]
+}

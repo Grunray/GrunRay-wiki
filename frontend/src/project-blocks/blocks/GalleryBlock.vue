@@ -25,7 +25,7 @@ defineProps<{ block: ProjectLayoutBlock }>()
 }
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
   gap: 0.75rem;
 }
 .fig {
@@ -38,5 +38,11 @@ img {
   display: block;
   width: 100%;
   height: auto;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  }
 }
 </style>

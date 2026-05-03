@@ -3,15 +3,17 @@
     "home": "Home",
     "projects": "Projects",
     "blog": "Blog",
-    "algorithms": "Algorithms",
-    "about": "About"
+    "about": "About",
+    "musicExpand": "Expand music player",
+    "musicCollapse": "Collapse music player",
+    "trailOn": "Turn on cursor trail",
+    "trailOff": "Turn off cursor trail"
   },
   "home": {
     "tagline": "Portfolio, build notes, and algorithm write-ups.",
     "meme": "Meme",
     "featured": "Featured projects",
     "enterBlog": "Blog",
-    "enterAlgorithms": "Algorithms",
     "greeting": "Hi, I'm GrunRay.",
     "internshipNote": "Still looking for an internship."
   },
@@ -49,11 +51,16 @@
   "blog": {
     "title": "Blog",
     "subtitle": "Project notes and algorithm posts",
+    "categoryFilter": "Filter by category",
+    "categoryAll": "All",
+    "categoryMisc": "Misc",
+    "categoryProject": "Project posts",
+    "categoryAlgorithm": "Algorithm posts",
+    "tagFilter": "Filter by tag",
+    "search": "Search",
+    "searchPlaceholder": "Search title, summary, tags",
+    "timelineCount": "{count} posts",
     "pinned": "Pinned"
-  },
-  "algorithms": {
-    "title": "Algorithms",
-    "subtitle": "Algorithm posts with extended fields"
   },
   "post": {
     "projectNote": "Project note",
@@ -74,5 +81,10 @@
   "common": {
     "back": "Back",
     "notFound": "Not found or content is hidden."
+  },
+  "splash": {
+    "skip": "Skip",
+    "replayTitle": "Play splash animation",
+    "replayLabel": "Play splash animation"
   }
 }

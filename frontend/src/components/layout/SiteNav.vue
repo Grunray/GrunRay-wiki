@@ -10,7 +10,6 @@ const links = computed(() => [
   { to: '/', label: t('nav.home') },
   { to: '/projects', label: t('nav.projects') },
   { to: '/blog', label: t('nav.blog') },
-  { to: '/algorithms', label: t('nav.algorithms') },
 ])
 
 function isActive(path: string) {

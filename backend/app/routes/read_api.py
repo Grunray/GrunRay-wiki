@@ -156,6 +156,13 @@ def health():
 def list_posts():
     type_param = request.args.get("type")
     project_id = request.args.get("project_id")
+    category_id_param = request.args.get("category_id")
+    category_id: int | None = None
+    if category_id_param is not None and category_id_param.strip():
+        try:
+            category_id = int(category_id_param)
+        except ValueError:
+            return _error("invalid category_id")
 
     with cursor() as cur:
         rows = _fetch_all_posts(cur)
@@ -171,6 +178,8 @@ def list_posts():
         if project_id:
             if db_type != 1 or extra.get("project_id") != project_id:
                 continue
+        if category_id is not None and int(row.get("category_id") or 0) != category_id:
+            continue
         out.append(row_to_post(row, include_body=False))
 
     return jsonify({"posts": out})

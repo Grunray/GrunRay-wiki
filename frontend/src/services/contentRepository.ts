@@ -2,7 +2,7 @@
  * 内容访问层：文章与项目均走 Flask API。
  */
 import { apiGet } from '@/api/http'
-import type { Post, Project, ProjectNote, ProjectStatus } from '@/types/content'
+import type { BlogCategoryFilter, Post, Project, ProjectNote, ProjectStatus } from '@/types/content'
 
 let projectsCache: Project[] = []
 let projectsLoaded = false
@@ -77,21 +77,46 @@ function projectStatusForNote(projectId: string): ProjectStatus | undefined {
   return getProjectById(projectId)?.status
 }
 
+const BLOG_CATEGORY_TO_ID: Record<Exclude<BlogCategoryFilter, 'all'>, number> = {
+  misc: 1,
+  project: 2,
+  algorithm: 3,
+}
+
+export interface BlogPostQueryOptions {
+  category?: BlogCategoryFilter
+  tag?: string
+  keyword?: string
+}
+
 /** 博客聚合：算法与普通文章全部展示；项目笔记需所属项目非 hidden */
-export async function listPostsForBlog(): Promise<Post[]> {
+export async function listPostsForBlog(options?: BlogPostQueryOptions): Promise<Post[]> {
   await ensureProjectsLoaded()
-  const { posts } = await apiGet<{ posts: Post[] }>('/api/posts')
+  const q = new URLSearchParams()
+  const category = options?.category ?? 'all'
+  if (category !== 'all') {
+    q.set('category_id', String(BLOG_CATEGORY_TO_ID[category]))
+  }
+  const endpoint = q.size ? `/api/posts?${q.toString()}` : '/api/posts'
+  const { posts } = await apiGet<{ posts: Post[] }>(endpoint)
   const visible = posts.filter((post) => {
     if (post.type === 'algorithm' || post.type === 'article') return true
     const st = projectStatusForNote((post as ProjectNote).project_id)
     return st !== undefined && st !== 'hidden'
   })
-  return sortPosts(visible)
+  const tag = options?.tag?.trim()
+  const keyword = options?.keyword?.trim().toLowerCase()
+  const filtered = visible.filter((post) => {
+    if (tag && !post.tags.includes(tag)) return false
+    if (!keyword) return true
+    const haystack = `${post.title} ${post.summary} ${post.tags.join(' ')}`.toLowerCase()
+    return haystack.includes(keyword)
+  })
+  return sortPosts(filtered)
 }
 
 export async function listAlgorithmPosts(): Promise<Post[]> {
-  const { posts } = await apiGet<{ posts: Post[] }>('/api/posts?type=algorithm')
-  return sortPosts(posts as Post[])
+  return listPostsForBlog({ category: 'algorithm' })
 }
 
 export async function listPostsForProjectSlug(projectSlug: string): Promise<Post[]> {

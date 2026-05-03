@@ -70,6 +70,7 @@ def row_to_post(row: dict, *, include_body: bool = False) -> dict:
         "published_at": published_iso,
         "updated_at": updated_iso,
         "tags": tags,
+        "category_id": int(row.get("category_id") or 0),
         "pinned": bool(row.get("pinned")),
         "pinned_order": int(row.get("pinned_order") or 9999),
         "type": front_type,

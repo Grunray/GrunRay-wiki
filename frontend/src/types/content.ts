@@ -43,6 +43,7 @@ export interface Project {
 }
 
 export type PostType = 'article' | 'project_note' | 'algorithm'
+export type BlogCategoryFilter = 'all' | 'misc' | 'project' | 'algorithm'
 
 export interface PostBase {
   id: string
@@ -53,6 +54,7 @@ export interface PostBase {
   published_at: string
   updated_at: string
   tags: string[]
+  category_id: number
   pinned?: boolean
   pinned_order?: number
   type: PostType

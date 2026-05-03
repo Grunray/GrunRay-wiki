@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
@@ -10,6 +10,8 @@ const { t } = useI18n()
 const router = useRouter()
 const includeArchived = ref(true)
 const tagFilter = ref('')
+const tagMenuOpen = ref(false)
+const tagMenuRef = ref<HTMLElement | null>(null)
 const loading = ref(true)
 const loadError = ref<string | null>(null)
 
@@ -45,6 +47,11 @@ const allTags = computed(() => {
     for (const tag of p.tags) set.add(tag)
   }
   return [...set].sort()
+})
+
+const selectedTagLabel = computed(() => {
+  if (!tagFilter.value) return t('projects.allTags')
+  return tagFilter.value
 })
 
 const timelineItems = computed<TimelineItem[]>(() => {
@@ -90,7 +97,28 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
   onCardClick(slug)
 }
 
+function toggleTagMenu() {
+  tagMenuOpen.value = !tagMenuOpen.value
+}
+
+function closeTagMenu() {
+  tagMenuOpen.value = false
+}
+
+function selectTag(value: string) {
+  tagFilter.value = value
+  closeTagMenu()
+}
+
+function onDocumentPointerDown(event: MouseEvent) {
+  const root = tagMenuRef.value
+  if (!root) return
+  const target = event.target as Node | null
+  if (target && !root.contains(target)) closeTagMenu()
+}
+
 onMounted(async () => {
+  document.addEventListener('mousedown', onDocumentPointerDown)
   loading.value = true
   loadError.value = null
   try {
@@ -101,22 +129,59 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', onDocumentPointerDown)
+})
 </script>
 
 <template>
   <section class="projects-page">
     <h1 class="h">{{ t('projects.title') }}</h1>
     <div class="toolbar card">
-      <label class="row">
-        <input v-model="includeArchived" type="checkbox" />
-        <span>{{ t('projects.includeArchived') }}</span>
-      </label>
-      <div class="row">
-        <span class="lbl">{{ t('projects.filterTags') }}</span>
-        <select v-model="tagFilter" class="select">
-          <option value="">{{ t('projects.allTags') }}</option>
-          <option v-for="tg in allTags" :key="tg" :value="tg">{{ tg }}</option>
-        </select>
+      <div class="row row-select">
+        <span class="lbl lbl--tag">{{ t('projects.filterTags') }}</span>
+        <div ref="tagMenuRef" class="select-wrap">
+          <button
+            class="select-btn"
+            type="button"
+            :aria-expanded="tagMenuOpen"
+            aria-haspopup="listbox"
+            @click="toggleTagMenu"
+          >
+            <span class="select-btn-label">{{ selectedTagLabel }}</span>
+            <span class="select-btn-caret" aria-hidden="true">▾</span>
+          </button>
+          <div v-if="tagMenuOpen" class="select-menu card" role="listbox">
+            <button
+              class="select-option"
+              type="button"
+              :class="{ 'select-option--active': tagFilter === '' }"
+              @click="selectTag('')"
+            >
+              {{ t('projects.allTags') }}
+            </button>
+            <button
+              v-for="tg in allTags"
+              :key="tg"
+              class="select-option"
+              type="button"
+              :class="{ 'select-option--active': tagFilter === tg }"
+              @click="selectTag(tg)"
+            >
+              {{ tg }}
+            </button>
+          </div>
+        </div>
+        <label class="row-toggle">
+          <input v-model="includeArchived" class="checkbox" type="checkbox" />
+          <span class="row-label">{{ includeArchived ? '显示已归档' : '隐藏已归档' }}</span>
+          <span class="toggle-visual" aria-hidden="true">
+            <span class="toggle-end toggle-end--left" />
+            <span class="toggle-track" />
+            <span class="toggle-end toggle-end--right" />
+          </span>
+        </label>
       </div>
     </div>
 
@@ -159,6 +224,11 @@ onMounted(async () => {
 <style scoped>
 .projects-page {
   max-width: 980px;
+  --timeline-date-col: 5.2rem;
+  --timeline-dot-col: 1.25rem;
+  --timeline-gap: 0.7rem;
+  --timeline-dot-offset: 1.22rem;
+  --timeline-item-gap: 0.85rem;
 }
 
 .h {
@@ -166,29 +236,165 @@ onMounted(async () => {
 }
 
 .toolbar {
+  position: relative;
+  z-index: 2;
   margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-bg-surface) 85%, transparent);
+  overflow: visible;
 }
 .row {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.9rem;
+  min-height: 2rem;
+  font-size: 0.92rem;
   color: var(--color-text-muted);
+}
+.row-toggle {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.row-label {
+  color: var(--color-text);
+  font-size: 0.88rem;
+}
+.checkbox {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.toggle-visual {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.toggle-track {
+  inline-size: 2.35rem;
+  block-size: 2px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-accent) 55%, var(--color-border));
+  transition: background 0.2s ease;
+}
+.toggle-end {
+  inline-size: 0.62rem;
+  block-size: 0.62rem;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--color-accent) 55%, var(--color-border));
+  transition: all 0.2s ease;
+}
+.toggle-end--left {
+  background: transparent;
+}
+.toggle-end--right {
+  background: color-mix(in srgb, var(--color-accent) 90%, #19d3ff);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 14%, transparent);
+}
+.checkbox:not(:checked) ~ .toggle-visual .toggle-end--left {
+  background: color-mix(in srgb, var(--color-accent) 90%, #19d3ff);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 14%, transparent);
+}
+.checkbox:not(:checked) ~ .toggle-visual .toggle-end--right {
+  background: transparent;
+  box-shadow: none;
+}
+.checkbox:not(:checked) ~ .toggle-visual .toggle-track {
+  background: color-mix(in srgb, var(--color-border) 88%, transparent);
 }
 .lbl {
   min-width: 6rem;
 }
-.select {
-  flex: 1;
-  max-width: 240px;
-  padding: 0.35rem 0.5rem;
-  border-radius: var(--radius-sm);
+.lbl--tag {
+  min-width: 0;
+  width: max-content;
+  flex-shrink: 0;
+}
+.row-select {
+  align-items: center;
+  overflow: visible;
+}
+.select-wrap {
+  position: relative;
+  display: inline-block;
+  min-width: 240px;
+}
+.select-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.42rem 0.62rem;
+  border-radius: 999px;
   border: 1px solid var(--color-border);
-  background: var(--color-bg-surface);
+  background: color-mix(in srgb, var(--color-bg-surface) 88%, transparent);
   color: var(--color-text);
+  font-size: 0.9rem;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.select-btn:hover {
+  border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+}
+.select-btn:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--color-accent) 58%, var(--color-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 18%, transparent);
+}
+.select-btn-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.select-btn-caret {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+}
+.select-menu {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  left: 0;
+  z-index: 20;
+  width: 100%;
+  max-height: 260px;
+  overflow: auto;
+  padding: 0.35rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-bg-surface) 92%, transparent);
+  box-shadow: var(--shadow-card);
+}
+.select-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.55rem;
+  margin: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.select-option:hover {
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+}
+.select-option--active {
+  background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  color: var(--color-accent);
 }
 .empty {
   color: var(--color-text-muted);
@@ -202,7 +408,7 @@ onMounted(async () => {
   display: flex;
   align-items: baseline;
   gap: 0.9rem;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.55rem;
 }
 
 .timeline-year {
@@ -213,8 +419,10 @@ onMounted(async () => {
 
 .timeline-year-count {
   margin: 0;
+  margin-left: auto;
   color: var(--color-text-muted);
   font-size: 1rem;
+  text-align: right;
 }
 
 .timeline-items {
@@ -223,10 +431,13 @@ onMounted(async () => {
 
 .timeline-item {
   display: grid;
-  grid-template-columns: 5.2rem 1.25rem minmax(0, 1fr);
-  column-gap: 0.7rem;
+  grid-template-columns: var(--timeline-date-col) var(--timeline-dot-col) minmax(0, 1fr);
+  column-gap: var(--timeline-gap);
   align-items: start;
-  margin-bottom: 0.85rem;
+  margin-bottom: var(--timeline-item-gap);
+}
+.timeline-item:last-child {
+  margin-bottom: 0;
 }
 
 .timeline-date {
@@ -239,32 +450,12 @@ onMounted(async () => {
 
 .timeline-dot {
   position: relative;
-  margin-top: 1.22rem;
+  margin-top: var(--timeline-dot-offset);
   width: 10px;
   height: 10px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--color-accent) 75%, #19d3ff);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 12%, transparent);
-}
-
-.timeline-dot::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: -1.8rem;
-  width: 2px;
-  height: calc(100% + 1.8rem + 0.85rem);
-  transform: translateX(-50%);
-  background: color-mix(in srgb, var(--color-border) 82%, transparent);
-}
-
-.timeline-year-group:first-child .timeline-item:first-child .timeline-dot::before {
-  top: 50%;
-  height: calc(50% + 0.85rem);
-}
-
-.timeline-item:last-child .timeline-dot::before {
-  height: 50%;
 }
 
 .timeline-card {
@@ -303,9 +494,38 @@ onMounted(async () => {
 }
 
 @media (max-width: 760px) {
+  .projects-page {
+    --timeline-date-col: 4.3rem;
+    --timeline-dot-col: 1.1rem;
+    --timeline-gap: 0.55rem;
+  }
+
+  .toolbar {
+    padding: 0.8rem 0.85rem;
+  }
+
+  .lbl {
+    min-width: 5.4rem;
+  }
+
+  .select-wrap {
+    min-width: 0;
+    width: min(100%, 260px);
+  }
+
+  .row-select {
+    flex-wrap: wrap;
+  }
+
+  .row-toggle {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
   .timeline-item {
-    grid-template-columns: 4.3rem 1.1rem minmax(0, 1fr);
-    column-gap: 0.55rem;
+    grid-template-columns: var(--timeline-date-col) var(--timeline-dot-col) minmax(0, 1fr);
+    column-gap: var(--timeline-gap);
   }
 
   .timeline-year {
