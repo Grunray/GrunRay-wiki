@@ -5,7 +5,7 @@ defineProps<{ block: ProjectLayoutBlock }>()
 </script>
 
 <template>
-  <section class="block">
+  <section class="block card">
     <h2 v-if="block.title" class="title">{{ block.title }}</h2>
     <div v-if="block.images?.length" class="grid">
       <figure v-for="(src, i) in block.images" :key="i" class="fig">
@@ -17,7 +17,8 @@ defineProps<{ block: ProjectLayoutBlock }>()
 
 <style scoped>
 .block {
-  margin-bottom: 1.75rem;
+  margin-bottom: 0;
+  padding: 0.95rem 1rem;
 }
 .title {
   margin: 0 0 0.75rem;

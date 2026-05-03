@@ -13,6 +13,8 @@ html {
   font-family: var(--font-sans);
   color: var(--color-text);
   background: var(--color-bg-base);
+  /* 首屏默认；导航后由 router.afterEach + theme/pagePhotoBackgrounds.ts 写入内联 --page-photo-bg-image */
+  --page-photo-bg-image: url('/api/media/files/film/main/background/bg_homeview.png');
   transition:
     background 0.35s ease,
     color 0.2s ease;
@@ -287,6 +289,77 @@ a:hover {
     linear-gradient(var(--color-border) 1px, transparent 1px),
     linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
   background-size: 32px 32px;
+}
+
+/* 全屏照片背景：由 ui store 同步 html[data-photo-bg='true'] */
+html[data-photo-bg='true'] {
+  background-color: var(--color-bg-base);
+  background-image:
+    linear-gradient(
+      color-mix(in srgb, var(--color-bg-base) 80%, transparent),
+      color-mix(in srgb, var(--color-bg-base) 80%, transparent)
+    ),
+    var(--page-photo-bg-image);
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+  background-attachment: scroll, scroll;
+}
+
+html[data-theme='light'][data-photo-bg='true'] {
+  background-image:
+    linear-gradient(rgb(236 242 247 / 0.20), rgb(236 242 247 / 0.20)),
+    var(--page-photo-bg-image);
+}
+
+html[data-theme='dark'][data-photo-bg='true'] {
+  background-image:
+    linear-gradient(rgb(15 23 42 / 0.79), rgb(15 23 42 / 0.79)),
+    var(--page-photo-bg-image);
+}
+
+@media (min-width: 960px) {
+  html[data-photo-bg='true'] {
+    background-attachment: scroll, fixed;
+  }
+}
+
+/* 照片背景 URL 切换：旧图叠在新图之上再淡出（由 pagePhotoBackgrounds.ts 打 class） */
+@keyframes page-photo-bg-swap-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+html[data-photo-bg='true'].page-photo-bg--swap::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--page-photo-bg-image-prev);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+  animation: page-photo-bg-swap-fade 0.48s ease-out forwards;
+}
+
+@media (min-width: 960px) {
+  html[data-photo-bg='true'].page-photo-bg--swap::after {
+    background-attachment: fixed;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-photo-bg='true'].page-photo-bg--swap::after {
+    animation: none !important;
+    opacity: 0;
+    content: none;
+  }
 }
 
 /* 不可作用于 sticky 的 header，否则会覆盖 position:sticky */

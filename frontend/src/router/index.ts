@@ -8,6 +8,7 @@ import PostDetailView from '@/views/PostDetailView.vue'
 import ProjectDetailView from '@/views/ProjectDetailView.vue'
 import ProjectNotesView from '@/views/ProjectNotesView.vue'
 import ProjectsView from '@/views/ProjectsView.vue'
+import { applyPagePhotoBackgroundToDocument } from '@/theme/pagePhotoBackgrounds'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,6 +30,10 @@ const router = createRouter({
   scrollBehavior() {
     return { top: 0 }
   },
+})
+
+router.afterEach((to) => {
+  applyPagePhotoBackgroundToDocument(to)
 })
 
 export default router

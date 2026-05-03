@@ -13,6 +13,10 @@ defineProps<{ block: ProjectLayoutBlock & { type: string } }>()
 </template>
 
 <style scoped>
+.block {
+  margin-bottom: 0;
+  padding: 0.95rem 1rem;
+}
 .warn {
   border-color: var(--color-accent);
 }

@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
+import { restartPageEnter } from '@/composables/usePageEnterAnimation'
 import { canAccessPostPublic, ensureProjectsLoaded, getPostBySlug, getProjectById } from '@/services/contentRepository'
+import '@/styles/page-enter-post.css'
 import type { AlgorithmPost, Post, ProjectNote } from '@/types/content'
 
 const route = useRoute()
@@ -11,6 +13,7 @@ const { t } = useI18n()
 
 const post = ref<Post | null>(null)
 const loadError = ref(false)
+const articleRoot = ref<HTMLElement | null>(null)
 
 async function load(slug: string) {
   loadError.value = false
@@ -31,6 +34,22 @@ watch(
   { immediate: true },
 )
 
+watch(
+  () => post.value?.slug,
+  async (slug) => {
+    if (!slug) return
+    await nextTick()
+    let el = articleRoot.value
+    if (!el) {
+      await nextTick()
+      el = articleRoot.value
+    }
+    if (!el) return
+    restartPageEnter(el)
+  },
+  { flush: 'post' },
+)
+
 const ok = computed(() => {
   const p = post.value
   return p && canAccessPostPublic(p)
@@ -46,15 +65,20 @@ const renderedBodyHtml = computed(() => post.value?.body_html?.trim() || '')
   <article v-if="loadError">
     <p class="empty">加载失败，请确认后端已启动。</p>
   </article>
-  <article v-else-if="ok && post">
+  <article v-else-if="ok && post" ref="articleRoot" class="post-detail-article">
     <p class="back">
       <RouterLink to="/blog">← {{ t('blog.title') }}</RouterLink>
     </p>
-    <header class="head">
-      <h1 class="title">{{ post.title }}</h1>
-      <span v-if="post.pinned" class="badge">{{ t('blog.pinned') }}</span>
-    </header>
-    <p class="summary">{{ post.summary }}</p>
+    <div class="post-lead card">
+      <header class="head">
+        <h1 class="title">{{ post.title }}</h1>
+        <span v-if="post.pinned" class="badge">{{ t('blog.pinned') }}</span>
+      </header>
+      <p class="summary">{{ post.summary }}</p>
+      <div v-if="post.tags.length" class="tags">
+        <span v-for="tag in post.tags" :key="tag" class="tag">{{ tag }}</span>
+      </div>
+    </div>
 
     <dl v-if="algo" class="meta card">
       <template v-if="algo.series">
@@ -80,10 +104,6 @@ const renderedBodyHtml = computed(() => post.value?.body_html?.trim() || '')
       <RouterLink :to="`/projects/${noteProject.slug}`">{{ noteProject.title }}</RouterLink>
     </p>
 
-    <div class="tags">
-      <span v-for="tag in post.tags" :key="tag" class="tag">{{ tag }}</span>
-    </div>
-
     <div v-if="renderedBodyHtml" class="body prose body-markdown" v-html="renderedBodyHtml" />
     <div v-else-if="post.body" class="body prose body-plain">{{ post.body }}</div>
   </article>
@@ -93,6 +113,16 @@ const renderedBodyHtml = computed(() => post.value?.body_html?.trim() || '')
 <style scoped>
 .back {
   margin: 0 0 1rem;
+}
+.post-lead {
+  padding: 1rem 1.15rem;
+  margin-bottom: 1rem;
+}
+.post-lead .summary {
+  margin: 0.5rem 0 0;
+}
+.post-lead .tags {
+  margin: 0.75rem 0 0;
 }
 .head {
   display: flex;

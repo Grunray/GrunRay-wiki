@@ -7,7 +7,15 @@
     "musicExpand": "Expand music player",
     "musicCollapse": "Collapse music player",
     "trailOn": "Turn on cursor trail",
-    "trailOff": "Turn off cursor trail"
+    "trailOff": "Turn off cursor trail",
+    "photoBgOn": "Use photo background",
+    "photoBgOff": "Use default background",
+    "overflowShow": "Show more toolbar actions",
+    "overflowHide": "Hide toolbar overflow",
+    "overflowLabel": "Show hidden icons",
+    "overflowRegion": "Additional header actions",
+    "localeTitleEn": "Switch interface to English",
+    "localeTitleZh": "Switch interface to Chinese"
   },
   "home": {
     "tagline": "Portfolio, build notes, and algorithm write-ups.",

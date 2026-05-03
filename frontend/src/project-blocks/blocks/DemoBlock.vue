@@ -60,7 +60,7 @@ const hasDemoUrl = computed(() => Boolean(props.block.demoUrl))
 
 <style scoped>
 .block {
-  margin-bottom: 1rem;
+  margin-bottom: 0;
   padding: 0.95rem 1rem;
 }
 

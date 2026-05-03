@@ -15,6 +15,20 @@ function readMusicPlayerMinimized(): boolean {
   return true
 }
 
+const STORAGE_PHOTO_BG = 'ui.photoBackground'
+
+function readPhotoBackground(): boolean {
+  return localStorage.getItem(STORAGE_PHOTO_BG) === '1'
+}
+
+function applyPhotoBgToDocument(enabled: boolean) {
+  if (enabled) {
+    document.documentElement.dataset.photoBg = 'true'
+  } else {
+    delete document.documentElement.dataset.photoBg
+  }
+}
+
 /** 当前仅开放浅/深；历史 `abstract` 读入时回落为浅色并写回存储 */
 function readTheme(): ThemeId {
   const v = localStorage.getItem(STORAGE_THEME)
@@ -42,6 +56,8 @@ export const useUiStore = defineStore('ui', () => {
   const splashWoniuReplayTick = ref(0)
   /** 开屏头像飞入首页时为 true，首页头像暂时隐藏避免叠影 */
   const splashAvatarHandoff = ref(false)
+  /** 全屏图片背景（与 main.css 中 html[data-photo-bg] 联动） */
+  const photoBackgroundEnabled = ref(readPhotoBackground())
 
   watch(
     theme,
@@ -60,6 +76,15 @@ export const useUiStore = defineStore('ui', () => {
   watch(musicPlayerMinimized, (m) => {
     localStorage.setItem(STORAGE_MUSIC_MINIMIZED, m ? '1' : '0')
   })
+
+  watch(
+    photoBackgroundEnabled,
+    (v) => {
+      localStorage.setItem(STORAGE_PHOTO_BG, v ? '1' : '0')
+      applyPhotoBgToDocument(v)
+    },
+    { immediate: true },
+  )
 
   const cursorTrailActive = computed(
     () => cursorTrailEnabled.value && !prefersReducedMotion.value,
@@ -94,6 +119,10 @@ export const useUiStore = defineStore('ui', () => {
     splashAvatarHandoff.value = v
   }
 
+  function togglePhotoBackground() {
+    photoBackgroundEnabled.value = !photoBackgroundEnabled.value
+  }
+
   return {
     theme,
     cursorTrailEnabled,
@@ -103,6 +132,7 @@ export const useUiStore = defineStore('ui', () => {
     musicPlayerPlaying,
     splashWoniuReplayTick,
     splashAvatarHandoff,
+    photoBackgroundEnabled,
     setTheme,
     setReducedMotion,
     expandMusicPlayer,
@@ -110,5 +140,6 @@ export const useUiStore = defineStore('ui', () => {
     setMusicPlayerPlaying,
     requestSplashWoniuReplay,
     setSplashAvatarHandoff,
+    togglePhotoBackground,
   }
 })

@@ -7,7 +7,15 @@
     "musicExpand": "展开音乐播放器",
     "musicCollapse": "收起音乐播放器",
     "trailOn": "点击开启光标拖尾",
-    "trailOff": "点击关闭光标拖尾"
+    "trailOff": "点击关闭光标拖尾",
+    "photoBgOn": "使用图片背景",
+    "photoBgOff": "使用默认背景",
+    "overflowShow": "显示更多工具",
+    "overflowHide": "收起工具面板",
+    "overflowLabel": "显示隐藏的图标",
+    "overflowRegion": "更多顶栏操作",
+    "localeTitleEn": "切换为 English 界面",
+    "localeTitleZh": "切换为中文界面"
   },
   "home": {
     "tagline": "个人成果与笔记：项目、开发记录与算法心得。",

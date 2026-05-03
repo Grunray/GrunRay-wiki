@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
+import { playPageEnter } from '@/composables/usePageEnterAnimation'
 import { ensureProjectsLoaded, listProjectsPublic } from '@/services/contentRepository'
+import '@/styles/page-enter-timeline.css'
 import type { Project } from '@/types/content'
 
 const { t } = useI18n()
@@ -14,6 +16,8 @@ const tagMenuOpen = ref(false)
 const tagMenuRef = ref<HTMLElement | null>(null)
 const loading = ref(true)
 const loadError = ref<string | null>(null)
+const pageRoot = ref<HTMLElement | null>(null)
+const enterPlayed = ref(false)
 
 interface TimelineItem {
   project: Project
@@ -87,6 +91,14 @@ const timelineGroups = computed<TimelineYearGroup[]>(() => {
   return groups
 })
 
+function timelineItemEnterIndex(groupIndex: number, itemIndex: number): number {
+  let sum = 0
+  for (let i = 0; i < groupIndex; i++) {
+    sum += timelineGroups.value[i]?.items.length ?? 0
+  }
+  return Math.min(sum + itemIndex, 14)
+}
+
 function onCardClick(slug: string) {
   void router.push(`/projects/${slug}`)
 }
@@ -117,6 +129,12 @@ function onDocumentPointerDown(event: MouseEvent) {
   if (target && !root.contains(target)) closeTagMenu()
 }
 
+watch(loading, async (isLoading) => {
+  if (enterPlayed.value || isLoading) return
+  enterPlayed.value = true
+  await playPageEnter(pageRoot.value)
+})
+
 onMounted(async () => {
   document.addEventListener('mousedown', onDocumentPointerDown)
   loading.value = true
@@ -136,7 +154,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="projects-page">
+  <section ref="pageRoot" class="projects-page">
     <h1 class="h">{{ t('projects.title') }}</h1>
     <div class="toolbar card">
       <div class="row row-select">
@@ -188,13 +206,23 @@ onBeforeUnmount(() => {
     <p v-if="loadError" class="empty">{{ loadError }}</p>
     <p v-else-if="loading" class="empty">正在加载项目...</p>
     <div v-else-if="timelineGroups.length" class="timeline">
-      <section v-for="group in timelineGroups" :key="group.year" class="timeline-year-group">
+      <section
+        v-for="(group, gi) in timelineGroups"
+        :key="group.year"
+        class="timeline-year-group"
+        :style="{ '--enter-gi': gi }"
+      >
         <header class="timeline-year-head">
           <h2 class="timeline-year">{{ group.year }}</h2>
           <p class="timeline-year-count">{{ t('projects.timelineCount', { count: group.items.length }) }}</p>
         </header>
         <div class="timeline-items">
-          <article v-for="item in group.items" :key="item.project.id" class="timeline-item">
+          <article
+            v-for="(item, ii) in group.items"
+            :key="item.project.id"
+            class="timeline-item"
+            :style="{ '--enter-ti': timelineItemEnterIndex(gi, ii) }"
+          >
             <time class="timeline-date">{{ item.dateLabel }}</time>
             <span class="timeline-dot" aria-hidden="true" />
             <div

@@ -3,8 +3,10 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
+import { playPageEnter } from '@/composables/usePageEnterAnimation'
 import { listPostsForBlog } from '@/services/contentRepository'
 import type { BlogCategoryFilter, Post } from '@/types/content'
+import '@/styles/page-enter-timeline.css'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -19,6 +21,8 @@ const tagMenuRef = ref<HTMLElement | null>(null)
 const categoryGroupRef = ref<HTMLElement | null>(null)
 const categoryBtnRefs = ref<HTMLElement[]>([])
 const categoryPillStyle = ref<Record<string, string>>({ opacity: '0' })
+const pageRoot = ref<HTMLElement | null>(null)
+const enterPlayed = ref(false)
 
 interface TimelineItem {
   post: Post
@@ -193,6 +197,20 @@ const timelineGroups = computed<TimelineYearGroup[]>(() => {
   return groups
 })
 
+function timelineItemEnterIndex(groupIndex: number, itemIndex: number): number {
+  let sum = 0
+  for (let i = 0; i < groupIndex; i++) {
+    sum += timelineGroups.value[i]?.items.length ?? 0
+  }
+  return Math.min(sum + itemIndex, 14)
+}
+
+watch(loading, async (isLoading) => {
+  if (enterPlayed.value || isLoading) return
+  enterPlayed.value = true
+  await playPageEnter(pageRoot.value)
+})
+
 function onCardClick(slug: string) {
   void router.push(`/blog/${slug}`)
 }
@@ -205,7 +223,7 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
 </script>
 
 <template>
-  <section class="blog-page">
+  <section ref="pageRoot" class="blog-page">
     <h1 class="h">{{ t('blog.title') }}</h1>
     <!-- <p class="sub">{{ t('blog.subtitle') }}</p> -->
     <div class="toolbar card">
@@ -263,13 +281,23 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
     <p v-if="error" class="empty">{{ error }}</p>
     <p v-else-if="loading" class="empty">加载中...</p>
     <div v-else-if="timelineGroups.length" class="timeline">
-      <section v-for="group in timelineGroups" :key="group.year" class="timeline-year-group">
+      <section
+        v-for="(group, gi) in timelineGroups"
+        :key="group.year"
+        class="timeline-year-group"
+        :style="{ '--enter-gi': gi }"
+      >
         <header class="timeline-year-head">
           <h2 class="timeline-year">{{ group.year }}</h2>
           <p class="timeline-year-count">{{ t('blog.timelineCount', { count: group.items.length }) }}</p>
         </header>
         <div class="timeline-items">
-          <article v-for="item in group.items" :key="item.post.id" class="timeline-item">
+          <article
+            v-for="(item, ii) in group.items"
+            :key="item.post.id"
+            class="timeline-item"
+            :style="{ '--enter-ti': timelineItemEnterIndex(gi, ii) }"
+          >
             <time class="timeline-date">{{ item.dateLabel }}</time>
             <span class="timeline-dot" aria-hidden="true" />
             <div

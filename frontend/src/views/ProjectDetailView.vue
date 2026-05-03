@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
+import { restartPageEnter } from '@/composables/usePageEnterAnimation'
 import ProjectBlockRenderer from '@/project-blocks/ProjectBlockRenderer.vue'
+import '@/styles/page-enter-post.css'
 import { canAccessProjectPublic, ensureProjectsLoaded, getProjectBySlug } from '@/services/contentRepository'
 import type { Project } from '@/types/content'
 
@@ -13,6 +15,7 @@ const { t } = useI18n()
 const project = ref<Project | null>(null)
 const loading = ref(false)
 const loadError = ref(false)
+const articleRoot = ref<HTMLElement | null>(null)
 const ok = computed(() => {
   const p = project.value
   return p && canAccessProjectPublic(p)
@@ -34,6 +37,22 @@ watch(
     }
   },
   { immediate: true },
+)
+
+watch(
+  () => project.value?.slug,
+  async (slug) => {
+    if (!slug) return
+    await nextTick()
+    let el = articleRoot.value
+    if (!el) {
+      await nextTick()
+      el = articleRoot.value
+    }
+    if (!el) return
+    restartPageEnter(el)
+  },
+  { flush: 'post' },
 )
 
 function formatDateYmd(input?: string): string {
@@ -62,7 +81,7 @@ const periodText = computed(() => {
   <article v-else-if="loading">
     <p class="empty">正在加载项目...</p>
   </article>
-  <article v-else-if="ok && project" class="project-detail">
+  <article v-else-if="ok && project" ref="articleRoot" class="project-detail">
     <p class="back">
       <RouterLink to="/projects">← {{ t('common.back') }}</RouterLink>
     </p>
@@ -111,7 +130,9 @@ const periodText = computed(() => {
       </div>
 
       <section class="main-content">
-        <h2 class="content-title">{{ t('projects.contentTitle') }}</h2>
+        <!-- <section class="card content-head">
+          <h2 class="content-title">{{ t('projects.contentTitle') }}</h2>
+        </section> -->
         <div class="blocks">
           <ProjectBlockRenderer v-for="(block, i) in project.layout" :key="i" :block="block" />
         </div>
@@ -242,15 +263,25 @@ const periodText = computed(() => {
 
 .main-content {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.content-head {
+  padding: 0.85rem 1rem;
 }
 
 .content-title {
-  margin: 0 0 0.7rem;
+  margin: 0;
   font-size: 1.05rem;
   color: var(--color-text-muted);
 }
 
 .blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
   margin-top: 0;
 }
 

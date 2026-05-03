@@ -4,6 +4,8 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 
 import FilmFeed from '@/components/media/FilmFeed.vue'
+import { playPageEnter } from '@/composables/usePageEnterAnimation'
+import '@/styles/page-enter-home.css'
 import { useUiStore } from '@/stores/ui'
 import type { Post } from '@/types/content'
 
@@ -42,6 +44,7 @@ const externalLinks = [
   },
 ]
 
+const homeRoot = ref<HTMLElement | null>(null)
 const avatarUrl = ref('')
 const latestUpdatedPosts = ref<Post[]>([])
 const randomRecommendedPost = ref<Post | null>(null)
@@ -138,11 +141,12 @@ onMounted(() => {
   loadAvatar()
   loadLatestUpdatedPost()
   loadRandomRecommendedPost()
+  void playPageEnter(homeRoot.value)
 })
 </script>
 
 <template>
-  <section class="home-layout">
+  <section ref="homeRoot" class="home-layout">
     <aside class="left-ellipse">
       <div class="left-latest-panel">
         <p class="left-section-title">最新三篇文章</p>
