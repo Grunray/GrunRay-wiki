@@ -28,5 +28,12 @@ cd frontend; npm run dev;
 
 11. 增加文章
 
+12. 
+SEO 基本缺失
+index.html 里只有 <title>，没有：
 
+<meta name="description">
+Open Graph 标签（og:title, og:description, og:image）
+JSON-LD 结构化数据
+静态博客的 SEO 是最重要的流量来源，每篇文章页面应该动态生成这些 meta。建议搞个 useSeoMeta composable，在路由切换时更新 head。
 
