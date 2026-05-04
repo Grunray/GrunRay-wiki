@@ -5,20 +5,24 @@ import type { ThemeId } from '@/types/content'
 
 const STORAGE_THEME = 'ui.theme'
 const STORAGE_CURSOR = 'ui.cursorTrail'
-/** 音乐面板是否收起：'1' 收起（关闭 UI），'0' 展开；与光标拖尾存储方式一致 */
+/** 音乐面板是否收起：'1' 收起（关闭 UI），'0' 展开；无键时默认展开（UI 卡片可见） */
 const STORAGE_MUSIC_MINIMIZED = 'ui.musicPlayerMinimized'
 
 function readMusicPlayerMinimized(): boolean {
   const v = localStorage.getItem(STORAGE_MUSIC_MINIMIZED)
   if (v === '0') return false
   if (v === '1') return true
-  return true
+  return false
 }
 
 const STORAGE_PHOTO_BG = 'ui.photoBackground'
 
+/** 无键或非法值时默认开启全屏图片背景；仅显式 '0' 为关 */
 function readPhotoBackground(): boolean {
-  return localStorage.getItem(STORAGE_PHOTO_BG) === '1'
+  const v = localStorage.getItem(STORAGE_PHOTO_BG)
+  if (v === '0') return false
+  if (v === '1') return true
+  return true
 }
 
 function applyPhotoBgToDocument(enabled: boolean) {

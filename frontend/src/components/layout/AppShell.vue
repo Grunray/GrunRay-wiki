@@ -46,12 +46,59 @@ const localeBtnTitle = computed(() =>
 const overflowOpen = ref(false)
 const overflowWrapRef = ref<HTMLElement | null>(null)
 const headerRightRef = ref<HTMLElement | null>(null)
+/** 顶栏工具收进溢出后：溢出按钮先切到「音乐已展开未播放」配色，再播出现弹跳，最后还原 */
+const overflowTriggerCueMusicOpen = ref(false)
+const overflowTriggerCuePop = ref(false)
 
 /** 顶栏槽位 FLIP：before-leave 拍快照，after-leave 播放位移 */
 let toolbarFlipSnap: ReturnType<typeof captureToolbarFlipSlots> | null = null
+let overflowToolbarCueTimer: ReturnType<typeof window.setTimeout> | null = null
 
 function onToolbarBeforeLeave() {
   toolbarFlipSnap = captureToolbarFlipSlots(headerRightRef.value)
+}
+
+function finishOverflowToolbarCue() {
+  overflowTriggerCuePop.value = false
+  overflowTriggerCueMusicOpen.value = false
+  if (overflowToolbarCueTimer != null) {
+    window.clearTimeout(overflowToolbarCueTimer)
+    overflowToolbarCueTimer = null
+  }
+}
+
+function onOverflowCuePopAnimationEnd(ev: AnimationEvent) {
+  if (ev.target !== ev.currentTarget) return
+  if (!ev.animationName.includes('nav-overflow-trigger-cue-pop')) return
+  finishOverflowToolbarCue()
+}
+
+async function runOverflowToolbarCueAfterToolbarLeave() {
+  if (overflowToolbarCueTimer != null) {
+    window.clearTimeout(overflowToolbarCueTimer)
+    overflowToolbarCueTimer = null
+  }
+  overflowTriggerCuePop.value = false
+  overflowTriggerCueMusicOpen.value = false
+  await nextTick()
+
+  if (ui.prefersReducedMotion) {
+    overflowTriggerCueMusicOpen.value = true
+    overflowToolbarCueTimer = window.setTimeout(() => {
+      overflowTriggerCueMusicOpen.value = false
+      overflowToolbarCueTimer = null
+    }, 220)
+    return
+  }
+
+  overflowTriggerCueMusicOpen.value = true
+  await nextTick()
+  await new Promise<void>((r) => requestAnimationFrame(() => r()))
+  await new Promise<void>((r) => requestAnimationFrame(() => r()))
+  overflowTriggerCuePop.value = true
+  overflowToolbarCueTimer = window.setTimeout(() => {
+    finishOverflowToolbarCue()
+  }, 640)
 }
 
 function onToolbarAfterLeave() {
@@ -59,6 +106,7 @@ function onToolbarAfterLeave() {
   toolbarFlipSnap = null
   if (!snap?.size) return
   void playToolbarFlipAfterRemove(snap, headerRightRef.value, ui.prefersReducedMotion)
+  void runOverflowToolbarCueAfterToolbarLeave()
 }
 
 /** 从面板打开功能：先窄布局测距 → 幽灵占位测宽 → FLIP（不含新按钮）→ 再挂载并播出现 */
@@ -358,6 +406,12 @@ onUnmounted(() => {
   mql?.removeEventListener('change', syncMotion)
   document.removeEventListener('pointerdown', onDocPointerDown, true)
   document.removeEventListener('keydown', onDocKeydown)
+  if (overflowToolbarCueTimer != null) {
+    window.clearTimeout(overflowToolbarCueTimer)
+    overflowToolbarCueTimer = null
+  }
+  overflowTriggerCuePop.value = false
+  overflowTriggerCueMusicOpen.value = false
 })
 </script>
 
@@ -505,11 +559,16 @@ onUnmounted(() => {
             <button
               type="button"
               class="nav-overflow-trigger"
-              :class="{ 'is-open': overflowOpen }"
+              :class="{
+                'is-open': overflowOpen,
+                'nav-overflow-trigger--cue-music-open': overflowTriggerCueMusicOpen,
+                'nav-overflow-trigger--cue-pop': overflowTriggerCuePop,
+              }"
               :aria-expanded="overflowOpen ? 'true' : 'false'"
               aria-controls="nav-overflow-panel"
               :title="overflowOpen ? t('nav.overflowHide') : t('nav.overflowShow')"
               :aria-label="t('nav.overflowLabel')"
+              @animationend="onOverflowCuePopAnimationEnd"
               @click="toggleNavOverflow"
             >
               <span class="nav-overflow-trigger-icon" aria-hidden="true">
@@ -829,6 +888,62 @@ onUnmounted(() => {
   color: var(--color-text-muted);
   border-color: color-mix(in srgb, var(--color-accent) 38%, var(--glass-nav-border));
   background: color-mix(in srgb, var(--glass-nav-bg) 82%, transparent);
+}
+
+/* 提示阶段：接近 music-open 但更柔和，径向渐变 + 低调光圈；弹跳略慢于顶栏工具 */
+.nav-overflow-trigger.nav-overflow-trigger--cue-music-open {
+  color: var(--color-text-muted);
+  border-color: color-mix(in srgb, var(--color-accent) 26%, var(--glass-nav-border));
+  background:
+    radial-gradient(
+      120% 120% at 30% 22%,
+      color-mix(in srgb, var(--glass-nav-bg) 72%, color-mix(in srgb, var(--color-accent) 12%, transparent)) 0%,
+      color-mix(in srgb, var(--glass-nav-bg) 84%, transparent) 52%,
+      color-mix(in srgb, var(--glass-nav-bg) 78%, color-mix(in srgb, var(--color-accent) 6%, transparent)) 100%
+    );
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 12%, transparent),
+    0 0 10px color-mix(in srgb, var(--color-accent) 8%, transparent);
+  transition:
+    border-color 0.34s ease,
+    background 0.34s ease,
+    color 0.34s ease,
+    box-shadow 0.34s ease;
+}
+
+.nav-overflow-trigger--cue-pop {
+  animation: nav-overflow-trigger-cue-pop 0.56s cubic-bezier(0.22, 1, 0.32, 1) both;
+  transform-origin: center center;
+}
+
+@keyframes nav-overflow-trigger-cue-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0.9;
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 8%, transparent),
+      0 0 6px color-mix(in srgb, var(--color-accent) 5%, transparent);
+  }
+  58% {
+    transform: scale(1.16);
+    opacity: 1;
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 14%, transparent),
+      0 0 14px color-mix(in srgb, var(--color-accent) 10%, transparent);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 11%, transparent),
+      0 0 10px color-mix(in srgb, var(--color-accent) 7%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-overflow-trigger--cue-pop {
+    animation: none;
+  }
 }
 
 .nav-overflow-trigger-icon {
@@ -1216,9 +1331,9 @@ onUnmounted(() => {
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  border: 1px solid var(--glass-nav-border);
-  background: color-mix(in srgb, var(--glass-nav-bg) 76%, #8a8a8a);
-  color: #8d9298;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 28%, var(--glass-nav-border));
+  background: color-mix(in srgb, var(--glass-nav-bg) 82%, transparent);
+  color: var(--color-text-muted);
   border-radius: 50%;
   padding: 0;
   cursor: pointer;

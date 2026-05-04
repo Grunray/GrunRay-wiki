@@ -223,6 +223,36 @@ const visiblePosts = computed(() => {
   })
 })
 
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/** 按当前搜索词拆成片段，便于用 <mark> 高亮（无搜索词时整段非命中） */
+function highlightSegments(text: string): { text: string; hit: boolean }[] {
+  const q = keyword.value.trim()
+  if (!q) return [{ text, hit: false }]
+  let re: RegExp
+  try {
+    re = new RegExp(escapeRegExp(q), 'gi')
+  } catch {
+    return [{ text, hit: false }]
+  }
+  const parts: { text: string; hit: boolean }[] = []
+  let last = 0
+  let m: RegExpExecArray | null
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) parts.push({ text: text.slice(last, m.index), hit: false })
+    parts.push({ text: m[0], hit: true })
+    last = m.index + m[0].length
+    if (m[0].length === 0) {
+      re.lastIndex += 1
+      if (re.lastIndex > text.length) break
+    }
+  }
+  if (last < text.length) parts.push({ text: text.slice(last), hit: false })
+  return parts.length ? parts : [{ text, hit: false }]
+}
+
 const timelineItems = computed<TimelineItem[]>(() => {
   return visiblePosts.value
     .map((post) => {
@@ -373,12 +403,27 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
               @keydown="onCardKeydown($event, item.post.slug)"
             >
               <div class="timeline-card-head">
-                <h3 class="timeline-title">{{ item.post.title }}</h3>
+                <h3 class="timeline-title">
+                  <template v-for="(seg, si) in highlightSegments(item.post.title)" :key="`ttl-${item.post.id}-${si}`">
+                    <mark v-if="seg.hit" class="search-hit">{{ seg.text }}</mark>
+                    <template v-else>{{ seg.text }}</template>
+                  </template>
+                </h3>
                 <span v-if="item.post.pinned" class="badge">{{ t('blog.pinned') }}</span>
               </div>
-              <p class="timeline-summary">{{ item.post.summary }}</p>
+              <p class="timeline-summary">
+                <template v-for="(seg, si) in highlightSegments(item.post.summary)" :key="`sum-${item.post.id}-${si}`">
+                  <mark v-if="seg.hit" class="search-hit">{{ seg.text }}</mark>
+                  <template v-else>{{ seg.text }}</template>
+                </template>
+              </p>
               <div class="timeline-tags">
-                <span v-for="tag in item.post.tags" :key="tag" class="tag">{{ tag }}</span>
+                <span v-for="(tag, ti) in item.post.tags" :key="`${item.post.id}-tag-${ti}`" class="tag">
+                  <template v-for="(seg, si) in highlightSegments(tag)" :key="`tg-${item.post.id}-${ti}-${si}`">
+                    <mark v-if="seg.hit" class="search-hit">{{ seg.text }}</mark>
+                    <template v-else>{{ seg.text }}</template>
+                  </template>
+                </span>
               </div>
             </div>
           </article>
@@ -720,6 +765,37 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
 
 .timeline-tags {
   margin-bottom: 0.3rem;
+}
+
+/* 琥珀色「荧光笔」式高亮，浅/深主题下都易辨认 */
+.search-hit {
+  background: linear-gradient(
+    165deg,
+    rgb(254 249 195 / 0.98),
+    rgb(253 224 71 / 0.94)
+  );
+  color: rgb(66 32 6);
+  border: 1.5px solid rgb(202 138 4 / 0.72);
+  border-radius: 0.3em;
+  padding: 0.08em 0.26em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow:
+    0 0 0 1px rgb(253 224 71 / 0.55),
+    0 2px 14px rgb(234 179 8 / 0.42);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+[data-theme='dark'] .search-hit {
+  background: linear-gradient(
+    165deg,
+    rgb(254 240 138 / 0.96),
+    rgb(250 204 21 / 0.9)
+  );
+  box-shadow:
+    0 0 0 1px rgb(250 204 21 / 0.45),
+    0 2px 18px rgb(250 204 21 / 0.35);
 }
 
 @media (max-width: 860px) {
