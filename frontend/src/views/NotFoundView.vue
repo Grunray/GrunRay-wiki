@@ -1,8 +1,20 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
+
+import { useSeoMeta } from '@/composables/useSeoMeta'
+import { SITE_NAME } from '@/config/site'
 
 const { t } = useI18n()
+const route = useRoute()
+
+useSeoMeta(() => ({
+  title: `404 | ${SITE_NAME}`,
+  description: t('common.notFound'),
+  path: route.path,
+  type: 'website',
+  robots: 'noindex, nofollow',
+}))
 </script>
 
 <template>

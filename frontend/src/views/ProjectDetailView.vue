@@ -3,7 +3,10 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
+import ProjectDetailPageSkeleton from '@/components/ui/ProjectDetailPageSkeleton.vue'
 import { restartPageEnter } from '@/composables/usePageEnterAnimation'
+import { useSeoMeta } from '@/composables/useSeoMeta'
+import { SITE_NAME } from '@/config/site'
 import ProjectBlockRenderer from '@/project-blocks/ProjectBlockRenderer.vue'
 import '@/styles/page-enter-post.css'
 import { canAccessProjectPublic, ensureProjectsLoaded, getProjectBySlug } from '@/services/contentRepository'
@@ -13,13 +16,33 @@ const route = useRoute()
 const { t } = useI18n()
 
 const project = ref<Project | null>(null)
-const loading = ref(false)
+const loading = ref(true)
 const loadError = ref(false)
 const articleRoot = ref<HTMLElement | null>(null)
 const ok = computed(() => {
   const p = project.value
   return p && canAccessProjectPublic(p)
 })
+
+async function restartProjectEnterWhenReady() {
+  const p = project.value
+  if (!p || !canAccessProjectPublic(p) || loadError.value) return
+  await nextTick()
+  let el = articleRoot.value
+  if (!el) {
+    await nextTick()
+    el = articleRoot.value
+  }
+  if (!el) {
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => resolve())
+      })
+    })
+    el = articleRoot.value
+  }
+  if (el) restartPageEnter(el)
+}
 
 watch(
   () => route.params.slug as string,
@@ -34,25 +57,10 @@ watch(
       project.value = null
     } finally {
       loading.value = false
+      await restartProjectEnterWhenReady()
     }
   },
   { immediate: true },
-)
-
-watch(
-  () => project.value?.slug,
-  async (slug) => {
-    if (!slug) return
-    await nextTick()
-    let el = articleRoot.value
-    if (!el) {
-      await nextTick()
-      el = articleRoot.value
-    }
-    if (!el) return
-    restartPageEnter(el)
-  },
-  { flush: 'post' },
 )
 
 function formatDateYmd(input?: string): string {
@@ -72,15 +80,52 @@ const periodText = computed(() => {
   const end = p.end_date ? formatDateYmd(p.end_date) : t('projects.inProgress')
   return `${start} - ${end}`
 })
+
+useSeoMeta(() => {
+  const path = route.path
+  const p = project.value
+  if (loadError.value) {
+    return {
+      title: `${t('projects.title')} | ${SITE_NAME}`,
+      description: t('common.notFound'),
+      path,
+      type: 'website' as const,
+      robots: 'noindex, nofollow',
+    }
+  }
+  if (p && canAccessProjectPublic(p)) {
+    return {
+      title: `${p.title} | ${SITE_NAME}`,
+      description: p.summary || t('projects.title'),
+      path,
+      type: 'article' as const,
+      publishedTime: p.start_date,
+      modifiedTime: p.end_date ?? p.start_date,
+    }
+  }
+  if (p && !canAccessProjectPublic(p)) {
+    return {
+      title: `${t('common.notFound')} | ${SITE_NAME}`,
+      description: t('common.notFound'),
+      path,
+      type: 'website' as const,
+      robots: 'noindex, nofollow',
+    }
+  }
+  return {
+    title: `${t('projects.title')} | ${SITE_NAME}`,
+    description: `${t('projects.title')} — ${t('home.tagline')}`,
+    path,
+    type: 'website' as const,
+  }
+})
 </script>
 
 <template>
   <article v-if="loadError">
     <p class="empty">加载失败，请确认后端已启动并已导入项目数据。</p>
   </article>
-  <article v-else-if="loading">
-    <p class="empty">正在加载项目...</p>
-  </article>
+  <ProjectDetailPageSkeleton v-else-if="loading" />
   <article v-else-if="ok && project" ref="articleRoot" class="project-detail">
     <p class="back">
       <RouterLink to="/projects">← {{ t('common.back') }}</RouterLink>

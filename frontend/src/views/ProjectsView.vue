@@ -1,15 +1,26 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
+import TimelinePageSkeleton from '@/components/ui/TimelinePageSkeleton.vue'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
+import { useSeoMeta } from '@/composables/useSeoMeta'
+import { SITE_NAME } from '@/config/site'
 import { ensureProjectsLoaded, listProjectsPublic } from '@/services/contentRepository'
 import '@/styles/page-enter-timeline.css'
 import type { Project } from '@/types/content'
 
 const { t } = useI18n()
+const route = useRoute()
 const router = useRouter()
+
+useSeoMeta(() => ({
+  title: `${t('projects.title')} | ${SITE_NAME}`,
+  description: `${t('projects.title')} — ${t('home.tagline')}`,
+  path: route.path,
+  type: 'website',
+}))
 const includeArchived = ref(true)
 const tagFilter = ref('')
 const tagMenuOpen = ref(false)
@@ -204,7 +215,7 @@ onBeforeUnmount(() => {
     </div>
 
     <p v-if="loadError" class="empty">{{ loadError }}</p>
-    <p v-else-if="loading" class="empty">正在加载项目...</p>
+    <TimelinePageSkeleton v-else-if="loading" />
     <div v-else-if="timelineGroups.length" class="timeline">
       <section
         v-for="(group, gi) in timelineGroups"

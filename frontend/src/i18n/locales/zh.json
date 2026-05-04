@@ -68,7 +68,9 @@
     "search": "搜索",
     "searchPlaceholder": "搜索标题、摘要、标签",
     "timelineCount": "{count} 篇文章",
-    "pinned": "置顶"
+    "pinned": "置顶",
+    "emptyCategory": "当前分类下暂无文章。",
+    "emptyFiltered": "没有符合关键词或标签的文章，可尝试调整搜索或清空标签筛选。"
   },
   "post": {
     "projectNote": "项目笔记",
@@ -80,6 +82,8 @@
   },
   "ui": {
     "theme": "界面风格",
+    "themeTitleLight": "浅色模式（点击切换为深色）",
+    "themeTitleDark": "深色模式（点击切换为浅色）",
     "themeLight": "浅色",
     "themeDark": "深色",
     "themeAbstract": "抽象",

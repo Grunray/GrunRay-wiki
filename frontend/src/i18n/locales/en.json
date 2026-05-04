@@ -68,7 +68,9 @@
     "search": "Search",
     "searchPlaceholder": "Search title, summary, tags",
     "timelineCount": "{count} posts",
-    "pinned": "Pinned"
+    "pinned": "Pinned",
+    "emptyCategory": "No posts in this category.",
+    "emptyFiltered": "No posts match your search or tag filter. Try changing keywords or clearing the tag."
   },
   "post": {
     "projectNote": "Project note",
@@ -80,6 +82,8 @@
   },
   "ui": {
     "theme": "Theme",
+    "themeTitleLight": "Light mode (click to switch to dark)",
+    "themeTitleDark": "Dark mode (click to switch to light)",
     "themeLight": "Light",
     "themeDark": "Dark",
     "themeAbstract": "Abstract",

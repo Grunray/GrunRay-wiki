@@ -13,6 +13,7 @@
     role="switch"
     :aria-checked="ui.theme === 'dark' ? 'true' : 'false'"
     :aria-label="t('ui.theme')"
+    :title="themeHoverTitle"
     @click="toggle($event)"
     @keydown.enter.prevent="toggle()"
     @keydown.space.prevent="toggle()"
@@ -39,6 +40,10 @@ import { DARK_MODE_PAGE_BACKGROUND, LIGHT_MODE_PAGE_BACKGROUND } from '@/theme/p
 
 const { t } = useI18n()
 const ui = useUiStore()
+
+const themeHoverTitle = computed(() =>
+  ui.theme === 'light' ? t('ui.themeTitleLight') : t('ui.themeTitleDark'),
+)
 
 const anchorRef = ref<HTMLElement | null>(null)
 

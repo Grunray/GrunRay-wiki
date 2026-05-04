@@ -1,16 +1,28 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 
 import FilmFeed from '@/components/media/FilmFeed.vue'
+import AvatarCircleSkeleton from '@/components/ui/AvatarCircleSkeleton.vue'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
+import { useSeoMeta } from '@/composables/useSeoMeta'
+import { SITE_NAME } from '@/config/site'
 import '@/styles/page-enter-home.css'
 import { useUiStore } from '@/stores/ui'
 import type { Post } from '@/types/content'
+import { readSessionJson, writeSessionJson } from '@/utils/sessionJsonCache'
 
 const { t } = useI18n()
+const route = useRoute()
 const ui = useUiStore()
+
+useSeoMeta(() => ({
+  title: `${t('nav.home')} | ${SITE_NAME}`,
+  description: t('home.tagline'),
+  path: route.path,
+  type: 'website',
+}))
 
 const externalLinks = [
   {
@@ -52,6 +64,10 @@ const copyToastVisible = ref(false)
 const copyToastColor = ref('#9B7BFF')
 let copyToastTimer: ReturnType<typeof setTimeout> | null = null
 
+const CACHE_HOME_AVATAR = 'grunray.home.avatarUrl.v1'
+const CACHE_HOME_LATEST = 'grunray.home.latestPosts.v1'
+const CACHE_HOME_RANDOM = 'grunray.home.randomPost.v1'
+
 async function copyToClipboard(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text)
@@ -85,6 +101,11 @@ async function handleExternalLinkClick(
 }
 
 async function loadAvatar() {
+  const cached = readSessionJson<{ url: string }>(CACHE_HOME_AVATAR)
+  if (cached?.url) {
+    avatarUrl.value = cached.url
+    return
+  }
   try {
     const q = new URLSearchParams({
       page: '1',
@@ -100,28 +121,41 @@ async function loadAvatar() {
     }
     if (json.code !== 0 || !json.data?.length) return
     avatarUrl.value = json.data[0].url
+    writeSessionJson(CACHE_HOME_AVATAR, { url: avatarUrl.value })
   } catch {
     // 头像加载失败时保留默认占位
   }
 }
 
 async function loadLatestUpdatedPost() {
+  const cached = readSessionJson<{ posts: Post[] }>(CACHE_HOME_LATEST)
+  if (cached && Array.isArray(cached.posts)) {
+    latestUpdatedPosts.value = cached.posts
+    return
+  }
   try {
     const res = await fetch('/api/posts/latest-updated')
     if (!res.ok) return
     const json = (await res.json()) as { posts?: Post[] }
     latestUpdatedPosts.value = json.posts ?? []
+    writeSessionJson(CACHE_HOME_LATEST, { posts: latestUpdatedPosts.value })
   } catch {
     latestUpdatedPosts.value = []
   }
 }
 
 async function loadRandomRecommendedPost() {
+  const cachedRand = readSessionJson<{ post: Post | null }>(CACHE_HOME_RANDOM)
+  if (cachedRand !== null && typeof cachedRand === 'object' && 'post' in cachedRand) {
+    randomRecommendedPost.value = cachedRand.post ?? null
+    return
+  }
   try {
     const res = await fetch('/api/posts/random-recommend')
     if (!res.ok) return
     const json = (await res.json()) as { post?: Post }
     randomRecommendedPost.value = json.post ?? null
+    writeSessionJson(CACHE_HOME_RANDOM, { post: randomRecommendedPost.value })
   } catch {
     randomRecommendedPost.value = null
   }
@@ -208,7 +242,7 @@ onMounted(() => {
           :src="avatarUrl"
           alt="头像"
         />
-        <span v-else>头像</span>
+        <AvatarCircleSkeleton v-else />
       </div>
       <div class="greeting-art card">
         <p class="greeting-art-line">{{ t('home.greeting') }}</p>

@@ -1,15 +1,54 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
+import TimelinePageSkeleton from '@/components/ui/TimelinePageSkeleton.vue'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
+import { useSeoMeta } from '@/composables/useSeoMeta'
+import { SITE_NAME } from '@/config/site'
 import { listPostsForBlog } from '@/services/contentRepository'
 import type { BlogCategoryFilter, Post } from '@/types/content'
 import '@/styles/page-enter-timeline.css'
 
+const BLOG_LIST_CACHE_PREFIX = 'grunray-blog-list:'
+
+function blogListCacheKey(cat: BlogCategoryFilter): string {
+  return `${BLOG_LIST_CACHE_PREFIX}${cat}`
+}
+
+function readCachedPostsForCategory(cat: BlogCategoryFilter): Post[] | null {
+  if (typeof sessionStorage === 'undefined') return null
+  try {
+    const raw = sessionStorage.getItem(blogListCacheKey(cat))
+    if (raw === null) return null
+    const data = JSON.parse(raw) as unknown
+    if (!Array.isArray(data)) return null
+    return data as Post[]
+  } catch {
+    return null
+  }
+}
+
+function writeCachedPostsForCategory(cat: BlogCategoryFilter, list: Post[]) {
+  if (typeof sessionStorage === 'undefined') return
+  try {
+    sessionStorage.setItem(blogListCacheKey(cat), JSON.stringify(list))
+  } catch {
+    /* ignore quota */
+  }
+}
+
 const { t } = useI18n()
+const route = useRoute()
 const router = useRouter()
+
+useSeoMeta(() => ({
+  title: `${t('blog.title')} | ${SITE_NAME}`,
+  description: `${t('blog.subtitle')} ${t('home.tagline')}`,
+  path: route.path,
+  type: 'website',
+}))
 const posts = ref<Post[]>([])
 const error = ref<string | null>(null)
 const loading = ref(false)
@@ -69,14 +108,32 @@ function updateCategoryPill() {
 }
 
 async function loadByCategory() {
-  loading.value = true
+  const cat = category.value
   error.value = null
+
+  const cached = readCachedPostsForCategory(cat)
+  if (cached !== null) {
+    posts.value = cached
+  } else {
+    posts.value = []
+  }
+
+  loading.value = true
   try {
-    posts.value = await listPostsForBlog({ category: category.value })
+    const next = await listPostsForBlog({ category: cat })
+    posts.value = next
+    writeCachedPostsForCategory(cat, next)
   } catch {
     error.value = '加载失败，请确认后端已启动并已导入数据。'
+    if (cached === null) {
+      posts.value = []
+    }
   } finally {
     loading.value = false
+    if (!enterPlayed.value) {
+      enterPlayed.value = true
+      await playPageEnter(pageRoot.value)
+    }
   }
 }
 
@@ -197,6 +254,20 @@ const timelineGroups = computed<TimelineYearGroup[]>(() => {
   return groups
 })
 
+/** 当前分类接口返回列表为空（非搜索造成） */
+const listEmpty = computed(
+  () => !loading.value && !error.value && posts.value.length === 0,
+)
+
+/** 有数据但被标签 / 关键词筛掉 */
+const filteredEmpty = computed(
+  () =>
+    !loading.value &&
+    !error.value &&
+    posts.value.length > 0 &&
+    visiblePosts.value.length === 0,
+)
+
 function timelineItemEnterIndex(groupIndex: number, itemIndex: number): number {
   let sum = 0
   for (let i = 0; i < groupIndex; i++) {
@@ -204,12 +275,6 @@ function timelineItemEnterIndex(groupIndex: number, itemIndex: number): number {
   }
   return Math.min(sum + itemIndex, 14)
 }
-
-watch(loading, async (isLoading) => {
-  if (enterPlayed.value || isLoading) return
-  enterPlayed.value = true
-  await playPageEnter(pageRoot.value)
-})
 
 function onCardClick(slug: string) {
   void router.push(`/blog/${slug}`)
@@ -279,7 +344,7 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
       </div>
     </div>
     <p v-if="error" class="empty">{{ error }}</p>
-    <p v-else-if="loading" class="empty">加载中...</p>
+    <TimelinePageSkeleton v-else-if="loading && !posts.length" />
     <div v-else-if="timelineGroups.length" class="timeline">
       <section
         v-for="(group, gi) in timelineGroups"
@@ -320,7 +385,8 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
         </div>
       </section>
     </div>
-    <p v-else class="empty">暂无文章。</p>
+    <p v-else-if="listEmpty" class="empty">{{ t('blog.emptyCategory') }}</p>
+    <p v-else-if="filteredEmpty" class="empty">{{ t('blog.emptyFiltered') }}</p>
   </section>
 </template>
 

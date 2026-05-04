@@ -95,7 +95,9 @@ onBeforeUnmount(() => {
       </div>
 
       <div v-else class="status-box">
-        <p v-if="loading">加载中...</p>
+        <div v-if="loading" class="film-skel" aria-busy="true" aria-label="加载中">
+          <div v-for="n in 4" :key="n" class="frame sk-frame ui-skeleton" />
+        </div>
         <p v-else-if="error">加载失败：{{ error }}</p>
         <p v-else>暂无媒体数据</p>
       </div>
@@ -273,6 +275,19 @@ onBeforeUnmount(() => {
   padding: 0.75rem;
   background: color-mix(in srgb, var(--glass-card-bg) 78%, transparent);
   border-radius: var(--radius-sm);
+}
+
+.film-skel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px 0;
+  text-align: left;
+}
+
+.film-skel .sk-frame {
+  cursor: default;
+  pointer-events: none;
 }
 
 .viewer {

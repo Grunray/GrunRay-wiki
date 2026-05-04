@@ -3,26 +3,89 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
+import PostDetailPageSkeleton from '@/components/ui/PostDetailPageSkeleton.vue'
 import { restartPageEnter } from '@/composables/usePageEnterAnimation'
+import { useSeoMeta } from '@/composables/useSeoMeta'
+import { SITE_NAME } from '@/config/site'
 import { canAccessPostPublic, ensureProjectsLoaded, getPostBySlug, getProjectById } from '@/services/contentRepository'
 import '@/styles/page-enter-post.css'
 import type { AlgorithmPost, Post, ProjectNote } from '@/types/content'
+
+const POST_DETAIL_CACHE_PREFIX = 'grunray-post-detail:'
+
+function postDetailCacheKey(slug: string): string {
+  return `${POST_DETAIL_CACHE_PREFIX}${slug}`
+}
+
+function readCachedPost(slug: string): Post | null {
+  if (typeof sessionStorage === 'undefined') return null
+  try {
+    const raw = sessionStorage.getItem(postDetailCacheKey(slug))
+    if (raw === null) return null
+    return JSON.parse(raw) as Post
+  } catch {
+    return null
+  }
+}
+
+function writeCachedPost(slug: string, p: Post) {
+  if (typeof sessionStorage === 'undefined') return
+  try {
+    sessionStorage.setItem(postDetailCacheKey(slug), JSON.stringify(p))
+  } catch {
+    /* ignore quota */
+  }
+}
 
 const route = useRoute()
 const { t } = useI18n()
 
 const post = ref<Post | null>(null)
 const loadError = ref(false)
+const loading = ref(true)
 const articleRoot = ref<HTMLElement | null>(null)
+
+/** 正文根在首帧可能尚未挂上 ref；且同 slug 再进入时 slug watch 不会触发，必须在 load 结束后统一补 play */
+async function restartArticleEnterWhenReady() {
+  const p = post.value
+  if (!p || !canAccessPostPublic(p) || loadError.value) return
+  await nextTick()
+  let el = articleRoot.value
+  if (!el) {
+    await nextTick()
+    el = articleRoot.value
+  }
+  if (!el) {
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => resolve())
+      })
+    })
+    el = articleRoot.value
+  }
+  if (el) restartPageEnter(el)
+}
 
 async function load(slug: string) {
   loadError.value = false
+  const cached = readCachedPost(slug)
+  if (cached) {
+    post.value = cached
+  } else {
+    post.value = null
+  }
+  loading.value = true
   try {
     await ensureProjectsLoaded()
-    post.value = (await getPostBySlug(slug)) ?? null
+    const next = (await getPostBySlug(slug)) ?? null
+    post.value = next
+    if (next) writeCachedPost(slug, next)
   } catch {
     loadError.value = true
-    post.value = null
+    if (!cached) post.value = null
+  } finally {
+    loading.value = false
+    await restartArticleEnterWhenReady()
   }
 }
 
@@ -34,25 +97,57 @@ watch(
   { immediate: true },
 )
 
-watch(
-  () => post.value?.slug,
-  async (slug) => {
-    if (!slug) return
-    await nextTick()
-    let el = articleRoot.value
-    if (!el) {
-      await nextTick()
-      el = articleRoot.value
-    }
-    if (!el) return
-    restartPageEnter(el)
-  },
-  { flush: 'post' },
-)
-
 const ok = computed(() => {
   const p = post.value
   return p && canAccessPostPublic(p)
+})
+
+useSeoMeta(() => {
+  const path = route.path
+  const p = post.value
+  if (loadError.value) {
+    return {
+      title: `${t('blog.title')} | ${SITE_NAME}`,
+      description: t('common.notFound'),
+      path,
+      type: 'website' as const,
+      robots: 'noindex, nofollow',
+    }
+  }
+  if (loading.value) {
+    return {
+      title: `${t('blog.title')} | ${SITE_NAME}`,
+      description: t('blog.subtitle'),
+      path,
+      type: 'website' as const,
+    }
+  }
+  if (p && canAccessPostPublic(p)) {
+    return {
+      title: `${p.title} | ${SITE_NAME}`,
+      description: p.summary || t('blog.subtitle'),
+      path,
+      image: p.cover,
+      type: 'article' as const,
+      publishedTime: p.published_at,
+      modifiedTime: p.updated_at,
+    }
+  }
+  if (p && !canAccessPostPublic(p)) {
+    return {
+      title: `${t('common.notFound')} | ${SITE_NAME}`,
+      description: t('common.notFound'),
+      path,
+      type: 'website' as const,
+      robots: 'noindex, nofollow',
+    }
+  }
+  return {
+    title: `${t('blog.title')} | ${SITE_NAME}`,
+    description: t('blog.subtitle'),
+    path,
+    type: 'website' as const,
+  }
 })
 
 const algo = computed(() => (post.value?.type === 'algorithm' ? (post.value as AlgorithmPost) : null))
@@ -65,6 +160,7 @@ const renderedBodyHtml = computed(() => post.value?.body_html?.trim() || '')
   <article v-if="loadError">
     <p class="empty">加载失败，请确认后端已启动。</p>
   </article>
+  <PostDetailPageSkeleton v-else-if="loading && !post" />
   <article v-else-if="ok && post" ref="articleRoot" class="post-detail-article">
     <p class="back">
       <RouterLink to="/blog">← {{ t('blog.title') }}</RouterLink>

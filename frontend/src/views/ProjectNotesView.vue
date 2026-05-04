@@ -4,6 +4,9 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
 import PostCard from '@/components/blog/PostCard.vue'
+import NotesListSkeleton from '@/components/ui/NotesListSkeleton.vue'
+import { useSeoMeta } from '@/composables/useSeoMeta'
+import { SITE_NAME } from '@/config/site'
 import { ensureProjectsLoaded, getProjectBySlug, listPostsForProjectSlug } from '@/services/contentRepository'
 import type { Post, Project } from '@/types/content'
 
@@ -37,11 +40,48 @@ watch(
   },
   { immediate: true },
 )
+
+useSeoMeta(() => {
+  const path = route.path
+  const p = project.value
+  if (loadError.value) {
+    return {
+      title: `${t('projects.notes')} | ${SITE_NAME}`,
+      description: t('common.notFound'),
+      path,
+      type: 'website' as const,
+      robots: 'noindex, nofollow',
+    }
+  }
+  if (p && ok.value) {
+    return {
+      title: `${p.title} — ${t('projects.notes')} | ${SITE_NAME}`,
+      description: `${p.summary} ${t('blog.subtitle')}`,
+      path,
+      type: 'website' as const,
+    }
+  }
+  if (p && !ok.value) {
+    return {
+      title: `${t('common.notFound')} | ${SITE_NAME}`,
+      description: t('common.notFound'),
+      path,
+      type: 'website' as const,
+      robots: 'noindex, nofollow',
+    }
+  }
+  return {
+    title: `${t('projects.notes')} | ${SITE_NAME}`,
+    description: t('blog.subtitle'),
+    path,
+    type: 'website' as const,
+  }
+})
 </script>
 
 <template>
   <p v-if="loadError" class="empty">加载失败，请确认后端已启动并已导入项目数据。</p>
-  <p v-else-if="loading" class="empty">正在加载项目笔记...</p>
+  <NotesListSkeleton v-else-if="loading" />
   <div v-else-if="ok && project">
     <p class="back">
       <RouterLink :to="`/projects/${project.slug}`">← {{ project.title }}</RouterLink>
