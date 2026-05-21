@@ -10,6 +10,9 @@ export const PAGE_PHOTO_BG_BY_ROUTE_NAME: Partial<Record<string, string>> = {
   'project-detail': '/api/media/files/film/main/background/bg_secondary.png',
   'project-notes': '/api/media/files/film/main/background/bg_secondary.png',
   blog: DEFAULT_PAGE_PHOTO_BG_URL,
+  messages: DEFAULT_PAGE_PHOTO_BG_URL,
+  friends: DEFAULT_PAGE_PHOTO_BG_URL,
+  'friends-apply': DEFAULT_PAGE_PHOTO_BG_URL,
   'post-detail': '/api/media/files/film/main/background/bg_secondary.png',
   'not-found': DEFAULT_PAGE_PHOTO_BG_URL,
 }

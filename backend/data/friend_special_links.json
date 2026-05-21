@@ -1,0 +1,16 @@
+[
+  {
+    "id": "acg-trip",
+    "title": "异次元之旅",
+    "description": "我们一起去萌站成员的星球旅行吧！",
+    "url": "https://travel.moe/go.html?travel=on",
+    "icon": "acg-trip"
+  },
+  {
+    "id": "travellings",
+    "title": "开往",
+    "description": "随机前往开往的成员博客",
+    "url": "https://www.travellings.cn/go.html",
+    "icon": "travellings"
+  }
+]

@@ -1,0 +1,6 @@
+from __future__ import annotations
+
+STATUS_PENDING = 0
+STATUS_PUBLISHED = 1
+STATUS_HIDDEN = 2
+STATUS_REJECTED = 3

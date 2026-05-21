@@ -246,6 +246,10 @@ a:hover {
   .card:hover::after {
     opacity: 0;
   }
+
+  .btn-accent:hover:not(:disabled) {
+    transform: none;
+  }
 }
 
 .tag {
@@ -266,6 +270,47 @@ a:hover {
   padding: 0.2rem 0.45rem;
   border: 1px solid var(--color-border);
   color: var(--color-text-muted);
+}
+
+/* 全站强调操作按钮（玻璃底 + 主题 accent，与项目页 action-btn 一致） */
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2rem;
+  padding: 0.5rem 1.15rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 36%, var(--color-border));
+  background: color-mix(in srgb, var(--color-bg-surface) 84%, transparent);
+  color: var(--color-accent);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.btn-accent:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--color-accent) 56%, var(--color-border));
+  background: color-mix(in srgb, var(--color-accent) 16%, var(--color-bg-surface));
+  transform: translateY(-1px);
+}
+
+.btn-accent:focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, var(--color-accent) 58%, var(--color-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 18%, transparent);
+}
+
+.btn-accent:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .prose {

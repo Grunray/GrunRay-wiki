@@ -667,7 +667,14 @@ onUnmounted(() => {
     </main>
 
     <footer class="footer">
-      <small>Vue 3 · 数据驱动布局 · 设计见 <code>designed/site-design-spec.md</code></small>
+      <div class="footer-icp card">
+        <a
+          class="footer-icp-link"
+          href="https://icp.gov.moe/?keyword=20266668"
+          target="_blank"
+          rel="noopener noreferrer"
+        >萌ICP备20266668号</a>
+      </div>
     </footer>
 
     <CursorTrail />
@@ -1377,10 +1384,28 @@ onUnmounted(() => {
 }
 
 .footer {
-  text-align: center;
-  padding: 1.5rem;
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+}
+
+.footer-icp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 1rem;
+}
+
+.footer-icp-link {
+  font-size: 0.82rem;
   color: var(--color-text-muted);
-  font-size: 0.8rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-icp-link:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
 }
 </style>
 

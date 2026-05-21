@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GrunRay Web 实验 · exp.2</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body class="page">
+    <header class="site-header">
+      <h1>GrunRay 音乐播放器</h1>
+      <div class="header-actions">
+        <button type="button" class="btn" id="themeToggle" aria-label="切换浅色/深色主题">
+          主题
+        </button>
+      </div>
+    </header>
+
+    <div class="app-grid">
+      <nav class="app-nav glass-panel" aria-label="歌单与筛选">
+        <h2>导航与歌单</h2>
+        <fieldset class="prefs-field">
+          <legend>收听偏好</legend>
+          <div class="form-row">
+            <label for="mood">曲风</label>
+            <select id="mood" name="mood" aria-label="曲风分组">
+              <optgroup label="电子">
+                <option value="house">House</option>
+                <option value="ambient">Ambient</option>
+              </optgroup>
+              <optgroup label="原声">
+                <option value="acoustic" selected>原声 / 轻音乐</option>
+                <option value="piano">钢琴</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="quickVol">快速音量预设</label>
+            <input list="vol-presets" id="quickVol" name="quickVol" type="number" min="0" max="100" step="5" value="40" />
+            <datalist id="vol-presets">
+              <option value="0"></option>
+              <option value="25"></option>
+              <option value="50"></option>
+              <option value="75"></option>
+              <option value="100"></option>
+            </datalist>
+            <button type="button" class="btn" id="applyQuickVol">应用</button>
+          </div>
+        </fieldset>
+        <section aria-labelledby="pl-heading">
+          <h2 id="pl-heading" class="sr-only">播放列表</h2>
+          <p class="nav-hint">点击曲目播放。可将音频拖入右侧区域加入列表。</p>
+          <ul class="playlist" id="playlistEl" role="list"></ul>
+        </section>
+      </nav>
+
+      <main class="app-main glass-panel">
+        <h2 class="sr-only">主播放区</h2>
+        <article class="player-article" aria-labelledby="now-title">
+          <section class="vinyl-section" aria-label="黑胶唱机模拟">
+            <h3 class="vinyl-heading">黑胶唱机</h3>
+            <div class="vinyl-deck" id="vinylDeck" aria-live="polite">
+              <div class="vinyl-arm-wrap" aria-hidden="true">
+                <svg class="vinyl-arm-svg" viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <circle cx="86" cy="17" r="10.5" fill="#f8fafc" />
+                  <path
+                    d="M86 27.5 Q54 46 24 102 L20 106"
+                    stroke="#f8fafc"
+                    stroke-width="5.5"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                  <rect x="10" y="102" width="20" height="14" rx="2" fill="#f8fafc" />
+                  <rect x="14" y="116" width="4" height="8" rx="1" fill="#cbd5e1" />
+                </svg>
+              </div>
+              <div class="vinyl-platter-outer">
+                <div class="vinyl-record">
+                  <div class="vinyl-grooves" aria-hidden="true"></div>
+                  <div class="vinyl-label-sparkle" title="银白闪钻封面">
+                    <div class="vinyl-diamond-inner" aria-hidden="true"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="player-now-bar" aria-label="当前播放与传输">
+            <h2 id="now-title" class="sr-only">当前播放</h2>
+            <div class="now-bar-progress-wrap">
+              <div class="time-row">
+                <span id="aCur">0:00</span>
+                <span id="aDur">0:00</span>
+              </div>
+              <div class="now-bar-progress-hit progress-hit" id="aProgressHit" role="slider" tabindex="0" aria-label="音乐进度，可拖动" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="progress-rail">
+                  <div class="progress-fill" id="aFill"></div>
+                  <div class="progress-thumb" id="aThumb"></div>
+                </div>
+              </div>
+            </div>
+            <div class="now-bar-body">
+              <div class="now-bar-left">
+                <div class="now-bar-text">
+                  <p id="nowTrackTitle" class="now-track-title">未选择曲目</p>
+                  <p id="nowTrackArtist" class="now-track-artist">从左侧歌单选择或拖入音频</p>
+                </div>
+              </div>
+              <div class="now-bar-center">
+                <button type="button" class="btn" id="aPrev" aria-label="上一首">⏮</button>
+                <button type="button" class="now-play-main" id="aPlay" aria-label="播放或暂停">▶</button>
+                <button type="button" class="btn" id="aNext" aria-label="下一首">⏭</button>
+              </div>
+              <div class="now-bar-right">
+                <div class="now-vol-wrap">
+                  <label for="aVol" class="sr-only">音量</label>
+                  <input type="range" id="aVol" min="0" max="1" step="0.01" value="0.4" aria-label="音乐音量" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="player-audio-meta" aria-label="音乐播放与指标">
+            <h3 class="sr-only">音乐（HTMLAudio）</h3>
+            <div class="media-metrics-card">
+              <audio id="mainAudio" class="main-audio" preload="metadata"></audio>
+              <div class="form-row form-row--spaced">
+                <span>音频缓冲</span>
+                <progress id="aBuffer" max="100" value="0"></progress>
+              </div>
+              <div class="form-row form-row--tight">
+                <span>综合响度示意</span>
+                <meter id="loudMeter" min="0" max="100" low="30" high="75" optimum="50" value="40"></meter>
+              </div>
+            </div>
+          </section>
+        </article>
+      </main>
+
+      <aside class="app-aside glass-panel" aria-label="工具与可视化">
+        <h2>详情与工具</h2>
+
+        <div class="ring-wrap tool-card">
+          <h3 class="panel-subtitle">Canvas 环形进度（点击跳转）</h3>
+          <canvas id="ringCanvas" width="200" height="200" aria-label="音乐环形进度"></canvas>
+          <p class="ring-hint">与主音频进度同步</p>
+        </div>
+
+        <svg
+          class="svg-level-meter tool-card"
+          width="100%"
+          height="48"
+          viewBox="0 0 200 48"
+          aria-label="简易电平条"
+          role="img"
+        >
+          <title>随播放脉动的 SVG 条</title>
+          <rect x="0" y="0" width="200" height="48" rx="6" fill="var(--color-reading-bg)" stroke="var(--color-border)" />
+          <g id="svgBars" fill="var(--color-accent)"></g>
+        </svg>
+
+        <section class="geo-card tool-card" aria-label="地理位置">
+          <h3 class="panel-subtitle">地理位置</h3>
+          <p id="geoStatus" class="geo-status">点击下方按钮获取定位，用于展示与纬度相关的收听提示。</p>
+          <p id="geoHint" class="geo-hint" aria-live="polite"></p>
+          <button type="button" class="btn btn--accent" id="geoBtn">获取定位</button>
+        </section>
+
+        <fieldset class="prefs-field">
+          <legend>外观与定时</legend>
+          <div class="form-row">
+            <label for="accentPick">主题强调色</label>
+            <input type="color" id="accentPick" value="#a0ccab" />
+          </div>
+          <div class="form-row">
+            <label for="sleepMin">睡眠定时（分钟，0 为关闭）</label>
+            <input type="number" id="sleepMin" min="0" max="240" value="0" step="1" />
+          </div>
+          <form id="mixForm" oninput="mixOut.value = Math.round(mainVolRange.valueAsNumber * 100 + fxDepthRange.valueAsNumber * 40)">
+            <div class="form-row">
+              <label for="mainVolRange">音乐权重</label>
+              <input type="range" id="mainVolRange" name="mv" min="0" max="1" step="0.05" value="0.6" />
+            </div>
+            <div class="form-row">
+              <label for="fxDepthRange">动态余量</label>
+              <input type="range" id="fxDepthRange" name="fx" min="0" max="1" step="0.05" value="0.4" />
+            </div>
+            <div class="form-row">
+              <label for="mixOut">混合指数</label>
+              <output name="mixOut" id="mixOut" for="mainVolRange fxDepthRange">80</output>
+            </div>
+          </form>
+        </fieldset>
+
+        <div
+          class="drop-zone"
+          id="dropZone"
+          tabindex="0"
+          role="region"
+          aria-label="拖放文件区域"
+        >
+          <strong>拖放上传</strong><br />
+          将音频拖放到此处
+          <span class="drop-hint">支持预览与从列表移除；释放文件时边框会高亮。</span>
+          <div class="drop-list" id="dropList"></div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- <footer class="site-footer">
+      <p>
+        从我自己的博客网站上剥离出来的播放器，网址 GrunRay.tech，但是还在备案中。
+      </p>
+    </footer> -->
+
+    <script>
+      (function () {
+        'use strict'
+
+        var STORAGE = {
+          theme: 'exp2.theme',
+          volume: 'exp2.audioVol',
+          accent: 'exp2.accent',
+        }
+
+        var DEFAULT_TRACKS = [
+          { url: './The Best Of 咪.mp3', title: 'The Best Of 咪', artist: '本地' },
+          { url: './The Other Side of Paradise.mp3', title: 'The Other Side of Paradise', artist: '本地' },
+        ]
+
+        var html = document.documentElement
+        var mainAudio = document.getElementById('mainAudio')
+        var vinylDeck = document.getElementById('vinylDeck')
+        var playlistEl = document.getElementById('playlistEl')
+        var nowTrackTitle = document.getElementById('nowTrackTitle')
+        var nowTrackArtist = document.getElementById('nowTrackArtist')
+        var aPlay = document.getElementById('aPlay')
+        var aPrev = document.getElementById('aPrev')
+        var aNext = document.getElementById('aNext')
+        var aCur = document.getElementById('aCur')
+        var aDur = document.getElementById('aDur')
+        var aFill = document.getElementById('aFill')
+        var aThumb = document.getElementById('aThumb')
+        var aProgressHit = document.getElementById('aProgressHit')
+        var aVol = document.getElementById('aVol')
+        var ringCanvas = document.getElementById('ringCanvas')
+        var ringCtx = ringCanvas.getContext('2d')
+        var loudMeter = document.getElementById('loudMeter')
+        var aBuffer = document.getElementById('aBuffer')
+        var dropZone = document.getElementById('dropZone')
+        var dropList = document.getElementById('dropList')
+        var themeToggle = document.getElementById('themeToggle')
+        var accentPick = document.getElementById('accentPick')
+        var sleepMin = document.getElementById('sleepMin')
+        var applyQuickVol = document.getElementById('applyQuickVol')
+        var quickVol = document.getElementById('quickVol')
+        var mixForm = document.getElementById('mixForm')
+        var mainVolRange = document.getElementById('mainVolRange')
+        var fxDepthRange = document.getElementById('fxDepthRange')
+        var svgBars = document.getElementById('svgBars')
+        var geoBtn = document.getElementById('geoBtn')
+        var geoStatus = document.getElementById('geoStatus')
+        var geoHint = document.getElementById('geoHint')
+
+        /** @type {{url:string,title:string,artist:string,fromDrop?:boolean}[]} */
+        var tracks = []
+        var currentIndex = 0
+        var sleepDeadline = null
+        var barPhase = 0
+
+        function formatTime(sec) {
+          if (!isFinite(sec) || sec < 0) return '0:00'
+          var m = Math.floor(sec / 60)
+          var s = Math.floor(sec % 60)
+          return m + ':' + (s < 10 ? '0' : '') + s
+        }
+
+        function loadTheme() {
+          var t = localStorage.getItem(STORAGE.theme)
+          if (t === 'dark' || t === 'light') html.setAttribute('data-theme', t)
+          else html.setAttribute('data-theme', 'light')
+        }
+
+        function saveTheme() {
+          localStorage.setItem(STORAGE.theme, html.getAttribute('data-theme') || 'light')
+        }
+
+        function loadAccent() {
+          try {
+            var c = localStorage.getItem(STORAGE.accent)
+            if (c && /^#[0-9a-fA-F]{6}$/.test(c)) {
+              html.style.setProperty('--color-accent', c)
+              accentPick.value = c
+            }
+          } catch (e) {}
+        }
+
+        function pctAudio() {
+          var d = mainAudio.duration
+          if (!isFinite(d) || d <= 0) return 0
+          return (mainAudio.currentTime / d) * 100
+        }
+
+        function setAudioPct(pct) {
+          var d = mainAudio.duration
+          if (!isFinite(d) || d <= 0) return
+          mainAudio.currentTime = Math.min(d, Math.max(0, (pct / 100) * d))
+        }
+
+        function updateProgressUi() {
+          var p = pctAudio()
+          aFill.style.width = p + '%'
+          aThumb.style.left = p + '%'
+          aProgressHit.setAttribute('aria-valuenow', String(Math.round(p)))
+          aCur.textContent = formatTime(mainAudio.currentTime)
+          aDur.textContent = formatTime(mainAudio.duration || 0)
+          drawRing(p / 100)
+          var lm = Math.round(mainAudio.volume * 100)
+          loudMeter.value = Math.min(100, lm + Math.round(Math.sin(barPhase) * 8))
+          try {
+            var d = mainAudio.duration
+            if (isFinite(d) && d > 0 && mainAudio.buffered.length > 0) {
+              var end = mainAudio.buffered.end(mainAudio.buffered.length - 1)
+              aBuffer.value = Math.round((end / d) * 100)
+            } else aBuffer.value = 0
+          } catch (e) {
+            aBuffer.value = 0
+          }
+        }
+
+        function drawRing(p) {
+          var cx = ringCanvas.width / 2
+          var cy = ringCanvas.height / 2
+          var r = 72
+          var lw = 10
+          var pct = Math.max(0, Math.min(1, p))
+          var accent = getComputedStyle(html).getPropertyValue('--color-accent').trim() || '#a0ccab'
+          var border = getComputedStyle(html).getPropertyValue('--color-border').trim()
+          ringCtx.clearRect(0, 0, ringCanvas.width, ringCanvas.height)
+          ringCtx.beginPath()
+          ringCtx.arc(cx, cy, r, 0, Math.PI * 2)
+          ringCtx.strokeStyle = border || '#a8c9b4'
+          ringCtx.lineWidth = lw
+          ringCtx.globalAlpha = 0.3
+          ringCtx.stroke()
+          ringCtx.globalAlpha = 1
+          if (pct > 0) {
+            ringCtx.beginPath()
+            ringCtx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * pct)
+            ringCtx.strokeStyle = accent
+            ringCtx.lineWidth = lw
+            ringCtx.lineCap = 'round'
+            ringCtx.stroke()
+          }
+        }
+
+        function ringFromEvent(clientX, clientY) {
+          var rect = ringCanvas.getBoundingClientRect()
+          var x = clientX - rect.left - rect.width / 2
+          var y = clientY - rect.top - rect.height / 2
+          var ang = Math.atan2(y, x) + Math.PI / 2
+          if (ang < 0) ang += Math.PI * 2
+          return ang / (Math.PI * 2)
+        }
+
+        function renderPlaylist() {
+          playlistEl.innerHTML = ''
+          if (!tracks.length) {
+            nowTrackTitle.textContent = '未选择曲目'
+            nowTrackArtist.textContent = '请配置 media/playlist.json 或拖入音频'
+            var li = document.createElement('li')
+            li.className = 'playlist-empty'
+            li.textContent = '（无曲目）请配置 media/playlist.json 或拖入音频'
+            playlistEl.appendChild(li)
+            return
+          }
+          tracks.forEach(function (t, i) {
+            var li = document.createElement('li')
+            var btn = document.createElement('button')
+            btn.type = 'button'
+            btn.textContent = (t.title || t.url) + (t.artist ? ' — ' + t.artist : '')
+            if (i === currentIndex) btn.classList.add('is-current')
+            btn.addEventListener('click', function () {
+              currentIndex = i
+              loadCurrentTrack()
+              renderPlaylist()
+            })
+            li.appendChild(btn)
+            playlistEl.appendChild(li)
+          })
+        }
+
+        function loadCurrentTrack() {
+          var t = tracks[currentIndex]
+          if (!t) return
+          mainAudio.src = t.url
+          mainAudio.play().catch(function () {})
+          nowTrackTitle.textContent = t.title || '未命名'
+          nowTrackArtist.textContent = t.artist || '—'
+          aPlay.textContent = '⏸'
+        }
+
+        function mergeMixToVolumes() {
+          var mv = mainVolRange.valueAsNumber
+          var fx = fxDepthRange.valueAsNumber
+          var baseA = parseFloat(aVol.value) || 0.4
+          mainAudio.volume = Math.min(1, Math.max(0, baseA * (0.45 + mv * 0.55) * (0.72 + fx * 0.28)))
+        }
+
+        function initSvgBars() {
+          svgBars.innerHTML = ''
+          for (var i = 0; i < 12; i++) {
+            var r = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+            r.setAttribute('x', 10 + i * 15)
+            r.setAttribute('y', 20)
+            r.setAttribute('width', 10)
+            r.setAttribute('height', 8)
+            r.setAttribute('rx', 2)
+            r.dataset.i = String(i)
+            svgBars.appendChild(r)
+          }
+        }
+
+        function tickSvgBars() {
+          barPhase += 0.18
+          var children = svgBars.children
+          var playing = !mainAudio.paused
+          for (var i = 0; i < children.length; i++) {
+            var h = 8 + (playing ? Math.abs(Math.sin(barPhase + i * 0.4)) * 28 : 4)
+            children[i].setAttribute('y', 40 - h)
+            children[i].setAttribute('height', h)
+          }
+        }
+
+        function bindAudio() {
+          try {
+            var sv = localStorage.getItem(STORAGE.volume)
+            if (sv != null) {
+              var n = parseFloat(sv)
+              if (isFinite(n)) aVol.value = String(Math.min(1, Math.max(0, n)))
+            }
+          } catch (e) {}
+          mainAudio.volume = parseFloat(aVol.value)
+
+          mainAudio.addEventListener('timeupdate', function () {
+            updateProgressUi()
+            if (sleepDeadline && Date.now() >= sleepDeadline) {
+              mainAudio.pause()
+              sleepDeadline = null
+            }
+          })
+          mainAudio.addEventListener('loadedmetadata', updateProgressUi)
+          mainAudio.addEventListener('play', function () {
+            aPlay.textContent = '⏸'
+            vinylDeck.classList.add('is-playing')
+            var sm = parseInt(sleepMin.value, 10)
+            if (isFinite(sm) && sm > 0) sleepDeadline = Date.now() + sm * 60000
+          })
+          mainAudio.addEventListener('pause', function () {
+            aPlay.textContent = '▶'
+            vinylDeck.classList.remove('is-playing')
+          })
+          mainAudio.addEventListener('ended', function () {
+            if (currentIndex < tracks.length - 1) {
+              currentIndex++
+              loadCurrentTrack()
+              renderPlaylist()
+            }
+          })
+
+          aVol.addEventListener('input', function () {
+            mainAudio.volume = parseFloat(aVol.value)
+            mergeMixToVolumes()
+            try {
+              localStorage.setItem(STORAGE.volume, aVol.value)
+            } catch (e) {}
+          })
+        }
+
+        function bindProgressPointer() {
+          var dragging = false
+          function seekFromClientX(clientX) {
+            var rail = aProgressHit.querySelector('.progress-rail')
+            if (!rail) return
+            var rect = rail.getBoundingClientRect()
+            var pct = ((clientX - rect.left) / rect.width) * 100
+            setAudioPct(Math.min(100, Math.max(0, pct)))
+            updateProgressUi()
+          }
+          aProgressHit.addEventListener('pointerdown', function (e) {
+            if (e.button !== 0) return
+            dragging = true
+            aProgressHit.setPointerCapture(e.pointerId)
+            seekFromClientX(e.clientX)
+          })
+          aProgressHit.addEventListener('pointermove', function (e) {
+            if (!dragging) return
+            seekFromClientX(e.clientX)
+          })
+          aProgressHit.addEventListener('pointerup', function () {
+            dragging = false
+          })
+          aProgressHit.addEventListener('pointercancel', function () {
+            dragging = false
+          })
+          aProgressHit.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowRight') {
+              setAudioPct(pctAudio() + 2)
+              updateProgressUi()
+            } else if (e.key === 'ArrowLeft') {
+              setAudioPct(pctAudio() - 2)
+              updateProgressUi()
+            }
+          })
+        }
+
+        ringCanvas.addEventListener('click', function (e) {
+          var fr = ringFromEvent(e.clientX, e.clientY)
+          setAudioPct(fr * 100)
+          updateProgressUi()
+        })
+
+        aPlay.addEventListener('click', function () {
+          if (!tracks.length) return
+          if (mainAudio.paused) {
+            if (!mainAudio.src) loadCurrentTrack()
+            mainAudio.play().catch(function () {})
+          } else mainAudio.pause()
+        })
+        aPrev.addEventListener('click', function () {
+          if (currentIndex > 0) {
+            currentIndex--
+            loadCurrentTrack()
+            renderPlaylist()
+          }
+        })
+        aNext.addEventListener('click', function () {
+          if (currentIndex < tracks.length - 1) {
+            currentIndex++
+            loadCurrentTrack()
+            renderPlaylist()
+          }
+        })
+
+        function bindTheme() {
+          themeToggle.addEventListener('click', function () {
+            var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
+            html.setAttribute('data-theme', next)
+            saveTheme()
+            drawRing(pctAudio() / 100)
+          })
+        }
+
+        accentPick.addEventListener('input', function () {
+          html.style.setProperty('--color-accent', accentPick.value)
+          try {
+            localStorage.setItem(STORAGE.accent, accentPick.value)
+          } catch (e) {}
+          drawRing(pctAudio() / 100)
+        })
+
+        applyQuickVol.addEventListener('click', function () {
+          var n = parseInt(quickVol.value, 10)
+          if (!isFinite(n)) return
+          aVol.value = String(Math.min(1, Math.max(0, n / 100)))
+          mainAudio.volume = parseFloat(aVol.value)
+          mergeMixToVolumes()
+        })
+
+        mainVolRange.addEventListener('input', mergeMixToVolumes)
+        fxDepthRange.addEventListener('input', mergeMixToVolumes)
+        mixForm.addEventListener('input', mergeMixToVolumes)
+
+        function addDropPreview(file) {
+          var id = 'f-' + Math.random().toString(36).slice(2)
+          var card = document.createElement('div')
+          card.className = 'drop-card'
+          card.dataset.id = id
+          if (file.type.indexOf('image/') === 0) {
+            var img = document.createElement('img')
+            img.alt = file.name
+            img.src = URL.createObjectURL(file)
+            card.appendChild(img)
+          } else {
+            var ph = document.createElement('div')
+            ph.className = 'ph'
+            ph.textContent = file.name.slice(0, 18) + (file.name.length > 18 ? '…' : '')
+            card.appendChild(ph)
+          }
+          var rm = document.createElement('button')
+          rm.type = 'button'
+          rm.className = 'rm'
+          rm.setAttribute('aria-label', '移除')
+          rm.textContent = '×'
+          rm.addEventListener('click', function () {
+            if (card._objUrl) URL.revokeObjectURL(card._objUrl)
+            card.remove()
+            tracks = tracks.filter(function (t) {
+              return t.dropId !== id
+            })
+            renderPlaylist()
+          })
+          card.appendChild(rm)
+          dropList.appendChild(card)
+          if (file.type.indexOf('audio/') === 0) {
+            var url = URL.createObjectURL(file)
+            card._objUrl = url
+            tracks.push({
+              url: url,
+              title: file.name.replace(/\.[^/.]+$/, ''),
+              artist: '本地文件',
+              fromDrop: true,
+              dropId: id,
+            })
+            renderPlaylist()
+            currentIndex = tracks.length - 1
+            loadCurrentTrack()
+          }
+        }
+
+        ;['dragenter', 'dragover'].forEach(function (ev) {
+          dropZone.addEventListener(ev, function (e) {
+            e.preventDefault()
+            dropZone.classList.add('is-over')
+          })
+        })
+        dropZone.addEventListener('dragleave', function () {
+          dropZone.classList.remove('is-over')
+        })
+        dropZone.addEventListener('drop', function (e) {
+          e.preventDefault()
+          dropZone.classList.remove('is-over')
+          var files = e.dataTransfer.files
+          for (var i = 0; i < files.length; i++) addDropPreview(files[i])
+        })
+
+        async function fetchPlaylist() {
+          try {
+            var res = await fetch('./media/playlist.json', { cache: 'no-store' })
+            if (!res.ok) return
+            var data = await res.json()
+            if (!data.tracks || !data.tracks.length) return
+            /** @type {{url:string,title?:string,artist?:string}[]} */
+            var list = data.tracks
+            list.forEach(function (item) {
+              if (!item.url) return
+              tracks.push({
+                url: item.url,
+                title: item.title || item.url,
+                artist: item.artist || '',
+              })
+            })
+          } catch (e) {
+            /* file:// or missing */
+          }
+        }
+
+        function ensureDefaultTracks() {
+          if (tracks.length) return
+          DEFAULT_TRACKS.forEach(function (t) {
+            tracks.push({ url: t.url, title: t.title, artist: t.artist })
+          })
+        }
+
+        function bindGeo() {
+          if (!geoBtn) return
+          if (!navigator.geolocation) {
+            geoStatus.textContent = '当前环境不支持 Geolocation API'
+            geoBtn.disabled = true
+            return
+          }
+          geoBtn.addEventListener('click', function () {
+            geoStatus.textContent = '正在请求定位权限…'
+            geoHint.textContent = ''
+            navigator.geolocation.getCurrentPosition(
+              function (pos) {
+                var lat = pos.coords.latitude
+                var lon = pos.coords.longitude
+                geoStatus.textContent = '纬度 ' + lat.toFixed(4) + '，经度 ' + lon.toFixed(4)
+                var hint = ''
+                if (lat > 45) hint = '高纬度地区：适合节奏舒缓的原声与氛围音乐。'
+                else if (lat > 20) hint = '中纬度：可尝试轻快原声与轻电子。'
+                else if (lat > -20) hint = '低纬度：推荐明亮节拍与热带感律动。'
+                else hint = '南半球季候：试试 Lo-Fi 与暖色爵士。'
+                if (Math.abs(lon) > 100) hint += ' 偏内陆经度区：适合长时间专注播放列表。'
+                geoHint.textContent = hint
+              },
+              function () {
+                geoStatus.textContent = '无法获取定位（用户拒绝或不可用）'
+                geoHint.textContent = ''
+              },
+              { enableHighAccuracy: false, timeout: 10000 }
+            )
+          })
+        }
+
+        function boot() {
+          loadTheme()
+          loadAccent()
+          initSvgBars()
+          bindAudio()
+          bindProgressPointer()
+          bindTheme()
+          bindGeo()
+          mergeMixToVolumes()
+
+          fetchPlaylist().finally(function () {
+            ensureDefaultTracks()
+            renderPlaylist()
+            if (tracks.length) loadCurrentTrack()
+            vinylDeck.classList.toggle('is-playing', !mainAudio.paused)
+          })
+
+          setInterval(tickSvgBars, 120)
+          mixForm.dispatchEvent(new Event('input', { bubbles: true }))
+        }
+
+        boot()
+      })()
+    </script>
+  </body>
+</html>

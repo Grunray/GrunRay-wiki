@@ -7,6 +7,9 @@ import NotFoundView from '@/views/NotFoundView.vue'
 import PostDetailView from '@/views/PostDetailView.vue'
 import ProjectDetailView from '@/views/ProjectDetailView.vue'
 import ProjectNotesView from '@/views/ProjectNotesView.vue'
+import FriendsApplyView from '@/views/FriendsApplyView.vue'
+import FriendsView from '@/views/FriendsView.vue'
+import MessagesView from '@/views/MessagesView.vue'
 import ProjectsView from '@/views/ProjectsView.vue'
 import { applyPagePhotoBackgroundToDocument } from '@/theme/pagePhotoBackgrounds'
 
@@ -23,6 +26,9 @@ const router = createRouter({
         { path: 'projects/:slug/notes', name: 'project-notes', component: ProjectNotesView },
         { path: 'blog', name: 'blog', component: BlogView },
         { path: 'blog/:slug', name: 'post-detail', component: PostDetailView },
+        { path: 'messages', name: 'messages', component: MessagesView },
+        { path: 'friends', name: 'friends', component: FriendsView },
+        { path: 'friends/apply', name: 'friends-apply', component: FriendsApplyView },
         { path: ':pathMatch(.*)*', name: 'not-found', component: NotFoundView },
       ],
     },

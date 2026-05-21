@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GrunRay Web 实验</title>
+    <style>
+      /* 对齐 frontend/src/styles/themes/tokens.light.css & tokens.dark.css */
+      :root,
+      [data-theme='light'] {
+        --color-bg-base: #d6e4e7;
+        --color-bg-surface: #e2f2e8;
+        --color-bg-elevated: #d4eadc;
+        --color-reading-bg: #f1f0e8;
+        --color-text: #334f52;
+        --color-text-muted: #4d6b6e;
+        --color-border: #a8c9b4;
+        --color-accent: #a0ccab;
+        --color-accent-muted: #b8dcc4;
+        --color-on-accent: #2f4238;
+        --radius-sm: 6px;
+        --radius-md: 10px;
+        --radius-lg: 14px;
+        --shadow-card: 0 1px 4px rgb(51 79 82 / 12%);
+        --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'PingFang SC', sans-serif;
+        --glass-blur: 18px;
+        --glass-card-bg: rgb(255 255 255 / 0.48);
+        --glass-card-border: rgb(51 79 82 / 0.16);
+      }
+      [data-theme='dark'] {
+        --color-bg-base: #172226;
+        --color-bg-surface: #1e2c2e;
+        --color-bg-elevated: #243332;
+        --color-reading-bg: #262e2b;
+        --color-text: #d1dcd9;
+        --color-text-muted: #95a9a5;
+        --color-border: #3f5952;
+        --color-accent: #a0ccab;
+        --color-accent-muted: #6d9b7e;
+        --color-on-accent: #1e2d24;
+        --shadow-card: 0 2px 8px rgb(0 0 0 / 40%);
+        --glass-card-bg: rgb(18 24 26 / 0.55);
+        --glass-card-border: rgb(160 204 171 / 0.22);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html {
+        background: var(--color-bg-base);
+      }
+      body {
+        margin: 0;
+        font-family: var(--font-sans);
+        color: var(--color-text);
+        min-height: 100vh;
+        line-height: 1.5;
+      }
+
+      .glass-panel {
+        background: var(--glass-card-bg);
+        border: 1px solid var(--glass-card-border);
+        border-radius: var(--radius-lg);
+        backdrop-filter: blur(var(--glass-blur));
+        -webkit-backdrop-filter: blur(var(--glass-blur));
+        box-shadow: var(--shadow-card);
+      }
+
+      header.site-header {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--color-border);
+        background: var(--color-bg-surface);
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+      header.site-header h1 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 700;
+      }
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      button.btn {
+        font: inherit;
+        cursor: pointer;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--color-border);
+        background: var(--color-bg-elevated);
+        color: var(--color-text);
+        padding: 0.4rem 0.85rem;
+        transition: background 0.18s ease, transform 0.12s ease;
+      }
+      button.btn:hover {
+        background: var(--color-accent-muted);
+      }
+      button.btn:active {
+        transform: scale(0.97);
+      }
+      button.btn--accent {
+        background: var(--color-accent);
+        color: var(--color-on-accent);
+        border-color: transparent;
+      }
+      button.btn--accent:hover {
+        filter: brightness(1.06);
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      .app-grid {
+        display: grid;
+        grid-template-columns: minmax(220px, 280px) minmax(0, 1fr) minmax(260px, 320px);
+        gap: 1rem;
+        padding: 1rem;
+        max-width: 1440px;
+        margin: 0 auto;
+        min-height: calc(100vh - 140px);
+      }
+      @media (max-width: 1024px) {
+        .app-grid {
+          grid-template-columns: 1fr;
+          min-height: auto;
+        }
+      }
+
+      nav.app-nav,
+      main.app-main,
+      aside.app-aside {
+        padding: 1rem;
+      }
+      nav.app-nav h2,
+      main.app-main h2,
+      aside.app-aside h2 {
+        margin: 0 0 0.75rem;
+        font-size: 1rem;
+        color: var(--color-text-muted);
+        font-weight: 600;
+      }
+
+      fieldset.prefs-field {
+        margin: 0 0 1rem;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        padding: 0.65rem 0.85rem;
+      }
+      fieldset.prefs-field legend {
+        padding: 0 0.35rem;
+        font-weight: 600;
+      }
+      .form-row {
+        margin: 0.45rem 0;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .form-row label {
+        font-size: 0.85rem;
+        color: var(--color-text-muted);
+      }
+      select,
+      input:not([type='range']):not([type='checkbox']):not([type='radio']) {
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--color-border);
+        padding: 0.25rem 0.4rem;
+        background: var(--color-reading-bg);
+        color: var(--color-text);
+        font: inherit;
+      }
+
+      ul.playlist {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      ul.playlist li button {
+        width: 100%;
+        text-align: left;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        padding: 0.55rem 0.6rem;
+        border-radius: var(--radius-sm);
+        font: inherit;
+        color: var(--color-text);
+      }
+      ul.playlist li button:hover {
+        background: var(--color-bg-elevated);
+      }
+      ul.playlist li button.is-current {
+        background: var(--color-accent-muted);
+        color: var(--color-on-accent);
+        font-weight: 600;
+      }
+
+      /* 流媒体式「当前播放」横条（仅参考布局，部分按钮为展示） */
+      .player-now-bar {
+        margin: 1rem 0 0.75rem;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--color-border);
+        background: linear-gradient(165deg, var(--color-bg-elevated) 0%, var(--color-bg-surface) 100%);
+        box-shadow: var(--shadow-card);
+        overflow: hidden;
+      }
+      .now-bar-progress-wrap {
+        padding: 0.4rem 0.85rem 0.25rem;
+        border-bottom: 1px solid var(--color-border);
+        background: rgb(51 79 82 / 0.06);
+      }
+      [data-theme='dark'] .now-bar-progress-wrap {
+        background: rgb(0 0 0 / 0.2);
+      }
+      .now-bar-progress-wrap .time-row {
+        margin-bottom: 0.2rem;
+        font-size: 0.68rem;
+        letter-spacing: 0.02em;
+      }
+      .now-bar-progress-hit {
+        cursor: pointer;
+        padding: 0.2rem 0 0.15rem;
+      }
+      .now-bar-progress-hit .progress-rail {
+        height: 3px;
+        border-radius: 999px;
+        background: rgb(51 79 82 / 0.2);
+      }
+      [data-theme='dark'] .now-bar-progress-hit .progress-rail {
+        background: rgb(255 255 255 / 0.12);
+      }
+      .now-bar-progress-hit .progress-fill {
+        border-radius: 999px;
+        background: linear-gradient(90deg, #d4a574 0%, #e8c078 40%, var(--color-accent) 100%);
+        box-shadow: 0 0 10px rgb(232 192 120 / 0.55);
+      }
+      .now-bar-progress-hit .progress-thumb {
+        width: 9px;
+        height: 9px;
+        background: #fff;
+        border: 2px solid rgb(255 255 255 / 0.95);
+        box-shadow: 0 0 0 1px rgb(51 79 82 / 0.25), 0 1px 4px rgb(0 0 0 / 0.2);
+      }
+      .now-bar-body {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.65rem 1rem;
+        padding: 0.65rem 0.85rem 0.75rem;
+      }
+      .now-bar-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-width: 0;
+        flex: 1 1 200px;
+      }
+      .now-bar-text {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+      }
+      .now-track-title {
+        margin: 0;
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: var(--color-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: min(42vw, 320px);
+      }
+      .now-track-artist {
+        margin: 0;
+        font-size: 0.78rem;
+        color: var(--color-text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: min(42vw, 320px);
+      }
+      .now-bar-center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        flex: 0 0 auto;
+      }
+      .now-play-main {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        font-size: 1.35rem;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(145deg, rgb(255 255 255 / 0.38), rgb(255 255 255 / 0.12));
+        color: var(--color-text);
+        box-shadow: 0 2px 12px rgb(51 79 82 / 0.15), inset 0 1px 0 rgb(255 255 255 / 0.5);
+        transition: transform 0.15s ease, filter 0.15s ease;
+      }
+      [data-theme='dark'] .now-play-main {
+        background: linear-gradient(145deg, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0.04));
+        color: var(--color-text);
+        box-shadow: 0 2px 14px rgb(0 0 0 / 0.35);
+      }
+      .now-play-main:hover {
+        filter: brightness(1.06);
+      }
+      .now-play-main:active {
+        transform: scale(0.96);
+      }
+      .now-play-main:focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 3px;
+      }
+      .player-audio-meta {
+        margin-top: 0.85rem;
+        padding-top: 0.65rem;
+        border-top: 1px solid var(--color-border);
+      }
+      .now-bar-center .btn {
+        min-width: 2.35rem;
+        padding: 0.35rem 0.45rem;
+        font-size: 1rem;
+        background: transparent;
+        border-color: transparent;
+        color: var(--color-text);
+      }
+      .now-bar-center .btn:hover {
+        background: rgb(160 204 171 / 0.2);
+      }
+      .now-bar-right {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        flex: 1 1 160px;
+      }
+      .now-vol-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        min-width: 0;
+      }
+      .now-vol-wrap input[type='range'] {
+        width: 72px;
+        accent-color: var(--color-accent);
+      }
+
+      /* 黑胶唱机：唱盘区仍偏写实；外槽背景随项目主题 */
+      .vinyl-section {
+        margin-bottom: 0;
+      }
+      .vinyl-heading {
+        font-size: 0.95rem;
+        margin: 0 0 0.5rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+      }
+      .vinyl-deck {
+        --vinyl-platter: #3d2a14;
+        position: relative;
+        width: 100%;
+        max-width: 439px;
+        height: 311px;
+        margin: 0 auto;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--color-border);
+        background: linear-gradient(165deg, var(--color-bg-surface) 0%, var(--color-bg-elevated) 55%, var(--color-reading-bg) 100%);
+        box-shadow: var(--shadow-card);
+        overflow: hidden;
+      }
+      [data-theme='dark'] .vinyl-deck {
+        background: linear-gradient(165deg, var(--color-bg-surface) 0%, var(--color-bg-elevated) 100%);
+      }
+      .vinyl-platter-outer {
+        position: absolute;
+        left: 50%;
+        bottom: 10px;
+        transform: translateX(-50%);
+        width: 236px;
+        height: 236px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 50% 40%, #5a3d1a 0%, var(--vinyl-platter) 55%, #1a1108 100%);
+        box-shadow: 0 10px 28px rgb(0 0 0 / 0.45), inset 0 2px 6px rgb(255 255 255 / 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .vinyl-record {
+        width: 218px;
+        height: 218px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #151515 0%, #0a0a0a 55%, #050505 100%);
+        box-shadow: inset 0 0 0 3px rgb(255 255 255 / 0.04), 0 0 0 1px rgb(0 0 0 / 0.6);
+        position: relative;
+        animation: vinyl-spin 2.9s linear infinite paused;
+      }
+      .vinyl-deck.is-playing .vinyl-record {
+        animation-play-state: running;
+      }
+      @keyframes vinyl-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .vinyl-grooves {
+        position: absolute;
+        inset: 6px;
+        border-radius: 50%;
+        pointer-events: none;
+        background: repeating-radial-gradient(
+          circle at 50% 50%,
+          transparent 0 3px,
+          rgb(255 255 255 / 0.045) 3px 4px
+        );
+        mask: radial-gradient(circle, transparent 26%, #000 27%);
+        -webkit-mask: radial-gradient(circle, transparent 26%, #000 27%);
+      }
+      .vinyl-label-sparkle {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 76px;
+        height: 76px;
+        margin: -38px 0 0 -38px;
+        border-radius: 50%;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 30% 25%, rgb(255 255 255 / 0.98) 0%, transparent 28%),
+          radial-gradient(circle at 70% 75%, rgb(210 220 235 / 0.85) 0%, transparent 22%),
+          conic-gradient(from 40deg, #f1f5f9, #cbd5e1, #f8fafc, #94a3b8, #e2e8f0, #f1f5f9);
+        box-shadow:
+          inset 0 2px 3px rgb(255 255 255 / 0.95),
+          inset 0 -10px 18px rgb(60 80 100 / 0.28),
+          0 0 0 2px rgb(255 255 255 / 0.42);
+        animation: vinyl-shine 4s ease-in-out infinite;
+      }
+      @keyframes vinyl-shine {
+        0%,
+        100% {
+          filter: brightness(1) saturate(1.05);
+        }
+        50% {
+          filter: brightness(1.12) saturate(1.15);
+        }
+      }
+      .vinyl-label-sparkle::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.12'/%3E%3C/svg%3E");
+        opacity: 0.55;
+        mix-blend-mode: overlay;
+        pointer-events: none;
+      }
+      .vinyl-diamond-inner {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 34px;
+        height: 34px;
+        transform: translate(-50%, -50%) rotate(45deg);
+        background: linear-gradient(
+          145deg,
+          rgb(255 255 255 / 0.98) 0%,
+          rgb(200 214 232 / 0.92) 38%,
+          rgb(248 250 252 / 0.99) 62%,
+          rgb(148 163 184 / 0.88) 100%
+        );
+        box-shadow:
+          0 0 10px rgb(255 255 255 / 0.75),
+          inset 0 0 14px rgb(255 255 255 / 0.55),
+          inset 2px 3px 6px rgb(180 195 215 / 0.9);
+        border: 1px solid rgb(255 255 255 / 0.55);
+      }
+      .vinyl-arm-wrap {
+        position: absolute;
+        top: 14px;
+        right: 22px;
+        width: 108px;
+        height: 140px;
+        z-index: 3;
+        transform-origin: 82% 13%;
+        transform: rotate(-40deg);
+        transition: transform 0.88s cubic-bezier(0.33, 1.15, 0.52, 1);
+        filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.35));
+      }
+      .vinyl-deck.is-playing .vinyl-arm-wrap {
+        transform: rotate(6deg);
+      }
+      .vinyl-arm-svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .progress-hit {
+        flex: 1;
+        min-width: 160px;
+        cursor: pointer;
+        padding: 0.35rem 0;
+      }
+      .progress-rail {
+        height: 8px;
+        border-radius: 999px;
+        background: var(--color-border);
+        position: relative;
+      }
+      .progress-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: var(--color-accent);
+        width: 0%;
+      }
+      .progress-thumb {
+        position: absolute;
+        top: 50%;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--color-on-accent);
+        border: 2px solid var(--color-accent);
+        transform: translate(-50%, -50%);
+        left: 0%;
+        pointer-events: none;
+      }
+      .time-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+        margin-bottom: 0.25rem;
+      }
+
+      .ring-wrap {
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+      .ring-wrap canvas {
+        display: block;
+        margin: 0 auto;
+        cursor: pointer;
+        touch-action: none;
+      }
+      .ring-hint {
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+        margin-top: 0.35rem;
+      }
+
+      .drop-zone {
+        border: 2px dashed var(--color-border);
+        border-radius: var(--radius-md);
+        padding: 1rem;
+        text-align: center;
+        color: var(--color-text-muted);
+        margin-bottom: 1rem;
+        transition: border-color 0.2s, background 0.2s;
+      }
+      .drop-zone.is-over {
+        border-color: var(--color-accent);
+        background: var(--color-accent-muted);
+      }
+      .drop-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        justify-content: center;
+      }
+      .drop-card {
+        position: relative;
+        width: 88px;
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        border: 1px solid var(--color-border);
+        background: var(--color-reading-bg);
+      }
+      .drop-card img,
+      .drop-card .ph {
+        width: 100%;
+        height: 72px;
+        object-fit: cover;
+        display: block;
+      }
+      .drop-card .ph {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        text-align: center;
+        padding: 0.25rem;
+      }
+      .drop-card button.rm {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        width: 22px;
+        height: 22px;
+        border: none;
+        border-radius: 50%;
+        background: rgb(0 0 0 / 55%);
+        color: #fff;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+      }
+
+      footer.site-footer {
+        padding: 1rem 1.25rem 1.5rem;
+        border-top: 1px solid var(--color-border);
+        background: var(--color-bg-surface);
+        font-size: 0.85rem;
+        color: var(--color-text-muted);
+      }
+      footer.site-footer strong {
+        color: var(--color-text);
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+      }
+      audio.main-audio {
+        width: 100%;
+        margin-top: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>GrunRay 音乐播放器</h1>
+      <div class="header-actions">
+        <button type="button" class="btn" id="themeToggle" aria-label="切换浅色/深色主题">
+          主题
+        </button>
+      </div>
+    </header>
+
+    <div class="app-grid">
+      <nav class="app-nav glass-panel" aria-label="歌单与筛选">
+        <h2>导航与歌单</h2>
+        <fieldset class="prefs-field">
+          <legend>收听偏好</legend>
+          <div class="form-row">
+            <label for="mood">曲风</label>
+            <select id="mood" name="mood" aria-label="曲风分组">
+              <optgroup label="电子">
+                <option value="house">House</option>
+                <option value="ambient">Ambient</option>
+              </optgroup>
+              <optgroup label="原声">
+                <option value="acoustic" selected>原声 / 轻音乐</option>
+                <option value="piano">钢琴</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="quickVol">快速音量预设</label>
+            <input list="vol-presets" id="quickVol" name="quickVol" type="number" min="0" max="100" step="5" value="40" />
+            <datalist id="vol-presets">
+              <option value="0"></option>
+              <option value="25"></option>
+              <option value="50"></option>
+              <option value="75"></option>
+              <option value="100"></option>
+            </datalist>
+            <button type="button" class="btn" id="applyQuickVol">应用</button>
+          </div>
+        </fieldset>
+        <section aria-labelledby="pl-heading">
+          <h2 id="pl-heading" class="sr-only">播放列表</h2>
+          <p style="margin: 0 0 0.5rem; font-size: 0.85rem; color: var(--color-text-muted)">
+            点击曲目播放。可将音频拖入右侧区域加入列表。
+          </p>
+          <ul class="playlist" id="playlistEl" role="list"></ul>
+        </section>
+      </nav>
+
+      <main class="app-main glass-panel">
+        <h2 class="sr-only">主播放区</h2>
+        <article class="player-article" aria-labelledby="now-title">
+          <section class="vinyl-section" aria-label="黑胶唱机模拟">
+            <h3 class="vinyl-heading">黑胶唱机</h3>
+            <div class="vinyl-deck" id="vinylDeck" aria-live="polite">
+              <div class="vinyl-arm-wrap" aria-hidden="true">
+                <svg class="vinyl-arm-svg" viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <circle cx="86" cy="17" r="10.5" fill="#f8fafc" />
+                  <path
+                    d="M86 27.5 Q54 46 24 102 L20 106"
+                    stroke="#f8fafc"
+                    stroke-width="5.5"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                  <rect x="10" y="102" width="20" height="14" rx="2" fill="#f8fafc" />
+                  <rect x="14" y="116" width="4" height="8" rx="1" fill="#cbd5e1" />
+                </svg>
+              </div>
+              <div class="vinyl-platter-outer">
+                <div class="vinyl-record">
+                  <div class="vinyl-grooves" aria-hidden="true"></div>
+                  <div class="vinyl-label-sparkle" title="银白闪钻封面">
+                    <div class="vinyl-diamond-inner" aria-hidden="true"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="player-now-bar" aria-label="当前播放与传输">
+            <h2 id="now-title" class="sr-only">当前播放</h2>
+            <div class="now-bar-progress-wrap">
+              <div class="time-row">
+                <span id="aCur">0:00</span>
+                <span id="aDur">0:00</span>
+              </div>
+              <div class="now-bar-progress-hit progress-hit" id="aProgressHit" role="slider" tabindex="0" aria-label="音乐进度，可拖动" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="progress-rail">
+                  <div class="progress-fill" id="aFill"></div>
+                  <div class="progress-thumb" id="aThumb"></div>
+                </div>
+              </div>
+            </div>
+            <div class="now-bar-body">
+              <div class="now-bar-left">
+                <div class="now-bar-text">
+                  <p id="nowTrackTitle" class="now-track-title">未选择曲目</p>
+                  <p id="nowTrackArtist" class="now-track-artist">从左侧歌单选择或拖入音频</p>
+                </div>
+              </div>
+              <div class="now-bar-center">
+                <button type="button" class="btn" id="aPrev" aria-label="上一首">⏮</button>
+                <button type="button" class="now-play-main" id="aPlay" aria-label="播放或暂停">▶</button>
+                <button type="button" class="btn" id="aNext" aria-label="下一首">⏭</button>
+              </div>
+              <div class="now-bar-right">
+                <div class="now-vol-wrap">
+                  <label for="aVol" class="sr-only">音量</label>
+                  <input type="range" id="aVol" min="0" max="1" step="0.01" value="0.4" aria-label="音乐音量" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="player-audio-meta" aria-label="音乐播放与指标">
+            <h3 class="sr-only">音乐（HTMLAudio）</h3>
+            <audio id="mainAudio" class="main-audio" preload="metadata"></audio>
+            <div class="form-row" style="margin-top: 0.75rem">
+              <span>音频缓冲</span>
+              <progress id="aBuffer" max="100" value="0"></progress>
+            </div>
+            <div class="form-row" style="margin-top: 0.5rem">
+              <span>综合响度示意</span>
+              <meter id="loudMeter" min="0" max="100" low="30" high="75" optimum="50" value="40"></meter>
+            </div>
+          </section>
+        </article>
+      </main>
+
+      <aside class="app-aside glass-panel" aria-label="工具与可视化">
+        <h2>详情与工具</h2>
+
+        <div class="ring-wrap">
+          <p style="margin: 0 0 0.35rem; font-size: 0.88rem; color: var(--color-text-muted)">Canvas 环形进度（点击跳转）</p>
+          <canvas id="ringCanvas" width="200" height="200" aria-label="音乐环形进度"></canvas>
+          <p class="ring-hint">与主音频进度同步</p>
+        </div>
+
+        <svg width="100%" height="48" viewBox="0 0 200 48" aria-label="简易电平条" role="img" style="margin-bottom: 1rem">
+          <title>随播放脉动的 SVG 条</title>
+          <rect x="0" y="0" width="200" height="48" rx="6" fill="var(--color-reading-bg)" stroke="var(--color-border)" />
+          <g id="svgBars" fill="var(--color-accent)"></g>
+        </svg>
+
+        <fieldset class="prefs-field">
+          <legend>外观与定时</legend>
+          <div class="form-row">
+            <label for="accentPick">主题强调色</label>
+            <input type="color" id="accentPick" value="#a0ccab" />
+          </div>
+          <div class="form-row">
+            <label for="sleepMin">睡眠定时（分钟，0 为关闭）</label>
+            <input type="number" id="sleepMin" min="0" max="240" value="0" step="1" />
+          </div>
+          <form id="mixForm" oninput="mixOut.value = Math.round(mainVolRange.valueAsNumber * 100 + fxDepthRange.valueAsNumber * 40)">
+            <div class="form-row">
+              <label for="mainVolRange">音乐权重</label>
+              <input type="range" id="mainVolRange" name="mv" min="0" max="1" step="0.05" value="0.6" />
+            </div>
+            <div class="form-row">
+              <label for="fxDepthRange">动态余量</label>
+              <input type="range" id="fxDepthRange" name="fx" min="0" max="1" step="0.05" value="0.4" />
+            </div>
+            <div class="form-row">
+              <label for="mixOut">混合指数</label>
+              <output name="mixOut" id="mixOut" for="mainVolRange fxDepthRange">80</output>
+            </div>
+          </form>
+        </fieldset>
+
+        <div
+          class="drop-zone"
+          id="dropZone"
+          tabindex="0"
+          role="region"
+          aria-label="拖放文件区域"
+        >
+          将音频拖放到此处<br />
+          <small>支持预览与从列表移除</small>
+          <div class="drop-list" id="dropList"></div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- <footer class="site-footer">
+      <p>
+        从我自己的博客网站上剥离出来的播放器，网址 GrunRay.tech，但是还在备案中。
+      </p>
+    </footer> -->
+
+    <script>
+      (function () {
+        'use strict'
+
+        var STORAGE = {
+          theme: 'exp1.theme',
+          volume: 'exp1.audioVol',
+          accent: 'exp1.accent',
+        }
+
+        var DEFAULT_TRACKS = [
+          { url: './The Best Of 咪.mp3', title: 'The Best Of 咪', artist: '本地' },
+          { url: './The Other Side of Paradise.mp3', title: 'The Other Side of Paradise', artist: '本地' },
+        ]
+
+        var html = document.documentElement
+        var mainAudio = document.getElementById('mainAudio')
+        var vinylDeck = document.getElementById('vinylDeck')
+        var playlistEl = document.getElementById('playlistEl')
+        var nowTrackTitle = document.getElementById('nowTrackTitle')
+        var nowTrackArtist = document.getElementById('nowTrackArtist')
+        var aPlay = document.getElementById('aPlay')
+        var aPrev = document.getElementById('aPrev')
+        var aNext = document.getElementById('aNext')
+        var aCur = document.getElementById('aCur')
+        var aDur = document.getElementById('aDur')
+        var aFill = document.getElementById('aFill')
+        var aThumb = document.getElementById('aThumb')
+        var aProgressHit = document.getElementById('aProgressHit')
+        var aVol = document.getElementById('aVol')
+        var ringCanvas = document.getElementById('ringCanvas')
+        var ringCtx = ringCanvas.getContext('2d')
+        var loudMeter = document.getElementById('loudMeter')
+        var aBuffer = document.getElementById('aBuffer')
+        var dropZone = document.getElementById('dropZone')
+        var dropList = document.getElementById('dropList')
+        var themeToggle = document.getElementById('themeToggle')
+        var accentPick = document.getElementById('accentPick')
+        var sleepMin = document.getElementById('sleepMin')
+        var applyQuickVol = document.getElementById('applyQuickVol')
+        var quickVol = document.getElementById('quickVol')
+        var mixForm = document.getElementById('mixForm')
+        var mainVolRange = document.getElementById('mainVolRange')
+        var fxDepthRange = document.getElementById('fxDepthRange')
+        var svgBars = document.getElementById('svgBars')
+
+        /** @type {{url:string,title:string,artist:string,fromDrop?:boolean}[]} */
+        var tracks = []
+        var currentIndex = 0
+        var sleepDeadline = null
+        var barPhase = 0
+
+        function formatTime(sec) {
+          if (!isFinite(sec) || sec < 0) return '0:00'
+          var m = Math.floor(sec / 60)
+          var s = Math.floor(sec % 60)
+          return m + ':' + (s < 10 ? '0' : '') + s
+        }
+
+        function loadTheme() {
+          var t = localStorage.getItem(STORAGE.theme)
+          if (t === 'dark' || t === 'light') html.setAttribute('data-theme', t)
+          else html.setAttribute('data-theme', 'light')
+        }
+
+        function saveTheme() {
+          localStorage.setItem(STORAGE.theme, html.getAttribute('data-theme') || 'light')
+        }
+
+        function loadAccent() {
+          try {
+            var c = localStorage.getItem(STORAGE.accent)
+            if (c && /^#[0-9a-fA-F]{6}$/.test(c)) {
+              html.style.setProperty('--color-accent', c)
+              accentPick.value = c
+            }
+          } catch (e) {}
+        }
+
+        function pctAudio() {
+          var d = mainAudio.duration
+          if (!isFinite(d) || d <= 0) return 0
+          return (mainAudio.currentTime / d) * 100
+        }
+
+        function setAudioPct(pct) {
+          var d = mainAudio.duration
+          if (!isFinite(d) || d <= 0) return
+          mainAudio.currentTime = Math.min(d, Math.max(0, (pct / 100) * d))
+        }
+
+        function updateProgressUi() {
+          var p = pctAudio()
+          aFill.style.width = p + '%'
+          aThumb.style.left = p + '%'
+          aProgressHit.setAttribute('aria-valuenow', String(Math.round(p)))
+          aCur.textContent = formatTime(mainAudio.currentTime)
+          aDur.textContent = formatTime(mainAudio.duration || 0)
+          drawRing(p / 100)
+          var lm = Math.round(mainAudio.volume * 100)
+          loudMeter.value = Math.min(100, lm + Math.round(Math.sin(barPhase) * 8))
+          try {
+            var d = mainAudio.duration
+            if (isFinite(d) && d > 0 && mainAudio.buffered.length > 0) {
+              var end = mainAudio.buffered.end(mainAudio.buffered.length - 1)
+              aBuffer.value = Math.round((end / d) * 100)
+            } else aBuffer.value = 0
+          } catch (e) {
+            aBuffer.value = 0
+          }
+        }
+
+        function drawRing(p) {
+          var cx = ringCanvas.width / 2
+          var cy = ringCanvas.height / 2
+          var r = 72
+          var lw = 10
+          var pct = Math.max(0, Math.min(1, p))
+          var accent = getComputedStyle(html).getPropertyValue('--color-accent').trim() || '#a0ccab'
+          var border = getComputedStyle(html).getPropertyValue('--color-border').trim()
+          ringCtx.clearRect(0, 0, ringCanvas.width, ringCanvas.height)
+          ringCtx.beginPath()
+          ringCtx.arc(cx, cy, r, 0, Math.PI * 2)
+          ringCtx.strokeStyle = border || '#a8c9b4'
+          ringCtx.lineWidth = lw
+          ringCtx.globalAlpha = 0.3
+          ringCtx.stroke()
+          ringCtx.globalAlpha = 1
+          if (pct > 0) {
+            ringCtx.beginPath()
+            ringCtx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * pct)
+            ringCtx.strokeStyle = accent
+            ringCtx.lineWidth = lw
+            ringCtx.lineCap = 'round'
+            ringCtx.stroke()
+          }
+        }
+
+        function ringFromEvent(clientX, clientY) {
+          var rect = ringCanvas.getBoundingClientRect()
+          var x = clientX - rect.left - rect.width / 2
+          var y = clientY - rect.top - rect.height / 2
+          var ang = Math.atan2(y, x) + Math.PI / 2
+          if (ang < 0) ang += Math.PI * 2
+          return ang / (Math.PI * 2)
+        }
+
+        function renderPlaylist() {
+          playlistEl.innerHTML = ''
+          if (!tracks.length) {
+            nowTrackTitle.textContent = '未选择曲目'
+            nowTrackArtist.textContent = '请配置 media/playlist.json 或拖入音频'
+            var li = document.createElement('li')
+            li.textContent = '（无曲目）请配置 media/playlist.json 或拖入音频'
+            li.style.fontSize = '0.85rem'
+            li.style.color = 'var(--color-text-muted)'
+            playlistEl.appendChild(li)
+            return
+          }
+          tracks.forEach(function (t, i) {
+            var li = document.createElement('li')
+            var btn = document.createElement('button')
+            btn.type = 'button'
+            btn.textContent = (t.title || t.url) + (t.artist ? ' — ' + t.artist : '')
+            if (i === currentIndex) btn.classList.add('is-current')
+            btn.addEventListener('click', function () {
+              currentIndex = i
+              loadCurrentTrack()
+              renderPlaylist()
+            })
+            li.appendChild(btn)
+            playlistEl.appendChild(li)
+          })
+        }
+
+        function loadCurrentTrack() {
+          var t = tracks[currentIndex]
+          if (!t) return
+          mainAudio.src = t.url
+          mainAudio.play().catch(function () {})
+          nowTrackTitle.textContent = t.title || '未命名'
+          nowTrackArtist.textContent = t.artist || '—'
+          aPlay.textContent = '⏸'
+        }
+
+        function mergeMixToVolumes() {
+          var mv = mainVolRange.valueAsNumber
+          var fx = fxDepthRange.valueAsNumber
+          var baseA = parseFloat(aVol.value) || 0.4
+          mainAudio.volume = Math.min(1, Math.max(0, baseA * (0.45 + mv * 0.55) * (0.72 + fx * 0.28)))
+        }
+
+        function initSvgBars() {
+          svgBars.innerHTML = ''
+          for (var i = 0; i < 12; i++) {
+            var r = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+            r.setAttribute('x', 10 + i * 15)
+            r.setAttribute('y', 20)
+            r.setAttribute('width', 10)
+            r.setAttribute('height', 8)
+            r.setAttribute('rx', 2)
+            r.dataset.i = String(i)
+            svgBars.appendChild(r)
+          }
+        }
+
+        function tickSvgBars() {
+          barPhase += 0.18
+          var children = svgBars.children
+          var playing = !mainAudio.paused
+          for (var i = 0; i < children.length; i++) {
+            var h = 8 + (playing ? Math.abs(Math.sin(barPhase + i * 0.4)) * 28 : 4)
+            children[i].setAttribute('y', 40 - h)
+            children[i].setAttribute('height', h)
+          }
+        }
+
+        function bindAudio() {
+          try {
+            var sv = localStorage.getItem(STORAGE.volume)
+            if (sv != null) {
+              var n = parseFloat(sv)
+              if (isFinite(n)) aVol.value = String(Math.min(1, Math.max(0, n)))
+            }
+          } catch (e) {}
+          mainAudio.volume = parseFloat(aVol.value)
+
+          mainAudio.addEventListener('timeupdate', function () {
+            updateProgressUi()
+            if (sleepDeadline && Date.now() >= sleepDeadline) {
+              mainAudio.pause()
+              sleepDeadline = null
+            }
+          })
+          mainAudio.addEventListener('loadedmetadata', updateProgressUi)
+          mainAudio.addEventListener('play', function () {
+            aPlay.textContent = '⏸'
+            vinylDeck.classList.add('is-playing')
+            var sm = parseInt(sleepMin.value, 10)
+            if (isFinite(sm) && sm > 0) sleepDeadline = Date.now() + sm * 60000
+          })
+          mainAudio.addEventListener('pause', function () {
+            aPlay.textContent = '▶'
+            vinylDeck.classList.remove('is-playing')
+          })
+          mainAudio.addEventListener('ended', function () {
+            if (currentIndex < tracks.length - 1) {
+              currentIndex++
+              loadCurrentTrack()
+              renderPlaylist()
+            }
+          })
+
+          aVol.addEventListener('input', function () {
+            mainAudio.volume = parseFloat(aVol.value)
+            mergeMixToVolumes()
+            try {
+              localStorage.setItem(STORAGE.volume, aVol.value)
+            } catch (e) {}
+          })
+        }
+
+        function bindProgressPointer() {
+          var dragging = false
+          function seekFromClientX(clientX) {
+            var rail = aProgressHit.querySelector('.progress-rail')
+            if (!rail) return
+            var rect = rail.getBoundingClientRect()
+            var pct = ((clientX - rect.left) / rect.width) * 100
+            setAudioPct(Math.min(100, Math.max(0, pct)))
+            updateProgressUi()
+          }
+          aProgressHit.addEventListener('pointerdown', function (e) {
+            if (e.button !== 0) return
+            dragging = true
+            aProgressHit.setPointerCapture(e.pointerId)
+            seekFromClientX(e.clientX)
+          })
+          aProgressHit.addEventListener('pointermove', function (e) {
+            if (!dragging) return
+            seekFromClientX(e.clientX)
+          })
+          aProgressHit.addEventListener('pointerup', function () {
+            dragging = false
+          })
+          aProgressHit.addEventListener('pointercancel', function () {
+            dragging = false
+          })
+          aProgressHit.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowRight') {
+              setAudioPct(pctAudio() + 2)
+              updateProgressUi()
+            } else if (e.key === 'ArrowLeft') {
+              setAudioPct(pctAudio() - 2)
+              updateProgressUi()
+            }
+          })
+        }
+
+        ringCanvas.addEventListener('click', function (e) {
+          var fr = ringFromEvent(e.clientX, e.clientY)
+          setAudioPct(fr * 100)
+          updateProgressUi()
+        })
+
+        aPlay.addEventListener('click', function () {
+          if (!tracks.length) return
+          if (mainAudio.paused) {
+            if (!mainAudio.src) loadCurrentTrack()
+            mainAudio.play().catch(function () {})
+          } else mainAudio.pause()
+        })
+        aPrev.addEventListener('click', function () {
+          if (currentIndex > 0) {
+            currentIndex--
+            loadCurrentTrack()
+            renderPlaylist()
+          }
+        })
+        aNext.addEventListener('click', function () {
+          if (currentIndex < tracks.length - 1) {
+            currentIndex++
+            loadCurrentTrack()
+            renderPlaylist()
+          }
+        })
+
+        function bindTheme() {
+          themeToggle.addEventListener('click', function () {
+            var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
+            html.setAttribute('data-theme', next)
+            saveTheme()
+            drawRing(pctAudio() / 100)
+          })
+        }
+
+        accentPick.addEventListener('input', function () {
+          html.style.setProperty('--color-accent', accentPick.value)
+          try {
+            localStorage.setItem(STORAGE.accent, accentPick.value)
+          } catch (e) {}
+          drawRing(pctAudio() / 100)
+        })
+
+        applyQuickVol.addEventListener('click', function () {
+          var n = parseInt(quickVol.value, 10)
+          if (!isFinite(n)) return
+          aVol.value = String(Math.min(1, Math.max(0, n / 100)))
+          mainAudio.volume = parseFloat(aVol.value)
+          mergeMixToVolumes()
+        })
+
+        mainVolRange.addEventListener('input', mergeMixToVolumes)
+        fxDepthRange.addEventListener('input', mergeMixToVolumes)
+        mixForm.addEventListener('input', mergeMixToVolumes)
+
+        function addDropPreview(file) {
+          var id = 'f-' + Math.random().toString(36).slice(2)
+          var card = document.createElement('div')
+          card.className = 'drop-card'
+          card.dataset.id = id
+          if (file.type.indexOf('image/') === 0) {
+            var img = document.createElement('img')
+            img.alt = file.name
+            img.src = URL.createObjectURL(file)
+            card.appendChild(img)
+          } else {
+            var ph = document.createElement('div')
+            ph.className = 'ph'
+            ph.textContent = file.name.slice(0, 18) + (file.name.length > 18 ? '…' : '')
+            card.appendChild(ph)
+          }
+          var rm = document.createElement('button')
+          rm.type = 'button'
+          rm.className = 'rm'
+          rm.setAttribute('aria-label', '移除')
+          rm.textContent = '×'
+          rm.addEventListener('click', function () {
+            if (card._objUrl) URL.revokeObjectURL(card._objUrl)
+            card.remove()
+            tracks = tracks.filter(function (t) {
+              return t.dropId !== id
+            })
+            renderPlaylist()
+          })
+          card.appendChild(rm)
+          dropList.appendChild(card)
+          if (file.type.indexOf('audio/') === 0) {
+            var url = URL.createObjectURL(file)
+            card._objUrl = url
+            tracks.push({
+              url: url,
+              title: file.name.replace(/\.[^/.]+$/, ''),
+              artist: '本地文件',
+              fromDrop: true,
+              dropId: id,
+            })
+            renderPlaylist()
+            currentIndex = tracks.length - 1
+            loadCurrentTrack()
+          }
+        }
+
+        ;['dragenter', 'dragover'].forEach(function (ev) {
+          dropZone.addEventListener(ev, function (e) {
+            e.preventDefault()
+            dropZone.classList.add('is-over')
+          })
+        })
+        dropZone.addEventListener('dragleave', function () {
+          dropZone.classList.remove('is-over')
+        })
+        dropZone.addEventListener('drop', function (e) {
+          e.preventDefault()
+          dropZone.classList.remove('is-over')
+          var files = e.dataTransfer.files
+          for (var i = 0; i < files.length; i++) addDropPreview(files[i])
+        })
+
+        async function fetchPlaylist() {
+          try {
+            var res = await fetch('./media/playlist.json', { cache: 'no-store' })
+            if (!res.ok) return
+            var data = await res.json()
+            if (!data.tracks || !data.tracks.length) return
+            /** @type {{url:string,title?:string,artist?:string}[]} */
+            var list = data.tracks
+            list.forEach(function (item) {
+              if (!item.url) return
+              tracks.push({
+                url: item.url,
+                title: item.title || item.url,
+                artist: item.artist || '',
+              })
+            })
+          } catch (e) {
+            /* file:// or missing */
+          }
+        }
+
+        function ensureDefaultTracks() {
+          if (tracks.length) return
+          DEFAULT_TRACKS.forEach(function (t) {
+            tracks.push({ url: t.url, title: t.title, artist: t.artist })
+          })
+        }
+
+        function boot() {
+          loadTheme()
+          loadAccent()
+          initSvgBars()
+          bindAudio()
+          bindProgressPointer()
+          bindTheme()
+          mergeMixToVolumes()
+
+          fetchPlaylist().finally(function () {
+            ensureDefaultTracks()
+            renderPlaylist()
+            if (tracks.length) loadCurrentTrack()
+            vinylDeck.classList.toggle('is-playing', !mainAudio.paused)
+          })
+
+          setInterval(tickSvgBars, 120)
+          mixForm.dispatchEvent(new Event('input', { bubbles: true }))
+        }
+
+        boot()
+      })()
+    </script>
+  </body>
+</html>

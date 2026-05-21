@@ -3,11 +3,25 @@ def create_app():
     from flask_cors import CORS
 
     from app.config import config
+    from app.routes.auth_api import bp as auth_bp
+    from app.routes.friends_api import bp as friends_bp
+    from app.routes.messages_api import bp as messages_bp
     from app.routes.read_api import bp as api_bp
 
     app = Flask(__name__)
     app.config["JSON_AS_ASCII"] = False
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    app.config["SECRET_KEY"] = config.SECRET_KEY
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    CORS(
+        app,
+        resources={
+            r"/api/*": {
+                "origins": config.CORS_ORIGINS,
+                "supports_credentials": True,
+            }
+        },
+    )
 
     @app.get("/")
     def index():
@@ -17,4 +31,7 @@ def create_app():
         }
 
     app.register_blueprint(api_bp)
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(messages_bp)
+    app.register_blueprint(friends_bp)
     return app

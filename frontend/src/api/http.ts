@@ -3,7 +3,7 @@ export async function apiGet<T>(path: string): Promise<T> {
   const base = import.meta.env.VITE_API_BASE_URL ?? ''
   const p = path.startsWith('/') ? path : `/${path}`
   const url = base ? `${base.replace(/\/$/, '')}${p}` : p
-  const res = await fetch(url)
+  const res = await fetch(url, { credentials: 'same-origin' })
   if (!res.ok) {
     const err = new Error(`API ${res.status}`) as Error & { status: number }
     err.status = res.status

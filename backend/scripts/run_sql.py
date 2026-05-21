@@ -33,6 +33,22 @@ from app.config import config  # noqa: E402
 
 _SQL_DIR = _backend / "sql"
 
+# 全量跑 sql/ 时按文件名排序会导致 music_track.sql（m）先于 schema.sql（s），
+# 而 music_track 外键依赖 post，必须先执行 schema.sql。
+_SQL_KNOWN_ORDER = ("schema.sql", "wiki_project.sql", "music_track.sql")
+
+
+def _list_sql_files_in_run_order() -> list[Path]:
+    by_name = {p.name: p for p in _SQL_DIR.glob("*.sql")}
+    out: list[Path] = []
+    for name in _SQL_KNOWN_ORDER:
+        p = by_name.pop(name, None)
+        if p is not None:
+            out.append(p)
+    for name in sorted(by_name):
+        out.append(by_name[name])
+    return out
+
 
 def _strip_sql_comments(text: str) -> str:
     """去掉块注释 /* */ 与行注释 --（整行）。"""
@@ -140,7 +156,7 @@ def main() -> None:
             sys.exit(1)
         files = [target]
     else:
-        files = sorted(_SQL_DIR.glob("*.sql"))
+        files = _list_sql_files_in_run_order()
         if not files:
             print("sql 目录下没有 .sql 文件:", _SQL_DIR, file=sys.stderr)
             sys.exit(1)
