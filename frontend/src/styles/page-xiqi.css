@@ -54,6 +54,22 @@ html[data-xiqi-split-open] .app-page-cover {
   width: 100%;
 }
 
+/* 详情关闭后：主栏从 split 固定窄宽 → full-viewport 居中，给关键属性加过渡。
+ * margin-inline: auto 本身不可过渡，但 max-width / flex-basis / width 平滑变化时，
+ * 浏览器对 auto margin 的视觉效果是连续的（左右余量同步增长），整体看起来是平滑归位。
+ */
+.app-main.app-main--full-viewport .xiqi-page {
+  transition: max-width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.xiqi-split-main {
+  transition:
+    flex-basis 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    flex-grow 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    max-width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .app-page-cover:has(.xiqi-page--split) {
   flex: 1 1 auto;
   min-height: 0;
@@ -204,8 +220,8 @@ html[data-xiqi-split-open] .app-page-cover {
 .xiqi-detail-enter-active,
 .xiqi-detail-leave-active {
   transition:
-    opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .xiqi-detail-leave-active {
@@ -225,17 +241,17 @@ html[data-xiqi-split-open] .app-page-cover {
   transform: translateX(36px);
 }
 
-/* close 按钮：enter 比面板晚 80ms scale-in；leave 阶段透明度略快于面板 */
+/* close 按钮：enter 比面板晚 120ms scale-in；leave 阶段透明度略快于面板 */
 .xiqi-detail-enter-active .xiqi-detail-close {
   opacity: 0;
   transform: scale(0.84);
-  animation: xiqi-detail-close-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+  animation: xiqi-detail-close-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
 }
 
 .xiqi-detail-leave-active .xiqi-detail-close {
   transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
+    opacity 0.28s ease,
+    transform 0.28s ease;
   opacity: 0;
   transform: scale(0.92);
 }
@@ -259,14 +275,14 @@ html[data-xiqi-split-open] .app-page-cover {
 .xiqi-feed-item-enter-active,
 .xiqi-feed-item-leave-active {
   transition:
-    opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .xiqi-feed-item-enter-from,
 .xiqi-feed-item-leave-to {
   opacity: 0;
-  transform: translateY(8px);
+  transform: translateY(10px);
 }
 
 .xiqi-feed-item-leave-active {
@@ -276,7 +292,7 @@ html[data-xiqi-split-open] .app-page-cover {
 }
 
 .xiqi-feed-item-move {
-  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* TransitionGroup 渲染的 ul 需要 relative 才能让 leave-active 的 absolute 子项定位正确 */
@@ -288,12 +304,12 @@ html[data-xiqi-split-open] .app-page-cover {
 .xiqi-detail-enter-active .xiqi-detail-title {
   opacity: 0;
   transform: translateY(8px);
-  animation: xiqi-detail-inner-enter 0.36s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+  animation: xiqi-detail-inner-enter 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
 }
 .xiqi-detail-enter-active .xiqi-detail-body {
   opacity: 0;
   transform: translateY(10px);
-  animation: xiqi-detail-inner-enter 0.42s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
+  animation: xiqi-detail-inner-enter 0.58s cubic-bezier(0.22, 1, 0.36, 1) 0.26s both;
 }
 
 @keyframes xiqi-detail-inner-enter {
@@ -1213,6 +1229,11 @@ html[data-photo-bg='true'] .xiqi-hero-chip.xiqi-hero-title {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .app-main.app-main--full-viewport .xiqi-page,
+  .xiqi-split-main {
+    transition: none;
+  }
+
   .xiqi-detail-enter-active,
   .xiqi-detail-leave-active {
     transition: opacity 0.2s ease;
