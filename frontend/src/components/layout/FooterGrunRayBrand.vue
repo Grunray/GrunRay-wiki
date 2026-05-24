@@ -6,13 +6,13 @@ import type { FooterGrunRaySliceEntry } from '@/composables/useFooterGrunRayReve
 const SLICE_COUNT = 20
 
 const LETTER_ASSETS = [
-  { src: import.meta.env.BASE_URL + 'footer/16gl-G.svg', char: 'G' },
-  { src: import.meta.env.BASE_URL + 'footer/16gl-R.svg', char: 'R' },
-  { src: import.meta.env.BASE_URL + 'footer/16gl-U.svg', char: 'U' },
-  { src: import.meta.env.BASE_URL + 'footer/16gl-N.svg', char: 'N' },
-  { src: import.meta.env.BASE_URL + 'footer/16gl-R.svg', char: 'R' },
-  { src: import.meta.env.BASE_URL + 'footer/16gl-A.svg', char: 'A' },
-  { src: import.meta.env.BASE_URL + 'footer/16gl-Y.svg', char: 'Y' },
+  { src: '/footer/16gl-G.svg', char: 'G' },
+  { src: '/footer/16gl-R.svg', char: 'R' },
+  { src: '/footer/16gl-U.svg', char: 'U' },
+  { src: '/footer/16gl-N.svg', char: 'N' },
+  { src: '/footer/16gl-R.svg', char: 'R' },
+  { src: '/footer/16gl-A.svg', char: 'A' },
+  { src: '/footer/16gl-Y.svg', char: 'Y' },
 ] as const
 
 const brandWordRef = ref<HTMLElement | null>(null)
