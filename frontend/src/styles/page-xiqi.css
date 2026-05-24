@@ -204,8 +204,8 @@ html[data-xiqi-split-open] .app-page-cover {
 .xiqi-detail-enter-active,
 .xiqi-detail-leave-active {
   transition:
-    opacity 0.38s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .xiqi-detail-leave-active {
@@ -222,7 +222,89 @@ html[data-xiqi-split-open] .app-page-cover {
 .xiqi-detail-enter-from,
 .xiqi-detail-leave-to {
   opacity: 0;
-  transform: translateX(20px);
+  transform: translateX(36px);
+}
+
+/* close 按钮：enter 比面板晚 80ms scale-in；leave 阶段透明度略快于面板 */
+.xiqi-detail-enter-active .xiqi-detail-close {
+  opacity: 0;
+  transform: scale(0.84);
+  animation: xiqi-detail-close-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+}
+
+.xiqi-detail-leave-active .xiqi-detail-close {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+  opacity: 0;
+  transform: scale(0.92);
+}
+
+@keyframes xiqi-detail-close-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.84);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 筛选/排序切换时列表 FLIP 动画（Vue TransitionGroup name="xiqi-feed-item"）
+ * - enter / leave：fade + 8px translateY，0.28s
+ * - leave 用 position absolute 让剩余项的 FLIP move 流畅
+ * - move：transform 0.32s，由 Vue 自动注入 transform 完成位置过渡
+ */
+.xiqi-feed-item-enter-active,
+.xiqi-feed-item-leave-active {
+  transition:
+    opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.xiqi-feed-item-enter-from,
+.xiqi-feed-item-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.xiqi-feed-item-leave-active {
+  position: absolute;
+  width: 100%;
+  z-index: 1;
+}
+
+.xiqi-feed-item-move {
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* TransitionGroup 渲染的 ul 需要 relative 才能让 leave-active 的 absolute 子项定位正确 */
+.xiqi-feed {
+  position: relative;
+}
+
+/* 详情正文内部：title + body 略晚 cascade，强化「面板打开后内容到位」感 */
+.xiqi-detail-enter-active .xiqi-detail-title {
+  opacity: 0;
+  transform: translateY(8px);
+  animation: xiqi-detail-inner-enter 0.36s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+}
+.xiqi-detail-enter-active .xiqi-detail-body {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: xiqi-detail-inner-enter 0.42s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
+}
+
+@keyframes xiqi-detail-inner-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 栖息共用卡片（碎念 / 关于 / 推荐） */
@@ -1139,6 +1221,23 @@ html[data-photo-bg='true'] .xiqi-hero-chip.xiqi-hero-title {
   .xiqi-detail-enter-from,
   .xiqi-detail-leave-to {
     transform: none;
+  }
+
+  .xiqi-detail-enter-active .xiqi-detail-close,
+  .xiqi-detail-enter-active .xiqi-detail-title,
+  .xiqi-detail-enter-active .xiqi-detail-body,
+  .xiqi-detail-leave-active .xiqi-detail-close {
+    animation: none;
+    transition: opacity 0.18s ease;
+    opacity: 1;
+    transform: none;
+  }
+
+  .xiqi-feed-item-enter-active,
+  .xiqi-feed-item-leave-active,
+  .xiqi-feed-item-move {
+    transition: opacity 0.18s ease;
+    transform: none !important;
   }
 
   .xiqi-card--interactive:hover {
