@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
 import PostDetailPageSkeleton from '@/components/ui/PostDetailPageSkeleton.vue'
+import { useMarkdownCodeCopy } from '@/composables/useMarkdownCodeCopy'
 import { restartPageEnter } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
@@ -44,6 +45,7 @@ const post = ref<Post | null>(null)
 const loadError = ref(false)
 const loading = ref(true)
 const articleRoot = ref<HTMLElement | null>(null)
+const bodyMarkdownRef = ref<HTMLElement | null>(null)
 
 /** 正文根在首帧可能尚未挂上 ref；且同 slug 再进入时 slug watch 不会触发，必须在 load 结束后统一补 play */
 async function restartArticleEnterWhenReady() {
@@ -154,6 +156,13 @@ const algo = computed(() => (post.value?.type === 'algorithm' ? (post.value as A
 const note = computed(() => (post.value?.type === 'project_note' ? (post.value as ProjectNote) : null))
 const noteProject = computed(() => (note.value ? getProjectById(note.value.project_id) : null))
 const renderedBodyHtml = computed(() => post.value?.body_html?.trim() || '')
+
+const codeCopyLabels = computed(() => ({
+  copy: t('post.copyCode'),
+  copyDone: t('post.copyCodeDone'),
+}))
+
+useMarkdownCodeCopy(bodyMarkdownRef, codeCopyLabels, renderedBodyHtml)
 </script>
 
 <template>
@@ -200,7 +209,12 @@ const renderedBodyHtml = computed(() => post.value?.body_html?.trim() || '')
       <RouterLink :to="`/projects/${noteProject.slug}`">{{ noteProject.title }}</RouterLink>
     </p>
 
-    <div v-if="renderedBodyHtml" class="body prose body-markdown" v-html="renderedBodyHtml" />
+    <div
+      v-if="renderedBodyHtml"
+      ref="bodyMarkdownRef"
+      class="body prose body-markdown"
+      v-html="renderedBodyHtml"
+    />
     <div v-else-if="post.body" class="body prose body-plain">{{ post.body }}</div>
   </article>
   <p v-else class="empty">{{ t('common.notFound') }}</p>
@@ -269,6 +283,69 @@ const renderedBodyHtml = computed(() => post.value?.body_html?.trim() || '')
   white-space: normal;
 }
 
+.body-markdown :deep(.md-code-block--copyable) {
+  position: relative;
+}
+
+.body-markdown :deep(.md-code-copy-btn) {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 2rem;
+  height: 1.75rem;
+  padding: 0 0.45rem;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: var(--radius-sm);
+  background: rgb(30 30 30 / 88%);
+  color: #c8c8c8;
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.body-markdown :deep(.md-code-copy-btn:hover) {
+  color: #fff;
+  border-color: rgb(255 255 255 / 28%);
+  background: rgb(45 45 45 / 92%);
+}
+
+.body-markdown :deep(.md-code-copy-btn__icon) {
+  display: inline-flex;
+}
+
+.body-markdown :deep(.md-code-copy-btn__check),
+.body-markdown :deep(.md-code-copy-btn__label) {
+  display: none;
+}
+
+.body-markdown :deep(.md-code-copy-btn--done) {
+  color: #b5cea8;
+  border-color: color-mix(in srgb, #b5cea8 45%, rgb(255 255 255 / 14%));
+}
+
+.body-markdown :deep(.md-code-copy-btn--done .md-code-copy-btn__icon) {
+  display: none;
+}
+
+.body-markdown :deep(.md-code-copy-btn--done .md-code-copy-btn__check) {
+  display: inline;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.body-markdown :deep(.md-code-copy-btn--done .md-code-copy-btn__label) {
+  display: inline;
+}
+
 .body-markdown :deep(.codehilite) {
   margin: 1rem 0;
   border: 1px solid color-mix(in srgb, var(--color-border) 82%, #000);
@@ -280,12 +357,12 @@ const renderedBodyHtml = computed(() => post.value?.body_html?.trim() || '')
 
 .body-markdown :deep(pre.codehilite) {
   margin: 1rem 0;
-  padding: 0.9rem 1rem;
+  padding: 0.9rem 2.75rem 0.9rem 1rem;
 }
 
 .body-markdown :deep(.codehilite pre) {
   margin: 0;
-  padding: 0.9rem 1rem;
+  padding: 0.9rem 2.75rem 0.9rem 1rem;
   white-space: pre;
   line-height: 1.55;
 }

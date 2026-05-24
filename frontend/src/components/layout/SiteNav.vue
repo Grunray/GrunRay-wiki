@@ -5,6 +5,8 @@ import { RouterLink, useRoute } from 'vue-router'
 
 import AboutNavIcon from '../icons/AboutNavIcon.vue'
 import BlogNavIcon from '../icons/BlogNavIcon.vue'
+import CommunityNavIcon from '../icons/CommunityNavIcon.vue'
+import CreateNavIcon from '../icons/CreateNavIcon.vue'
 import FragmentsNavIcon from '../icons/FragmentsNavIcon.vue'
 import FriendsNavIcon from '../icons/FriendsNavIcon.vue'
 import HomeNavIcon from '../icons/HomeNavIcon.vue'
@@ -35,7 +37,7 @@ function mapItems(
 
 const createGroup = computed(() => ({
   label: t('nav.groupCreate'),
-  icon: ProjectsNavIcon,
+  icon: CreateNavIcon,
   menuId: 'shell-nav-menu-create',
   items: mapItems([
     { to: '/projects', labelKey: 'nav.projects', descKey: 'nav.projectsDesc', icon: ProjectsNavIcon },
@@ -45,7 +47,7 @@ const createGroup = computed(() => ({
 
 const communityGroup = computed(() => ({
   label: t('nav.groupCommunity'),
-  icon: FriendsNavIcon,
+  icon: CommunityNavIcon,
   menuId: 'shell-nav-menu-community',
   items: mapItems([
     { to: '/messages', labelKey: 'nav.messages', descKey: 'nav.messagesDesc', icon: MessagesNavIcon },

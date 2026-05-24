@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
+import AppSelect from '@/components/ui/AppSelect.vue'
 import TimelinePageSkeleton from '@/components/ui/TimelinePageSkeleton.vue'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
@@ -55,8 +56,6 @@ const loading = ref(false)
 const category = ref<BlogCategoryFilter>('all')
 const tagFilter = ref('')
 const keyword = ref('')
-const tagMenuOpen = ref(false)
-const tagMenuRef = ref<HTMLElement | null>(null)
 const categoryGroupRef = ref<HTMLElement | null>(null)
 const categoryBtnRefs = ref<HTMLElement[]>([])
 const categoryPillStyle = ref<Record<string, string>>({ opacity: '0' })
@@ -82,7 +81,10 @@ const categoryOptions = computed<Array<{ id: BlogCategoryFilter; label: string }
   { id: 'algorithm', label: t('blog.categoryAlgorithm') },
 ])
 
-const selectedTagLabel = computed(() => tagFilter.value || t('projects.allTags'))
+const tagSelectOptions = computed(() => [
+  { value: '', label: t('projects.allTags') },
+  ...allTags.value.map((tag) => ({ value: tag, label: tag })),
+])
 
 function setCategoryBtnRef(el: Element | null, index: number) {
   if (!el) return
@@ -159,34 +161,12 @@ watch(allTags, (tags) => {
   }
 })
 
-function toggleTagMenu() {
-  tagMenuOpen.value = !tagMenuOpen.value
-}
-
-function closeTagMenu() {
-  tagMenuOpen.value = false
-}
-
-function selectTag(value: string) {
-  tagFilter.value = value
-  closeTagMenu()
-}
-
-function onDocumentPointerDown(event: MouseEvent) {
-  const root = tagMenuRef.value
-  if (!root) return
-  const target = event.target as Node | null
-  if (target && !root.contains(target)) closeTagMenu()
-}
-
 onMounted(() => {
-  document.addEventListener('mousedown', onDocumentPointerDown)
   window.addEventListener('resize', updateCategoryPill)
   void nextTick(updateCategoryPill)
 })
 
 onBeforeUnmount(() => {
-  document.removeEventListener('mousedown', onDocumentPointerDown)
   window.removeEventListener('resize', updateCategoryPill)
 })
 
@@ -324,26 +304,13 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
     <div class="toolbar card">
       <div class="row row-top">
         <span class="lbl lbl-tag">{{ t('blog.tagFilter') }}</span>
-        <div ref="tagMenuRef" class="select-wrap">
-          <button class="select-btn" type="button" :aria-expanded="tagMenuOpen" aria-haspopup="listbox" @click="toggleTagMenu">
-            <span class="select-btn-label">{{ selectedTagLabel }}</span>
-            <span class="select-btn-caret" aria-hidden="true">▾</span>
-          </button>
-          <div v-if="tagMenuOpen" class="select-menu card" role="listbox">
-            <button class="select-option" :class="{ 'select-option--active': tagFilter === '' }" type="button" @click="selectTag('')">
-              {{ t('projects.allTags') }}
-            </button>
-            <button
-              v-for="tg in allTags"
-              :key="tg"
-              class="select-option"
-              :class="{ 'select-option--active': tagFilter === tg }"
-              type="button"
-              @click="selectTag(tg)"
-            >
-              {{ tg }}
-            </button>
-          </div>
+        <div class="tag-select-wrap">
+          <AppSelect
+            v-model="tagFilter"
+            :options="tagSelectOptions"
+            :aria-label="t('blog.tagFilter')"
+            min-width="0"
+          />
         </div>
 
         <div ref="categoryGroupRef" class="category-group category-group--toolbar">
@@ -545,89 +512,12 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
   color: var(--color-accent);
 }
 
-.select-wrap {
+.tag-select-wrap {
   position: relative;
   z-index: 4;
   display: inline-block;
   min-width: 280px;
   max-width: 320px;
-}
-
-.select-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.6rem;
-  width: 100%;
-  padding: 0.42rem 0.62rem;
-  border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background: color-mix(in srgb, var(--color-bg-surface) 88%, transparent);
-  color: var(--color-text);
-  font-size: 0.9rem;
-  line-height: 1.2;
-  cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.select-btn:hover {
-  border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
-}
-
-.select-btn:focus {
-  outline: none;
-  border-color: color-mix(in srgb, var(--color-accent) 58%, var(--color-border));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 18%, transparent);
-}
-
-.select-btn-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.select-btn-caret {
-  color: var(--color-text-muted);
-  font-size: 0.78rem;
-}
-
-.select-menu {
-  position: absolute;
-  top: calc(100% + 0.45rem);
-  left: 0;
-  z-index: 20;
-  width: 100%;
-  max-height: 260px;
-  overflow: auto;
-  padding: 0.35rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-bg-surface) 92%, transparent);
-  box-shadow: var(--shadow-card);
-}
-
-.select-option {
-  display: block;
-  width: 100%;
-  text-align: left;
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 0.45rem 0.55rem;
-  margin: 0;
-  background: transparent;
-  color: var(--color-text);
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.select-option:hover {
-  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
-}
-
-.select-option--active {
-  background: color-mix(in srgb, var(--color-accent) 18%, transparent);
-  color: var(--color-accent);
 }
 
 .row-search {
@@ -803,7 +693,7 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
     margin-left: 0;
   }
 
-  .select-wrap {
+  .tag-select-wrap {
     min-width: 0;
     width: min(320px, 100%);
   }

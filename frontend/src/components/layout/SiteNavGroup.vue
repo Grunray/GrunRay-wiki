@@ -76,7 +76,7 @@ watch(
     <button
       type="button"
       class="group-trigger"
-      :class="{ active: groupActive }"
+      :class="{ active: groupActive, 'is-expanded': expanded }"
       :aria-expanded="expanded ? 'true' : 'false'"
       :aria-controls="menuId"
       @click="onTriggerClick"
@@ -88,33 +88,32 @@ watch(
       <span class="link-icon link-icon--chevron" aria-hidden="true">
         <ChevronNavIcon />
       </span>
+      <span class="leaf-glow" aria-hidden="true" />
       <span class="grow-line" aria-hidden="true" />
     </button>
 
-    <div
-      :id="menuId"
-      class="dropdown"
-      :class="{ 'is-visible': expanded }"
-      role="menu"
-    >
-      <RouterLink
-        v-for="item in items"
-        :key="item.to"
-        :to="item.to"
-        class="dropdown-item"
-        :class="{ active: isActive(item.to) }"
-        role="menuitem"
-        @click="isOpen = false"
-      >
-        <span class="link-icon" aria-hidden="true">
-          <component :is="item.icon" />
-        </span>
-        <span class="meta">
-          <span class="meta-title">{{ item.label }}</span>
-          <span class="meta-desc">{{ item.desc }}</span>
-        </span>
-      </RouterLink>
-    </div>
+    <Transition name="nav-group-dropdown">
+      <div v-if="expanded" :id="menuId" class="dropdown" role="menu">
+        <RouterLink
+          v-for="(item, index) in items"
+          :key="item.to"
+          :to="item.to"
+          class="dropdown-item"
+          :class="{ active: isActive(item.to) }"
+          :style="{ '--nav-item-i': index }"
+          role="menuitem"
+          @click="isOpen = false"
+        >
+          <span class="link-icon" aria-hidden="true">
+            <component :is="item.icon" />
+          </span>
+          <span class="meta">
+            <span class="meta-title">{{ item.label }}</span>
+            <span class="meta-desc">{{ item.desc }}</span>
+          </span>
+        </RouterLink>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -161,11 +160,12 @@ watch(
 }
 
 .link-icon--chevron :deep(.shell-nav-icon--chevron) {
-  transition: transform 0.35s ease;
+  transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .group-trigger:hover,
 .nav-group:focus-within > .group-trigger,
+.nav-group.is-expanded > .group-trigger,
 .group-trigger.active {
   color: var(--color-text);
   background-color: color-mix(in srgb, var(--color-accent) 18%, transparent);
@@ -174,7 +174,8 @@ watch(
 }
 
 .group-trigger:hover .link-icon:not(.link-icon--chevron),
-.nav-group:focus-within > .group-trigger .link-icon:not(.link-icon--chevron) {
+.nav-group:focus-within > .group-trigger .link-icon:not(.link-icon--chevron),
+.nav-group.is-expanded > .group-trigger .link-icon:not(.link-icon--chevron) {
   transform: translateY(-1px) rotate(-2deg);
 }
 
@@ -185,6 +186,12 @@ watch(
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 75%),
     0 4px 14px rgb(170 205 185 / 15%);
+  animation: shell-nav-group-breath 4s ease-in-out infinite;
+}
+
+.group-trigger:active:not(.active) {
+  transform: translateY(-1px) scale(0.985);
+  transition-duration: 0.12s;
 }
 
 :global([data-theme='dark']) .group-trigger.active {
@@ -204,13 +211,42 @@ watch(
   height: 2px;
   border-radius: 10px;
   background: linear-gradient(90deg, transparent, rgb(153 210 174 / 70%), transparent);
-  transition: width 0.5s ease, left 0.5s ease;
+  transition: width 0.5s ease, left 0.5s ease, opacity 0.35s ease;
   pointer-events: none;
 }
 
-.group-trigger:hover .grow-line {
+.group-trigger:hover .grow-line,
+.nav-group.is-expanded .grow-line {
   width: 70%;
   left: 15%;
+}
+
+.leaf-glow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  right: 10px;
+  top: 8px;
+  border-radius: 100%;
+  background: rgb(172 222 186 / 45%);
+  filter: blur(3px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+
+.group-trigger.active .leaf-glow {
+  opacity: 1;
+}
+
+@keyframes shell-nav-group-breath {
+  0%,
+  100% {
+    transform: translateY(-2px) scale(1.015);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.035);
+  }
 }
 
 .dropdown {
@@ -227,14 +263,7 @@ watch(
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid color-mix(in srgb, var(--glass-nav-border) 55%, rgb(220 234 226 / 70%));
   box-shadow: 0 16px 40px rgb(124 148 136 / 12%);
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(8px) scale(0.98);
-  transition:
-    opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 0.35s;
-  pointer-events: none;
+  transform-origin: top left;
 }
 
 .dropdown::before {
@@ -251,11 +280,38 @@ watch(
   box-shadow: 0 16px 40px rgb(0 0 0 / 28%);
 }
 
-.dropdown.is-visible {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0) scale(1);
-  pointer-events: auto;
+.nav-group-dropdown-enter-active {
+  transition:
+    opacity 0.46s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-group-dropdown-leave-active {
+  transition:
+    opacity 0.3s ease,
+    transform 0.34s ease;
+}
+
+.nav-group-dropdown-enter-from,
+.nav-group-dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(10px) scale(0.96);
+}
+
+.nav-group-dropdown-enter-active .dropdown-item {
+  animation: nav-dropdown-item-in 0.44s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--nav-item-i, 0) * 0.055s + 0.08s);
+}
+
+@keyframes nav-dropdown-item-in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .dropdown-item {
@@ -278,6 +334,15 @@ watch(
   background: color-mix(in srgb, var(--color-accent) 22%, transparent);
   color: var(--color-text);
   transform: translateX(4px);
+}
+
+.dropdown-item:hover .link-icon,
+.dropdown-item.active .link-icon {
+  transform: translateY(-1px) rotate(-3deg);
+}
+
+.dropdown-item .link-icon {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .meta {
@@ -309,10 +374,17 @@ watch(
 
   .dropdown {
     left: 50%;
-    transform: translateX(-50%) translateY(8px) scale(0.98);
+    transform: translateX(-50%);
+    transform-origin: top center;
   }
 
-  .dropdown.is-visible {
+  .nav-group-dropdown-enter-from,
+  .nav-group-dropdown-leave-to {
+    transform: translateX(-50%) translateY(10px) scale(0.96);
+  }
+
+  .nav-group-dropdown-enter-to,
+  .nav-group-dropdown-leave-from {
     transform: translateX(-50%) translateY(0) scale(1);
   }
 }
@@ -320,21 +392,43 @@ watch(
 @media (prefers-reduced-motion: reduce) {
   .group-trigger,
   .group-trigger:hover,
-  .group-trigger.active {
+  .group-trigger.active,
+  .nav-group.is-expanded > .group-trigger {
     transition:
       color 0.2s ease,
       background-color 0.2s ease,
       border-color 0.2s ease,
       box-shadow 0.2s ease;
     transform: none;
+    animation: none;
   }
 
-  .group-trigger:hover .link-icon {
+  .group-trigger:hover .link-icon,
+  .nav-group.is-expanded > .group-trigger .link-icon:not(.link-icon--chevron) {
     transform: none;
+  }
+
+  .nav-group-dropdown-enter-active,
+  .nav-group-dropdown-leave-active {
+    transition: opacity 0.16s ease;
+  }
+
+  .nav-group-dropdown-enter-from,
+  .nav-group-dropdown-leave-to {
+    transform: none;
+  }
+
+  .nav-group-dropdown-enter-active .dropdown-item {
+    animation: none;
   }
 
   .dropdown-item:hover,
   .dropdown-item.active {
+    transform: none;
+  }
+
+  .dropdown-item:hover .link-icon,
+  .dropdown-item.active .link-icon {
     transform: none;
   }
 }

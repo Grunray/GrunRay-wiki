@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS xiqi_about (
+  id TINYINT UNSIGNED NOT NULL DEFAULT 1,
+  status ENUM('published', 'hidden') NOT NULL DEFAULT 'published',
+  md_url VARCHAR(512) NOT NULL DEFAULT 'xiqi/about/resume.md',
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+);

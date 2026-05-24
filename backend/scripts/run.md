@@ -13,6 +13,12 @@ python scripts/content_tools/import_markdown_posts.py
 - 友链
 python scripts/friend_link_tools/import_friend_links.py
 
+- 栖息（碎念 + Hero + 关于履历 + 推荐）
+python scripts/xiqi_tools/import_xiqi.py fragments
+python scripts/xiqi_tools/import_xiqi.py pages
+python scripts/xiqi_tools/import_xiqi.py about
+python scripts/xiqi_tools/import_xiqi.py recommendations
+
 - 留言（先 user 后 message）
 python scripts/guest_tools/user/import_guest_users.py
 python scripts/guest_tools/message/import_guest_messages.py
@@ -39,6 +45,16 @@ python scripts/run_sql.py
   - 申请：`GET /api/friends/captcha`、`POST /api/friends/applications`（匿名，默认待审）
   - 审核：`GET /api/friends/admin?status=pending`、`PATCH /api/friends/admin/<public_id>`（需站长 OAuth）
   - CLI：`python scripts/friend_link_tools/moderate_friend.py approve <public_id>`
+
+- 栖息 / 碎念
+  - 建表：`python scripts/run_sql.py --file fragment.sql` 与 `xiqi_page.sql`、`xiqi_about.sql`、`xiqi_recommend.sql`
+  - 导入碎念：`python scripts/xiqi_tools/import_xiqi.py fragments`（Markdown 见 `import/xiqi/fragments/`）
+  - 导入 Hero：`python scripts/xiqi_tools/import_xiqi.py pages`（`import/xiqi/pages/`）
+  - 导入关于履历：`python scripts/xiqi_tools/import_xiqi.py about`（`import/xiqi/about/resume.md`）
+  - 导入推荐：`python scripts/xiqi_tools/import_xiqi.py recommendations`（`import/xiqi/recommendations/`）
+  - 公开：`GET /api/fragments`、`GET /api/fragments/<id>`、`GET /api/xiqi/pages/<page>`、`GET /api/xiqi/about`、`GET /api/recommendations`、`GET /api/recommendations/<id>`
+  - 站长撰写：前端 `/fragments/compose`（OAuth 站长）；API 写 import 后需手动跑 import 脚本
+  - 详见：`scripts/xiqi_tools/README.md`
 
 - 文章（开发）
   - JSON 全量种子（会清空 post，可选）：`python scripts/content_tools/seed_from_json.py`

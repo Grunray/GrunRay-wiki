@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>栖息 Hero 文字区 · 样式方案对比</title>
+  <style>
+  /* 与 frontend tokens 对齐 */
+  [data-theme='light'] {
+    --color-bg-base: #d6e4e7;
+    --color-bg-surface: #e2f2e8;
+    --color-text: #334f52;
+    --color-text-muted: #4d6b6e;
+    --color-accent: #a0ccab;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --shadow-card: 0 1px 4px rgb(51 79 82 / 12%);
+    --glass-blur: 18px;
+    --glass-card-bg: rgb(255 255 255 / 0.48);
+    --glass-card-border: rgb(51 79 82 / 0.16);
+    --page-photo: url('../xiqi_img/碎念.jpg');
+  }
+
+  [data-theme='dark'] {
+    --color-bg-base: #172226;
+    --color-bg-surface: #1e2c2e;
+    --color-text: #d1dcd9;
+    --color-text-muted: #95a9a5;
+    --color-accent: #a0ccab;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --shadow-card: 0 1px 4px rgb(0 0 0 / 28%);
+    --glass-blur: 18px;
+    --glass-card-bg: rgb(30 44 46 / 0.55);
+    --glass-card-border: rgb(160 204 171 / 0.14);
+    --page-photo: url('../xiqi_img/碎念.jpg');
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'PingFang SC', sans-serif;
+    color: var(--color-text);
+    background: var(--color-bg-base);
+    line-height: 1.55;
+  }
+
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  .page-head {
+    margin-bottom: 1.75rem;
+  }
+
+  .page-head h1 {
+    margin: 0 0 0.35rem;
+    font-size: 1.55rem;
+    letter-spacing: -0.02em;
+  }
+
+  .page-head p {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.92rem;
+    max-width: 52rem;
+  }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    align-items: center;
+    margin: 1.1rem 0 1.5rem;
+    padding: 0.75rem 0.95rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--glass-card-border);
+    background: color-mix(in srgb, var(--glass-card-bg) 70%, var(--color-bg-base));
+  }
+
+  .toolbar label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.86rem;
+    color: var(--color-text-muted);
+  }
+
+  .toolbar button,
+  .toolbar select {
+    font: inherit;
+    font-size: 0.86rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--glass-card-border);
+    background: color-mix(in srgb, var(--glass-card-bg) 88%, var(--color-bg-surface));
+    color: var(--color-text);
+    cursor: pointer;
+  }
+
+  .toolbar button.is-active {
+    border-color: color-mix(in srgb, var(--color-accent) 55%, var(--glass-card-border));
+    background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+    color: color-mix(in srgb, var(--color-accent) 88%, var(--color-text));
+    font-weight: 600;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr));
+    gap: 1.35rem;
+  }
+
+  .variant {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .variant-meta h2 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 650;
+  }
+
+  .variant-meta .tag {
+    display: inline-block;
+    margin-top: 0.25rem;
+    padding: 0.12rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .tag--warn { background: color-mix(in srgb, #c46850 20%, transparent); color: #a85440; }
+  .tag--good { background: color-mix(in srgb, var(--color-accent) 22%, transparent); color: color-mix(in srgb, var(--color-accent) 90%, var(--color-text)); }
+  .tag--neutral { background: color-mix(in srgb, var(--color-text-muted) 16%, transparent); color: var(--color-text-muted); }
+
+  .variant-meta p {
+    margin: 0.35rem 0 0;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    line-height: 1.55;
+  }
+
+  /* ── 共用 hero 卡片 ── */
+  .hero-demo {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--glass-card-border);
+    box-shadow: var(--shadow-card);
+    aspect-ratio: 1672 / 941;
+    background: #888 center / cover no-repeat;
+    background-image: var(--page-photo);
+  }
+
+  .hero-demo-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+  }
+
+  .hero-eyebrow {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-accent) 72%, var(--color-text-muted));
+  }
+
+  .hero-title {
+    margin: 0;
+    font-size: clamp(1.35rem, 3.5vw, 1.85rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.18;
+    background: linear-gradient(
+      118deg,
+      var(--color-text) 0%,
+      color-mix(in srgb, var(--color-accent) 68%, var(--color-text)) 52%,
+      var(--color-accent) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero-sub {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--color-text) 82%, var(--color-text-muted));
+  }
+
+  .glass-rect {
+    border: 1px solid color-mix(in srgb, var(--glass-card-border) 85%, transparent);
+    background: color-mix(in srgb, var(--glass-card-bg) 76%, var(--color-bg-base));
+    backdrop-filter: blur(12px) saturate(140%) brightness(1.02);
+    -webkit-backdrop-filter: blur(12px) saturate(140%) brightness(1.02);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, #fff 14%, transparent),
+      0 10px 28px -20px color-mix(in srgb, var(--color-text) 38%, transparent);
+  }
+
+  /* SVG clip 定义 */
+  .shape-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+  /* ── 方案 0：当前实现（问题复现） ── */
+  .v-current .copy {
+    --leg-x: 15rem;
+    --leg-y: 9.25rem;
+    width: var(--leg-x);
+    height: var(--leg-y);
+    padding: 0.65rem 0.85rem 0.75rem 2.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    justify-content: flex-end;
+    align-items: flex-end;
+    text-align: right;
+    clip-path: url('#tri-br-clip');
+    border: none;
+    filter: drop-shadow(0 0 0 1px color-mix(in srgb, var(--glass-card-border) 82%, transparent));
+  }
+
+  .v-current .copy.glass-rect { border-radius: 0; }
+
+  /* ── 方案 A：形状与玻璃分离（推荐） ── */
+  .v-separate .copy-wrap {
+    position: relative;
+    width: fit-content;
+    max-width: 92%;
+    margin: 0;
+  }
+
+  .v-separate .copy-shape {
+    position: absolute;
+    inset: -0.35rem -0.35rem -0.35rem -1.8rem;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .v-separate .copy-shape path {
+    fill: color-mix(in srgb, var(--glass-card-bg) 68%, var(--color-bg-base));
+    stroke: color-mix(in srgb, var(--glass-card-border) 88%, transparent);
+    stroke-width: 1.2;
+    filter: drop-shadow(0 8px 20px color-mix(in srgb, var(--color-text) 22%, transparent));
+  }
+
+  .v-separate .copy-text {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    align-items: flex-end;
+    text-align: right;
+    padding: 0.7rem 0.9rem 0.8rem;
+    border-radius: calc(var(--radius-md) - 3px);
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  /* ── 方案 B：纯三角假玻璃（无 backdrop-filter） ── */
+  .v-fake-tri .copy {
+    width: 15rem;
+    height: 9.25rem;
+    padding: 0.65rem 0.85rem 0.75rem 2.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    justify-content: flex-end;
+    align-items: flex-end;
+    text-align: right;
+    clip-path: url('#tri-br-clip');
+    border: none;
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--glass-card-bg) 82%, transparent) 0%,
+      color-mix(in srgb, var(--color-bg-base) 55%, transparent) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, #fff 18%, transparent),
+      0 10px 24px -18px color-mix(in srgb, var(--color-text) 32%, transparent);
+    filter: drop-shadow(0 0 0 1px color-mix(in srgb, var(--glass-card-border) 75%, transparent));
+  }
+
+  /* ── 方案 C：mask 裁切 + 真毛玻璃 ── */
+  .v-mask .copy {
+    width: 15rem;
+    height: 9.25rem;
+    padding: 0.65rem 0.85rem 0.75rem 2.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    justify-content: flex-end;
+    align-items: flex-end;
+    text-align: right;
+    -webkit-mask-image: url('#tri-br-mask');
+    mask-image: url('#tri-br-mask');
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    border: none;
+    border-radius: 0;
+  }
+
+  /* ── 方案 D：fit-content 小盒 + clip（缩小死区） ── */
+  .v-fit .copy {
+    width: fit-content;
+    max-width: 88%;
+    min-width: 11rem;
+    min-height: 6.5rem;
+    padding: 0.75rem 0.95rem 0.85rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    justify-content: flex-end;
+    align-items: flex-end;
+    text-align: right;
+    clip-path: url('#tri-br-clip');
+    border: none;
+    border-radius: 0;
+  }
+
+  /* ── 方案 E：逐行玻璃 chip（Eric 风） ── */
+  .v-chips .copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.38rem;
+    padding: 0.65rem;
+    max-width: 92%;
+  }
+
+  .v-chips .chip {
+    display: inline-block;
+    width: fit-content;
+    max-width: 100%;
+    padding: 0.28rem 0.62rem;
+    border-radius: 999px;
+    font-size: inherit;
+    text-align: right;
+  }
+
+  .v-chips .chip--title {
+    padding: 0.35rem 0.75rem;
+    border-radius: calc(var(--radius-md) - 2px);
+  }
+
+  .v-chips .hero-eyebrow { font-size: 0.68rem; }
+  .v-chips .hero-title { font-size: clamp(1.2rem, 3vw, 1.65rem); }
+  .v-chips .hero-sub { font-size: 0.82rem; max-width: 18rem; }
+
+  /* ── 方案 F：切角矩形（非大三角，内容友好） ── */
+  .v-cutcorner .copy {
+    width: fit-content;
+    max-width: 90%;
+    padding: 0.75rem 0.95rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    align-items: flex-end;
+    text-align: right;
+    clip-path: polygon(12% 0, 100% 0, 100% 100%, 0 100%, 0 18%);
+    border-radius: 0;
+  }
+
+  .footnote {
+    margin-top: 2rem;
+    padding: 1rem 1.1rem;
+    border-radius: var(--radius-md);
+    border: 1px dashed color-mix(in srgb, var(--glass-card-border) 90%, transparent);
+    font-size: 0.84rem;
+    color: var(--color-text-muted);
+  }
+
+  .footnote strong { color: var(--color-text); }
+
+  @media (max-width: 640px) {
+    .v-current .copy,
+    .v-fake-tri .copy,
+    .v-mask .copy {
+      --leg-x: 72vw;
+      width: min(72vw, 13.5rem);
+      height: min(42vw, 8rem);
+    }
+  }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="page-head">
+      <h1>栖息 Hero 文字区 · 样式方案对比</h1>
+      <p>
+        基于 <code>designed/xiqi_img/碎念.jpg</code>（1672×941）。右下角对齐，文案与线上碎念页一致。
+        用于对比「真毛玻璃 + 三角裁切」的各种问题与替代方案，选定后再合入 <code>XiqiPageHero.vue</code>。
+      </p>
+    </header>
+
+    <div class="toolbar">
+      <label>
+        主题
+        <button type="button" id="btn-light" class="is-active">浅色</button>
+        <button type="button" id="btn-dark">深色</button>
+      </label>
+      <label>
+        文案长度
+        <button type="button" id="btn-text-short" class="is-active">短</button>
+        <button type="button" id="btn-text-long">长（测截断）</button>
+      </label>
+      <label>
+        背景图
+        <select id="bg-select">
+          <option value="../xiqi_img/碎念.jpg">碎念</option>
+          <option value="../xiqi_img/关于.jpg">关于</option>
+          <option value="../xiqi_img/推荐.jpg">推荐</option>
+        </select>
+      </label>
+    </div>
+
+    <svg class="shape-defs" aria-hidden="true">
+      <defs>
+        <clipPath id="tri-br-clip" clipPathUnits="objectBoundingBox">
+          <path d="M 0.045 1 L 0.955 1 Q 1 1 1 0.93 L 1 0.07 Q 1 0 0.955 0.045 L 0.045 0.93 Q 0 1 0.045 1 Z" />
+        </clipPath>
+        <mask id="tri-br-mask" maskContentUnits="objectBoundingBox">
+          <path fill="white" d="M 0.045 1 L 0.955 1 Q 1 1 1 0.93 L 1 0.07 Q 1 0 0.955 0.045 L 0.045 0.93 Q 0 1 0.045 1 Z" />
+        </mask>
+      </defs>
+    </svg>
+
+    <div class="grid">
+      <!-- 0 当前 -->
+      <article class="variant v-current">
+        <div class="variant-meta">
+          <h2>0 · 当前实现（clip-path + 矩形 backdrop-filter）</h2>
+          <span class="tag tag--warn">问题复现</span>
+          <p>固定宽高矩形上做毛玻璃再裁三角。左上空白区可能仍发糊；长文案易被斜边裁切。</p>
+        </div>
+        <div class="hero-demo">
+          <div class="hero-demo-inner">
+            <div class="copy glass-rect">
+              <p class="hero-eyebrow" data-k="eyebrow">FRAGMENTS</p>
+              <h3 class="hero-title" data-k="title">碎念</h3>
+              <p class="hero-sub" data-k="sub">短句 · 随笔 · 即时想法</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- A 分离 -->
+      <article class="variant v-separate">
+        <div class="variant-meta">
+          <h2>A · 形状与玻璃分离（推荐）</h2>
+          <span class="tag tag--good">推荐</span>
+          <p>文字区矩形 <code>fit-content</code> 真毛玻璃；SVG 三角只做半透明装饰，不裁文字。右下贴角，无空区发糊。</p>
+        </div>
+        <div class="hero-demo">
+          <div class="hero-demo-inner">
+            <div class="copy-wrap">
+              <svg class="copy-shape" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M 4 100 L 96 100 Q 100 100 100 92 L 100 8 Q 100 0 96 4 L 4 92 Q 0 100 4 100 Z" />
+              </svg>
+              <div class="copy-text glass-rect">
+                <p class="hero-eyebrow" data-k="eyebrow">FRAGMENTS</p>
+                <h3 class="hero-title" data-k="title">碎念</h3>
+                <p class="hero-sub" data-k="sub">短句 · 随笔 · 即时想法</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- B 假玻璃三角 -->
+      <article class="variant v-fake-tri">
+        <div class="variant-meta">
+          <h2>B · 纯三角假玻璃（无 backdrop-filter）</h2>
+          <span class="tag tag--good">造型优先</span>
+          <p>三角 path 只用渐变半透明 + 描边，不用 backdrop-filter。形状干净，但「透」感弱于真玻璃。</p>
+        </div>
+        <div class="hero-demo">
+          <div class="hero-demo-inner">
+            <div class="copy">
+              <p class="hero-eyebrow" data-k="eyebrow">FRAGMENTS</p>
+              <h3 class="hero-title" data-k="title">碎念</h3>
+              <p class="hero-sub" data-k="sub">短句 · 随笔 · 即时想法</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- C mask -->
+      <article class="variant v-mask">
+        <div class="variant-meta">
+          <h2>C · mask 裁切 + 真毛玻璃</h2>
+          <span class="tag tag--neutral">实验</span>
+          <p>用 <code>mask-image</code> 代替 clip-path，部分浏览器对 blur 裁切更准，但仍可能留空区、截字。</p>
+        </div>
+        <div class="hero-demo">
+          <div class="hero-demo-inner">
+            <div class="copy glass-rect">
+              <p class="hero-eyebrow" data-k="eyebrow">FRAGMENTS</p>
+              <h3 class="hero-title" data-k="title">碎念</h3>
+              <p class="hero-sub" data-k="sub">短句 · 随笔 · 即时想法</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- D fit -->
+      <article class="variant v-fit">
+        <div class="variant-meta">
+          <h2>D · fit-content 小盒 + clip（缩小死区）</h2>
+          <span class="tag tag--neutral">折中</span>
+          <p>包络盒随内容收缩，死区比方案 0 小，但长文案仍可能被斜边裁切。</p>
+        </div>
+        <div class="hero-demo">
+          <div class="hero-demo-inner">
+            <div class="copy glass-rect">
+              <p class="hero-eyebrow" data-k="eyebrow">FRAGMENTS</p>
+              <h3 class="hero-title" data-k="title">碎念</h3>
+              <p class="hero-sub" data-k="sub">短句 · 随笔 · 即时想法</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- E chips -->
+      <article class="variant v-chips">
+        <div class="variant-meta">
+          <h2>E · 逐行玻璃 chip（Eric 风）</h2>
+          <span class="tag tag--good">内容友好</span>
+          <p>eyebrow / title / subtitle 各一条 <code>fit-content</code> 玻璃，右下堆叠。不裁字、无三角空区。</p>
+        </div>
+        <div class="hero-demo">
+          <div class="hero-demo-inner">
+            <div class="copy">
+              <span class="chip glass-rect hero-eyebrow" data-k="eyebrow">FRAGMENTS</span>
+              <span class="chip chip--title glass-rect hero-title" data-k="title">碎念</span>
+              <span class="chip glass-rect hero-sub" data-k="sub">短句 · 随笔 · 即时想法</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- F cut corner -->
+      <article class="variant v-cutcorner">
+        <div class="variant-meta">
+          <h2>F · 切角矩形（非大三角）</h2>
+          <span class="tag tag--good">折中</span>
+          <p>仅左上斜切，矩形主体保文字。有「贴角」感，又比大三角省空间、少截字。</p>
+        </div>
+        <div class="hero-demo">
+          <div class="hero-demo-inner">
+            <div class="copy glass-rect">
+              <p class="hero-eyebrow" data-k="eyebrow">FRAGMENTS</p>
+              <h3 class="hero-title" data-k="title">碎念</h3>
+              <p class="hero-sub" data-k="sub">短句 · 随笔 · 即时想法</p>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="footnote">
+      <strong>如何定夺：</strong>
+      若要<strong>真毛玻璃 + 不裁字 + 右下贴角</strong>，优先看 <strong>A</strong> 或 <strong>E</strong>；
+      若要<strong>强三角造型</strong>且接受弱玻璃，看 <strong>B</strong>；
+      <strong>0 / C / D</strong> 主要用来说明为何不推荐「矩形 blur + 硬裁三角」。
+      打开本文件：直接在浏览器中打开 <code>designed/xiqi_design/hero-copy-variants.html</code>（需与 <code>xiqi_img</code> 相对路径正确）。
+    </div>
+  </div>
+
+  <script>
+    const TEXT = {
+      short: {
+        eyebrow: 'FRAGMENTS',
+        title: '碎念',
+        sub: '短句 · 随笔 · 即时想法',
+      },
+      long: {
+        eyebrow: 'FRAGMENTS · MOOD STREAM',
+        title: '碎念与未完成的草稿',
+        sub: '短句 · 随笔 · 即时想法 · 以及来不及整理成博客的半成品',
+      },
+    };
+
+    function applyText(mode) {
+      const t = TEXT[mode];
+      document.querySelectorAll('[data-k="eyebrow"]').forEach((el) => { el.textContent = t.eyebrow; });
+      document.querySelectorAll('[data-k="title"]').forEach((el) => { el.textContent = t.title; });
+      document.querySelectorAll('[data-k="sub"]').forEach((el) => { el.textContent = t.sub; });
+    }
+
+    document.getElementById('btn-light').addEventListener('click', () => {
+      document.documentElement.dataset.theme = 'light';
+      document.getElementById('btn-light').classList.add('is-active');
+      document.getElementById('btn-dark').classList.remove('is-active');
+    });
+    document.getElementById('btn-dark').addEventListener('click', () => {
+      document.documentElement.dataset.theme = 'dark';
+      document.getElementById('btn-dark').classList.add('is-active');
+      document.getElementById('btn-light').classList.remove('is-active');
+    });
+    document.getElementById('btn-text-short').addEventListener('click', () => {
+      applyText('short');
+      document.getElementById('btn-text-short').classList.add('is-active');
+      document.getElementById('btn-text-long').classList.remove('is-active');
+    });
+    document.getElementById('btn-text-long').addEventListener('click', () => {
+      applyText('long');
+      document.getElementById('btn-text-long').classList.add('is-active');
+      document.getElementById('btn-text-short').classList.remove('is-active');
+    });
+    document.getElementById('bg-select').addEventListener('change', (e) => {
+      document.documentElement.style.setProperty('--page-photo', `url('${e.target.value}')`);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+/* 栖息分区页；根节点 .xiqi-page.page-enter--play */
+
+@keyframes page-enter-xiqi-block {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xiqi-page:not(.page-enter--play) .xiqi-split-main-inner > * {
+    opacity: 1;
+    transform: none;
+  }
+
+  .xiqi-page:not(.page-enter--play) .xiqi-card {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.xiqi-page.page-enter--play .xiqi-split-main-inner > * {
+  animation: page-enter-xiqi-block 0.68s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.xiqi-page.page-enter--play .xiqi-split-main-inner > *:nth-child(1) {
+  animation-delay: 0.04s;
+}
+.xiqi-page.page-enter--play .xiqi-split-main-inner > *:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.xiqi-page.page-enter--play .xiqi-split-main-inner > *:nth-child(3) {
+  animation-delay: 0.16s;
+}
+.xiqi-page.page-enter--play .xiqi-split-main-inner > *:nth-child(4) {
+  animation-delay: 0.22s;
+}
+
+.xiqi-page.page-enter--play .xiqi-card {
+  animation: page-enter-xiqi-block 0.62s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(0.12s + (var(--enter-i, 0) * 0.05s));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xiqi-page.page-enter--play .xiqi-split-main-inner > *,
+  .xiqi-page.page-enter--play .xiqi-card {
+    animation: none;
+  }
+
+  .xiqi-page:not(.page-enter--play) .xiqi-split-main-inner > *,
+  .xiqi-page:not(.page-enter--play) .xiqi-card {
+    opacity: 1;
+    transform: none;
+  }
+
+  .xiqi-detail-enter-active,
+  .xiqi-detail-leave-active {
+    transition: opacity 0.2s ease;
+  }
+
+  .xiqi-detail-enter-from,
+  .xiqi-detail-leave-to {
+    transform: none;
+  }
+
+  .xiqi-card--interactive:hover {
+    transform: none;
+  }
+
+  .xiqi-detail-close:hover {
+    transform: none;
+  }
+}

@@ -1,6 +1,7 @@
 @import './themes/tokens.light.css';
 @import './themes/tokens.dark.css';
 @import './themes/tokens.abstract.css';
+@import './themes/page-corrupt.css';
 
 *,
 *::before,
@@ -177,6 +178,14 @@ html[data-footer-revealing] .app-page-cover {
  * 更不透明的液态玻璃：glass token 与页面底色混色，正文可读性更好。
  * 配方参考 footer-grunray fallback 与 Blog 筛选按钮的 surface 混色。
  */
+.card.card-overflow-visible {
+  overflow: visible;
+}
+
+.card.card-overflow-visible:hover {
+  overflow: visible;
+}
+
 .card.card-glass-dense {
   background: color-mix(in srgb, var(--glass-card-bg) 88%, var(--color-bg-base));
   background-image: linear-gradient(

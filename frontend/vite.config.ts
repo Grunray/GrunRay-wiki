@@ -16,6 +16,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
+      '@xiqi_img': path.resolve(__dirname, '../designed/xiqi_img'),
     },
   },
 })

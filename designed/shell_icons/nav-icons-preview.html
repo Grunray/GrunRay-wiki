@@ -113,7 +113,8 @@
 
     .version-label--v2,
     .version-label--v3,
-    .version-label--v4 {
+    .version-label--v4,
+    .version-label--v5 {
       margin-top: 1.1rem;
     }
 
@@ -127,6 +128,10 @@
 
     .version-label--v4 {
       color: color-mix(in srgb, var(--color-accent) 55%, #84b391);
+    }
+
+    .version-label--v5 {
+      color: color-mix(in srgb, #6fad87 70%, var(--color-accent));
     }
 
     .glass-strip + .glass-strip {
@@ -557,6 +562,213 @@
       }
     }
 
+    /* —— v4 图标一览（顶栏下方） —— */
+    .glass-strip--v4-icons {
+      display: block;
+      margin-top: 0.85rem;
+      padding: 1rem 1.1rem 1.15rem;
+      overflow: visible;
+    }
+
+    .v4-icon-showcase-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-text-muted);
+      margin-bottom: 0.85rem;
+    }
+
+    .v4-icon-section + .v4-icon-section {
+      margin-top: 1rem;
+      padding-top: 0.95rem;
+      border-top: 1px dashed color-mix(in srgb, var(--glass-nav-border) 80%, transparent);
+    }
+
+    .v4-icon-section-head {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 0.55rem;
+    }
+
+    .v4-icon-subgroups {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .v4-icon-subgroup-label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #84b391;
+      margin-bottom: 0.45rem;
+      letter-spacing: 0.04em;
+    }
+
+    .v4-icon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+      gap: 0.6rem;
+    }
+
+    .v4-icon-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.75rem 0.5rem;
+      border-radius: 12px;
+      border: 1px solid color-mix(in srgb, var(--glass-nav-border) 70%, transparent);
+      background: color-mix(in srgb, var(--glass-nav-bg) 55%, transparent);
+    }
+
+    .v4-icon-card .glyph-lg {
+      width: 2rem;
+      height: 2rem;
+      color: var(--color-accent);
+    }
+
+    .v4-icon-card .glyph-lg svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .v4-icon-card .glyph-sm {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.05rem;
+      height: 1.05rem;
+      color: var(--color-text-muted);
+    }
+
+    .v4-icon-card .glyph-sm svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .v4-icon-card .name {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .v4-icon-card .role {
+      font-size: 0.65rem;
+      padding: 0.12rem 0.45rem;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--color-accent) 16%, transparent);
+      color: var(--color-text-muted);
+    }
+
+    .v4-icon-card .role--parent {
+      color: #6fad87;
+    }
+
+    .v4-icon-card .slug {
+      font-size: 0.65rem;
+      color: var(--color-text-muted);
+      font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+      text-align: center;
+      word-break: break-all;
+      line-height: 1.3;
+    }
+
+    /* —— v5 父级去重 —— */
+    .glass-strip--v5-icons {
+      display: block;
+      margin-top: 0.85rem;
+      padding: 1rem 1.1rem 1.15rem;
+      overflow: visible;
+    }
+
+    .v5-compare-note {
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      margin-bottom: 0.85rem;
+      line-height: 1.55;
+    }
+
+    .v5-compare-pairs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .v5-compare-pair {
+      padding: 0.75rem;
+      border-radius: 12px;
+      border: 1px solid color-mix(in srgb, var(--glass-nav-border) 70%, transparent);
+      background: color-mix(in srgb, var(--glass-nav-bg) 50%, transparent);
+    }
+
+    .v5-compare-pair-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      margin-bottom: 0.55rem;
+    }
+
+    .v5-compare-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      gap: 0.5rem;
+    }
+
+    .v5-compare-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .v5-compare-item .glyph-lg {
+      width: 1.75rem;
+      height: 1.75rem;
+      color: var(--color-accent);
+    }
+
+    .v5-compare-item .glyph-lg svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .v5-compare-item .label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .v5-compare-item .tag {
+      font-size: 0.62rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+      color: var(--color-text-muted);
+    }
+
+    .v5-compare-item--new .tag {
+      color: #6fad87;
+      background: rgb(204 229 213 / 45%);
+    }
+
+    .v5-compare-vs {
+      font-size: 0.68rem;
+      color: var(--color-text-muted);
+      flex-shrink: 0;
+    }
+
+    .v5-icon-card--new {
+      border-color: color-mix(in srgb, #6fad87 35%, var(--glass-nav-border));
+      box-shadow: 0 0 0 1px color-mix(in srgb, #6fad87 12%, transparent);
+    }
+
     /* —— 图标一览格 —— */
     .icon-grid {
       display: grid;
@@ -765,6 +977,18 @@
         <symbol id="icon-nav-recommend-v4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 4 14.5 10 21 10.5 16 14.5 17.5 21 12 17.5 6.5 21 8 14.5 3 10.5 9.5 10Z" />
         </symbol>
+        <!-- v5：父级专用（与二级菜单去重） -->
+        <symbol id="icon-nav-create-v5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z" />
+          <path d="M19 5l1 2 2 1-2 1-1 2-1-2-2-1 2-1z" />
+        </symbol>
+        <symbol id="icon-nav-community-v5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M3 12h18" />
+          <path d="M12 3c2.6 3 4 6.5 4 9s-1.4 6-4 9" />
+          <path d="M12 3c-2.6 3-4 6.5-4 9s1.4 6 4 9" />
+        </symbol>
       </defs>
     </svg>
 
@@ -943,11 +1167,362 @@
         </nav>
       </div>
 
+      <div
+        class="glass-strip glass-strip--v4 glass-strip--v4-icons v4-icon-showcase"
+        aria-labelledby="v4-icons-heading"
+      >
+        <h3 id="v4-icons-heading" class="v4-icon-showcase-title">v4 图标一览（父级 + 二级）</h3>
+
+        <section class="v4-icon-section" aria-label="顶栏父级图标">
+          <h4 class="v4-icon-section-head">顶栏 · 父级 / 直达</h4>
+          <div class="v4-icon-grid">
+            <article class="v4-icon-card">
+              <div class="glyph-lg"><svg><use href="#icon-nav-home-v3" /></svg></div>
+              <div class="glyph-sm nav-icon--plant"><svg><use href="#icon-nav-home-v3" /></svg></div>
+              <div class="name">首页</div>
+              <span class="role">直达</span>
+              <div class="slug">icon-nav-home-v3</div>
+            </article>
+            <article class="v4-icon-card">
+              <div class="glyph-lg"><svg><use href="#icon-nav-projects-v3" /></svg></div>
+              <div class="glyph-sm nav-icon--plant"><svg><use href="#icon-nav-projects-v3" /></svg></div>
+              <div class="name">创作</div>
+              <span class="role role--parent">父级</span>
+              <div class="slug">icon-nav-projects-v3</div>
+            </article>
+            <article class="v4-icon-card">
+              <div class="glyph-lg"><svg><use href="#icon-nav-friends-v3" /></svg></div>
+              <div class="glyph-sm nav-icon--plant"><svg><use href="#icon-nav-friends-v3" /></svg></div>
+              <div class="name">社区</div>
+              <span class="role role--parent">父级</span>
+              <div class="slug">icon-nav-friends-v3</div>
+            </article>
+            <article class="v4-icon-card">
+              <div class="glyph-lg"><svg><use href="#icon-nav-xiqi-v4" /></svg></div>
+              <div class="glyph-sm nav-icon--plant"><svg><use href="#icon-nav-xiqi-v4" /></svg></div>
+              <div class="name">栖息</div>
+              <span class="role role--parent">父级</span>
+              <div class="slug">icon-nav-xiqi-v4</div>
+            </article>
+            <article class="v4-icon-card">
+              <div class="glyph-lg"><svg><use href="#icon-nav-chevron-v4" /></svg></div>
+              <div class="glyph-sm nav-icon--arrow"><svg><use href="#icon-nav-chevron-v4" /></svg></div>
+              <div class="name">展开箭头</div>
+              <span class="role">共用</span>
+              <div class="slug">icon-nav-chevron-v4</div>
+            </article>
+          </div>
+        </section>
+
+        <section class="v4-icon-section" aria-label="二级菜单图标">
+          <h4 class="v4-icon-section-head">二级菜单</h4>
+          <div class="v4-icon-subgroups">
+            <div class="v4-icon-subgroup">
+              <span class="v4-icon-subgroup-label">创作</span>
+              <div class="v4-icon-grid">
+                <article class="v4-icon-card">
+                  <div class="glyph-lg"><svg><use href="#icon-nav-projects-v3" /></svg></div>
+                  <div class="glyph-sm nav-icon--plant"><svg><use href="#icon-nav-projects-v3" /></svg></div>
+                  <div class="name">项目</div>
+                  <span class="role">二级</span>
+                  <div class="slug">icon-nav-projects-v3</div>
+                </article>
+                <article class="v4-icon-card">
+                  <div class="glyph-lg"><svg><use href="#icon-nav-blog-v3" /></svg></div>
+                  <div class="glyph-sm nav-icon--plant"><svg><use href="#icon-nav-blog-v3" /></svg></div>
+                  <div class="name">博客</div>
+                  <span class="role">二级</span>
+                  <div class="slug">icon-nav-blog-v3</div>
+                </article>
+              </div>
+            </div>
+            <div class="v4-icon-subgroup">
+              <span class="v4-icon-subgroup-label">社区</span>
+              <div class="v4-icon-grid">
+                <article class="v4-icon-card">
+                  <div class="glyph-lg"><svg><use href="#icon-nav-messages-v3" /></svg></div>
+                  <div class="glyph-sm nav-icon--plant"><svg><use href="#icon-nav-messages-v3" /></svg></div>
+                  <div class="name">留言</div>
+                  <span class="role">二级</span>
+                  <div class="slug">icon-nav-messages-v3</div>
+                </article>
+                <article class="v4-icon-card">
+                  <div class="glyph-lg"><svg><use href="#icon-nav-friends-v3" /></svg></div>
+                  <div class="glyph-sm nav-icon--plant"><svg><use href="#icon-nav-friends-v3" /></svg></div>
+                  <div class="name">友链</div>
+                  <span class="role">二级</span>
+                  <div class="slug">icon-nav-friends-v3</div>
+                </article>
+              </div>
+            </div>
+            <div class="v4-icon-subgroup">
+              <span class="v4-icon-subgroup-label">栖息</span>
+              <div class="v4-icon-grid">
+                <article class="v4-icon-card">
+                  <div class="glyph-lg"><svg><use href="#icon-nav-fragments-v4" /></svg></div>
+                  <div class="glyph-sm nav-icon--plant"><svg><use href="#icon-nav-fragments-v4" /></svg></div>
+                  <div class="name">碎念</div>
+                  <span class="role">二级</span>
+                  <div class="slug">icon-nav-fragments-v4</div>
+                </article>
+                <article class="v4-icon-card">
+                  <div class="glyph-lg"><svg><use href="#icon-nav-me-v4" /></svg></div>
+                  <div class="glyph-sm nav-icon--plant"><svg><use href="#icon-nav-me-v4" /></svg></div>
+                  <div class="name">关于</div>
+                  <span class="role">二级</span>
+                  <div class="slug">icon-nav-me-v4</div>
+                </article>
+                <article class="v4-icon-card">
+                  <div class="glyph-lg"><svg><use href="#icon-nav-recommend-v4" /></svg></div>
+                  <div class="glyph-sm nav-icon--plant"><svg><use href="#icon-nav-recommend-v4" /></svg></div>
+                  <div class="name">推荐</div>
+                  <span class="role">二级</span>
+                  <div class="slug">icon-nav-recommend-v4</div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <p class="version-label version-label--v5">调整版 v5 · 父级图标去重</p>
+      <div class="glass-strip glass-strip--v4">
+        <nav class="nav nav-v4 nav-v5" aria-label="Main preview v5">
+          <a href="#" class="link is-active" data-nav="home">
+            <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-home-v3" /></svg></span>
+            <span>首页</span>
+          </a>
+
+          <div class="nav-group" data-group="create">
+            <button type="button" class="group-trigger" aria-expanded="false" aria-haspopup="true">
+              <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-create-v5" /></svg></span>
+              <span>创作</span>
+              <span class="nav-icon nav-icon--arrow" aria-hidden="true"><svg><use href="#icon-nav-chevron-v4" /></svg></span>
+            </button>
+            <div class="dropdown" role="menu">
+              <button type="button" class="dropdown-item" role="menuitem" data-nav="projects">
+                <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-projects-v3" /></svg></span>
+                <span class="meta">
+                  <span class="meta-title">项目</span>
+                  <span class="meta-desc">开源 · 实验 · 技术实现</span>
+                </span>
+              </button>
+              <button type="button" class="dropdown-item" role="menuitem" data-nav="blog">
+                <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-blog-v3" /></svg></span>
+                <span class="meta">
+                  <span class="meta-title">博客</span>
+                  <span class="meta-desc">文章 · 思考 · 日常记录</span>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div class="nav-group" data-group="community">
+            <button type="button" class="group-trigger" aria-expanded="false" aria-haspopup="true">
+              <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-community-v5" /></svg></span>
+              <span>社区</span>
+              <span class="nav-icon nav-icon--arrow" aria-hidden="true"><svg><use href="#icon-nav-chevron-v4" /></svg></span>
+            </button>
+            <div class="dropdown" role="menu">
+              <button type="button" class="dropdown-item" role="menuitem" data-nav="messages">
+                <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-messages-v3" /></svg></span>
+                <span class="meta">
+                  <span class="meta-title">留言</span>
+                  <span class="meta-desc">想法 · 交流 · 互动留言</span>
+                </span>
+              </button>
+              <button type="button" class="dropdown-item" role="menuitem" data-nav="friends">
+                <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-friends-v3" /></svg></span>
+                <span class="meta">
+                  <span class="meta-title">友链</span>
+                  <span class="meta-desc">友站 · 同行 · 彼此链接</span>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div class="nav-group" data-group="xiqi">
+            <button type="button" class="group-trigger" aria-expanded="false" aria-haspopup="true">
+              <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-xiqi-v4" /></svg></span>
+              <span>栖息</span>
+              <span class="nav-icon nav-icon--arrow" aria-hidden="true"><svg><use href="#icon-nav-chevron-v4" /></svg></span>
+            </button>
+            <div class="dropdown" role="menu">
+              <button type="button" class="dropdown-item" role="menuitem" data-nav="fragments">
+                <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-fragments-v4" /></svg></span>
+                <span class="meta">
+                  <span class="meta-title">碎念</span>
+                  <span class="meta-desc">短句 · 随笔 · 即时想法</span>
+                </span>
+              </button>
+              <button type="button" class="dropdown-item" role="menuitem" data-nav="about">
+                <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-me-v4" /></svg></span>
+                <span class="meta">
+                  <span class="meta-title">关于</span>
+                  <span class="meta-desc">履历 · 介绍 · 联系方式</span>
+                </span>
+              </button>
+              <button type="button" class="dropdown-item" role="menuitem" data-nav="recommend">
+                <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-recommend-v4" /></svg></span>
+                <span class="meta">
+                  <span class="meta-title">推荐</span>
+                  <span class="meta-desc">软件 · 开源 · 番剧动漫</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </nav>
+      </div>
+
+      <div
+        class="glass-strip glass-strip--v4 glass-strip--v5-icons v4-icon-showcase"
+        aria-labelledby="v5-icons-heading"
+      >
+        <h3 id="v5-icons-heading" class="v4-icon-showcase-title">v5 新增父级图标 · 去重对照</h3>
+        <p class="v5-compare-note">
+          v4 中 <strong>创作</strong> 与 <strong>项目</strong>、<strong>社区</strong> 与 <strong>友链</strong> 共用同一图标；v5 为两个父级单独设计符号，二级菜单仍用 v3/v4 子项图标。
+        </p>
+
+        <div class="v5-compare-pairs">
+          <div class="v5-compare-pair">
+            <div class="v5-compare-pair-title">创作 ↔ 项目</div>
+            <div class="v5-compare-row">
+              <div class="v5-compare-item v5-compare-item--new">
+                <div class="glyph-lg"><svg><use href="#icon-nav-create-v5" /></svg></div>
+                <span class="label">创作</span>
+                <span class="tag">v5 父级</span>
+              </div>
+              <span class="v5-compare-vs">≠</span>
+              <div class="v5-compare-item">
+                <div class="glyph-lg"><svg><use href="#icon-nav-projects-v3" /></svg></div>
+                <span class="label">项目</span>
+                <span class="tag">二级</span>
+              </div>
+            </div>
+          </div>
+          <div class="v5-compare-pair">
+            <div class="v5-compare-pair-title">社区 ↔ 友链</div>
+            <div class="v5-compare-row">
+              <div class="v5-compare-item v5-compare-item--new">
+                <div class="glyph-lg"><svg><use href="#icon-nav-community-v5" /></svg></div>
+                <span class="label">社区</span>
+                <span class="tag">v5 父级</span>
+              </div>
+              <span class="v5-compare-vs">≠</span>
+              <div class="v5-compare-item">
+                <div class="glyph-lg"><svg><use href="#icon-nav-friends-v3" /></svg></div>
+                <span class="label">友链</span>
+                <span class="tag">二级</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <section class="v4-icon-section" aria-label="v5 新增 symbol">
+          <h4 class="v4-icon-section-head">v5 新增（父级专用）</h4>
+          <div class="v4-icon-grid">
+            <article class="v4-icon-card v5-icon-card--new">
+              <div class="glyph-lg"><svg><use href="#icon-nav-create-v5" /></svg></div>
+              <div class="glyph-sm nav-icon--plant"><svg><use href="#icon-nav-create-v5" /></svg></div>
+              <div class="name">创作</div>
+              <span class="role role--parent">父级 · 新</span>
+              <div class="slug">icon-nav-create-v5</div>
+            </article>
+            <article class="v4-icon-card v5-icon-card--new">
+              <div class="glyph-lg"><svg><use href="#icon-nav-community-v5" /></svg></div>
+              <div class="glyph-sm nav-icon--plant"><svg><use href="#icon-nav-community-v5" /></svg></div>
+              <div class="name">社区</div>
+              <span class="role role--parent">父级 · 新</span>
+              <div class="slug">icon-nav-community-v5</div>
+            </article>
+          </div>
+        </section>
+
+        <section class="v4-icon-section" aria-label="v5 完整图标映射">
+          <h4 class="v4-icon-section-head">v5 顶栏完整映射（其余同 v4）</h4>
+          <div class="v4-icon-grid">
+            <article class="v4-icon-card">
+              <div class="glyph-lg"><svg><use href="#icon-nav-home-v3" /></svg></div>
+              <div class="name">首页</div>
+              <span class="role">直达</span>
+              <div class="slug">icon-nav-home-v3</div>
+            </article>
+            <article class="v4-icon-card v5-icon-card--new">
+              <div class="glyph-lg"><svg><use href="#icon-nav-create-v5" /></svg></div>
+              <div class="name">创作</div>
+              <span class="role role--parent">父级</span>
+              <div class="slug">icon-nav-create-v5</div>
+            </article>
+            <article class="v4-icon-card">
+              <div class="glyph-lg"><svg><use href="#icon-nav-projects-v3" /></svg></div>
+              <div class="name">项目</div>
+              <span class="role">二级</span>
+              <div class="slug">icon-nav-projects-v3</div>
+            </article>
+            <article class="v4-icon-card">
+              <div class="glyph-lg"><svg><use href="#icon-nav-blog-v3" /></svg></div>
+              <div class="name">博客</div>
+              <span class="role">二级</span>
+              <div class="slug">icon-nav-blog-v3</div>
+            </article>
+            <article class="v4-icon-card v5-icon-card--new">
+              <div class="glyph-lg"><svg><use href="#icon-nav-community-v5" /></svg></div>
+              <div class="name">社区</div>
+              <span class="role role--parent">父级</span>
+              <div class="slug">icon-nav-community-v5</div>
+            </article>
+            <article class="v4-icon-card">
+              <div class="glyph-lg"><svg><use href="#icon-nav-messages-v3" /></svg></div>
+              <div class="name">留言</div>
+              <span class="role">二级</span>
+              <div class="slug">icon-nav-messages-v3</div>
+            </article>
+            <article class="v4-icon-card">
+              <div class="glyph-lg"><svg><use href="#icon-nav-friends-v3" /></svg></div>
+              <div class="name">友链</div>
+              <span class="role">二级</span>
+              <div class="slug">icon-nav-friends-v3</div>
+            </article>
+            <article class="v4-icon-card">
+              <div class="glyph-lg"><svg><use href="#icon-nav-xiqi-v4" /></svg></div>
+              <div class="name">栖息</div>
+              <span class="role role--parent">父级</span>
+              <div class="slug">icon-nav-xiqi-v4</div>
+            </article>
+            <article class="v4-icon-card">
+              <div class="glyph-lg"><svg><use href="#icon-nav-fragments-v4" /></svg></div>
+              <div class="name">碎念</div>
+              <span class="role">二级</span>
+              <div class="slug">icon-nav-fragments-v4</div>
+            </article>
+            <article class="v4-icon-card">
+              <div class="glyph-lg"><svg><use href="#icon-nav-me-v4" /></svg></div>
+              <div class="name">关于</div>
+              <span class="role">二级</span>
+              <div class="slug">icon-nav-me-v4</div>
+            </article>
+            <article class="v4-icon-card">
+              <div class="glyph-lg"><svg><use href="#icon-nav-recommend-v4" /></svg></div>
+              <div class="name">推荐</div>
+              <span class="role">二级</span>
+              <div class="slug">icon-nav-recommend-v4</div>
+            </article>
+            <article class="v4-icon-card">
+              <div class="glyph-lg"><svg><use href="#icon-nav-chevron-v4" /></svg></div>
+              <div class="name">展开箭头</div>
+              <span class="role">共用</span>
+              <div class="slug">icon-nav-chevron-v4</div>
+            </article>
+          </div>
+        </section>
+      </div>
+
       <p class="spec">
         各版独立交互。<strong>初版</strong>：统一 stroke 2 图标集。
         <strong>v2</strong>：项目 <code>&lt;/&gt;</code>（含斜杠）、友链 Lucide users。
         <strong>v3</strong>：植物系平铺五链（已接入 <code>SiteNav.vue</code>）。
-        <strong>v4</strong>：源自 <code>参考/sub-menu.html</code>——顶栏 <em>首页 + 创作 + 社区 + 栖息</em>；栖息含 <strong>碎念、关于、推荐</strong>。悬停父级即可移入二级菜单（移出父级与面板后收起），无需先点击父级。
+        <strong>v4</strong>：分组顶栏 + 图标一览；<strong>创作/社区</strong> 父级与子项图标重复。
+        <strong>v5</strong>：父级改用 <code>icon-nav-create-v5</code>（笔尖+星芒）、<code>icon-nav-community-v5</code>（地球经纬）；二级仍为 <code>&lt;&gt;</code> 与双人友链。已合入 <code>SiteNav.vue</code>（<code>CreateNavIcon</code> / <code>CommunityNavIcon</code>）。
       </p>
     </section>
 
@@ -1028,12 +1603,13 @@
       })
     })
 
-    const navV4 = document.querySelector('.nav-v4')
-    if (navV4) {
-      function clearV4Active() {
-        navV4.querySelectorAll('.link.is-active').forEach((el) => el.classList.remove('is-active'))
-        navV4.querySelectorAll('.dropdown-item.is-active').forEach((el) => el.classList.remove('is-active'))
-        navV4.querySelectorAll('.group-trigger.is-active').forEach((el) => el.classList.remove('is-active'))
+    function initGroupedNav(navRoot) {
+      if (!navRoot) return
+
+      function clearActive() {
+        navRoot.querySelectorAll('.link.is-active').forEach((el) => el.classList.remove('is-active'))
+        navRoot.querySelectorAll('.dropdown-item.is-active').forEach((el) => el.classList.remove('is-active'))
+        navRoot.querySelectorAll('.group-trigger.is-active').forEach((el) => el.classList.remove('is-active'))
       }
 
       function setGroupOpen(group, open) {
@@ -1042,7 +1618,7 @@
         group.querySelector('.group-trigger')?.setAttribute('aria-expanded', open ? 'true' : 'false')
       }
 
-      navV4.querySelectorAll('.nav-group').forEach((group) => {
+      navRoot.querySelectorAll('.nav-group').forEach((group) => {
         let leaveTimer = 0
 
         function openHover() {
@@ -1065,40 +1641,42 @@
         })
       })
 
-      navV4.querySelector('.link[data-nav="home"]')?.addEventListener('click', (e) => {
+      navRoot.querySelector('.link[data-nav="home"]')?.addEventListener('click', (e) => {
         e.preventDefault()
-        clearV4Active()
+        clearActive()
         e.currentTarget.classList.add('is-active')
       })
 
-      navV4.querySelectorAll('.dropdown-item').forEach((item) => {
+      navRoot.querySelectorAll('.dropdown-item').forEach((item) => {
         item.addEventListener('click', (e) => {
           e.preventDefault()
-          clearV4Active()
+          clearActive()
           item.classList.add('is-active')
           const group = item.closest('.nav-group')
           group?.querySelector('.group-trigger')?.classList.add('is-active')
         })
       })
 
-      navV4.querySelectorAll('.group-trigger').forEach((trigger) => {
+      navRoot.querySelectorAll('.group-trigger').forEach((trigger) => {
         trigger.addEventListener('click', (e) => {
           e.preventDefault()
           const group = trigger.closest('.nav-group')
           const open = !group?.classList.contains('is-open')
-          navV4.querySelectorAll('.nav-group').forEach((g) => setGroupOpen(g, g === group && open))
+          navRoot.querySelectorAll('.nav-group').forEach((g) => setGroupOpen(g, g === group && open))
         })
       })
 
       document.addEventListener('click', (e) => {
-        if (!navV4.contains(e.target)) {
-          navV4.querySelectorAll('.nav-group').forEach((g) => {
+        if (!navRoot.contains(e.target)) {
+          navRoot.querySelectorAll('.nav-group').forEach((g) => {
             g.classList.remove('is-hover', 'is-open')
             g.querySelector('.group-trigger')?.setAttribute('aria-expanded', 'false')
           })
         }
       })
     }
+
+    document.querySelectorAll('.nav-v4').forEach(initGroupedNav)
   </script>
 </body>
 </html>

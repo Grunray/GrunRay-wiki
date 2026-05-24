@@ -13,8 +13,11 @@ export const PAGE_PHOTO_BG_BY_ROUTE_NAME: Partial<Record<string, string>> = {
   messages: DEFAULT_PAGE_PHOTO_BG_URL,
   friends: DEFAULT_PAGE_PHOTO_BG_URL,
   'friends-apply': DEFAULT_PAGE_PHOTO_BG_URL,
+  fragments: DEFAULT_PAGE_PHOTO_BG_URL,
+  about: DEFAULT_PAGE_PHOTO_BG_URL,
+  recommend: DEFAULT_PAGE_PHOTO_BG_URL,
   'post-detail': '/api/media/files/film/main/background/bg_secondary.png',
-  'not-found': DEFAULT_PAGE_PHOTO_BG_URL,
+  'not-found': '/api/media/files/film/404/404_not_found.jpg',
 }
 
 const CSS_VAR = '--page-photo-bg-image'

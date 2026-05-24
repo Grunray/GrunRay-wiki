@@ -2,6 +2,10 @@ import { nextTick, onMounted, onUnmounted, ref, watch, type Ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 import { useUiStore } from '@/stores/ui'
+import {
+  FOOTER_REFRESH_EVENT,
+  isXiqiSplitFooterLocked,
+} from '@/composables/useXiqiSplitFooter'
 
 const SLICE_COUNT = 20
 const POINTER_RX = 105
@@ -117,10 +121,26 @@ export function useFooterGrunRayReveal(
 
   /** 固定预留滚动区，不在滚动帧里读 getBoundingClientRect，避免 scrollHeight 突变卡顿 */
   const applyFooterMetrics = () => {
-    document.documentElement.style.setProperty('--footer-reveal-space', `${REVEAL_SPACE_PX}px`)
+    const revealSpace = isXiqiSplitFooterLocked() ? 0 : REVEAL_SPACE_PX
+    document.documentElement.style.setProperty('--footer-reveal-space', `${revealSpace}px`)
     document.documentElement.style.setProperty('--footer-grunray-brand-height', `${BRAND_HEIGHT_PX}px`)
     syncBrandLayout()
     metricsApplied = true
+  }
+
+  const applyXiqiSplitFooterSuppressed = () => {
+    smoothedProgress = 0
+    lastWrittenProgress = -1
+    applyRevealState(0, false, REVEAL_SPACE_PX + 999)
+  }
+
+  const onFooterRefresh = () => {
+    applyFooterMetrics()
+    if (isXiqiSplitFooterLocked()) {
+      applyXiqiSplitFooterSuppressed()
+      return
+    }
+    requestScrollUpdate()
   }
 
   const getScrollMetrics = () => {
@@ -133,6 +153,7 @@ export function useFooterGrunRayReveal(
   }
 
   const finalizeFooterAtBottom = () => {
+    if (isXiqiSplitFooterLocked()) return
     smoothedProgress = 1
     const { remaining } = getScrollMetrics()
     applyRevealState(1, true, remaining)
@@ -141,6 +162,11 @@ export function useFooterGrunRayReveal(
 
   const updateScrollReveal = () => {
     if (!metricsApplied) applyFooterMetrics()
+
+    if (isXiqiSplitFooterLocked()) {
+      applyXiqiSplitFooterSuppressed()
+      return { progress: 0, remaining: REVEAL_SPACE_PX + 999 }
+    }
 
     const reducedMotion = ui.prefersReducedMotion
     const { remaining, progress, atBottom } = getScrollMetrics()
@@ -190,6 +216,7 @@ export function useFooterGrunRayReveal(
   }
 
   const onScrollIdle = () => {
+    if (isXiqiSplitFooterLocked()) return
     const { remaining } = getScrollMetrics()
     if (remaining <= 64) finalizeFooterAtBottom()
   }
@@ -311,6 +338,7 @@ export function useFooterGrunRayReveal(
     })
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onResize, { passive: true })
+    window.addEventListener(FOOTER_REFRESH_EVENT, onFooterRefresh)
 
     if (typeof ResizeObserver !== 'undefined') {
       contentResizeObserver = new ResizeObserver(() => {
@@ -360,6 +388,7 @@ export function useFooterGrunRayReveal(
     if (scrollIdleTimer) window.clearTimeout(scrollIdleTimer)
     window.removeEventListener('scroll', onScroll)
     window.removeEventListener('resize', onResize)
+    window.removeEventListener(FOOTER_REFRESH_EVENT, onFooterRefresh)
     window.removeEventListener('scrollend', onScrollIdle)
     contentResizeObserver?.disconnect()
     unbindBrandPointer()

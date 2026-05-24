@@ -2,8 +2,10 @@ import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 
 import type { ThemeId } from '@/types/content'
+import { setPageCorruptState } from '@/theme/pageCorruptState'
 
 const STORAGE_THEME = 'ui.theme'
+const STORAGE_THEME_ABSTRACT_UNLOCKED = 'ui.themeAbstractUnlocked'
 const STORAGE_CURSOR = 'ui.cursorTrail'
 /** 音乐面板是否收起：'1' 收起（关闭 UI），'0' 展开；无键时默认展开（UI 卡片可见） */
 const STORAGE_MUSIC_MINIMIZED = 'ui.musicPlayerMinimized'
@@ -33,10 +35,15 @@ function applyPhotoBgToDocument(enabled: boolean) {
   }
 }
 
-/** 当前仅开放浅/深；历史 `abstract` 读入时回落为浅色并写回存储 */
+function readAbstractUnlocked(): boolean {
+  return localStorage.getItem(STORAGE_THEME_ABSTRACT_UNLOCKED) === '1'
+}
+
+/** 浅/深公开；abstract 仅彩蛋解锁后持久化 */
 function readTheme(): ThemeId {
   const v = localStorage.getItem(STORAGE_THEME)
   if (v === 'dark') return 'dark'
+  if (v === 'abstract' && readAbstractUnlocked()) return 'abstract'
   if (v === 'abstract') {
     localStorage.setItem(STORAGE_THEME, 'light')
     return 'light'
@@ -45,7 +52,7 @@ function readTheme(): ThemeId {
 }
 
 function applyThemeToDocument(theme: ThemeId) {
-  document.documentElement.dataset.theme = theme === 'dark' ? 'dark' : 'light'
+  document.documentElement.dataset.theme = theme
 }
 
 export const useUiStore = defineStore('ui', () => {
@@ -62,12 +69,13 @@ export const useUiStore = defineStore('ui', () => {
   const splashAvatarHandoff = ref(false)
   /** 全屏图片背景（与 main.css 中 html[data-photo-bg] 联动） */
   const photoBackgroundEnabled = ref(readPhotoBackground())
+  /** 404 彩蛋：是否已解锁 abstract 配色 */
+  const abstractThemeUnlocked = ref(readAbstractUnlocked())
 
   watch(
     theme,
     (t) => {
-      const persist = t === 'dark' ? 'dark' : 'light'
-      localStorage.setItem(STORAGE_THEME, persist)
+      localStorage.setItem(STORAGE_THEME, t)
       applyThemeToDocument(t)
     },
     { immediate: true },
@@ -98,9 +106,33 @@ export const useUiStore = defineStore('ui', () => {
     prefersReducedMotion.value = value
   }
 
-  /** 仅切换浅色 / 深色（抽象模式入口已隐藏） */
+  /** 顶栏轮换：未解锁时浅/深；解锁后 浅 → 深 → 隐藏 → 浅 */
+  function cycleTheme() {
+    if (abstractThemeUnlocked.value) {
+      if (theme.value === 'light') theme.value = 'dark'
+      else if (theme.value === 'dark') theme.value = 'abstract'
+      else theme.value = 'light'
+      return
+    }
+    theme.value = theme.value === 'light' ? 'dark' : 'light'
+  }
+
+  /** 指定主题（abstract 需已解锁） */
   function setTheme(t: ThemeId) {
+    if (t === 'abstract') {
+      if (!abstractThemeUnlocked.value) return
+      theme.value = 'abstract'
+      return
+    }
     theme.value = t === 'dark' ? 'dark' : 'light'
+  }
+
+  /** 404 彩蛋：解锁并应用 abstract 隐藏配色 */
+  function unlockAbstractTheme() {
+    abstractThemeUnlocked.value = true
+    localStorage.setItem(STORAGE_THEME_ABSTRACT_UNLOCKED, '1')
+    theme.value = 'abstract'
+    setPageCorruptState(false)
   }
 
   function expandMusicPlayer() {
@@ -137,7 +169,10 @@ export const useUiStore = defineStore('ui', () => {
     splashWoniuReplayTick,
     splashAvatarHandoff,
     photoBackgroundEnabled,
+    abstractThemeUnlocked,
     setTheme,
+    cycleTheme,
+    unlockAbstractTheme,
     setReducedMotion,
     expandMusicPlayer,
     setMusicPlayerMinimized,

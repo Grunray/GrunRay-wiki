@@ -1,5 +1,5 @@
 <!--
-  浅色 / 深色切换：与顶栏圆钮风格一致；扩散层仍 Teleport 到 body（z-index:0）。
+  浅色 / 深色 / 隐藏配色（解锁后三档轮换）；扩散层 Teleport 到 body（z-index:0）。
 -->
 <template>
   <button
@@ -9,17 +9,16 @@
     :class="{
       'theme-nav-btn--light': ui.theme === 'light',
       'theme-nav-btn--dark': ui.theme === 'dark',
+      'theme-nav-btn--abstract': ui.theme === 'abstract',
     }"
-    role="switch"
-    :aria-checked="ui.theme === 'dark' ? 'true' : 'false'"
-    :aria-label="t('ui.theme')"
+    :aria-label="themeHoverTitle"
     :title="themeHoverTitle"
     @click="toggle($event)"
     @keydown.enter.prevent="toggle()"
     @keydown.space.prevent="toggle()"
   >
     <span class="theme-nav-btn-icon" aria-hidden="true">
-      <ThemeNavIcon :dark="ui.theme === 'dark'" />
+      <ThemeNavIcon :theme="ui.theme" />
     </span>
   </button>
 
@@ -41,9 +40,15 @@ import { DARK_MODE_PAGE_BACKGROUND, LIGHT_MODE_PAGE_BACKGROUND } from '@/theme/p
 const { t } = useI18n()
 const ui = useUiStore()
 
-const themeHoverTitle = computed(() =>
-  ui.theme === 'light' ? t('ui.themeTitleLight') : t('ui.themeTitleDark'),
-)
+const themeHoverTitle = computed(() => {
+  if (ui.theme === 'abstract') return t('ui.themeTitleAbstract')
+  if (ui.theme === 'dark') {
+    return ui.abstractThemeUnlocked
+      ? t('ui.themeTitleDarkUnlocked')
+      : t('ui.themeTitleDark')
+  }
+  return t('ui.themeTitleLight')
+})
 
 const anchorRef = ref<HTMLElement | null>(null)
 
@@ -77,7 +82,7 @@ function playRippleFromAnchor(ev?: MouseEvent) {
     ripple.x = r.left + r.width / 2
     ripple.y = r.top + r.height / 2
   }
-  ripple.surface = ui.theme === 'dark' ? 'dark' : 'light'
+  ripple.surface = ui.theme === 'light' ? 'light' : 'dark'
   ripple.key += 1
   ripple.show = true
 
@@ -102,8 +107,7 @@ watch(
 )
 
 function toggle(ev?: MouseEvent) {
-  const next = ui.theme === 'light' ? 'dark' : 'light'
-  ui.setTheme(next)
+  ui.cycleTheme()
   playRippleFromAnchor(ev instanceof MouseEvent ? ev : undefined)
 }
 </script>
@@ -205,6 +209,36 @@ function toggle(ev?: MouseEvent) {
   filter:
     drop-shadow(0 0 8px rgb(255 255 255 / 0.9))
     drop-shadow(0 0 16px rgb(226 232 240 / 0.5));
+}
+
+/* 隐藏配色（abstract）：青蓝底 + 亮黄描边 */
+.theme-nav-btn--abstract {
+  color: #ffdb00;
+  border-color: #ffdb00;
+  background: linear-gradient(145deg, #0a2330 0%, #123848 52%, #167095 100%);
+  box-shadow:
+    0 0 0 1px rgb(255 219 0 / 35%),
+    3px 3px 0 rgb(255 219 0 / 85%);
+  border-radius: 0;
+}
+
+.theme-nav-btn--abstract .theme-nav-btn-icon {
+  filter:
+    drop-shadow(0 0 6px rgb(255 219 0 / 0.85))
+    drop-shadow(0 0 12px rgb(22 112 149 / 0.65));
+}
+
+.theme-nav-btn--abstract:hover {
+  border-color: #ffdb00;
+  box-shadow:
+    0 0 0 1px rgb(255 219 0 / 45%),
+    4px 4px 0 rgb(255 219 0 / 0.95);
+}
+
+.theme-nav-btn--abstract:hover .theme-nav-btn-icon {
+  filter:
+    drop-shadow(0 0 8px rgb(255 219 0 / 0.95))
+    drop-shadow(0 0 14px rgb(22 112 149 / 0.75));
 }
 
 @media (prefers-reduced-motion: reduce) {

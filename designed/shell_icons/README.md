@@ -19,11 +19,17 @@
 - **项目** — 双尖括号 `<>`（无中间斜杠，与 v2 区分）
 - **友链** — 双头像剪影式 friend
 
-已接入前端：`SiteNav.vue` + `SiteNavGroup.vue`（**v4 分组**：首页 · 创作 · 社区 · 栖息）；图标见 `frontend/src/components/icons/*NavIcon.vue`。占位路由：`/fragments`、`/about`、`/recommend`。
+已接入前端：`SiteNav.vue` + `SiteNavGroup.vue`（**v4 分组** + **v5 父级图标**）；图标见 `frontend/src/components/icons/*NavIcon.vue`。占位路由：`/fragments`、`/about`、`/recommend`。
 
 **调整版 v4**（`nav-icons-preview.html`，源自 `参考/sub-menu.html`）：
 
-- 顶栏：**首页** · **创作**（项目/博客）· **社区**（留言/友链）· **栖息**（碎念/我/推荐）
+- 顶栏：**首页** · **创作**（项目/博客）· **社区**（留言/友链）· **栖息**（碎念/关于/推荐）
+- `nav-icons-preview.html` 在 v4 顶栏下方有 **v4 图标一览**（父级 + 二级 + 共用箭头）
+
+**调整版 v5**（父级与子项去重，已合入前端）：
+
+- **创作** 父级：`CreateNavIcon.vue`（笔尖 + 星芒）≠ 二级 **项目** `ProjectsNavIcon`
+- **社区** 父级：`CommunityNavIcon.vue`（地球经纬）≠ 二级 **友链** `FriendsNavIcon`
 - 「栖息」为新增父级，收纳 **碎念、关于、推荐**（推荐：软件 / 开源 / 番剧动漫）
 - 悬停父级即可移入二级菜单，移出父级与面板后收起
 

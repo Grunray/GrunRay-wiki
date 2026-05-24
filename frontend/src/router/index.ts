@@ -1,7 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import AppShell from '@/components/layout/AppShell.vue'
+import AboutView from '@/views/AboutView.vue'
 import BlogView from '@/views/BlogView.vue'
+import FragmentComposeView from '@/views/FragmentComposeView.vue'
+import FragmentsView from '@/views/FragmentsView.vue'
 import HomeView from '@/views/HomeView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 import PostDetailView from '@/views/PostDetailView.vue'
@@ -10,8 +13,9 @@ import ProjectNotesView from '@/views/ProjectNotesView.vue'
 import FriendsApplyView from '@/views/FriendsApplyView.vue'
 import FriendsView from '@/views/FriendsView.vue'
 import MessagesView from '@/views/MessagesView.vue'
-import NavPlaceholderView from '@/views/NavPlaceholderView.vue'
 import ProjectsView from '@/views/ProjectsView.vue'
+import RecommendView from '@/views/RecommendView.vue'
+import { syncPageCorruptForRoute } from '@/theme/pageCorruptState'
 import { applyPagePhotoBackgroundToDocument } from '@/theme/pagePhotoBackgrounds'
 
 const router = createRouter({
@@ -33,20 +37,26 @@ const router = createRouter({
         {
           path: 'fragments',
           name: 'fragments',
-          component: NavPlaceholderView,
-          meta: { navTitleKey: 'nav.fragments' },
+          component: FragmentsView,
+          meta: { appMainLayout: 'full-viewport' },
+        },
+        {
+          path: 'fragments/compose',
+          name: 'fragments-compose',
+          component: FragmentComposeView,
+          meta: { appMainLayout: 'full-viewport' },
         },
         {
           path: 'about',
           name: 'about',
-          component: NavPlaceholderView,
-          meta: { navTitleKey: 'nav.about' },
+          component: AboutView,
+          meta: { appMainLayout: 'full-viewport' },
         },
         {
           path: 'recommend',
           name: 'recommend',
-          component: NavPlaceholderView,
-          meta: { navTitleKey: 'nav.recommend' },
+          component: RecommendView,
+          meta: { appMainLayout: 'full-viewport' },
         },
         { path: ':pathMatch(.*)*', name: 'not-found', component: NotFoundView },
       ],
@@ -59,6 +69,7 @@ const router = createRouter({
 
 router.afterEach((to) => {
   applyPagePhotoBackgroundToDocument(to)
+  syncPageCorruptForRoute(to.name)
 })
 
 export default router
