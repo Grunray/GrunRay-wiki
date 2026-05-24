@@ -4,6 +4,8 @@ import vue from '@vitejs/plugin-vue'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // GitHub Pages 子路径部署；本地 dev 仍走根路径
+  base: process.env.VITE_BASE ?? (process.env.NODE_ENV === 'production' ? '/GrunRay-wiki/' : '/'),
   plugins: [vue()],
   server: {
     proxy: {

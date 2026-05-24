@@ -68,7 +68,10 @@
 
 /* ---------- 主内容区块（Fragments / Recommend：split-main-inner; About：about-page-inner） ---------- */
 
-.xiqi-page.page-enter--play .xiqi-split-main-inner > *:not(.xiqi-hero),
+/* feed 与 toolbar-row 故意排除：让它们的 容器 立刻显示，
+ * 把可见 motion 让给内部的 chip / card stagger（避免父块淡入「盖住」子项动效）。
+ */
+.xiqi-page.page-enter--play .xiqi-split-main-inner > *:not(.xiqi-hero):not(.xiqi-feed):not(.xiqi-toolbar-row),
 .xiqi-page.page-enter--play .about-page-inner > *:not(.xiqi-hero) {
   animation: page-enter-xiqi-block 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -105,11 +108,61 @@
   animation-delay: 0.68s;
 }
 
-/* ---------- 列表卡：基于 --enter-i 的 stagger，间距对齐留言 0.07s ---------- */
+/* ---------- Toolbar chip stagger（mood / sort / category 等 chip-group 内的按钮） ---------- */
 
+/* 每个 chip-group 内独立按 nth-child cascade；多个 group 并行起步在同一 delay。
+ * 起步 0.46s（在 toolbar-row 容器之后、card 之前）。
+ */
+.xiqi-page.page-enter--play .xiqi-toolbar-actions .xiqi-chip-group > .xiqi-chip {
+  animation: page-enter-xiqi-chip 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.xiqi-page.page-enter--play .xiqi-toolbar-actions .xiqi-chip-group > .xiqi-chip:nth-child(1) {
+  animation-delay: 0.46s;
+}
+.xiqi-page.page-enter--play .xiqi-toolbar-actions .xiqi-chip-group > .xiqi-chip:nth-child(2) {
+  animation-delay: 0.5s;
+}
+.xiqi-page.page-enter--play .xiqi-toolbar-actions .xiqi-chip-group > .xiqi-chip:nth-child(3) {
+  animation-delay: 0.54s;
+}
+.xiqi-page.page-enter--play .xiqi-toolbar-actions .xiqi-chip-group > .xiqi-chip:nth-child(4) {
+  animation-delay: 0.58s;
+}
+.xiqi-page.page-enter--play .xiqi-toolbar-actions .xiqi-chip-group > .xiqi-chip:nth-child(n+5) {
+  animation-delay: 0.62s;
+}
+
+/* Recommend 星级筛选组（RecommendStarRating）整体一次入场 */
+.xiqi-page.page-enter--play .xiqi-chip-group--stars {
+  animation: page-enter-xiqi-chip 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.62s both;
+}
+
+/* Compose 入口（仅 Fragments，跟在 toolbar 后面） */
+.xiqi-page.page-enter--play .xiqi-compose-entry {
+  animation: page-enter-xiqi-chip 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.66s both;
+}
+
+/* ---------- 列表卡：基于 --enter-i 的 stagger，间距对齐留言 0.07s，封顶 8 ---------- */
+
+/* 起步 0.5s（toolbar chip 入场到一半时）；超过 8 的 card 共用末档 0.5+0.56=1.06s 上线。 */
 .xiqi-page.page-enter--play .xiqi-card {
   animation: page-enter-xiqi-block 0.62s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(0.55s + (var(--enter-i, 0) * 0.07s));
+  animation-delay: calc(0.5s + min(var(--enter-i, 0), 8) * 0.07s);
+}
+
+/* ---------- 局部 hide 防 class 切换瞬间的 snap-flash ----------
+ * 仅对 chip / card / stars-group 这类小元素生效（不是全页），
+ * 后台标签即使 playPageEnter 没跑，主要内容（hero、intro、toolbar 容器）仍然可见，
+ * 用户切回时 rAF 解冻，chip/card 才动画出现，符合「smooth entrance」感。
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .xiqi-page:not(.page-enter--play) .xiqi-toolbar-actions .xiqi-chip,
+  .xiqi-page:not(.page-enter--play) .xiqi-chip-group--stars,
+  .xiqi-page:not(.page-enter--play) .xiqi-compose-entry,
+  .xiqi-page:not(.page-enter--play) .xiqi-card {
+    opacity: 0;
+    transform: translateY(12px);
+  }
 }
 
 /* ---------- 减弱动画偏好：全部禁用 + 立刻显示 ---------- */
@@ -119,6 +172,9 @@
   .xiqi-page.page-enter--play .xiqi-hero-chips > *,
   .xiqi-page.page-enter--play .xiqi-split-main-inner > *,
   .xiqi-page.page-enter--play .about-page-inner > *,
+  .xiqi-page.page-enter--play .xiqi-toolbar-actions .xiqi-chip-group > .xiqi-chip,
+  .xiqi-page.page-enter--play .xiqi-chip-group--stars,
+  .xiqi-page.page-enter--play .xiqi-compose-entry,
   .xiqi-page.page-enter--play .xiqi-card {
     animation: none;
   }
@@ -127,6 +183,9 @@
   .xiqi-page .xiqi-hero-chips > *,
   .xiqi-page .xiqi-split-main-inner > *,
   .xiqi-page .about-page-inner > *,
+  .xiqi-page .xiqi-toolbar-actions .xiqi-chip,
+  .xiqi-page .xiqi-chip-group--stars,
+  .xiqi-page .xiqi-compose-entry,
   .xiqi-page .xiqi-card {
     opacity: 1;
     transform: none;
