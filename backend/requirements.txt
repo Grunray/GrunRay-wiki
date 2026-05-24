@@ -20,5 +20,5 @@ Pygments>=2.18,<3
 # 中文关键词自动抽取（app/keywords_extract.py、scripts/extract_keywords.py）
 jieba>=0.42,<2
 
-# YAML front matter（app/md_import.py、scripts/import_markdown_posts.py）
+# YAML front matter（app/md_import.py、scripts/content_tools/import_markdown_posts.py）
 PyYAML>=6.0,<7

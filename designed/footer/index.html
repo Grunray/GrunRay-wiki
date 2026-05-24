@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Footer — GRUNRAY 拖影</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --page-bg: #0a0b0d;
+      --footer-green: #32f08c;
+      --footer-brand-height: 360px;
+      /* 单字 viewBox 896×960，7 字总宽高比 ≈ 6.53 */
+      --brand-letter-aspect: 0.933333;
+      --brand-word-ratio: 6.533;
+      --brand-block-max-height: calc(var(--footer-brand-height) - 2.5rem);
+      --footer-meta-height: 48px;
+      --text-on-dark: #f5f9fe;
+      --text-muted: #a6aab5;
+      --reveal-progress: 0;
+      --footer-reveal-space: 460px;
+      --slice-count: 20;
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--page-bg);
+    }
+
+    body {
+      position: relative;
+      z-index: 0;
+      min-height: 100vh;
+      color: var(--text-on-dark);
+      line-height: 1.5;
+      padding-bottom: var(--footer-reveal-space);
+    }
+
+    .page-cover {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      background: var(--page-bg);
+      box-shadow: 0 24px 0 0 var(--page-bg);
+    }
+
+    .page-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      background: color-mix(in srgb, var(--page-bg) 92%, transparent);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgb(255 255 255 / 0.06);
+    }
+
+    .page-header strong { font-weight: 600; letter-spacing: 0.04em; }
+    .page-header span { font-size: 0.85rem; color: var(--text-muted); }
+
+    main.demo-main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 8rem;
+    }
+
+    main.demo-main h1 {
+      font-size: clamp(1.75rem, 5vw, 2.5rem);
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    main.demo-main p { color: var(--text-muted); margin-bottom: 1.25rem; }
+
+    .scroll-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 2rem;
+      padding: 0.65rem 1rem;
+      border-radius: 999px;
+      border: 1px solid rgb(255 255 255 / 0.1);
+      font-size: 0.85rem;
+      color: var(--footer-green);
+    }
+
+    .filler-blocks {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .filler-blocks section {
+      padding: 1.5rem;
+      border-radius: 12px;
+      background: rgb(255 255 255 / 0.03);
+      border: 1px solid rgb(255 255 255 / 0.06);
+    }
+
+    .footer-c5KzRY {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .container-AbNPWn {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .footer-meta-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      min-height: var(--footer-meta-height);
+      padding: 0 1.25rem;
+      background: var(--page-bg);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      pointer-events: auto;
+      opacity: 0;
+      transform: translate3d(0, 100%, 0);
+      transition:
+        opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .footer-c5KzRY.is-visible .footer-meta-bar {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .footer-meta-bar__left {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-meta-bar__cert {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .footer-meta-bar__social {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .footer-meta-bar__social a,
+    .footer-meta-bar__back {
+      color: var(--text-on-dark);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: color 0.2s;
+    }
+
+    .footer-meta-bar__social a:hover,
+    .footer-meta-bar__back:hover {
+      color: var(--footer-green);
+    }
+
+    .footer-meta-bar__icon {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    .container_distortion-T_UT23 {
+      position: relative;
+      overflow: hidden;
+      background: var(--footer-green);
+      min-height: var(--footer-brand-height);
+    }
+
+    .content-rrUxd3 {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: var(--footer-brand-height);
+      padding: 1.25rem clamp(0.75rem, 2vw, 1.5rem);
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .brand-reveal-clip {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: min(100%, 1280px);
+      margin: 0 auto;
+      overflow: visible;
+      clip-path: inset(
+        calc((1 - var(--reveal-progress, 0)) * 50%) 0
+        calc((1 - var(--reveal-progress, 0)) * 50%) 0
+      );
+      will-change: clip-path;
+    }
+
+    .footer-c5KzRY.is-fully-revealed .brand-reveal-clip {
+      clip-path: inset(0);
+    }
+
+    /*
+     * 宽高联动：容器比例 = 7 字 × 单字宽高比，避免固定高度 + cover 裁切
+     * JS syncBrandLayout 会写入精确的 --brand-word-width / --brand-word-height
+     */
+    .brand-word {
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      gap: clamp(0.08rem, 0.55vw, 0.35rem);
+      width: var(--brand-word-width, min(100%, calc(var(--brand-block-max-height) * var(--brand-word-ratio))));
+      height: var(--brand-word-height, auto);
+      max-width: 100%;
+      max-height: var(--brand-block-max-height);
+      aspect-ratio: var(--brand-word-ratio);
+      user-select: none;
+      touch-action: none;
+      pointer-events: auto;
+      cursor: default;
+    }
+
+    .brand-letter {
+      position: relative;
+      flex: 1 1 0;
+      min-width: 0;
+      height: 100%;
+    }
+
+    .brand-letter__slices {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .brand-letter__slice {
+      position: relative;
+      flex: 1 1 0;
+      overflow: hidden;
+    }
+
+    .brand-letter__slice-inner {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: calc(var(--slice-count) * 100%);
+      top: calc(var(--slice-index) * -100%);
+      transform: translate3d(var(--slice-offset, 0px), 0, 0);
+      will-change: transform;
+    }
+
+    .brand-letter__glyph {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center center;
+      filter: brightness(0);
+      pointer-events: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .footer-meta-bar { transition: opacity 0.2s ease; transform: none; }
+      .footer-c5KzRY:not(.is-visible) .footer-meta-bar { opacity: 0; }
+      .brand-reveal-clip { clip-path: none; }
+      .brand-letter__slice-inner { transform: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-cover" id="page-cover">
+    <header class="page-header">
+      <strong>Footer Demo</strong>
+      <span>GRUNRAY · <a href="https://www.trae.ai/" style="color: var(--footer-green)">trae.ai</a> 拖影参考</span>
+    </header>
+
+    <main class="demo-main">
+      <h1>滚到底部，在 GRUNRAY 任意字母上移动鼠标</h1>
+      <p>横条在 <code>.brand-letter__slice</code> 上测距；仅指针附近几条横带错位（参考 <a href="https://www.trae.ai/" style="color: var(--footer-green)">trae.ai</a>）。</p>
+      <div class="scroll-hint" aria-hidden="true">↓ 滚到底部后悬停</div>
+
+      <div class="filler-blocks">
+        <section><h2>区块 1</h2><p>主内容盖住页脚，滚到底才露出。</p></section>
+        <section><h2>区块 2</h2><p>指针事件绑定在整个 <code>.brand-word</code> 区域。</p></section>
+        <section><h2>区块 3</h2><p>G R U N R A Y 共 7 列，R 复用 <code>16gl-R.svg</code>。</p></section>
+      </div>
+    </main>
+  </div>
+
+  <div class="footer-c5KzRY" id="footer-root" data-footer-reveal>
+    <footer class="container-AbNPWn">
+      <div class="footer-meta-bar">
+        <div class="footer-meta-bar__left">
+          <span>©2026 GrunRay</span>
+          <span class="footer-meta-bar__cert" aria-label="SOC 2 Certified">
+            <svg class="footer-meta-bar__icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1 2 4v4c0 3.3 2.6 6.4 6 7 3.4-.6 6-3.7 6-7V4L8 1zm0 2.2 3.5 2.1v2.7c0 2.2-1.6 4.2-3.5 4.6-1.9-.4-3.5-2.4-3.5-4.6V5.3L8 3.2z"/></svg>
+            SOC 2 Certified
+          </span>
+        </div>
+        <div class="footer-meta-bar__social" aria-label="Social links">
+          <a href="#" aria-label="X"><svg class="footer-meta-bar__icon" viewBox="0 0 16 16"><path d="M9.5 6.8 15.2 0h-1.4L8.9 5.9 4.7 0H0l6 8.7L0 16h1.4l5.5-6.4 4.4 6.4H16L9.5 6.8zm-1.8 2.1-.6-.8-4.8-6.3h2.2l3.9 5.1.6.8 4.8 6.2H9.5l-3.9-5.1z"/></svg></a>
+        </div>
+        <a class="footer-meta-bar__back" href="#" id="back-to-top">
+          Back to top
+          <svg class="footer-meta-bar__icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3 3 8h3v5h4V8h3L8 3z"/></svg>
+        </a>
+      </div>
+
+      <div class="container_distortion-T_UT23">
+        <div class="content-rrUxd3" data-cursor-element-id="cursor-el-1">
+          <div class="brand-reveal-clip">
+            <div class="brand-word" id="brand-word" role="img" aria-label="GRUNRAY"></div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      var SLICE_COUNT = 20;
+      /** 指针影响椭圆半径（px）：横向略宽、纵向较窄，贴近 trae 局部拖影 */
+      var POINTER_RX = 105;
+      var POINTER_RY = 72;
+      var MAX_SLICE_SHIFT = 26;
+
+      /** G R U N R A Y — 6 个 svg，R 用两次 */
+      var LETTER_ASSETS = [
+        { src: '16gl-G.svg', char: 'G' },
+        { src: '16gl-R.svg', char: 'R' },
+        { src: '16gl-U.svg', char: 'U' },
+        { src: '16gl-N.svg', char: 'N' },
+        { src: '16gl-R.svg', char: 'R' },
+        { src: '16gl-A.svg', char: 'A' },
+        { src: '16gl-Y.svg', char: 'Y' },
+      ];
+
+      var footerRoot = document.getElementById('footer-root');
+      var brandWord = document.getElementById('brand-word');
+      var backToTop = document.getElementById('back-to-top');
+      var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      var sliceEls = []; /* { band, inner, sliceIndex } */
+      var targetOffsets = [];
+      var currentOffsets = [];
+      var pointerActive = false;
+      var distortRaf = 0;
+
+      function createGlyphImg(src, char) {
+        var img = document.createElement('img');
+        img.className = 'brand-letter__glyph';
+        img.src = src;
+        img.alt = '';
+        img.setAttribute('aria-hidden', 'true');
+        img.draggable = false;
+        return img;
+      }
+
+      function buildBrand() {
+        brandWord.innerHTML = '';
+        sliceEls = [];
+        targetOffsets = [];
+        currentOffsets = [];
+
+        LETTER_ASSETS.forEach(function (asset) {
+          var letter = document.createElement('div');
+          letter.className = 'brand-letter';
+          letter.dataset.char = asset.char;
+
+          var slicesWrap = document.createElement('div');
+          slicesWrap.className = 'brand-letter__slices';
+          slicesWrap.style.setProperty('--slice-count', String(SLICE_COUNT));
+
+          for (var i = 0; i < SLICE_COUNT; i++) {
+            var slice = document.createElement('div');
+            slice.className = 'brand-letter__slice';
+
+            var inner = document.createElement('div');
+            inner.className = 'brand-letter__slice-inner';
+            inner.style.setProperty('--slice-index', String(i));
+            inner.style.setProperty('--slice-count', String(SLICE_COUNT));
+            inner.appendChild(createGlyphImg(asset.src, asset.char));
+
+            slice.appendChild(inner);
+            slicesWrap.appendChild(slice);
+
+            sliceEls.push({ band: slice, inner: inner, sliceIndex: i });
+            targetOffsets.push(0);
+            currentOffsets.push(0);
+          }
+
+          letter.appendChild(slicesWrap);
+          brandWord.appendChild(letter);
+        });
+      }
+
+      function clamp01(n) { return Math.min(1, Math.max(0, n)); }
+
+      /** 与 SVG viewBox 896×960 一致：word 宽/高 = 7 × 896/960 */
+      var WORD_RATIO = (7 * 896) / 960;
+
+      function syncBrandLayout() {
+        var clip = brandWord.parentElement;
+        if (!clip || clip.clientWidth < 1) return;
+
+        var rootStyles = getComputedStyle(document.documentElement);
+        var maxHRaw = rootStyles.getPropertyValue('--brand-block-max-height');
+        var maxH = parseFloat(maxHRaw) || 280;
+        var availW = clip.clientWidth;
+
+        var heightFromWidth = availW / WORD_RATIO;
+        var height = Math.min(maxH, heightFromWidth);
+        var width = height * WORD_RATIO;
+
+        if (width > availW) {
+          width = availW;
+          height = width / WORD_RATIO;
+        }
+
+        document.documentElement.style.setProperty('--brand-word-width', width.toFixed(2) + 'px');
+        document.documentElement.style.setProperty('--brand-word-height', height.toFixed(2) + 'px');
+      }
+
+      function setFooterMetrics() {
+        var meta = footerRoot.querySelector('.footer-meta-bar');
+        var brand = footerRoot.querySelector('.container_distortion-T_UT23');
+        var metaH = meta ? Math.ceil(meta.getBoundingClientRect().height) : 48;
+        var brandH = brand ? Math.ceil(brand.getBoundingClientRect().height) : 360;
+        var revealSpace = Math.ceil((metaH + brandH) * 1.15);
+        document.documentElement.style.setProperty('--footer-reveal-space', revealSpace + 'px');
+        syncBrandLayout();
+        return revealSpace;
+      }
+
+      var scrollFrame = 0;
+      var revealAnimRaf = 0;
+      var scrollIdleTimer = null;
+      var smoothedProgress = 0;
+
+      function applyRevealState(progress, footerShouldShow, ready) {
+        document.documentElement.style.setProperty('--reveal-progress', String(progress));
+        footerRoot.classList.toggle('is-visible', footerShouldShow);
+        footerRoot.classList.toggle('is-interactive', ready);
+        footerRoot.classList.toggle('is-fully-revealed', ready);
+      }
+
+      function finalizeFooterAtBottom() {
+        smoothedProgress = 1;
+        applyRevealState(1, true, true);
+        syncBrandLayout();
+      }
+
+      function scheduleRevealCatchUp() {
+        if (revealAnimRaf) return;
+        function loop() {
+          revealAnimRaf = 0;
+          var before = smoothedProgress;
+          updateScrollReveal();
+          var remaining =
+            document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
+          var revealSpace = parseFloat(
+            getComputedStyle(document.documentElement).getPropertyValue('--footer-reveal-space'),
+          ) || 400;
+          var threshold = Math.max(96, revealSpace * 0.72);
+          var progress = clamp01(1 - remaining / threshold);
+          var stillCatching = Math.abs(smoothedProgress - before) > 0.0005 &&
+            smoothedProgress < progress - 0.004;
+          if (stillCatching) {
+            revealAnimRaf = requestAnimationFrame(loop);
+          }
+        }
+        revealAnimRaf = requestAnimationFrame(loop);
+      }
+
+      function onScrollIdle() {
+        var remaining =
+          document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
+        if (remaining <= 64) finalizeFooterAtBottom();
+      }
+
+      function updateScrollReveal() {
+        scrollFrame = 0;
+        var revealSpace = setFooterMetrics();
+        var threshold = Math.max(96, revealSpace * 0.72);
+        var remaining =
+          document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
+        var progress = clamp01(1 - remaining / threshold);
+        var footerShouldShow = remaining <= threshold;
+        var atBottom = remaining <= 12;
+
+        if (reducedMotion || atBottom || progress >= 0.998) {
+          smoothedProgress = 1;
+        } else if (progress > smoothedProgress) {
+          /* 快速下滑：加大追赶，避免停底后仍半开 */
+          var delta = progress - smoothedProgress;
+          var ease = delta > 0.35 ? 0.62 : delta > 0.12 ? 0.42 : 0.28;
+          smoothedProgress += delta * ease;
+          if (Math.abs(progress - smoothedProgress) < 0.004) smoothedProgress = progress;
+          if (smoothedProgress < progress - 0.004) scheduleRevealCatchUp();
+        } else {
+          smoothedProgress += (progress - smoothedProgress) * 0.24;
+          if (Math.abs(progress - smoothedProgress) < 0.004) smoothedProgress = progress;
+          if (smoothedProgress > progress + 0.004) scheduleRevealCatchUp();
+        }
+
+        var ready =
+          footerShouldShow &&
+          (atBottom || progress >= 0.97 || smoothedProgress >= 0.985);
+
+        applyRevealState(smoothedProgress, footerShouldShow, ready);
+
+        if (ready) syncBrandLayout();
+        else if (footerShouldShow && smoothedProgress < progress - 0.004) {
+          scheduleRevealCatchUp();
+        }
+      }
+
+      function requestScrollUpdate() {
+        if (scrollFrame) return;
+        scrollFrame = requestAnimationFrame(updateScrollReveal);
+      }
+
+      function onScroll() {
+        requestScrollUpdate();
+        if (scrollIdleTimer) window.clearTimeout(scrollIdleTimer);
+        scrollIdleTimer = window.setTimeout(onScrollIdle, 100);
+      }
+
+      /**
+       * 在「横条带 band」上测距（不是 inner，inner 高度=整字会导致只有顶端触发、整字同动）
+       * 仅指针椭圆范围内的横条产生不同 horizontal offset → 局部条纹拖影
+       */
+      function computeTargets(clientX, clientY) {
+        var rx = POINTER_RX;
+        var ry = POINTER_RY;
+        var maxShift = MAX_SLICE_SHIFT;
+
+        for (var i = 0; i < sliceEls.length; i++) {
+          var entry = sliceEls[i];
+          var rect = entry.band.getBoundingClientRect();
+          if (rect.width < 1 || rect.height < 1) {
+            targetOffsets[i] = 0;
+            continue;
+          }
+
+          var cx = rect.left + rect.width * 0.5;
+          var cy = rect.top + rect.height * 0.5;
+          var dx = clientX - cx;
+          var dy = clientY - cy;
+          var norm = (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry);
+
+          if (norm > 1) {
+            targetOffsets[i] = 0;
+            continue;
+          }
+
+          var influence = 1 - norm;
+          influence = influence * influence * (3 - 2 * influence);
+
+          var t = entry.sliceIndex / Math.max(1, SLICE_COUNT - 1);
+          var wave = Math.sin(t * Math.PI * 3.2 + clientX * 0.035 + entry.sliceIndex * 0.55);
+          var shear = (dx / rx) * maxShift * 0.35;
+
+          targetOffsets[i] = (wave * maxShift * 0.55 + shear) * influence;
+        }
+      }
+
+      function resetTargets() {
+        for (var i = 0; i < targetOffsets.length; i++) targetOffsets[i] = 0;
+      }
+
+      function tickDistortion() {
+        distortRaf = 0;
+        var ease = reducedMotion ? 1 : 0.2;
+        var settled = true;
+
+        for (var i = 0; i < sliceEls.length; i++) {
+          var diff = targetOffsets[i] - currentOffsets[i];
+          if (Math.abs(diff) > 0.05) settled = false;
+          currentOffsets[i] += diff * ease;
+          sliceEls[i].inner.style.setProperty(
+            '--slice-offset',
+            currentOffsets[i].toFixed(2) + 'px',
+          );
+        }
+
+        if (!settled || pointerActive) {
+          distortRaf = requestAnimationFrame(tickDistortion);
+        }
+      }
+
+      function requestDistortTick() {
+        if (!distortRaf) distortRaf = requestAnimationFrame(tickDistortion);
+      }
+
+      function onPointerMove(e) {
+        if (!footerRoot.classList.contains('is-interactive')) return;
+        pointerActive = true;
+        computeTargets(e.clientX, e.clientY);
+        requestDistortTick();
+      }
+
+      function onPointerEnter() {
+        if (!footerRoot.classList.contains('is-interactive')) return;
+        pointerActive = false;
+        resetTargets();
+        requestDistortTick();
+      }
+
+      function onPointerLeave() {
+        pointerActive = false;
+        resetTargets();
+        requestDistortTick();
+      }
+
+      backToTop.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
+      });
+
+      buildBrand();
+      syncBrandLayout();
+      updateScrollReveal();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', requestScrollUpdate, { passive: true });
+      if ('onscrollend' in window) {
+        window.addEventListener('scrollend', onScrollIdle, { passive: true });
+      }
+
+      brandWord.addEventListener('pointerenter', onPointerEnter);
+      brandWord.addEventListener('pointermove', onPointerMove, { passive: true });
+      brandWord.addEventListener('pointerleave', onPointerLeave);
+      brandWord.addEventListener('pointercancel', onPointerLeave);
+
+      if (typeof ResizeObserver !== 'undefined') {
+        var ro = new ResizeObserver(function () {
+          requestScrollUpdate();
+          syncBrandLayout();
+        });
+        ro.observe(document.documentElement);
+        if (document.body) ro.observe(document.body);
+        var clipEl = brandWord.parentElement;
+        if (clipEl) ro.observe(clipEl);
+      }
+    })();
+  </script>
+</body>
+</html>

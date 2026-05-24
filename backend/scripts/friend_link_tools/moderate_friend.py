@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """友链审核 CLI。在 backend 目录执行：
 
-  python scripts/moderate_friend.py approve <public_id>
-  python scripts/moderate_friend.py reject <public_id>
-  python scripts/moderate_friend.py hide <public_id>
-  python scripts/moderate_friend.py restore <public_id>
+  python scripts/friend_link_tools/moderate_friend.py approve <public_id>
+  python scripts/friend_link_tools/moderate_friend.py reject <public_id>
+  python scripts/friend_link_tools/moderate_friend.py hide <public_id>
+  python scripts/friend_link_tools/moderate_friend.py restore <public_id>
 """
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import argparse
 import sys
 from pathlib import Path
 
-_backend = Path(__file__).resolve().parent.parent
+_backend = Path(__file__).resolve().parent.parent.parent
 if str(_backend) not in sys.path:
     sys.path.insert(0, str(_backend))
 

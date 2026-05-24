@@ -321,4 +321,13 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   box-shadow: 0 10px 40px rgb(0 0 0 / 0.6);
 }
+
+/* 首页窄屏：父级 height:auto 时避免 height:100% 塌成 0 */
+@media (max-width: 1100px) {
+  .film-container,
+  .film {
+    height: auto;
+    min-height: min(52vh, 520px);
+  }
+}
 </style>

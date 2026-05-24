@@ -6,13 +6,13 @@
 用法（在 backend 目录、已配置 .env、已建表）:
 
   # 默认读取 backend/import/markdown 下全部 .md
-  python scripts/import_markdown_posts.py
+  python scripts/content_tools/import_markdown_posts.py
 
   # 指定目录
-  python scripts/import_markdown_posts.py --dir E:\\articles\\inbox
+  python scripts/content_tools/import_markdown_posts.py --dir E:\\articles\\inbox
 
   # 若 slug 已存在则更新（默认即 upsert）
-  python scripts/import_markdown_posts.py --dir import/markdown
+  python scripts/content_tools/import_markdown_posts.py --dir import/markdown
 
 依赖: pip install -r requirements.txt
 """
@@ -23,7 +23,7 @@ import json
 import sys
 from pathlib import Path
 
-_backend = Path(__file__).resolve().parent.parent
+_backend = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(_backend))
 
 from dotenv import load_dotenv  # noqa: E402

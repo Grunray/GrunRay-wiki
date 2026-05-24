@@ -365,7 +365,7 @@ onMounted(async () => {
       <p class="message-hero-sub">{{ t('messages.subtitle') }}</p>
     </header>
 
-    <blockquote class="message-welcome card">
+    <blockquote class="message-welcome card card-glass-dense">
       <p class="message-welcome-line">{{ t('messages.welcomeText') }}</p>
     </blockquote>
 
@@ -538,7 +538,7 @@ onMounted(async () => {
         <li
           v-for="(msg, index) in adminMessages"
           :key="msg.id"
-          class="message-item card message-item--admin"
+          class="message-item card card-glass-dense message-item--admin"
           :style="{ '--enter-i': String(index) }"
         >
           <div class="message-item-row">
@@ -589,7 +589,7 @@ onMounted(async () => {
         <li
           v-for="(msg, index) in messages"
           :key="msg.id"
-          class="message-item card"
+          class="message-item card card-glass-dense"
           :style="{ '--enter-i': String(index) }"
         >
           <div class="message-item-row">
@@ -747,7 +747,8 @@ onMounted(async () => {
   line-height: 1.55;
 }
 
-.message-welcome {
+.message-welcome,
+.message-item.card {
   margin: 0;
   padding: 1.15rem 1.25rem;
   border-left: 3px solid color-mix(in srgb, var(--color-accent) 55%, transparent);
@@ -1003,9 +1004,10 @@ onMounted(async () => {
 .message-content-policy {
   margin: 0;
   flex: 1 1 12rem;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   line-height: 1.45;
-  color: color-mix(in srgb, var(--color-text-muted) 92%, #c45c5c);
+  font-weight: 400;
+  color: color-mix(in srgb, var(--color-text-muted) 52%, transparent);
 }
 
 .message-submit-toast {
@@ -1209,7 +1211,6 @@ onMounted(async () => {
 
 .message-item.card {
   position: relative;
-  /* 使用全局 .card 内边距；列表项不再额外叠 padding */
 }
 
 .message-item-row {

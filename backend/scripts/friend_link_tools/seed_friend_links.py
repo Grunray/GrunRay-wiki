@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
-"""写入示例已发布友链。在 backend 目录执行：python scripts/seed_friend_links.py"""
+"""写入示例已发布友链（旧方式，内联 SEEDS）。
+
+推荐改用：python scripts/friend_link_tools/import_friend_links.py
+（数据源：import/friend_link/*.md）
+
+在 backend 目录执行：python scripts/friend_link_tools/seed_friend_links.py
+"""
 from __future__ import annotations
 
 import sys
 from pathlib import Path
 
-_backend = Path(__file__).resolve().parent.parent
+_backend = Path(__file__).resolve().parent.parent.parent
 if str(_backend) not in sys.path:
     sys.path.insert(0, str(_backend))
 

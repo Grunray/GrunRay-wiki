@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
-"""导入示例留言（可选）。在 backend 目录执行：python scripts/seed_guest_messages.py"""
+"""导入示例留言（旧方式，内联 SAMPLES）。
+
+推荐改用：
+  python scripts/guest_tools/message/import_guest_messages.py
+（数据源：import/guest/message/*.md）
+
+在 backend 目录执行：python scripts/guest_tools/message/seed_guest_messages.py
+"""
 from __future__ import annotations
 
 import sys
 import uuid
 from pathlib import Path
 
-_backend = Path(__file__).resolve().parent.parent
+_backend = Path(__file__).resolve().parent.parent.parent.parent
 if str(_backend) not in sys.path:
     sys.path.insert(0, str(_backend))
 

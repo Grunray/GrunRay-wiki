@@ -47,6 +47,7 @@ body {
   min-height: 100%;
 }
 
+
 a {
   color: var(--color-accent);
   text-decoration: none;
@@ -67,10 +68,47 @@ a:hover {
   }
 }
 
+:root {
+  /* 页脚 ICP 胶囊（Teleport 到 body）：高于 #app / 顶栏，低于开屏与光标拖尾 */
+  --z-footer-meta-bar: 180;
+  /* 与 footer-grunray.css / useFooterGrunRayReveal 一致：两层蒙层底缘对齐线 */
+  --footer-grunray-brand-height: 360px;
+}
+
 .app-root {
-  min-height: 100vh;
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/*
+ * 主内容盖板：底缘 clip 与 footer 同步（勿用 fixed 高度遮罩，progress=0 时会盖住半屏）
+ */
+.app-page-cover {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 100%;
+  padding-bottom: var(--footer-reveal-space, 0px);
+  background: var(--color-bg-base);
+  box-shadow: none;
+  transform: translateZ(0);
+  clip-path: inset(
+    0 0 calc(var(--footer-grunray-brand-height, 360px) * var(--reveal-progress, 0)) 0
+  );
+}
+
+html[data-photo-bg='true'] .app-page-cover {
+  background: color-mix(in srgb, var(--color-bg-base) 72%, transparent);
+}
+
+html[data-footer-revealing] .app-page-cover {
+  will-change: clip-path;
 }
 
 .app-main {
@@ -135,6 +173,30 @@ a:hover {
   z-index: 1;
 }
 
+/*
+ * 更不透明的液态玻璃：glass token 与页面底色混色，正文可读性更好。
+ * 配方参考 footer-grunray fallback 与 Blog 筛选按钮的 surface 混色。
+ */
+.card.card-glass-dense {
+  background: color-mix(in srgb, var(--glass-card-bg) 88%, var(--color-bg-base));
+  background-image: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--color-accent) 5%, transparent) 0%,
+    transparent 50%
+  );
+  box-shadow:
+    var(--shadow-card),
+    inset 0 1px 0 color-mix(in srgb, #fff 10%, transparent);
+}
+
+html[data-theme='light'] .card.card-glass-dense {
+  background: color-mix(in srgb, var(--glass-card-bg) 58%, var(--color-bg-surface));
+}
+
+html[data-photo-bg='true'] .card.card-glass-dense {
+  background: color-mix(in srgb, var(--glass-card-bg) 72%, var(--color-bg-surface));
+}
+
 @media (hover: hover) and (pointer: fine) {
   .card:hover {
     transform: translate3d(0, -3px, 0);
@@ -160,6 +222,7 @@ a:hover {
   z-index: 50;
   width: 100%;
   isolation: isolate;
+  overflow: visible;
   padding: 0.95rem 0;
   transition: padding 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -336,36 +399,42 @@ a:hover {
   background-size: 32px 32px;
 }
 
-/* 全屏照片背景：由 ui store 同步 html[data-photo-bg='true'] */
+/* 全屏照片背景：照片铺满；灰色蒙层底缘随 --reveal-progress 与页脚顶缘对齐 */
 html[data-photo-bg='true'] {
   background-color: var(--color-bg-base);
-  background-image:
-    linear-gradient(
-      color-mix(in srgb, var(--color-bg-base) 80%, transparent),
-      color-mix(in srgb, var(--color-bg-base) 80%, transparent)
-    ),
-    var(--page-photo-bg-image);
-  background-size: cover, cover;
-  background-position: center, center;
-  background-repeat: no-repeat, no-repeat;
-  background-attachment: scroll, scroll;
+  background-image: var(--page-photo-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
 }
 
-html[data-theme='light'][data-photo-bg='true'] {
-  background-image:
-    linear-gradient(rgb(236 242 247 / 0.20), rgb(236 242 247 / 0.20)),
-    var(--page-photo-bg-image);
+html[data-photo-bg='true']::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: calc(var(--footer-grunray-brand-height, 360px) * var(--reveal-progress, 0));
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    color-mix(in srgb, var(--color-bg-base) 34%, transparent),
+    color-mix(in srgb, var(--color-bg-base) 34%, transparent)
+  );
 }
 
-html[data-theme='dark'][data-photo-bg='true'] {
-  background-image:
-    linear-gradient(rgb(15 23 42 / 0.79), rgb(15 23 42 / 0.79)),
-    var(--page-photo-bg-image);
+html[data-theme='light'][data-photo-bg='true']::before {
+  background: linear-gradient(rgb(236 242 247 / 0.12), rgb(236 242 247 / 0.12));
+}
+
+html[data-theme='dark'][data-photo-bg='true']::before {
+  background: linear-gradient(rgb(15 23 42 / 0.52), rgb(15 23 42 / 0.52));
 }
 
 @media (min-width: 960px) {
   html[data-photo-bg='true'] {
-    background-attachment: scroll, fixed;
+    background-attachment: fixed;
   }
 }
 
@@ -382,7 +451,10 @@ html[data-theme='dark'][data-photo-bg='true'] {
 html[data-photo-bg='true'].page-photo-bg--swap::after {
   content: '';
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: calc(var(--footer-grunray-brand-height, 360px) * var(--reveal-progress, 0));
   z-index: 0;
   pointer-events: none;
   background-image: var(--page-photo-bg-image-prev);
@@ -408,8 +480,7 @@ html[data-photo-bg='true'].page-photo-bg--swap::after {
 }
 
 /* 不可作用于 sticky 的 header，否则会覆盖 position:sticky */
-.app-root > main,
-.app-root > footer {
+.app-root > main {
   position: relative;
   z-index: 1;
 }

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>植物系导航栏概念稿</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+:root{
+
+  /* 主色 */
+  --bg:#edf4f1;
+  --nav:#f7fbf8;
+
+  --text:#49615a;
+  --text-soft:#6d837c;
+
+  --active-bg:rgba(204,229,213,.42);
+  --active-border:rgba(180,210,192,.55);
+
+  --hover-bg:rgba(220,237,227,.45);
+
+  --shadow:
+    0 10px 30px rgba(130,160,145,.08),
+    inset 0 1px 0 rgba(255,255,255,.75);
+
+  --radius:999px;
+}
+
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at top left, rgba(214,233,220,.45), transparent 40%),
+    radial-gradient(circle at bottom right, rgba(200,225,210,.35), transparent 40%),
+    var(--bg);
+
+  font-family:
+    "PingFang SC",
+    "Microsoft YaHei",
+    sans-serif;
+
+  color:var(--text);
+
+  overflow:hidden;
+}
+
+/* ===== 背景植物粒子 ===== */
+
+.bg-leaf{
+  position:absolute;
+  border-radius:100%;
+  background:rgba(190,220,198,.12);
+  filter:blur(4px);
+  animation:float 10s ease-in-out infinite;
+}
+
+.bg-leaf:nth-child(1){
+  width:180px;
+  height:180px;
+  top:-40px;
+  left:-50px;
+}
+
+.bg-leaf:nth-child(2){
+  width:120px;
+  height:120px;
+  right:8%;
+  top:12%;
+  animation-delay:2s;
+}
+
+.bg-leaf:nth-child(3){
+  width:260px;
+  height:260px;
+  bottom:-80px;
+  right:-60px;
+  animation-delay:4s;
+}
+
+@keyframes float{
+  0%,100%{
+    transform:translateY(0px);
+  }
+  50%{
+    transform:translateY(-12px);
+  }
+}
+
+/* ===== 主容器 ===== */
+
+.wrapper{
+  width:100%;
+  height:100vh;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:40px;
+}
+
+/* ===== 导航栏 ===== */
+
+.nav{
+  position:relative;
+
+  width:min(1180px,100%);
+  height:94px;
+
+  border-radius:40px;
+
+  background:rgba(247,251,248,.72);
+
+  backdrop-filter:blur(18px);
+
+  border:1px solid rgba(220,235,226,.9);
+
+  box-shadow:var(--shadow);
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+
+  overflow:hidden;
+}
+
+/* ===== 顶部柔光 ===== */
+
+.nav::before{
+  content:"";
+
+  position:absolute;
+
+  top:0;
+  left:0;
+
+  width:100%;
+  height:1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,.9),
+      transparent
+    );
+}
+
+/* ===== 导航项 ===== */
+
+.nav-item{
+  position:relative;
+
+  display:flex;
+  align-items:center;
+  gap:10px;
+
+  padding:14px 24px;
+
+  border-radius:999px;
+
+  cursor:pointer;
+
+  transition:
+    transform .45s cubic-bezier(.22,1,.36,1),
+    background .35s ease,
+    color .35s ease,
+    box-shadow .45s ease;
+
+  color:var(--text-soft);
+
+  user-select:none;
+}
+
+/* hover */
+
+.nav-item:hover{
+  background:var(--hover-bg);
+
+  transform:
+    translateY(-2px)
+    scale(1.015);
+
+  color:var(--text);
+}
+
+/* active */
+
+.nav-item.active{
+
+  background:var(--active-bg);
+
+  border:1px solid var(--active-border);
+
+  color:#6fad87;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.75),
+    0 4px 14px rgba(170,205,185,.15);
+
+  animation:breath 4s ease-in-out infinite;
+}
+
+/* active 呼吸 */
+
+@keyframes breath{
+  0%,100%{
+    transform:scale(1);
+  }
+  50%{
+    transform:scale(1.03);
+  }
+}
+
+/* ===== 图标 ===== */
+
+.icon{
+  width:20px;
+  height:20px;
+
+  stroke:currentColor;
+  fill:none;
+  stroke-width:1.75;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+
+  transition:
+    transform .45s cubic-bezier(.22,1,.36,1),
+    opacity .35s ease;
+}
+
+.nav-item:hover .icon{
+  transform:
+    translateY(-1px)
+    rotate(-2deg);
+}
+
+/* ===== 文本 ===== */
+
+.label{
+  font-size:16px;
+  letter-spacing:.5px;
+  font-weight:500;
+}
+
+/* ===== 小叶片光效 ===== */
+
+.leaf-glow{
+
+  position:absolute;
+
+  width:8px;
+  height:8px;
+
+  right:14px;
+  top:12px;
+
+  border-radius:100%;
+
+  background:rgba(172,222,186,.45);
+
+  filter:blur(3px);
+
+  opacity:0;
+
+  transition:.45s ease;
+}
+
+.nav-item.active .leaf-glow{
+  opacity:1;
+}
+
+/* ===== 底部生长线 ===== */
+
+.grow-line{
+  position:absolute;
+  bottom:0;
+  left:50%;
+
+  width:0%;
+  height:2px;
+
+  border-radius:10px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(153,210,174,.7),
+      transparent
+    );
+
+  transition:.5s ease;
+}
+
+.nav-item:hover .grow-line{
+  width:70%;
+  left:15%;
+}
+
+/* ===== 响应式 ===== */
+
+@media (max-width:900px){
+
+  .nav{
+    gap:4px;
+    height:auto;
+    padding:12px;
+    flex-wrap:wrap;
+  }
+
+  .nav-item{
+    padding:12px 18px;
+  }
+
+  .label{
+    font-size:14px;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<div class="bg-leaf"></div>
+<div class="bg-leaf"></div>
+<div class="bg-leaf"></div>
+
+<div class="wrapper">
+
+  <nav class="nav">
+
+    <!-- 首页 -->
+
+    <div class="nav-item active">
+
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M4 11.5L12 4L20 11.5"/>
+        <path d="M7 10.5V19H17V10.5"/>
+      </svg>
+
+      <span class="label">首页</span>
+
+      <div class="leaf-glow"></div>
+      <div class="grow-line"></div>
+
+    </div>
+
+    <!-- 项目 -->
+
+    <div class="nav-item">
+
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M8 8L4 12L8 16"/>
+        <path d="M16 8L20 12L16 16"/>
+      </svg>
+
+      <span class="label">项目</span>
+
+      <div class="grow-line"></div>
+
+    </div>
+
+    <!-- 博客 -->
+
+    <div class="nav-item">
+
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M5 6.5C5 5.67 5.67 5 6.5 5H18"/>
+        <path d="M6.5 5C5.67 5 5 5.67 5 6.5V17.5C5 18.33 5.67 19 6.5 19H18V5"/>
+        <path d="M8 9H15"/>
+      </svg>
+
+      <span class="label">博客</span>
+
+      <div class="grow-line"></div>
+
+    </div>
+
+    <!-- 留言 -->
+
+    <div class="nav-item">
+
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M20 11.5C20 15.09 16.42 18 12 18C10.84 18 9.74 17.8 8.74 17.44L4.5 19L5.74 15.48C5.27 14.32 5 12.96 5 11.5C5 7.91 8.58 5 13 5C17.42 5 20 7.91 20 11.5Z"/>
+      </svg>
+
+      <span class="label">留言</span>
+
+      <div class="grow-line"></div>
+
+    </div>
+
+    <!-- 友链 -->
+
+    <div class="nav-item">
+
+      <svg class="icon" viewBox="0 0 24 24">
+        <circle cx="9" cy="8" r="2.5"/>
+        <circle cx="17" cy="10" r="2.5"/>
+        <path d="M5 18C5 15.8 6.8 14 9 14C11.2 14 13 15.8 13 18"/>
+        <path d="M13 18C13 15.8 14.8 14 17 14C19.2 14 21 15.8 21 18"/>
+      </svg>
+
+      <span class="label">友链</span>
+
+      <div class="grow-line"></div>
+
+    </div>
+
+  </nav>
+
+</div>
+
+</body>
+</html>

@@ -4,11 +4,11 @@
 默认路径：仓库根下 frontend/src/content/data/posts.json（该文件已移除；
 若仍要从 JSON 种子，请自行恢复或修改本脚本中的 _POSTS_JSON）。
 
-正式流程请使用：python scripts/import_markdown_posts.py
+正式流程请使用：python scripts/content_tools/import_markdown_posts.py
 （Markdown + YAML 见 designed/template.md）
 
 用法（在 backend 目录下，已配置 .env）:
-  python scripts/seed_from_json.py
+  python scripts/content_tools/seed_from_json.py
 
 依赖: 已执行 sql/schema.sql 建表。
 """
@@ -18,7 +18,7 @@ import json
 import sys
 from pathlib import Path
 
-_backend = Path(__file__).resolve().parent.parent
+_backend = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(_backend))
 
 from app.config import config  # noqa: E402
@@ -70,7 +70,8 @@ def main():
     if not _POSTS_JSON.is_file():
         print(
             "未找到 posts.json（前端已移除临时文章数据）。\n"
-            "请使用：python scripts/import_markdown_posts.py（Markdown 见 backend/import/markdown/）\n"
+            "请使用：python scripts/content_tools/import_markdown_posts.py"
+            "（Markdown 见 backend/import/markdown/）\n"
             "若需从 JSON 种子，请恢复 posts.json 或修改本脚本中的 _POSTS_JSON。",
             file=sys.stderr,
         )

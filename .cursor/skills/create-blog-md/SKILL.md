@@ -1,6 +1,6 @@
 ---
 name: create-blog-md
-description: Writes or refactors GrunRay_wiki import-ready blog Markdown under backend/import/markdown with correct YAML front matter, headings, and code fences. Use when the user asks to create or edit a blog post, algorithm writeup, engineering note, or any .md meant for import_markdown_posts.py, or mentions backend/import/markdown, post slug, or article import.
+description: Writes or refactors GrunRay_wiki import-ready blog Markdown under backend/import/markdown with correct YAML front matter, headings, and code fences. Use when the user asks to create or edit a blog post, algorithm writeup, engineering note, or any .md meant for content_tools/import_markdown_posts.py, or mentions backend/import/markdown, post slug, or article import.
 ---
 
 # create-blog-md
@@ -14,7 +14,7 @@ description: Writes or refactors GrunRay_wiki import-ready blog Markdown under b
 ## Before writing
 
 1. If the user names a **reference file**, open it and match structure (e.g. `backend/import/markdown/string_hash_rolling_binary.md`, `backend/import/markdown/project_demo_architecture_vite_flask.md`).
-2. Read field rules in `designed/template.md` and behavior expectations in `backend/scripts/import_markdown_posts.py` when unsure about required YAML.
+2. Read field rules in `designed/template.md` and behavior expectations in `backend/scripts/content_tools/import_markdown_posts.py` when unsure about required YAML.
 3. Confirm **slug** uniqueness and allowed characters (letters, digits, `_`, `-`).
 
 ## YAML front matter (required shape)

@@ -19,6 +19,7 @@ import SnailNavIcon from '@/components/icons/SnailNavIcon.vue'
 import TrailNavIcon from '@/components/icons/TrailNavIcon.vue'
 
 import CursorTrail from './CursorTrail.vue'
+import FooterGrunRayPanel from './FooterGrunRayPanel.vue'
 import SiteNav from './SiteNav.vue'
 import ThemeDayNightToggle from './ThemeDayNightToggle.vue'
 
@@ -42,6 +43,7 @@ const showMusicInBar = computed(
 const localeBtnTitle = computed(() =>
   locale.value === 'zh' ? t('nav.localeTitleEn') : t('nav.localeTitleZh'),
 )
+
 
 const overflowOpen = ref(false)
 const overflowWrapRef = ref<HTMLElement | null>(null)
@@ -417,7 +419,9 @@ onUnmounted(() => {
 
 <template>
   <div class="abstract-grid-bg" aria-hidden="true" />
+  <FooterGrunRayPanel />
   <div class="app-root">
+    <div class="app-page-cover">
     <header class="glass-nav-sticky-wrap" :data-nav-compact="navCompact ? 'true' : 'false'">
       <div class="glass-nav-inner">
         <div class="header-inner">
@@ -428,14 +432,19 @@ onUnmounted(() => {
               :appear="miniAvatarAppearEnter"
               type="animation"
             >
-              <img
+              <span
                 :key="miniAvatarPopKey"
-                src="/favicon.jpg"
-                alt=""
-                width="28"
-                height="28"
-                class="header-brand-mini-avatar"
-              />
+                class="header-brand-mini-avatar-wrap"
+                aria-hidden="true"
+              >
+                <img
+                  src="/favicon.jpg"
+                  alt=""
+                  width="28"
+                  height="28"
+                  class="header-brand-mini-avatar"
+                />
+              </span>
             </Transition>
           </template>
           <span v-else class="header-brand-mini-avatar-slot" aria-hidden="true" />
@@ -665,17 +674,7 @@ onUnmounted(() => {
     <main class="app-main" :class="appMainClasses">
       <RouterView />
     </main>
-
-    <footer class="footer">
-      <div class="footer-icp card">
-        <a
-          class="footer-icp-link"
-          href="https://icp.gov.moe/?keyword=20266668"
-          target="_blank"
-          rel="noopener noreferrer"
-        >萌ICP备20266668号</a>
-      </div>
-    </footer>
+    </div>
 
     <CursorTrail />
   </div>
@@ -761,17 +760,26 @@ onUnmounted(() => {
   width: 28px;
   height: 28px;
   flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.header-brand-mini-avatar-wrap {
+  display: block;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+  box-shadow: 0 1px 4px color-mix(in srgb, #000 12%, transparent);
 }
 
 .header-brand-mini-avatar {
   display: block;
-  width: 28px;
-  height: 28px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  flex-shrink: 0;
-  border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
-  box-shadow: 0 1px 4px color-mix(in srgb, #000 12%, transparent);
 }
 
 .header-brand-mini-avatar-enter-active,
@@ -1383,30 +1391,6 @@ onUnmounted(() => {
   }
 }
 
-.footer {
-  display: flex;
-  justify-content: center;
-  padding: 1.5rem 1rem;
-}
-
-.footer-icp {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.55rem 1rem;
-}
-
-.footer-icp-link {
-  font-size: 0.82rem;
-  color: var(--color-text-muted);
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.footer-icp-link:hover {
-  color: var(--color-accent);
-  text-decoration: underline;
-}
 </style>
 
 <style>

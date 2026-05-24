@@ -10,7 +10,7 @@
 然后再执行:
 
   python scripts/run_sql.py
-  python scripts/seed_from_json.py
+  python scripts/content_tools/seed_from_json.py
 """
 from __future__ import annotations
 

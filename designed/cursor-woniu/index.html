@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>蜗牛鼠标拖尾</title>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <p class="hint">
+      移动鼠标，<strong>蜗牛.svg</strong> 会沿指针路径形成拖尾。在本目录执行
+      <code>npx --yes serve .</code> 后打开页面。
+    </p>
+
+    <div class="trail-layer" aria-hidden="true">
+      <div class="trail-root"></div>
+    </div>
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"
+      integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const TRAIL_COUNT = 14
+        const STAGGER = 0.045
+        const MOVE_DURATION = 0.38
+        const ROTATE_DURATION = 0.22
+
+        const root = document.querySelector('.trail-root')
+        const snails = []
+
+        for (let i = 0; i < TRAIL_COUNT; i++) {
+          const img = document.createElement('img')
+          img.src = '蜗牛.svg'
+          img.alt = ''
+          img.className = 'trail-snail'
+          img.draggable = false
+          img.style.opacity = String(1 - i * (0.62 / (TRAIL_COUNT - 1)))
+          img.style.setProperty('--i', String(i + 1))
+          const scale = 1 - i * (0.42 / (TRAIL_COUNT - 1))
+          gsap.set(img, { scale, rotation: 0, x: innerWidth / 2, y: innerHeight / 2 })
+          root.appendChild(img)
+          snails.push(img)
+        }
+
+        let lastX = innerWidth / 2
+        let lastY = innerHeight / 2
+        let angle = 0
+
+        document.addEventListener('pointermove', (e) => {
+          if (!e.isPrimary) return
+
+          const dx = e.clientX - lastX
+          const dy = e.clientY - lastY
+          if (Math.hypot(dx, dy) > 1.5) {
+            angle = (Math.atan2(dy, dx) * 180) / Math.PI + 90
+          }
+          lastX = e.clientX
+          lastY = e.clientY
+
+          gsap.to(snails, {
+            x: e.clientX,
+            y: e.clientY,
+            duration: MOVE_DURATION,
+            stagger: STAGGER,
+            ease: 'power2.out',
+            overwrite: 'auto',
+          })
+
+          gsap.to(snails, {
+            rotation: angle,
+            duration: ROTATE_DURATION,
+            stagger: STAGGER,
+            ease: 'power1.out',
+            overwrite: 'auto',
+          })
+        })
+      })
+    </script>
+  </body>
+</html>

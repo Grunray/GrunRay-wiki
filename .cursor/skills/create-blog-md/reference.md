@@ -7,7 +7,7 @@ Single source for the **merged** checklist (blog + project): `designed/article/s
 | Item | Path |
 |------|------|
 | Import field doc | `designed/template.md` |
-| Import script | `backend/scripts/import_markdown_posts.py` |
+| Import script | `backend/scripts/content_tools/import_markdown_posts.py` |
 | Example (algorithm + sections) | `backend/import/markdown/string_hash_rolling_binary.md` |
 | Example (article + series) | `backend/import/markdown/project_demo_architecture_vite_flask.md` |
 

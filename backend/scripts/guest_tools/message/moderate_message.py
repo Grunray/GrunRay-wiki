@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """留言审核 CLI。在 backend 目录执行：
 
-  python scripts/moderate_message.py approve <public_id>
-  python scripts/moderate_message.py reject <public_id>
-  python scripts/moderate_message.py hide <public_id>
-  python scripts/moderate_message.py restore <public_id>
+  python scripts/guest_tools/message/moderate_message.py approve <public_id>
+  python scripts/guest_tools/message/moderate_message.py reject <public_id>
+  python scripts/guest_tools/message/moderate_message.py hide <public_id>
+  python scripts/guest_tools/message/moderate_message.py restore <public_id>
 """
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import argparse
 import sys
 from pathlib import Path
 
-_backend = Path(__file__).resolve().parent.parent
+_backend = Path(__file__).resolve().parent.parent.parent.parent
 if str(_backend) not in sys.path:
     sys.path.insert(0, str(_backend))
 

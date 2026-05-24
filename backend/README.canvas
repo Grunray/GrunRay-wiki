@@ -37,7 +37,7 @@
       "width": 600,
       "height": 420,
       "color": "3",
-      "text": "## 初始化（顺序）\n\n1. `cd backend` → venv → `pip install -r requirements.txt`\n2. `copy .env.example .env`，填 **MYSQL_PASSWORD**、**MYSQL_DATABASE**\n3. **建库**：`python scripts/create_database.py`\n4. **建表**：`python scripts/run_sql.py` 或 `--file schema.sql`\n5. **导入文章**：Markdown 放入 `import/markdown/`，再 `python scripts/import_markdown_posts.py`\n6. （可选）**种子**：`seed_from_json.py` 会清空 `post` 表\n\n**排错**：\n- `using password: NO` → 检查 `backend/.env`\n- `caching_sha2_password` → 确保已装 `cryptography`（requirements 已含）"
+      "text": "## 初始化（顺序）\n\n1. `cd backend` → venv → `pip install -r requirements.txt`\n2. `copy .env.example .env`，填 **MYSQL_PASSWORD**、**MYSQL_DATABASE**\n3. **建库**：`python scripts/create_database.py`\n4. **建表**：`python scripts/run_sql.py` 或 `--file schema.sql`\n5. **导入文章**：Markdown 放入 `import/markdown/`，再 `python scripts/content_tools/import_markdown_posts.py`\n6. （可选）**种子**：`content_tools/seed_from_json.py` 会清空 `post` 表\n\n**排错**：\n- `using password: NO` → 检查 `backend/.env`\n- `caching_sha2_password` → 确保已装 `cryptography`（requirements 已含）"
     },
     {
       "id": "run",

@@ -98,6 +98,25 @@
   animation-delay: 0.3s;
 }
 
+@media (max-width: 1100px) and (prefers-reduced-motion: no-preference) {
+  .home-layout:not(.page-enter--play) > aside.left-ellipse,
+  .home-layout:not(.page-enter--play) > aside.right-panel {
+    transform: translateY(18px);
+  }
+
+  .home-layout.page-enter--play > aside.left-ellipse {
+    animation-name: page-enter-home-from-bottom;
+    animation-duration: 0.8s;
+    animation-delay: 0.34s;
+  }
+
+  .home-layout.page-enter--play > aside.right-panel {
+    animation-name: page-enter-home-from-bottom;
+    animation-duration: 0.8s;
+    animation-delay: 0.38s;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .home-layout.page-enter--play > aside.left-ellipse,
   .home-layout.page-enter--play > aside.right-panel,

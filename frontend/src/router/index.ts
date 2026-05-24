@@ -10,6 +10,7 @@ import ProjectNotesView from '@/views/ProjectNotesView.vue'
 import FriendsApplyView from '@/views/FriendsApplyView.vue'
 import FriendsView from '@/views/FriendsView.vue'
 import MessagesView from '@/views/MessagesView.vue'
+import NavPlaceholderView from '@/views/NavPlaceholderView.vue'
 import ProjectsView from '@/views/ProjectsView.vue'
 import { applyPagePhotoBackgroundToDocument } from '@/theme/pagePhotoBackgrounds'
 
@@ -29,6 +30,24 @@ const router = createRouter({
         { path: 'messages', name: 'messages', component: MessagesView },
         { path: 'friends', name: 'friends', component: FriendsView },
         { path: 'friends/apply', name: 'friends-apply', component: FriendsApplyView },
+        {
+          path: 'fragments',
+          name: 'fragments',
+          component: NavPlaceholderView,
+          meta: { navTitleKey: 'nav.fragments' },
+        },
+        {
+          path: 'about',
+          name: 'about',
+          component: NavPlaceholderView,
+          meta: { navTitleKey: 'nav.about' },
+        },
+        {
+          path: 'recommend',
+          name: 'recommend',
+          component: NavPlaceholderView,
+          meta: { navTitleKey: 'nav.recommend' },
+        },
         { path: ':pathMatch(.*)*', name: 'not-found', component: NotFoundView },
       ],
     },

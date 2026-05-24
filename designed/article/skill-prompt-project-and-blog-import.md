@@ -61,7 +61,7 @@
 常用字段：
 
 - `title`、`slug`（仅字母、数字、`_`、`-`，全局唯一）  
-- `type`：`article` | `algorithm` | `project_note`（以 `designed/template.md` 与 `import_markdown_posts.py` 为准）  
+- `type`：`article` | `algorithm` | `project_note`（以 `designed/template.md` 与 `content_tools/import_markdown_posts.py` 为准）  
 - `tags`、`summary`（`summary` 含 `...` 时注意 YAML 引号）  
 - `locale: zh`  
 - `pinned`、`pinned_order`  

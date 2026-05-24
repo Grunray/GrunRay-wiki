@@ -2,7 +2,7 @@
 
 将待发布的 `.md` 放入 **`backend/import/markdown/`**（或自定义目录），在 `backend` 下执行：
 
-`python scripts/import_markdown_posts.py`
+`python scripts/content_tools/import_markdown_posts.py`
 
 脚本会解析 YAML front matter、保存正文到 `content/posts/<slug>.md`，并 **upsert** 到 MySQL。
 

@@ -46,15 +46,15 @@ python scripts/run_sql.py --file schema.sql
    将 `.md` 按 `designed/template.md` 放入 `backend/import/markdown/`，然后：
 
 ```bash
-python scripts/import_markdown_posts.py
+python scripts/content_tools/import_markdown_posts.py
 ```
 
-可选：`python scripts/import_markdown_posts.py --dir 你的目录`
+可选：`python scripts/content_tools/import_markdown_posts.py --dir 你的目录`
 
 4. **（可选）开发用全量种子**（会 **清空** `post` 表，读前端临时 JSON）：
 
 ```bash
-python scripts/seed_from_json.py
+python scripts/content_tools/seed_from_json.py
 ```
 
 ## 启动

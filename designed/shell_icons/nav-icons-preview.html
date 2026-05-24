@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>主导航图标预览 · shell_icons</title>
+  <style>
+    /* 与 frontend tokens + SiteNav.vue 对齐 */
+    [data-theme='light'] {
+      --color-bg-base: #d6e4e7;
+      --color-text: #334f52;
+      --color-text-muted: #4d6b6e;
+      --color-accent: #a0ccab;
+      --glass-nav-bg: rgb(255 255 255 / 0.4);
+      --glass-nav-border: rgb(51 79 82 / 0.14);
+      --glass-blur: 18px;
+    }
+
+    [data-theme='dark'] {
+      --color-bg-base: #172226;
+      --color-text: #d1dcd9;
+      --color-text-muted: #95a9a5;
+      --color-accent: #a0ccab;
+      --glass-nav-bg: rgb(30 44 46 / 0.55);
+      --glass-nav-border: rgb(160 204 171 / 0.12);
+      --glass-blur: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'PingFang SC', sans-serif;
+      color: var(--color-text);
+      background: var(--color-bg-base);
+      padding: 2rem 1.25rem 3rem;
+      line-height: 1.5;
+    }
+
+    .page {
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    header.page-head {
+      margin-bottom: 2rem;
+    }
+
+    header.page-head h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    header.page-head p {
+      margin-top: 0.45rem;
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+      max-width: 42rem;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .toolbar button {
+      font: inherit;
+      font-size: 0.82rem;
+      padding: 0.38rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--glass-nav-border);
+      background: var(--glass-nav-bg);
+      color: var(--color-text-muted);
+      cursor: pointer;
+      backdrop-filter: blur(var(--glass-blur));
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+
+    .toolbar button:hover,
+    .toolbar button.is-on {
+      color: var(--color-accent);
+      border-color: color-mix(in srgb, var(--color-accent) 28%, var(--glass-nav-border));
+      background: color-mix(in srgb, var(--color-accent) 12%, var(--glass-nav-bg));
+    }
+
+    section {
+      margin-bottom: 2.5rem;
+    }
+
+    section h2 {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--color-text-muted);
+      margin-bottom: 0.85rem;
+    }
+
+    /* —— 顶栏模拟（SiteNav 药丸链接） —— */
+    .version-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 0.5rem;
+    }
+
+    .version-label--v2,
+    .version-label--v3,
+    .version-label--v4 {
+      margin-top: 1.1rem;
+    }
+
+    .version-label--v2 {
+      color: var(--color-accent);
+    }
+
+    .version-label--v3 {
+      color: color-mix(in srgb, var(--color-accent) 72%, #6fad87);
+    }
+
+    .version-label--v4 {
+      color: color-mix(in srgb, var(--color-accent) 55%, #84b391);
+    }
+
+    .glass-strip + .glass-strip {
+      margin-top: 0;
+    }
+
+    .glass-strip {
+      display: flex;
+      justify-content: center;
+      padding: 0.65rem 0.85rem;
+      border-radius: 999px;
+      border: 1px solid var(--glass-nav-border);
+      background: var(--glass-nav-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--color-accent) 8%, transparent),
+        0 8px 28px rgb(51 79 82 / 8%);
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.36rem 0.4rem;
+    }
+
+    .link {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.42rem;
+      color: var(--color-text-muted);
+      font-weight: 500;
+      font-size: 0.92rem;
+      line-height: 1.2;
+      text-decoration: none;
+      white-space: nowrap;
+      padding: 0.62rem 0.95rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background-color: transparent;
+      cursor: pointer;
+      transition:
+        color 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+    }
+
+    .link:hover,
+    .link.is-active {
+      color: var(--color-accent);
+      background-color: color-mix(in srgb, var(--color-accent) 14%, transparent);
+      border-color: color-mix(in srgb, var(--color-accent) 22%, transparent);
+      transform: translateY(-1px);
+    }
+
+    /* 与 TrailNavIcon / PhotoBgNavIcon 一致 */
+    .nav-icon {
+      display: block;
+      width: 0.94rem;
+      height: 0.94rem;
+      flex-shrink: 0;
+      color: inherit;
+    }
+
+    .nav-icon svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+  /* v2 </> 略宽，避免挤在一起 */
+    .nav-icon--code {
+      width: 1.08rem;
+    }
+
+    /* —— v3 植物系（参考 preview.html） —— */
+    .glass-strip--v3 {
+      padding: 0.75rem 1rem;
+      background: color-mix(in srgb, var(--glass-nav-bg) 82%, rgb(204 229 213 / 22%));
+      border-color: color-mix(in srgb, var(--glass-nav-border) 65%, rgb(180 210 192 / 45%));
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--color-accent) 10%, transparent),
+        0 10px 30px rgb(130 160 145 / 8%),
+        inset 0 1px 0 rgb(255 255 255 / 35%);
+    }
+
+    [data-theme='dark'] .glass-strip--v3 {
+      background: color-mix(in srgb, var(--glass-nav-bg) 88%, rgb(46 68 62 / 35%));
+      border-color: color-mix(in srgb, var(--glass-nav-border) 70%, rgb(111 173 135 / 18%));
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--color-accent) 8%, transparent),
+        0 10px 28px rgb(0 0 0 / 22%),
+        inset 0 1px 0 rgb(255 255 255 / 6%);
+    }
+
+    .nav-v3 {
+      gap: 0.5rem 0.55rem;
+    }
+
+    .nav-v3 .link {
+      gap: 0.5rem;
+      padding: 0.7rem 1.05rem;
+      letter-spacing: 0.02em;
+      transition:
+        transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+        color 0.35s ease,
+        background-color 0.35s ease,
+        border-color 0.35s ease,
+        box-shadow 0.45s ease;
+    }
+
+    .nav-v3 .link:hover {
+      color: var(--color-text);
+      background-color: color-mix(in srgb, var(--color-accent) 18%, transparent);
+      border-color: color-mix(in srgb, var(--color-accent) 16%, transparent);
+      transform: translateY(-2px) scale(1.015);
+    }
+
+    .nav-v3 .link.is-active {
+      color: #6fad87;
+      background-color: rgb(204 229 213 / 42%);
+      border-color: rgb(180 210 192 / 55%);
+      box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 75%),
+        0 4px 14px rgb(170 205 185 / 15%);
+      animation: nav-v3-breath 4s ease-in-out infinite;
+    }
+
+    [data-theme='dark'] .nav-v3 .link:hover {
+      color: var(--color-text);
+    }
+
+    [data-theme='dark'] .nav-v3 .link.is-active {
+      color: color-mix(in srgb, var(--color-accent) 88%, #b8e6c8);
+      background-color: color-mix(in srgb, var(--color-accent) 14%, rgb(30 44 46 / 55%));
+      border-color: color-mix(in srgb, var(--color-accent) 28%, transparent);
+    }
+
+    .nav-v3 .nav-icon--plant {
+      width: 1.05rem;
+      height: 1.05rem;
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .nav-v3 .link:hover .nav-icon--plant {
+      transform: translateY(-1px) rotate(-2deg);
+    }
+
+    .nav-v3 .leaf-glow {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      right: 10px;
+      top: 8px;
+      border-radius: 100%;
+      background: rgb(172 222 186 / 45%);
+      filter: blur(3px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s ease;
+    }
+
+    .nav-v3 .link.is-active .leaf-glow {
+      opacity: 1;
+    }
+
+    .nav-v3 .grow-line {
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      border-radius: 10px;
+      background: linear-gradient(90deg, transparent, rgb(153 210 174 / 70%), transparent);
+      transition: width 0.5s ease, left 0.5s ease;
+      pointer-events: none;
+    }
+
+    .nav-v3 .link:hover .grow-line {
+      width: 70%;
+      left: 15%;
+    }
+
+    @keyframes nav-v3-breath {
+      0%,
+      100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.03);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .nav-v3 .link.is-active {
+        animation: none;
+      }
+
+      .nav-v3 .link:hover .nav-icon--plant {
+        transform: none;
+      }
+
+      .nav-v3 .link:hover,
+      .nav-v3 .link.is-active {
+        transform: none;
+      }
+    }
+
+    /* —— v4 二级分组（参考 sub-menu.html） —— */
+    .glass-strip--v4 {
+      overflow: visible;
+      padding: 0.75rem 1rem;
+      background: color-mix(in srgb, var(--glass-nav-bg) 80%, rgb(248 252 249 / 35%));
+      border-color: color-mix(in srgb, var(--glass-nav-border) 60%, rgb(221 234 226 / 55%));
+    }
+
+    .nav-v4 {
+      gap: 0.45rem 0.55rem;
+      align-items: center;
+    }
+
+    .nav-v4 .link,
+    .nav-v4 .group-trigger {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--color-text-muted);
+      font: inherit;
+      font-weight: 500;
+      font-size: 0.92rem;
+      line-height: 1.2;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+      white-space: nowrap;
+      padding: 0.62rem 1rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: transparent;
+      cursor: pointer;
+      transition:
+        transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+        color 0.35s ease,
+        background-color 0.35s ease,
+        border-color 0.35s ease,
+        box-shadow 0.35s ease;
+    }
+
+    .nav-v4 .link:hover,
+    .nav-v4 .group-trigger:hover,
+    .nav-v4 .nav-group.is-hover > .group-trigger,
+    .nav-v4 .link.is-active {
+      color: var(--color-text);
+      background-color: color-mix(in srgb, var(--color-accent) 18%, transparent);
+      border-color: color-mix(in srgb, var(--color-accent) 14%, transparent);
+      transform: translateY(-2px);
+    }
+
+    .nav-v4 .link.is-active {
+      color: #84b391;
+      background-color: rgb(208 230 214 / 55%);
+      border-color: rgb(186 216 194 / 55%);
+      box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 75%),
+        0 4px 14px rgb(170 205 185 / 15%);
+    }
+
+    [data-theme='dark'] .nav-v4 .link.is-active {
+      color: color-mix(in srgb, var(--color-accent) 90%, #b8e6c8);
+      background-color: color-mix(in srgb, var(--color-accent) 12%, rgb(30 44 46 / 55%));
+      border-color: color-mix(in srgb, var(--color-accent) 26%, transparent);
+    }
+
+    .nav-v4 .nav-icon--plant {
+      width: 1.05rem;
+      height: 1.05rem;
+    }
+
+    .nav-v4 .nav-icon--arrow {
+      width: 0.72rem;
+      height: 0.72rem;
+      opacity: 0.55;
+      transition: transform 0.35s ease;
+    }
+
+    .nav-v4 .nav-group {
+      position: relative;
+    }
+
+    .nav-v4 .nav-group.is-hover .nav-icon--arrow,
+    .nav-v4 .nav-group.is-open .nav-icon--arrow,
+    .nav-v4 .nav-group:focus-within .nav-icon--arrow {
+      transform: rotate(180deg);
+    }
+
+    .nav-v4 .dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 20;
+      min-width: 15rem;
+      padding: 0.65rem;
+      margin-top: 0.45rem;
+      border-radius: 1.25rem;
+      background: color-mix(in srgb, var(--glass-nav-bg) 72%, rgb(248 252 249 / 55%));
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid color-mix(in srgb, var(--glass-nav-border) 55%, rgb(220 234 226 / 70%));
+      box-shadow: 0 16px 40px rgb(124 148 136 / 12%);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(8px) scale(0.98);
+      transition:
+        opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0.35s;
+      pointer-events: none;
+    }
+
+    /* 桥接触发器与面板之间的空隙，避免移入二级菜单时误关闭 */
+    .nav-v4 .dropdown::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -0.55rem;
+      height: 0.55rem;
+    }
+
+    [data-theme='dark'] .nav-v4 .dropdown {
+      background: color-mix(in srgb, var(--glass-nav-bg) 88%, rgb(30 44 46 / 65%));
+      box-shadow: 0 16px 40px rgb(0 0 0 / 28%);
+    }
+
+    .nav-v4 .nav-group.is-hover .dropdown,
+    .nav-v4 .nav-group.is-open .dropdown,
+    .nav-v4 .nav-group:focus-within .dropdown {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .nav-v4 .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      padding: 0.85rem 0.95rem;
+      border: none;
+      border-radius: 1rem;
+      background: transparent;
+      color: var(--color-text-muted);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition:
+        transform 0.35s ease,
+        background-color 0.35s ease,
+        color 0.35s ease;
+    }
+
+    .nav-v4 .dropdown-item:hover,
+    .nav-v4 .dropdown-item.is-active {
+      background: color-mix(in srgb, var(--color-accent) 22%, transparent);
+      color: var(--color-text);
+      transform: translateX(4px);
+    }
+
+    .nav-v4 .dropdown-item .nav-icon--plant {
+      flex-shrink: 0;
+    }
+
+    .nav-v4 .meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      min-width: 0;
+    }
+
+    .nav-v4 .meta-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .nav-v4 .meta-desc {
+      font-size: 0.72rem;
+      color: var(--color-text-muted);
+      line-height: 1.35;
+    }
+
+    .nav-v4 .link::after,
+    .nav-v4 .group-trigger::after {
+      content: '';
+      position: absolute;
+      bottom: 6px;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, rgb(141 200 162 / 80%), transparent);
+      transition: width 0.4s ease, left 0.4s ease;
+      pointer-events: none;
+    }
+
+    .nav-v4 .link:hover::after,
+    .nav-v4 .group-trigger:hover::after {
+      width: 60%;
+      left: 20%;
+    }
+
+    @media (max-width: 720px) {
+      .nav-v4 .dropdown {
+        left: 50%;
+        transform: translateX(-50%) translateY(8px) scale(0.98);
+      }
+
+      .nav-v4 .nav-group.is-hover .dropdown,
+      .nav-v4 .nav-group.is-open .dropdown,
+      .nav-v4 .nav-group:focus-within .dropdown {
+        transform: translateX(-50%) translateY(0) scale(1);
+      }
+    }
+
+    /* —— 图标一览格 —— */
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .icon-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 1.1rem 0.75rem;
+      border-radius: 14px;
+      border: 1px solid var(--glass-nav-border);
+      background: var(--glass-nav-bg);
+      backdrop-filter: blur(var(--glass-blur));
+    }
+
+    .icon-card .glyph {
+      width: 2rem;
+      height: 2rem;
+      color: var(--color-accent);
+    }
+
+    .icon-card .glyph svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .icon-card .name {
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .icon-card .slug {
+      font-size: 0.72rem;
+      color: var(--color-text-muted);
+      font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    }
+
+    /* —— 状态对照 —— */
+    .state-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      align-items: center;
+    }
+
+    .state-row .link {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .state-row .link.state-default {
+      color: var(--color-text-muted);
+      background: transparent;
+      border-color: transparent;
+      transform: none;
+    }
+
+    .state-row .link.state-hover {
+      color: var(--color-accent);
+      background-color: color-mix(in srgb, var(--color-accent) 14%, transparent);
+      border-color: color-mix(in srgb, var(--color-accent) 22%, transparent);
+      transform: translateY(-1px);
+    }
+
+    .state-label {
+      font-size: 0.72rem;
+      color: var(--color-text-muted);
+      min-width: 3.2rem;
+      text-align: right;
+    }
+
+    .spec {
+      margin-top: 1.25rem;
+      padding: 0.85rem 1rem;
+      border-radius: 10px;
+      border: 1px dashed var(--glass-nav-border);
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+    }
+
+    .spec code {
+      font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+      font-size: 0.78rem;
+      color: var(--color-text);
+    }
+
+    @media (max-width: 720px) {
+      .link {
+        padding: 0.52rem 0.72rem;
+        font-size: 0.86rem;
+        gap: 0.36rem;
+      }
+
+      .nav-icon {
+        width: 0.88rem;
+        height: 0.88rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .link,
+      .link:hover,
+      .link.is-active {
+        transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="page-head">
+      <h1>主导航图标预览</h1>
+      <p>
+        五枚图标统一为 24×24 描边集（stroke 2、圆角端点、<code>currentColor</code>），尺寸与右侧工具栏
+        <code>*NavIcon.vue</code> 一致（约 0.94rem）。确认风格后可迁入 <code>SiteNav.vue</code>。
+      </p>
+      <div class="toolbar">
+        <button type="button" id="theme-light" class="is-on">浅色</button>
+        <button type="button" id="theme-dark">深色</button>
+      </div>
+    </header>
+
+    <!-- 统一图标定义：stroke 线宽 2，与项目 NavIcon 一致 -->
+    <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+      <defs>
+        <symbol id="icon-nav-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </symbol>
+        <symbol id="icon-nav-projects" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" />
+          <path d="m22 12-8.58 3.91a2 2 0 0 1-1.66 0L3.6 12" />
+          <path d="m22 17-8.58 3.91a2 2 0 0 1-1.66 0L3.6 17" />
+        </symbol>
+        <symbol id="icon-nav-blog" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 7v14" />
+          <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+        </symbol>
+        <symbol id="icon-nav-messages" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z" />
+        </symbol>
+        <symbol id="icon-nav-friends" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+        </symbol>
+        <!-- v2：项目 </>、友链 users -->
+        <symbol id="icon-nav-projects-v2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="8 7 5 12 8 17" />
+          <line x1="11.5" y1="7" x2="12.5" y2="17" />
+          <polyline points="16 7 19 12 16 17" />
+        </symbol>
+        <symbol id="icon-nav-friends-v2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </symbol>
+        <!-- v3：参考/植物系 preview.html，线宽 1.75 -->
+        <symbol id="icon-nav-home-v3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 11.5 12 4 20 11.5" />
+          <path d="M7 10.5V19H17V10.5" />
+        </symbol>
+        <symbol id="icon-nav-projects-v3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 8 4 12 8 16" />
+          <path d="M16 8 20 12 16 16" />
+        </symbol>
+        <symbol id="icon-nav-blog-v3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 6.5C5 5.67 5.67 5 6.5 5H18" />
+          <path d="M6.5 5C5.67 5 5 5.67 5 6.5V17.5C5 18.33 5.67 19 6.5 19H18V5" />
+          <path d="M8 9H15" />
+        </symbol>
+        <symbol id="icon-nav-messages-v3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 11.5C20 15.09 16.42 18 12 18C10.84 18 9.74 17.8 8.74 17.44L4.5 19L5.74 15.48C5.27 14.32 5 12.96 5 11.5C5 7.91 8.58 5 13 5C17.42 5 20 7.91 20 11.5Z" />
+        </symbol>
+        <symbol id="icon-nav-friends-v3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="8" r="2.5" />
+          <circle cx="17" cy="10" r="2.5" />
+          <path d="M5 18c0-2.2 1.8-4 4-4s4 1.8 4 4" />
+          <path d="M13 18c0-2.2 1.8-4 4-4s4 1.8 4 4" />
+        </symbol>
+        <!-- v4：sub-menu + 栖息 -->
+        <symbol id="icon-nav-chevron-v4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 9 12 15 18 9" />
+        </symbol>
+        <symbol id="icon-nav-xiqi-v4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 14c2.5-5 6.5-7.5 8-9 1.5 1.5 5.5 4 8 9" />
+          <path d="M7.5 14.5h9" />
+          <path d="M12 5v2.5" />
+          <path d="M10.5 5h3" />
+        </symbol>
+        <symbol id="icon-nav-fragments-v4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 7h9" />
+          <path d="M6 11h11" />
+          <path d="M8 15h7" />
+          <circle cx="17" cy="7" r="1" fill="currentColor" stroke="none" />
+        </symbol>
+        <symbol id="icon-nav-me-v4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="9" r="3" />
+          <path d="M7 19v-1a5 5 0 0 1 10 0v1" />
+        </symbol>
+        <symbol id="icon-nav-recommend-v4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 4 14.5 10 21 10.5 16 14.5 17.5 21 12 17.5 6.5 21 8 14.5 3 10.5 9.5 10Z" />
+        </symbol>
+      </defs>
+    </svg>
+
+    <section aria-labelledby="sec-live">
+      <h2 id="sec-live">顶栏交互预览</h2>
+      <p class="version-label">初版（保留）</p>
+      <div class="glass-strip">
+        <nav class="nav nav-v1" aria-label="Main preview v1">
+          <a href="#" class="link is-active" data-nav="home">
+            <span class="nav-icon" aria-hidden="true"><svg><use href="#icon-nav-home" /></svg></span>
+            <span>首页</span>
+          </a>
+          <a href="#" class="link" data-nav="projects">
+            <span class="nav-icon" aria-hidden="true"><svg><use href="#icon-nav-projects" /></svg></span>
+            <span>项目</span>
+          </a>
+          <a href="#" class="link" data-nav="blog">
+            <span class="nav-icon" aria-hidden="true"><svg><use href="#icon-nav-blog" /></svg></span>
+            <span>博客</span>
+          </a>
+          <a href="#" class="link" data-nav="messages">
+            <span class="nav-icon" aria-hidden="true"><svg><use href="#icon-nav-messages" /></svg></span>
+            <span>留言</span>
+          </a>
+          <a href="#" class="link" data-nav="friends">
+            <span class="nav-icon" aria-hidden="true"><svg><use href="#icon-nav-friends" /></svg></span>
+            <span>友链</span>
+          </a>
+        </nav>
+      </div>
+
+      <p class="version-label version-label--v2">调整版 v2</p>
+      <div class="glass-strip glass-strip--v2">
+        <nav class="nav nav-v2" aria-label="Main preview v2">
+          <a href="#" class="link is-active" data-nav="home">
+            <span class="nav-icon" aria-hidden="true"><svg><use href="#icon-nav-home" /></svg></span>
+            <span>首页</span>
+          </a>
+          <a href="#" class="link" data-nav="projects">
+            <span class="nav-icon nav-icon--code" aria-hidden="true"><svg><use href="#icon-nav-projects-v2" /></svg></span>
+            <span>项目</span>
+          </a>
+          <a href="#" class="link" data-nav="blog">
+            <span class="nav-icon" aria-hidden="true"><svg><use href="#icon-nav-blog" /></svg></span>
+            <span>博客</span>
+          </a>
+          <a href="#" class="link" data-nav="messages">
+            <span class="nav-icon" aria-hidden="true"><svg><use href="#icon-nav-messages" /></svg></span>
+            <span>留言</span>
+          </a>
+          <a href="#" class="link" data-nav="friends">
+            <span class="nav-icon" aria-hidden="true"><svg><use href="#icon-nav-friends-v2" /></svg></span>
+            <span>友链</span>
+          </a>
+        </nav>
+      </div>
+
+      <p class="version-label version-label--v3">调整版 v3 · 植物系概念稿</p>
+      <div class="glass-strip glass-strip--v3">
+        <nav class="nav nav-v3" aria-label="Main preview v3">
+          <a href="#" class="link is-active" data-nav="home">
+            <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-home-v3" /></svg></span>
+            <span>首页</span>
+            <span class="leaf-glow" aria-hidden="true"></span>
+            <span class="grow-line" aria-hidden="true"></span>
+          </a>
+          <a href="#" class="link" data-nav="projects">
+            <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-projects-v3" /></svg></span>
+            <span>项目</span>
+            <span class="grow-line" aria-hidden="true"></span>
+          </a>
+          <a href="#" class="link" data-nav="blog">
+            <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-blog-v3" /></svg></span>
+            <span>博客</span>
+            <span class="grow-line" aria-hidden="true"></span>
+          </a>
+          <a href="#" class="link" data-nav="messages">
+            <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-messages-v3" /></svg></span>
+            <span>留言</span>
+            <span class="grow-line" aria-hidden="true"></span>
+          </a>
+          <a href="#" class="link" data-nav="friends">
+            <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-friends-v3" /></svg></span>
+            <span>友链</span>
+            <span class="grow-line" aria-hidden="true"></span>
+          </a>
+        </nav>
+      </div>
+
+      <p class="version-label version-label--v4">调整版 v4 · 二级分组（sub-menu + 栖息）</p>
+      <div class="glass-strip glass-strip--v4">
+        <nav class="nav nav-v4" aria-label="Main preview v4">
+          <a href="#" class="link is-active" data-nav="home">
+            <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-home-v3" /></svg></span>
+            <span>首页</span>
+          </a>
+
+          <div class="nav-group" data-group="create">
+            <button type="button" class="group-trigger" aria-expanded="false" aria-haspopup="true">
+              <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-projects-v3" /></svg></span>
+              <span>创作</span>
+              <span class="nav-icon nav-icon--arrow" aria-hidden="true"><svg><use href="#icon-nav-chevron-v4" /></svg></span>
+            </button>
+            <div class="dropdown" role="menu">
+              <button type="button" class="dropdown-item" role="menuitem" data-nav="projects">
+                <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-projects-v3" /></svg></span>
+                <span class="meta">
+                  <span class="meta-title">项目</span>
+                  <span class="meta-desc">开源 · 实验 · 技术实现</span>
+                </span>
+              </button>
+              <button type="button" class="dropdown-item" role="menuitem" data-nav="blog">
+                <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-blog-v3" /></svg></span>
+                <span class="meta">
+                  <span class="meta-title">博客</span>
+                  <span class="meta-desc">文章 · 思考 · 日常记录</span>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div class="nav-group" data-group="community">
+            <button type="button" class="group-trigger" aria-expanded="false" aria-haspopup="true">
+              <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-friends-v3" /></svg></span>
+              <span>社区</span>
+              <span class="nav-icon nav-icon--arrow" aria-hidden="true"><svg><use href="#icon-nav-chevron-v4" /></svg></span>
+            </button>
+            <div class="dropdown" role="menu">
+              <button type="button" class="dropdown-item" role="menuitem" data-nav="messages">
+                <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-messages-v3" /></svg></span>
+                <span class="meta">
+                  <span class="meta-title">留言</span>
+                  <span class="meta-desc">想法 · 交流 · 互动留言</span>
+                </span>
+              </button>
+              <button type="button" class="dropdown-item" role="menuitem" data-nav="friends">
+                <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-friends-v3" /></svg></span>
+                <span class="meta">
+                  <span class="meta-title">友链</span>
+                  <span class="meta-desc">友站 · 同行 · 彼此链接</span>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div class="nav-group" data-group="xiqi">
+            <button type="button" class="group-trigger" aria-expanded="false" aria-haspopup="true">
+              <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-xiqi-v4" /></svg></span>
+              <span>栖息</span>
+              <span class="nav-icon nav-icon--arrow" aria-hidden="true"><svg><use href="#icon-nav-chevron-v4" /></svg></span>
+            </button>
+            <div class="dropdown" role="menu">
+              <button type="button" class="dropdown-item" role="menuitem" data-nav="fragments">
+                <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-fragments-v4" /></svg></span>
+                <span class="meta">
+                  <span class="meta-title">碎念</span>
+                  <span class="meta-desc">短句 · 随笔 · 即时想法</span>
+                </span>
+              </button>
+              <button type="button" class="dropdown-item" role="menuitem" data-nav="about">
+                <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-me-v4" /></svg></span>
+                <span class="meta">
+                  <span class="meta-title">关于</span>
+                  <span class="meta-desc">履历 · 介绍 · 联系方式</span>
+                </span>
+              </button>
+              <button type="button" class="dropdown-item" role="menuitem" data-nav="recommend">
+                <span class="nav-icon nav-icon--plant" aria-hidden="true"><svg><use href="#icon-nav-recommend-v4" /></svg></span>
+                <span class="meta">
+                  <span class="meta-title">推荐</span>
+                  <span class="meta-desc">软件 · 开源 · 番剧动漫</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </nav>
+      </div>
+
+      <p class="spec">
+        各版独立交互。<strong>初版</strong>：统一 stroke 2 图标集。
+        <strong>v2</strong>：项目 <code>&lt;/&gt;</code>（含斜杠）、友链 Lucide users。
+        <strong>v3</strong>：植物系平铺五链（已接入 <code>SiteNav.vue</code>）。
+        <strong>v4</strong>：源自 <code>参考/sub-menu.html</code>——顶栏 <em>首页 + 创作 + 社区 + 栖息</em>；栖息含 <strong>碎念、关于、推荐</strong>。悬停父级即可移入二级菜单（移出父级与面板后收起），无需先点击父级。
+      </p>
+    </section>
+
+    <section aria-labelledby="sec-states">
+      <h2 id="sec-states">单链状态（首页）</h2>
+      <div class="state-row">
+        <span class="state-label">默认</span>
+        <span class="link state-default">
+          <span class="nav-icon"><svg><use href="#icon-nav-home" /></svg></span>
+          <span>首页</span>
+        </span>
+        <span class="state-label">悬停</span>
+        <span class="link state-hover">
+          <span class="nav-icon"><svg><use href="#icon-nav-home" /></svg></span>
+          <span>首页</span>
+        </span>
+        <span class="state-label">选中</span>
+        <span class="link state-hover">
+          <span class="nav-icon"><svg><use href="#icon-nav-home" /></svg></span>
+          <span>首页</span>
+        </span>
+      </div>
+    </section>
+
+    <section aria-labelledby="sec-grid">
+      <h2 id="sec-grid">图标一览</h2>
+      <div class="icon-grid">
+        <article class="icon-card">
+          <div class="glyph"><svg><use href="#icon-nav-home" /></svg></div>
+          <div class="name">首页</div>
+          <div class="slug">icon-nav-home</div>
+        </article>
+        <article class="icon-card">
+          <div class="glyph"><svg><use href="#icon-nav-projects" /></svg></div>
+          <div class="name">项目</div>
+          <div class="slug">icon-nav-projects</div>
+        </article>
+        <article class="icon-card">
+          <div class="glyph"><svg><use href="#icon-nav-blog" /></svg></div>
+          <div class="name">博客</div>
+          <div class="slug">icon-nav-blog</div>
+        </article>
+        <article class="icon-card">
+          <div class="glyph"><svg><use href="#icon-nav-messages" /></svg></div>
+          <div class="name">留言</div>
+          <div class="slug">icon-nav-messages</div>
+        </article>
+        <article class="icon-card">
+          <div class="glyph"><svg><use href="#icon-nav-friends" /></svg></div>
+          <div class="name">友链</div>
+          <div class="slug">icon-nav-friends</div>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const root = document.documentElement
+    const btnLight = document.getElementById('theme-light')
+    const btnDark = document.getElementById('theme-dark')
+
+    function setTheme(theme) {
+      root.dataset.theme = theme
+      btnLight.classList.toggle('is-on', theme === 'light')
+      btnDark.classList.toggle('is-on', theme === 'dark')
+    }
+
+    btnLight.addEventListener('click', () => setTheme('light'))
+    btnDark.addEventListener('click', () => setTheme('dark'))
+
+    document.querySelectorAll('.nav:not(.nav-v4)').forEach((nav) => {
+      nav.querySelectorAll('.link').forEach((link) => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault()
+          nav.querySelectorAll('.link').forEach((l) => l.classList.remove('is-active'))
+          link.classList.add('is-active')
+        })
+      })
+    })
+
+    const navV4 = document.querySelector('.nav-v4')
+    if (navV4) {
+      function clearV4Active() {
+        navV4.querySelectorAll('.link.is-active').forEach((el) => el.classList.remove('is-active'))
+        navV4.querySelectorAll('.dropdown-item.is-active').forEach((el) => el.classList.remove('is-active'))
+        navV4.querySelectorAll('.group-trigger.is-active').forEach((el) => el.classList.remove('is-active'))
+      }
+
+      function setGroupOpen(group, open) {
+        if (!group) return
+        group.classList.toggle('is-open', open)
+        group.querySelector('.group-trigger')?.setAttribute('aria-expanded', open ? 'true' : 'false')
+      }
+
+      navV4.querySelectorAll('.nav-group').forEach((group) => {
+        let leaveTimer = 0
+
+        function openHover() {
+          window.clearTimeout(leaveTimer)
+          group.classList.add('is-hover')
+        }
+
+        function closeHover() {
+          window.clearTimeout(leaveTimer)
+          leaveTimer = window.setTimeout(() => {
+            group.classList.remove('is-hover')
+          }, 80)
+        }
+
+        group.addEventListener('mouseenter', openHover)
+        group.addEventListener('mouseleave', closeHover)
+        group.addEventListener('focusin', openHover)
+        group.addEventListener('focusout', (e) => {
+          if (!group.contains(e.relatedTarget)) closeHover()
+        })
+      })
+
+      navV4.querySelector('.link[data-nav="home"]')?.addEventListener('click', (e) => {
+        e.preventDefault()
+        clearV4Active()
+        e.currentTarget.classList.add('is-active')
+      })
+
+      navV4.querySelectorAll('.dropdown-item').forEach((item) => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault()
+          clearV4Active()
+          item.classList.add('is-active')
+          const group = item.closest('.nav-group')
+          group?.querySelector('.group-trigger')?.classList.add('is-active')
+        })
+      })
+
+      navV4.querySelectorAll('.group-trigger').forEach((trigger) => {
+        trigger.addEventListener('click', (e) => {
+          e.preventDefault()
+          const group = trigger.closest('.nav-group')
+          const open = !group?.classList.contains('is-open')
+          navV4.querySelectorAll('.nav-group').forEach((g) => setGroupOpen(g, g === group && open))
+        })
+      })
+
+      document.addEventListener('click', (e) => {
+        if (!navV4.contains(e.target)) {
+          navV4.querySelectorAll('.nav-group').forEach((g) => {
+            g.classList.remove('is-hover', 'is-open')
+            g.querySelector('.group-trigger')?.setAttribute('aria-expanded', 'false')
+          })
+        }
+      })
+    }
+  </script>
+</body>
+</html>
