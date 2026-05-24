@@ -140,6 +140,11 @@ watch(visibleFragments, (list) => {
 })
 
 onMounted(async () => {
+  const startEnter = async () => {
+    const root = pageRoot.value?.$el
+    if (root instanceof HTMLElement) await playPageEnter(root)
+  }
+  void startEnter()
   try {
     const user = await fetchMessageAuthUser()
     isSiteOwner.value = Boolean(user?.isSiteOwner)
@@ -147,10 +152,6 @@ onMounted(async () => {
     isSiteOwner.value = false
   }
   await loadList()
-  const root = pageRoot.value?.$el
-  if (root instanceof HTMLElement) {
-    await playPageEnter(root)
-  }
 })
 </script>
 

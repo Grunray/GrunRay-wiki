@@ -38,12 +38,10 @@ function awardTierClass(tier: string): string {
 }
 
 onMounted(async () => {
+  if (pageRoot.value) void playPageEnter(pageRoot.value)
   const remote = await fetchAboutProfile()
   if (remote) {
     profile.value = remote
-  }
-  if (pageRoot.value) {
-    await playPageEnter(pageRoot.value)
   }
 })
 </script>

@@ -128,11 +128,12 @@ watch(visibleItems, (list) => {
 })
 
 onMounted(async () => {
-  await loadList()
-  const root = pageRoot.value?.$el
-  if (root instanceof HTMLElement) {
-    await playPageEnter(root)
+  const startEnter = async () => {
+    const root = pageRoot.value?.$el
+    if (root instanceof HTMLElement) await playPageEnter(root)
   }
+  void startEnter()
+  await loadList()
 })
 </script>
 
