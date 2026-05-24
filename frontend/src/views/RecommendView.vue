@@ -193,7 +193,13 @@ onMounted(async () => {
 
     <p v-if="listError" class="fragments-empty">{{ listError }}</p>
     <p v-else-if="listLoading" class="fragments-empty">{{ t('fragments.loading') }}</p>
-    <ul v-else-if="visibleItems.length" class="recommend-feed xiqi-feed" aria-live="polite">
+    <TransitionGroup
+      v-else-if="visibleItems.length"
+      name="xiqi-feed-item"
+      tag="ul"
+      class="recommend-feed xiqi-feed"
+      aria-live="polite"
+    >
       <li v-for="(item, index) in visibleItems" :key="item.id">
         <XiqiCard
           interactive
@@ -220,7 +226,7 @@ onMounted(async () => {
           </template>
         </XiqiCard>
       </li>
-    </ul>
+    </TransitionGroup>
     <p v-else class="fragments-empty">{{ t('recommend.empty') }}</p>
 
     <template #detail>
