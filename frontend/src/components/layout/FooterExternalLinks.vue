@@ -186,4 +186,20 @@ const { copyToastVisible, copyToastColor, handleExternalLinkClick } = useExterna
   opacity: 0;
   transform: translateX(-50%) translateY(4px);
 }
+
+@media (max-width: 768px) {
+  .footer-external-links {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .footer-external-links-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+  }
+}
 </style>

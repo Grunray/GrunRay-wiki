@@ -30,6 +30,16 @@ defineProps<{
               target="_blank"
               rel="noopener noreferrer"
             >萌ICP备20266668号</a>
+            <span
+              class="footer-grunray-meta-divider footer-grunray-meta-divider--inline"
+              aria-hidden="true"
+            />
+            <a
+              class="footer-grunray-rss-link"
+              href="/rss.xml"
+              type="application/rss+xml"
+              title="RSS 订阅本站博客更新"
+            >RSS订阅</a>
           </div>
         </div>
       </div>

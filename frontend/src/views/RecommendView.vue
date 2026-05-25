@@ -36,6 +36,7 @@ useSeoMeta(() => ({
 
 const pageRoot = ref<InstanceType<typeof XiqiSplitLayout> | null>(null)
 const selectedId = ref<string | null>(null)
+const detailDisplayId = ref<string | null>(null)
 const categoryFilter = ref<CategoryFilter>('all')
 const sortOrder = ref<SortOrder>('newest')
 const ratingFilter = ref<number | null>(null)
@@ -59,11 +60,11 @@ const sortOptions = computed<Array<{ id: SortOrder; label: string }>>(() => [
 
 const visibleItems = computed(() => items.value)
 
-const selectedItem = computed(
-  () => visibleItems.value.find((item) => item.id === selectedId.value) ?? null,
+const displayedItem = computed(
+  () => visibleItems.value.find((item) => item.id === detailDisplayId.value) ?? null,
 )
 
-const detailTitle = computed(() => selectedItem.value?.title ?? '')
+const detailTitle = computed(() => displayedItem.value?.title ?? '')
 
 function formatTime(iso: string): string {
   const d = new Date(iso)
@@ -117,13 +118,25 @@ watch([categoryFilter, sortOrder, ratingFilter], () => {
 })
 
 watch(selectedId, (id) => {
-  detail.value = null
-  if (id) void loadDetail(id)
+  if (id) {
+    detailDisplayId.value = id
+    detail.value = null
+    void loadDetail(id)
+  }
 })
+
+function onDetailPanelClosed() {
+  detailDisplayId.value = null
+  detail.value = null
+}
 
 watch(visibleItems, (list) => {
   if (selectedId.value && !list.some((item) => item.id === selectedId.value)) {
     selectedId.value = null
+  }
+  if (detailDisplayId.value && !list.some((item) => item.id === detailDisplayId.value)) {
+    detailDisplayId.value = null
+    detail.value = null
   }
 })
 
@@ -138,7 +151,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <XiqiSplitLayout ref="pageRoot" v-model:selected-key="selectedId" :detail-title="detailTitle">
+  <XiqiSplitLayout
+    ref="pageRoot"
+    v-model:selected-key="selectedId"
+    :detail-title="detailTitle"
+    @detail-closed="onDetailPanelClosed"
+  >
     <XiqiPageHero
       page="recommend"
       :eyebrow="t('recommend.eyebrow')"
@@ -204,7 +222,7 @@ onMounted(async () => {
         <XiqiCard
           interactive
           :accent="item.category"
-          :selected="selectedId === item.id"
+          :selected="detailDisplayId === item.id"
           :cover-src="item.imageUrl"
           :cover-alt="item.imageAlt || item.title"
           :enter-index="index"
@@ -230,26 +248,26 @@ onMounted(async () => {
     <p v-else class="fragments-empty">{{ t('recommend.empty') }}</p>
 
     <template #detail>
-      <article v-if="selectedItem" class="recommend-detail">
+      <article v-if="displayedItem" class="recommend-detail">
         <header class="recommend-detail-head">
-          <RecommendCategoryBadge :category="selectedItem.category" size="md" />
-          <time class="xiqi-card-time" :datetime="selectedItem.createdAt">
-            {{ formatTime(selectedItem.createdAt) }}
+          <RecommendCategoryBadge :category="displayedItem.category" size="md" />
+          <time class="xiqi-card-time" :datetime="displayedItem.createdAt">
+            {{ formatTime(displayedItem.createdAt) }}
           </time>
         </header>
-        <h2 class="recommend-detail-title">{{ selectedItem.title }}</h2>
-        <RecommendStarRating mode="display" :rating="selectedItem.rating" />
+        <h2 class="recommend-detail-title">{{ displayedItem.title }}</h2>
+        <RecommendStarRating mode="display" :rating="displayedItem.rating" />
         <p v-if="detailLoading" class="recommend-detail-body">{{ t('fragments.loading') }}</p>
         <div
           v-else-if="detail?.bodyHtml"
-          class="recommend-detail-body prose body-markdown"
+          class="recommend-detail-body prose body-markdown markdown-reading"
           v-html="detail.bodyHtml"
         />
-        <p v-else class="recommend-detail-body">{{ selectedItem.summary }}</p>
+        <p v-else class="recommend-detail-body">{{ displayedItem.summary }}</p>
         <a
-          v-if="selectedItem.url"
+          v-if="displayedItem.url"
           class="btn-accent recommend-detail-link"
-          :href="selectedItem.url"
+          :href="displayedItem.url"
           target="_blank"
           rel="noopener noreferrer"
         >

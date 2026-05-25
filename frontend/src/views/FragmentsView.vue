@@ -32,6 +32,8 @@ useSeoMeta(() => ({
 
 const pageRoot = ref<InstanceType<typeof XiqiSplitLayout> | null>(null)
 const selectedFragmentId = ref<string | null>(null)
+/** 关闭动画期间仍展示详情，避免 slot 清空导致面板塌陷 */
+const detailDisplayId = ref<string | null>(null)
 const moodFilter = ref<MoodFilter>('all')
 const sortOrder = ref<SortOrder>('newest')
 const fragments = ref<Fragment[]>([])
@@ -56,12 +58,12 @@ const sortOptions = computed<Array<{ id: SortOrder; label: string }>>(() => [
 
 const visibleFragments = computed(() => fragments.value)
 
-const selectedFragment = computed(() =>
-  visibleFragments.value.find((item) => item.id === selectedFragmentId.value) ?? null,
+const displayedFragment = computed(() =>
+  visibleFragments.value.find((item) => item.id === detailDisplayId.value) ?? null,
 )
 
 const detailTitle = computed(() =>
-  selectedFragment.value ? moodLabel(selectedFragment.value.mood) : '',
+  displayedFragment.value ? moodLabel(displayedFragment.value.mood) : '',
 )
 
 function moodLabel(mood: FragmentMood): string {
@@ -129,13 +131,25 @@ watch([moodFilter, sortOrder], () => {
 })
 
 watch(selectedFragmentId, (id) => {
-  detail.value = null
-  if (id) void loadDetail(id)
+  if (id) {
+    detailDisplayId.value = id
+    detail.value = null
+    void loadDetail(id)
+  }
 })
+
+function onDetailPanelClosed() {
+  detailDisplayId.value = null
+  detail.value = null
+}
 
 watch(visibleFragments, (list) => {
   if (selectedFragmentId.value && !list.some((item) => item.id === selectedFragmentId.value)) {
     selectedFragmentId.value = null
+  }
+  if (detailDisplayId.value && !list.some((item) => item.id === detailDisplayId.value)) {
+    detailDisplayId.value = null
+    detail.value = null
   }
 })
 
@@ -160,6 +174,7 @@ onMounted(async () => {
     ref="pageRoot"
     v-model:selected-key="selectedFragmentId"
     :detail-title="detailTitle"
+    @detail-closed="onDetailPanelClosed"
   >
     <XiqiPageHero
       page="fragments"
@@ -233,7 +248,7 @@ onMounted(async () => {
         <XiqiCard
           interactive
           :accent="item.mood"
-          :selected="selectedFragmentId === item.id"
+          :selected="detailDisplayId === item.id"
           :cover-src="item.imageUrl"
           :cover-alt="item.imageAlt || ''"
           :enter-index="index"
@@ -253,20 +268,20 @@ onMounted(async () => {
     <p v-else class="fragments-empty">{{ t('fragments.empty') }}</p>
 
     <template #detail>
-      <article v-if="selectedFragment" class="fragment-detail">
+      <article v-if="displayedFragment" class="fragment-detail">
         <header class="fragment-detail-head">
-          <FragmentMoodBadge :mood="selectedFragment.mood" size="md" />
-          <time class="xiqi-card-time fragment-time" :datetime="selectedFragment.createdAt">
-            {{ formatTime(selectedFragment.createdAt) }}
+          <FragmentMoodBadge :mood="displayedFragment.mood" size="md" />
+          <time class="xiqi-card-time fragment-time" :datetime="displayedFragment.createdAt">
+            {{ formatTime(displayedFragment.createdAt) }}
           </time>
         </header>
         <p v-if="detailLoading" class="fragment-detail-body">{{ t('fragments.loading') }}</p>
         <div
           v-else-if="detail?.bodyHtml"
-          class="fragment-detail-body prose body-markdown"
+          class="fragment-detail-body prose body-markdown markdown-reading"
           v-html="detail.bodyHtml"
         />
-        <p v-else class="fragment-detail-body">{{ selectedFragment.content }}</p>
+        <p v-else class="fragment-detail-body">{{ displayedFragment.content }}</p>
       </article>
     </template>
   </XiqiSplitLayout>

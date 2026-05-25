@@ -426,35 +426,35 @@ onUnmounted(() => {
       <div class="glass-nav-inner">
         <div class="header-inner">
         <div class="header-left">
-          <template v-if="!isHomeRoute">
-            <Transition
-              name="header-brand-mini-avatar"
-              :appear="miniAvatarAppearEnter"
-              type="animation"
-            >
-              <span
-                :key="miniAvatarPopKey"
-                class="header-brand-mini-avatar-wrap"
-                aria-hidden="true"
-              >
-                <img
-                  src="/favicon.jpg"
-                  alt=""
-                  width="28"
-                  height="28"
-                  class="header-brand-mini-avatar"
-                />
-              </span>
-            </Transition>
-          </template>
-          <span v-else class="header-brand-mini-avatar-slot" aria-hidden="true" />
           <div
-            class="header-left-cluster"
-            :class="{ 'header-left-cluster--settle-pop': headerLeftSettlePop && !ui.prefersReducedMotion }"
+            class="header-brand-row"
+            :class="{ 'header-brand-row--settle-pop': headerLeftSettlePop && !ui.prefersReducedMotion }"
           >
+            <template v-if="!isHomeRoute">
+              <Transition
+                name="header-brand-mini-avatar"
+                :appear="miniAvatarAppearEnter"
+                type="animation"
+              >
+                <span
+                  :key="miniAvatarPopKey"
+                  class="header-brand-mini-avatar-wrap"
+                  aria-hidden="true"
+                >
+                  <img
+                    src="/favicon.jpg"
+                    alt=""
+                    width="28"
+                    height="28"
+                    class="header-brand-mini-avatar"
+                  />
+                </span>
+              </Transition>
+            </template>
+            <span v-else class="header-brand-mini-avatar-slot" aria-hidden="true" />
             <RouterLink to="/" class="brand">GrunRay</RouterLink>
-            <SiteNav />
           </div>
+          <SiteNav />
         </div>
         <div ref="headerRightRef" class="header-right">
           <div class="header-toolbar-slot" data-toolbar-flip="theme">
@@ -699,7 +699,12 @@ onUnmounted(() => {
   flex: 1;
 }
 
-@keyframes header-left-cluster-settle-pop {
+.header-left :deep(.nav.nav--shell) {
+  flex: 1;
+  min-width: 0;
+}
+
+@keyframes header-brand-row-settle-pop {
   0% {
     transform: translateX(-6px) scale(0.99);
     opacity: 0.94;
@@ -714,21 +719,21 @@ onUnmounted(() => {
   }
 }
 
-.header-left-cluster {
+.header-brand-row {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.65rem 1.25rem;
-  flex: 1;
+  flex-shrink: 0;
   min-width: 0;
 }
 
-.header-left-cluster--settle-pop {
-  animation: header-left-cluster-settle-pop 0.46s cubic-bezier(0.34, 1.25, 0.46, 1) both;
+.header-brand-row--settle-pop {
+  animation: header-brand-row-settle-pop 0.46s cubic-bezier(0.34, 1.25, 0.46, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .header-left-cluster--settle-pop {
+  .header-brand-row--settle-pop {
     animation: none;
   }
 }
@@ -822,6 +827,50 @@ onUnmounted(() => {
   gap: 0.5rem 0.85rem;
   margin-left: auto;
   flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .glass-nav-inner {
+    padding: 0.55rem 0.85rem;
+  }
+
+  .header-inner {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .header-left {
+    flex: none;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 0.45rem;
+  }
+
+  .header-brand-row {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .header-left :deep(.nav.nav--shell) {
+    flex: none;
+    justify-content: center;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .header-right {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+    gap: 0.45rem 0.65rem;
+  }
+
+  .header-right .hint {
+    width: 100%;
+    text-align: center;
+  }
 }
 
 .header-toolbar-slot {
@@ -1387,7 +1436,7 @@ onUnmounted(() => {
   .header-right {
     width: 100%;
     margin-left: 0;
-    justify-content: flex-start;
+    justify-content: center;
   }
 }
 

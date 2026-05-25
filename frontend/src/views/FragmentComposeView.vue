@@ -320,7 +320,7 @@ onMounted(async () => {
         <p class="compose-preview-label">{{ t('fragments.compose.previewDetailLabel') }}</p>
         <div
           v-if="previewDetailHtml"
-          class="compose-detail-md prose body-markdown"
+          class="compose-detail-md prose body-markdown markdown-reading"
           v-html="previewDetailHtml"
         />
         <p v-else class="compose-preview-empty">{{ t('fragments.compose.previewEmpty') }}</p>
