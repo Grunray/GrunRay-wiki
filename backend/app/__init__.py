@@ -32,6 +32,18 @@ def create_app():
             "content_root": str(config.CONTENT_ROOT),
         }
 
+    @app.get("/rss.xml")
+    def rss_feed():
+        from flask import Response
+
+        from app.db import cursor
+        from app.rss_feed import build_rss_xml, fetch_posts_for_rss
+
+        with cursor() as cur:
+            rows = fetch_posts_for_rss(cur)
+        body = build_rss_xml(rows)
+        return Response(body, mimetype="application/rss+xml; charset=utf-8")
+
     app.register_blueprint(api_bp)
     app.register_blueprint(fragments_bp)
     app.register_blueprint(auth_bp)
