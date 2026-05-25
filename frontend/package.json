@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
+    "build:github-pages": "vue-tsc -b && vite build --mode github-pages",
     "preview": "vite preview",
     "build:demos": "node ../demos/build-demo-assets.mjs"
   },

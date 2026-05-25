@@ -29,7 +29,6 @@ const detailRailOpen = computed(() => isOpen.value || detailLeaving.value)
 const SPLIT_LAYOUT_MS = 580
 const MAIN_INNER_FLIP_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
-let pendingPanelScroll = 0
 /** 打开分栏时主栏内滚动偏移，关闭时作 fallback */
 let preservedMainScroll = 0
 
@@ -121,7 +120,6 @@ watch(isOpen, async (open) => {
   const beforeRect = mainInner?.getBoundingClientRect() ?? null
 
   if (open) {
-    pendingPanelScroll = 0
     detailLeaving.value = false
     preservedMainScroll = measureMainScrollOffset()
     const scrollOffset = preservedMainScroll
@@ -138,7 +136,6 @@ watch(isOpen, async (open) => {
   if (!open && layoutSplit.value) {
     detailLeaving.value = true
     const scrollToRestore = main?.scrollTop ?? preservedMainScroll
-    pendingPanelScroll = scrollToRestore
 
     const inner = getMainInner()
     if (inner) clearMainInnerFlipStyles(inner)
@@ -157,7 +154,6 @@ async function onDetailAfterLeave() {
   detailLeaving.value = false
   if (isOpen.value) return
   emit('detailClosed')
-  pendingPanelScroll = 0
   preservedMainScroll = 0
 }
 
@@ -167,7 +163,6 @@ onBeforeUnmount(() => {
   if (inner) clearMainInnerFlipStyles(inner)
   layoutSplit.value = false
   detailLeaving.value = false
-  pendingPanelScroll = 0
   preservedMainScroll = 0
   setXiqiSplitFooterLock(false)
 })

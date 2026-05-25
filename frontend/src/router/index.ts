@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 
 import AppShell from '@/components/layout/AppShell.vue'
 import AboutView from '@/views/AboutView.vue'
@@ -18,8 +18,13 @@ import RecommendView from '@/views/RecommendView.vue'
 import { syncPageCorruptForRoute } from '@/theme/pageCorruptState'
 import { applyPagePhotoBackgroundToDocument } from '@/theme/pagePhotoBackgrounds'
 
+const routerHistory =
+  import.meta.env.VITE_ROUTER_HISTORY === 'hash'
+    ? createWebHashHistory(import.meta.env.BASE_URL)
+    : createWebHistory(import.meta.env.BASE_URL)
+
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: routerHistory,
   routes: [
     {
       path: '/',
