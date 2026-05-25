@@ -285,6 +285,14 @@ layout:
       2026-05-24  栖息模块落地：关于/碎念/推荐页与 Markdown 导入；404 与 corrupt 主题。
 
       2026-05-25  栖息三页入场动画、详情面板与列表筛选 FLIP、关闭详情时主栏归位过渡等交互打磨（含分支合并）。
+
+      2026-05-25  全局 Markdown 阅读样式抽离至 markdown-reading.css。
+
+      2026-05-25  RSS 2.0 订阅 /rss.xml。
+
+      2026-05-25  栖息分栏与页脚揭示联动优化。
+
+      2026-05-25  新增 GrunRay Wiki 项目卡片与工程开发笔记。
 related_posts:
   - slug: grunray-wiki-note-home
     label: 首页布局与 API
@@ -300,6 +308,12 @@ related_posts:
     pinned: false
   - slug: grunray-wiki-note-patterns
     label: 前端复用模式
+    pinned: false
+  - slug: grunray-wiki-note-community
+    label: 社区：留言与友链
+    pinned: false
+  - slug: grunray-wiki-note-xiqi
+    label: 栖息：碎念与推荐
     pinned: false
   - slug: project-demo-architecture-vite-flask
     label: Demo 架构设计

@@ -5,7 +5,7 @@
 典型表面元素：
 
 - **`.card`**：在 `frontend/src/styles/main.css` 定义，使用 `--glass-card-bg`、`--glass-card-border`、`backdrop-filter`，形成统一玻璃卡片。
-- **阅读区**：博文详情 `.body`、项目 Markdown 块 `.project-md` 使用 `--color-reading-bg`，与导航玻璃区分。
+- **阅读区**：凡渲染 Markdown HTML 的容器统一加全局类 `.markdown-reading`（博文 `.body`、项目块 `.project-md`、碎念/推荐详情等）；排版与代码高亮集中在 `frontend/src/styles/markdown-reading.css`（含 Pygments `.codehilite`），在 `frontend/src/main.ts` 与 `main.css` 同级全局引入。块外壳仍用 `--color-reading-bg`（见 `MarkdownBlock.vue` 的 `.block-markdown-reading`）。
 
 部分路由有**独立样式文件**（在对应 View 中 `import '@/styles/...'`），仅负责入场动画或页面特有布局，不重复定义 token。
 
@@ -28,6 +28,8 @@
 | 职责 | 路径 |
 |------|------|
 | 全局样式入口 | `frontend/src/styles/main.css` |
+| Markdown 阅读排版（全局） | `frontend/src/styles/markdown-reading.css` |
+| 应用入口（样式加载顺序） | `frontend/src/main.ts` |
 | 浅色 token | `frontend/src/styles/themes/tokens.light.css` |
 | 深色 token | `frontend/src/styles/themes/tokens.dark.css` |
 | 抽象/彩蛋 token | `frontend/src/styles/themes/tokens.abstract.css` |
@@ -48,4 +50,5 @@
 2. **主题切换动画**：切换时可在 `body` 上挂载扩散层（Teleport，`z-index` 与 `#app` 叠层顺序在 `main.css` 注释中说明），避免闪屏。
 3. **页面样式导入约定**：需要入场动画的 View 显式 `import '@/styles/page-enter-*.css'`，未导入的页面仅继承全局 `.card` 与 token。
 4. **与壳层笔记的边界**：`AppShell` / `ThemeDayNightToggle` 写 `dataset`；`main.css` 与 token 文件定义变量取值；业务 View 只消费 `var(--*)`。
-5. **暗色代码块**：项目 Markdown 块内 `pre` 在 `[data-theme='dark']` 下有单独背景混合（见 `MarkdownBlock.vue` 非 scoped 样式）。
+5. **Markdown 阅读样式**：`MarkdownBlock.vue` 仅保留块级边框/背景；标题、列表、表格、`pre`/`code` 均由 `.markdown-reading` 统一定义，避免在多个 View 重复维护。
+6. **暗色代码块**：`markdown-reading.css` 内 `[data-theme='dark']` 对 `pre` / `.codehilite` 有单独背景混合。

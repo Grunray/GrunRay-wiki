@@ -12,7 +12,7 @@ series: 项目与工程
 pinned: false
 pinned_order: 3
 published_at: '2026-05-25T10:00:00'
-updated_at: '2026-05-25T10:00:00'
+updated_at: '2026-05-25T18:00:00'
 project_id: proj-grunray-wiki
 ---
 
@@ -44,7 +44,9 @@ project_id: proj-grunray-wiki
 - `FooterExternalLinks.vue` — 外链图标条
 - `FooterGrunRayMetaBar.vue` — 版权、RSS 等元信息
 
-样式集中在 `frontend/src/styles/footer-grunray.css`；滚动揭示逻辑见 `useFooterGrunRayReveal.ts`。
+页脚样式 `frontend/src/styles/footer-grunray.css` 已在 `frontend/src/main.ts` 全局引入（与 `main.css`、`markdown-reading.css` 同级）；滚动揭示逻辑见 `useFooterGrunRayReveal.ts`。
+
+**与栖息分栏联动**：`XiqiSplitLayout` 打开详情时调用 `setXiqiSplitFooterLock(true)`（`frontend/src/composables/useXiqiSplitFooter.ts`），在 `html` 上设置 `data-xiqi-split-open` 并清零页脚揭示 CSS 变量，避免分栏与页脚滚动动画冲突；关闭分栏后触发 `FOOTER_REFRESH_EVENT` 刷新揭示状态。
 
 ## 数据与 API
 
@@ -77,6 +79,8 @@ project_id: proj-grunray-wiki
 | 顶栏 FLIP | `frontend/src/composables/useHeaderToolbarLayoutShift.ts` |
 | 导航滚动紧凑 | `frontend/src/composables/useNavScrollCompact.ts` |
 | 页脚揭示 | `frontend/src/composables/useFooterGrunRayReveal.ts` |
+| 栖息分栏页脚锁 | `frontend/src/composables/useXiqiSplitFooter.ts` |
+| 栖息分栏布局 | `frontend/src/components/xiqi/XiqiSplitLayout.vue` |
 | 光标轨迹 | `frontend/src/components/layout/CursorTrail.vue` |
 | 路由与 afterEach | `frontend/src/router/index.ts` |
 | 页脚样式 | `frontend/src/styles/footer-grunray.css` |
@@ -87,3 +91,4 @@ project_id: proj-grunray-wiki
 2. **工具栏 FLIP**：音乐按钮在「顶栏 / 溢出菜单」间移动时，`captureToolbarFlipSlots` 记录位置，`playToolbarFlipAfterRemove` 播放位移，减少布局跳动（与 `TODO.md` 中导航动效优化相关）。
 3. **full-viewport 子页**：子路由 `meta.appMainLayout === 'full-viewport'` 时，`app-main` 应用不同 padding，首页/碎念/关于等铺满背景。
 4. **与主题笔记的分工**：壳层负责切换 `data-theme`、照片背景 dataset；具体页面 scoped 样式在各 View 内维护。
+5. **页脚 RSS 链接**：`FooterGrunRayMetaBar` 可链到 `/rss.xml`（见 patterns 笔记 RSS 小节）。

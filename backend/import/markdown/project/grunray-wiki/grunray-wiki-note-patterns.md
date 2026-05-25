@@ -12,7 +12,7 @@ series: 项目与工程
 pinned: false
 pinned_order: 5
 published_at: '2026-05-25T10:00:00'
-updated_at: '2026-05-25T10:00:00'
+updated_at: '2026-05-25T18:00:00'
 project_id: proj-grunray-wiki
 ---
 
@@ -53,6 +53,11 @@ Vite 开发代理 → Flask /api
 - `apiGet<T>(path)`：拼接可选 `VITE_API_BASE_URL`，`credentials: 'same-origin'`，非 2xx 抛带 `status` 的 Error。
 - 博客、项目笔记列表等**推荐**走 `apiGet`；首页 `HomeView` 仍用原生 `fetch`（历史实现，行为等价）。
 
+### RSS 订阅
+
+- 根路径 `GET /rss.xml`（非 `/api` 前缀），由 Flask `backend/app/rss_feed.py` 生成 RSS 2.0，条目与博客公开可见性一致。
+- 开发时 Vite 将 `/rss.xml` 代理到后端（`frontend/vite.config.ts`）；生产需在反向代理层转发该路径。
+
 ### 缓存策略
 
 | 场景 | 机制 | 键/变量 |
@@ -73,7 +78,7 @@ Vite 开发代理 → Flask /api
 | `useMarkdownCodeCopy` | 博文代码块一键复制 |
 | `useFooterGrunRayReveal` | 页脚滚动揭示 |
 | `useCopyToClipboard` / `useExternalLinkCopy` | 复制辅助 |
-| `useXiqiSplitFooter` | 栖息分栏页脚（碎念/推荐/关于专用） |
+| `useXiqiSplitFooter` | 栖息分栏打开时锁定页脚揭示（详见 grunray-wiki-note-xiqi） |
 
 ### 项目块扩展
 
@@ -99,10 +104,12 @@ Vite 开发代理 → Flask /api
 | SEO | `frontend/src/composables/useSeoMeta.ts` |
 | 站点常量 | `frontend/src/config/site.ts` |
 | Vite 代理 | `frontend/vite.config.ts` |
+| Markdown 阅读样式 | `frontend/src/styles/markdown-reading.css` |
+| RSS 生成 | `backend/app/rss_feed.py` |
 
 ## 实现要点
 
 1. **先 `ensureProjectsLoaded` 再拉笔记/博客**：任何依赖项目可见性的列表都应 await 项目缓存，避免 `project_id` 过滤时项目尚未加载。
 2. **错误与 404**：`getPostBySlug` 捕获 status 404 返回 `undefined`，由 View 展示 NotFound 或骨架切换。
-3. **新增页面 checklist**：路由 → View → `useSeoMeta` → 按需 `contentRepository` → 可选 `page-enter-*.css` → i18n 键。
+3. **新增页面 checklist**：路由 → View → `useSeoMeta` → 按需 `contentRepository` → 可选 `page-enter-*.css` → i18n 键；若渲染 Markdown HTML，根节点加 `markdown-reading` 类（全局样式已加载）。
 4. **与后端导入的关系**：正文在 `backend/content/posts/*.md`，前端只消费 API；本地开发改 import 后需跑 `import_markdown_posts.py`（见项目 Markdown 导入笔记）。

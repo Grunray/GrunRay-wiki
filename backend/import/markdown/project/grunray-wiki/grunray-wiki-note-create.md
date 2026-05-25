@@ -12,7 +12,7 @@ series: 项目与工程
 pinned: true
 pinned_order: 2
 published_at: '2026-05-25T10:00:00'
-updated_at: '2026-05-25T10:00:00'
+updated_at: '2026-05-25T18:00:00'
 project_id: proj-grunray-wiki
 ---
 
@@ -48,7 +48,7 @@ project_id: proj-grunray-wiki
 
 **详情 `/blog/:slug`** — `frontend/src/views/PostDetailView.vue`
 
-- 标题、元信息、正文区（Markdown HTML 或服务端 `body_html`）。
+- 标题、元信息、正文区（Markdown HTML 或服务端 `body_html`），根节点类名含 `markdown-reading`（全局样式 `frontend/src/styles/markdown-reading.css`）。
 - 代码块复制：`useMarkdownCodeCopy`；相关文章侧栏调用 related API。
 
 ## 数据与 API
