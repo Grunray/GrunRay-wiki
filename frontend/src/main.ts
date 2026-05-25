@@ -6,6 +6,7 @@ import App from './App.vue'
 import { i18n } from './i18n'
 import router from './router'
 import './styles/main.css'
+import './styles/markdown-reading.css'
 import './styles/footer-grunray.css'
 
 const app = createApp(App)
