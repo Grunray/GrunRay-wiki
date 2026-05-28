@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>方案 C · exp.3 Now-Bar 风格</title>
+    <link rel="stylesheet" href="css/shared.css" />
+  </head>
+  <body>
+    <header class="preview-header">
+      <h1>方案 C · exp.3 Now-Bar 风格</h1>
+      <p>黑胶 + 独立进度条卡片 + 52px 大播放键，对齐 Web 实验 exp.3 控件风格。</p>
+      <nav class="preview-nav">
+        <a href="index.html">← 返回对比</a>
+        <a href="scheme-a.html">方案 A</a>
+        <a href="scheme-b.html">方案 B</a>
+        <button type="button" id="themeToggle">🌙 深色</button>
+      </nav>
+    </header>
+
+    <main class="single-demo">
+      <div data-mount-scheme="c"></div>
+      <p class="single-demo__note">
+        卡片宽 360px；播放/切歌按钮来自 exp.3 的 <code>now-play-main</code> / <code>.btn</code>。若保留 wiki
+        摇杆音量 popover，可将右侧 range 换回 <code>floating-music__vol-btn</code>。
+      </p>
+    </main>
+
+    <script src="js/player-demo.js"></script>
+  </body>
+</html>

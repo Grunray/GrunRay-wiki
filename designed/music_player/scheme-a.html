@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>方案 A · 黑胶装饰 + Glass 控件</title>
+    <link rel="stylesheet" href="css/shared.css" />
+  </head>
+  <body>
+    <header class="preview-header">
+      <h1>方案 A · 黑胶装饰 + Glass 控件</h1>
+      <p>黑胶区缩放嵌入顶部；曲名 → 进度条 → ⏮ ▶ ⏭ 🔊 自上而下排列。</p>
+      <nav class="preview-nav">
+        <a href="index.html">← 返回对比</a>
+        <a href="scheme-b.html">方案 B</a>
+        <a href="scheme-c.html">方案 C</a>
+        <button type="button" id="themeToggle">🌙 深色</button>
+      </nav>
+    </header>
+
+    <main class="single-demo">
+      <div data-mount-scheme="a"></div>
+      <p class="single-demo__note">
+        集成要点：新建 <code>VinylDeck.vue</code> 作装饰组件；<code>watch(isPlaying)</code> 同步
+        <code>.is-playing</code>；<code>shellLayoutSize()</code> 高度改为约 480px。
+      </p>
+    </main>
+
+    <script src="js/player-demo.js"></script>
+  </body>
+</html>

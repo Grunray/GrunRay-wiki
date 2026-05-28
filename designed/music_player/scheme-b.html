@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>方案 B · 黑胶即播放键</title>
+    <link rel="stylesheet" href="css/shared.css" />
+  </head>
+  <body>
+    <header class="preview-header">
+      <h1>方案 B · 黑胶即播放键</h1>
+      <p>点击黑胶区域播放/暂停；transport 只保留 ⏮ ⏭ 与右侧音量。</p>
+      <nav class="preview-nav">
+        <a href="index.html">← 返回对比</a>
+        <a href="scheme-a.html">方案 A</a>
+        <a href="scheme-c.html">方案 C</a>
+        <button type="button" id="themeToggle">🌙 深色</button>
+      </nav>
+    </header>
+
+    <main class="single-demo">
+      <div data-mount-scheme="b"></div>
+      <p class="single-demo__note">
+        试试点击唱片：唱臂落下、唱片旋转。暂停时 hover 唱片可见 ▶ overlay。集成时给黑胶加
+        <code>@click="togglePlay"</code> 与 <code>role="button"</code>。
+      </p>
+    </main>
+
+    <script src="js/player-demo.js"></script>
+  </body>
+</html>

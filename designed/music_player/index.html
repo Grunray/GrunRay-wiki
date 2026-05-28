@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>音乐播放器方案对比 · GrunRay Wiki</title>
+    <link rel="stylesheet" href="css/shared.css" />
+  </head>
+  <body>
+    <header class="preview-header">
+      <h1>浮动音乐播放器 × 黑胶唱机 — 方案对比</h1>
+      <p>
+        三种布局原型，供选择后集成到
+        <code>FloatingMusicPlayer.vue</code>。点击播放/黑胶可预览动画；进度条可点击跳转。
+      </p>
+      <nav class="preview-nav" aria-label="方案导航">
+        <a href="index.html" class="is-active">三方案并列</a>
+        <a href="scheme-a.html">方案 A 单独</a>
+        <a href="scheme-b.html">方案 B 单独</a>
+        <a href="scheme-c.html">方案 C 单独</a>
+        <button type="button" id="themeToggle">🌙 深色</button>
+      </nav>
+    </header>
+
+    <main class="preview-main">
+      <div class="scheme-grid">
+        <article class="scheme-card">
+          <div class="scheme-card__head">
+            <h2>方案 A · 黑胶装饰 + Glass 控件</h2>
+            <p>推荐默认。黑胶纯展示，保留现有 ⏮ ▶ ⏭ 🔊 小圆钮；进度条在 transport 上方。</p>
+            <div class="scheme-card__tags">
+              <span class="scheme-tag">改动最小</span>
+              <span class="scheme-tag">320px 宽</span>
+              <span class="scheme-tag">wiki glass 统一</span>
+            </div>
+          </div>
+          <div class="scheme-card__body" data-mount-scheme="a"></div>
+          <footer class="scheme-card__foot">
+            <strong>适合：</strong>想加黑胶氛围、又不想大改现有交互。
+            <ul>
+              <li>黑胶 <code>pointer-events: none</code>，不抢点击</li>
+              <li>播放状态仅驱动唱臂 + 唱片旋转</li>
+            </ul>
+          </footer>
+        </article>
+
+        <article class="scheme-card">
+          <div class="scheme-card__head">
+            <h2>方案 B · 黑胶即播放键</h2>
+            <p>点击唱片播放/暂停；去掉中央 ▶ 按钮，只留切歌与音量。</p>
+            <div class="scheme-card__tags">
+              <span class="scheme-tag">沉浸感强</span>
+              <span class="scheme-tag">320px 宽</span>
+              <span class="scheme-tag">主操作在黑胶</span>
+            </div>
+          </div>
+          <div class="scheme-card__body" data-mount-scheme="b"></div>
+          <footer class="scheme-card__foot">
+            <strong>适合：</strong>强调「模拟唱机」隐喻，视觉焦点在黑胶。
+            <ul>
+              <li>hover 时唱片中心显示 ▶ / ⏸ overlay</li>
+              <li>需补充 aria 说明「点击黑胶播放」</li>
+            </ul>
+          </footer>
+        </article>
+
+        <article class="scheme-card">
+          <div class="scheme-card__head">
+            <h2>方案 C · exp.3 Now-Bar 风格</h2>
+            <p>黑胶 + exp.3 大播放键（52px）与 skip 按钮；卡片加宽至 360px。</p>
+            <div class="scheme-card__tags">
+              <span class="scheme-tag">与实验页一致</span>
+              <span class="scheme-tag">360px 宽</span>
+              <span class="scheme-tag">大按钮</span>
+            </div>
+          </div>
+          <div class="scheme-card__body" data-mount-scheme="c"></div>
+          <footer class="scheme-card__foot">
+            <strong>适合：</strong>希望和 exp.3 作业演示视觉完全对齐。
+            <ul>
+              <li>音量改为 inline range（非 popover 摇杆）</li>
+              <li>与 wiki 其他 floating glass 控件略有差异</li>
+            </ul>
+          </footer>
+        </article>
+      </div>
+    </main>
+
+    <script src="js/player-demo.js"></script>
+  </body>
+</html>

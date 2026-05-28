@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GrunRay Web 实验 · exp.3</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body class="page">
+    <header class="site-header">
+      <h1>GrunRay 音乐播放器</h1>
+      <div class="header-actions">
+        <button type="button" class="btn" id="themeToggle" aria-label="切换浅色/深色主题">
+          主题
+        </button>
+      </div>
+    </header>
+
+    <div class="app-grid">
+      <nav class="app-nav glass-panel" aria-label="歌单与筛选">
+        <h2>导航与歌单</h2>
+
+        <ul class="nav-tabs" role="tablist">
+          <li>
+            <button type="button" class="nav-tab is-active" data-tab="playlist" role="tab" aria-selected="true">
+              播放列表
+            </button>
+          </li>
+          <li>
+            <button type="button" class="nav-tab" data-tab="diary" role="tab" aria-selected="false">收听日记</button>
+          </li>
+        </ul>
+
+        <div class="nav-panel" data-panel="playlist">
+          <fieldset class="prefs-field">
+            <legend>收听偏好</legend>
+            <form id="prefsForm" novalidate>
+              <div class="form-row">
+                <label for="mood">曲风</label>
+                <select id="mood" name="mood" aria-label="曲风分组">
+                  <optgroup label="电子">
+                    <option value="house">House</option>
+                    <option value="ambient">Ambient</option>
+                  </optgroup>
+                  <optgroup label="原声">
+                    <option value="acoustic" selected>原声 / 轻音乐</option>
+                    <option value="piano">钢琴</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div class="form-row">
+                <label for="quickVol">快速音量预设</label>
+                <input
+                  list="vol-presets"
+                  id="quickVol"
+                  name="quickVol"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="5"
+                  value="40"
+                />
+                <datalist id="vol-presets">
+                  <option value="0"></option>
+                  <option value="25"></option>
+                  <option value="50"></option>
+                  <option value="75"></option>
+                  <option value="100"></option>
+                </datalist>
+                <button type="button" class="btn" id="applyQuickVol">应用</button>
+              </div>
+              <div class="form-row">
+                <label for="listenDate">收听日期</label>
+                <input type="date" id="listenDate" name="listenDate" />
+              </div>
+              <div class="form-row">
+                <button type="button" class="btn btn--accent" id="validatePrefs">校验并保存偏好</button>
+              </div>
+            </form>
+            <div id="formFeedback" class="form-feedback" role="status" hidden></div>
+          </fieldset>
+
+          <section aria-labelledby="pl-heading">
+            <h2 id="pl-heading" class="sr-only">播放列表</h2>
+            <label for="playlistSearch" class="search-label">搜索曲目</label>
+            <input
+              type="search"
+              id="playlistSearch"
+              class="search-input"
+              placeholder="按标题或艺人筛选…"
+              autocomplete="off"
+            />
+            <p class="nav-hint">点击曲目播放。可将音频拖入右侧区域加入列表。</p>
+            <ul class="playlist" id="playlistEl" role="list"></ul>
+          </section>
+        </div>
+
+        <div class="nav-panel is-hidden" data-panel="diary" hidden>
+          <form id="diaryForm" class="diary-form" novalidate>
+            <div class="form-row">
+              <label for="diaryDate">日期</label>
+              <input type="date" id="diaryDate" name="diaryDate" required />
+            </div>
+            <div class="form-row">
+              <label for="diaryNote">收听感想</label>
+              <textarea id="diaryNote" name="diaryNote" rows="3" placeholder="记录本次收听…" required></textarea>
+            </div>
+            <div class="form-row">
+              <button type="submit" class="btn btn--accent">添加日记</button>
+            </div>
+            <p id="diaryFormHint" class="field-hint" aria-live="polite"></p>
+          </form>
+          <h3 class="panel-subtitle">最近记录</h3>
+          <ul id="listenLog" class="listen-log" role="list"></ul>
+        </div>
+      </nav>
+
+      <main class="app-main glass-panel">
+        <h2 class="sr-only">主播放区</h2>
+        <article class="player-article" aria-labelledby="now-title">
+          <section class="vinyl-section" aria-label="黑胶唱机模拟">
+            <h3 class="vinyl-heading">黑胶唱机</h3>
+            <div class="vinyl-deck" id="vinylDeck" aria-live="polite">
+              <div class="vinyl-arm-wrap" aria-hidden="true">
+                <svg class="vinyl-arm-svg" viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <circle cx="86" cy="17" r="10.5" fill="#f8fafc" />
+                  <path
+                    d="M86 27.5 Q54 46 24 102 L20 106"
+                    stroke="#f8fafc"
+                    stroke-width="5.5"
+                    stroke-linecap="round"
+                    fill="none"
+                  />
+                  <rect x="10" y="102" width="20" height="14" rx="2" fill="#f8fafc" />
+                  <rect x="14" y="116" width="4" height="8" rx="1" fill="#cbd5e1" />
+                </svg>
+              </div>
+              <div class="vinyl-platter-outer">
+                <div class="vinyl-record">
+                  <div class="vinyl-grooves" aria-hidden="true"></div>
+                  <div class="vinyl-label-sparkle" title="银白闪钻封面">
+                    <div class="vinyl-diamond-inner" aria-hidden="true"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="player-now-bar" aria-label="当前播放与传输">
+            <h2 id="now-title" class="sr-only">当前播放</h2>
+            <div class="now-bar-progress-wrap">
+              <div class="time-row">
+                <span id="aCur">0:00</span>
+                <span id="aDur">0:00</span>
+              </div>
+              <div
+                class="now-bar-progress-hit progress-hit"
+                id="aProgressHit"
+                role="slider"
+                tabindex="0"
+                aria-label="音乐进度，可拖动"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+              >
+                <div class="progress-rail">
+                  <div class="progress-fill" id="aFill"></div>
+                  <div class="progress-thumb" id="aThumb"></div>
+                </div>
+              </div>
+            </div>
+            <div class="now-bar-body">
+              <div class="now-bar-left">
+                <div class="now-bar-text">
+                  <p id="nowTrackTitle" class="now-track-title">未选择曲目</p>
+                  <p id="nowTrackArtist" class="now-track-artist">从左侧歌单选择或拖入音频</p>
+                </div>
+              </div>
+              <div class="now-bar-center">
+                <button type="button" class="btn" id="aPrev" aria-label="上一首">⏮</button>
+                <button type="button" class="now-play-main" id="aPlay" aria-label="播放或暂停">▶</button>
+                <button type="button" class="btn" id="aNext" aria-label="下一首">⏭</button>
+              </div>
+              <div class="now-bar-right">
+                <div class="now-vol-wrap">
+                  <label for="aVol" class="sr-only">音量</label>
+                  <input type="range" id="aVol" min="0" max="1" step="0.01" value="0.4" aria-label="音乐音量" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="player-audio-meta" aria-label="音乐播放与指标">
+            <h3 class="sr-only">音乐（HTMLAudio）</h3>
+            <div class="media-metrics-card">
+              <p id="playerStatus" class="player-status" aria-live="polite">就绪</p>
+              <audio id="mainAudio" class="main-audio" preload="metadata"></audio>
+              <div class="form-row form-row--spaced">
+                <span>音频缓冲</span>
+                <progress id="aBuffer" max="100" value="0"></progress>
+              </div>
+              <div class="form-row form-row--tight">
+                <span>综合响度示意</span>
+                <meter id="loudMeter" min="0" max="100" low="30" high="75" optimum="50" value="40"></meter>
+              </div>
+            </div>
+          </section>
+        </article>
+      </main>
+
+      <aside class="app-aside glass-panel" aria-label="工具与可视化">
+        <div class="aside-head">
+          <h2>详情与工具</h2>
+          <button type="button" class="btn btn--sm collapse-toggle" id="asideCollapseBtn" aria-expanded="true">
+            收起工具
+          </button>
+        </div>
+
+        <div id="asideToolsBody" class="aside-tools-body">
+          <div class="ring-wrap tool-card">
+            <h3 class="panel-subtitle">Canvas 环形进度（点击跳转）</h3>
+            <canvas id="ringCanvas" width="200" height="200" aria-label="音乐环形进度"></canvas>
+            <p class="ring-hint">与主音频进度同步</p>
+          </div>
+
+          <svg
+            class="svg-level-meter tool-card"
+            width="100%"
+            height="48"
+            viewBox="0 0 200 48"
+            aria-label="简易电平条"
+            role="img"
+          >
+            <title>随播放脉动的 SVG 条</title>
+            <rect x="0" y="0" width="200" height="48" rx="6" fill="var(--color-reading-bg)" stroke="var(--color-border)" />
+            <g id="svgBars" fill="var(--color-accent)"></g>
+          </svg>
+
+          <section class="geo-card tool-card" aria-label="地理位置">
+            <h3 class="panel-subtitle">地理位置</h3>
+            <p id="geoStatus" class="geo-status">点击下方按钮获取定位，用于展示与纬度相关的收听提示。</p>
+            <p id="geoHint" class="geo-hint" aria-live="polite"></p>
+            <button type="button" class="btn btn--accent" id="geoBtn">获取定位</button>
+          </section>
+
+          <fieldset class="prefs-field">
+            <legend>外观与定时</legend>
+            <div class="form-row">
+              <label for="accentPick">主题强调色</label>
+              <input type="color" id="accentPick" value="#a0ccab" />
+            </div>
+            <div class="form-row">
+              <label for="sleepMin">睡眠定时（分钟，0 为关闭）</label>
+              <input type="number" id="sleepMin" min="0" max="240" value="0" step="1" />
+            </div>
+            <form id="mixForm">
+              <div class="form-row">
+                <label for="mainVolRange">音乐权重</label>
+                <input type="range" id="mainVolRange" name="mv" min="0" max="1" step="0.05" value="0.6" />
+              </div>
+              <div class="form-row">
+                <label for="fxDepthRange">动态余量</label>
+                <input type="range" id="fxDepthRange" name="fx" min="0" max="1" step="0.05" value="0.4" />
+              </div>
+              <div class="form-row">
+                <label for="mixOut">混合指数</label>
+                <output name="mixOut" id="mixOut" for="mainVolRange fxDepthRange">80</output>
+              </div>
+            </form>
+          </fieldset>
+
+          <div class="drop-zone" id="dropZone" tabindex="0" role="region" aria-label="拖放文件区域">
+            <strong>拖放上传</strong><br />
+            将音频拖放到此处
+            <span class="drop-hint">支持预览与从列表移除；释放文件时边框会高亮。</span>
+            <div class="drop-list" id="dropList"></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div id="toastHost" class="toast-host" aria-live="polite"></div>
+    <button type="button" id="backToTop" class="back-to-top" aria-label="返回顶部" hidden>↑</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>
