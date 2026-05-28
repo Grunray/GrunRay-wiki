@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import { apiGet } from '@/api/http'
+import VinylDeck from '@/components/music/VinylDeck.vue'
 import { useUiStore } from '@/stores/ui'
 
 /** 与 FilmFeed 全屏预览 (z-index:120) 错开 */
@@ -66,12 +67,12 @@ let dragOffsetY = 0
 function defaultPosition() {
   const w = typeof window !== 'undefined' ? window.innerWidth : 1200
   const h = typeof window !== 'undefined' ? window.innerHeight : 800
-  return { x: Math.max(16, w - 300), y: Math.max(16, h - 200) }
+  return { x: Math.max(16, w - 300), y: Math.max(16, h - 400) }
 }
 
 function shellLayoutSize() {
   const elW = volumePanelOpen.value ? 280 + 10 + 172 : 280
-  const elH = 288
+  const elH = 390
   return { elW, elH }
 }
 
@@ -335,14 +336,58 @@ const canNextTrack = computed(
   () => tracks.value.length > 0 && currentIndex.value < tracks.value.length - 1,
 )
 
+const vinylDeckRef = ref<InstanceType<typeof VinylDeck> | null>(null)
+
+const titleSlideDir = ref<'prev' | 'next' | 'none'>('none')
+const titleDisplayKey = ref(0)
+
+function trackLabelForIndex(index: number): string {
+  const track = tracks.value[index]
+  if (!track) return loadHint.value
+  const meta = [track.title, track.artist].filter(Boolean).join(' · ')
+  return meta || '已从后端加载曲目'
+}
+
+const displayedTrackTitle = computed(() => {
+  if (tracks.value.length === 0) return loadHint.value
+  return trackLabelForIndex(titleDisplayKey.value)
+})
+
+const titleTransitionName = computed(() => {
+  if (titleSlideDir.value === 'next') return 'track-title-next'
+  if (titleSlideDir.value === 'prev') return 'track-title-prev'
+  return 'track-title-fade'
+})
+
+function onVinylSlideStart(dir: 'prev' | 'next') {
+  titleSlideDir.value = dir
+  const idx = dir === 'next' ? currentIndex.value + 1 : currentIndex.value - 1
+  if (idx >= 0 && idx < tracks.value.length) {
+    titleDisplayKey.value = idx
+  }
+}
+
+function syncTitleDisplayKey() {
+  titleDisplayKey.value = currentIndex.value
+  titleSlideDir.value = 'none'
+}
+
+watch(currentIndex, (idx) => {
+  if (titleSlideDir.value === 'none') {
+    titleDisplayKey.value = idx
+  }
+})
+
 function onPrevTrack() {
   if (!canPrevTrack.value) return
   void loadTrackAtIndex(currentIndex.value - 1, isPlaying.value, true)
+  syncTitleDisplayKey()
 }
 
 function onNextTrack() {
   if (!canNextTrack.value) return
   void loadTrackAtIndex(currentIndex.value + 1, isPlaying.value, true)
+  syncTitleDisplayKey()
 }
 
 function togglePlay() {
@@ -477,7 +522,7 @@ function onAudioEnded() {
   const list = tracks.value
   if (list.length === 0) return
   if (currentIndex.value < list.length - 1) {
-    void loadTrackAtIndex(currentIndex.value + 1, true, true)
+    vinylDeckRef.value?.goNext()
   } else {
     isPlaying.value = false
     savePlaying()
@@ -676,132 +721,120 @@ onBeforeUnmount(() => {
           </div>
         </div>
         <div class="floating-music__track-head">
-      <p class="floating-music__track-name">{{ loadHint }}</p>
-          <span v-if="trackCountLabel" class="floating-music__count">{{ trackCountLabel }}</span>
+          <Transition :name="titleTransitionName" mode="out-in">
+            <p :key="titleDisplayKey" class="floating-music__track-name">{{ displayedTrackTitle }}</p>
+          </Transition>
         </div>
         <div class="floating-music__transport">
-          <div class="floating-music__transport-main">
+          <VinylDeck
+            ref="vinylDeckRef"
+            :playing="isPlaying"
+            :has-prev="canPrevTrack"
+            :has-next="canNextTrack"
+            @toggle="togglePlay"
+            @slide-start="onVinylSlideStart"
+            @prev="onPrevTrack"
+            @next="onNextTrack"
+          />
+        </div>
+        <div v-if="tracks.length" class="floating-music__progress-wrap" aria-label="播放进度，可拖动或点击">
+          <div class="floating-music__time-row">
+            <div class="floating-music__time-group">
+              <span>{{ formatTime(playbackCurrent) }}</span>
+              <span class="floating-music__time-sep" aria-hidden="true">/</span>
+              <span>{{ formatTime(playbackDuration) }}</span>
+            </div>
+            <span v-if="trackCountLabel" class="floating-music__count">{{ trackCountLabel }}</span>
+          </div>
+          <div class="floating-music__progress-row">
+            <div class="floating-music__progress-hit" @pointerdown.stop="onProgressPointerDown">
+              <div class="floating-music__progress-rail">
+                <div class="floating-music__progress-fill" :style="{ width: `${progressPct}%` }" />
+                <div class="floating-music__progress-thumb" :style="{ left: `${progressPct}%` }" />
+              </div>
+            </div>
             <button
               type="button"
-              class="floating-music__skip"
-          :disabled="!canPrevTrack"
-          aria-label="上一首"
-          @click.stop="onPrevTrack"
-        >
-          ⏮
-        </button>
-        <button
-          type="button"
-          class="floating-music__play"
-          :aria-pressed="isPlaying ? 'true' : 'false'"
-          :aria-label="isPlaying ? '暂停' : '播放'"
-          @click.stop="togglePlay"
-        >
-          {{ isPlaying ? '⏸' : '▶' }}
-        </button>
-        <button
-          type="button"
-          class="floating-music__skip"
-          :disabled="!canNextTrack"
-          aria-label="下一首"
-          @click.stop="onNextTrack"
-        >
-          ⏭
-        </button>
-      </div>
-      <button
-        type="button"
-        class="floating-music__vol-btn"
-        :class="{ 'is-open': volumePanelOpen }"
-        :aria-expanded="volumePanelOpen ? 'true' : 'false'"
-        aria-controls="music-volume-popover"
-        aria-label="音量"
-        @click.stop="toggleVolumePanel"
-      >
-        <svg
-          v-if="volumeIconTier === 'high'"
-          class="floating-music__vol-icon"
-          viewBox="0 0 100 100"
-          aria-hidden="true"
-        >
-          <path fill="currentColor" d="M10,30 L30,30 L60,10 L60,90 L30,70 L10,70 Z" />
-          <path
-            fill="none"
-            stroke="currentColor"
-            stroke-width="8"
-            d="M75,35 A20,20 0 0 1 75,65"
-          />
-          <path
-            fill="none"
-            stroke="currentColor"
-            stroke-width="8"
-            d="M85,25 A30,30 0 0 1 85,75"
-          />
-          <path
-            fill="none"
-            stroke="currentColor"
-            stroke-width="8"
-            d="M95,15 A40,40 0 0 1 95,85"
-          />
-        </svg>
-        <svg
-          v-else-if="volumeIconTier === 'med'"
-          class="floating-music__vol-icon"
-          viewBox="0 0 100 100"
-          aria-hidden="true"
-        >
-          <path fill="currentColor" d="M10,30 L30,30 L60,10 L60,90 L30,70 L10,70 Z" />
-          <path
-            fill="none"
-            stroke="currentColor"
-            stroke-width="8"
-            d="M75,35 A20,20 0 0 1 75,65"
-          />
-          <path
-            fill="none"
-            stroke="currentColor"
-            stroke-width="8"
-            d="M85,25 A30,30 0 0 1 85,75"
-          />
-        </svg>
-        <svg
-          v-else-if="volumeIconTier === 'low'"
-          class="floating-music__vol-icon"
-          viewBox="0 0 100 100"
-          aria-hidden="true"
-        >
-          <path fill="currentColor" d="M10,30 L30,30 L60,10 L60,90 L30,70 L10,70 Z" />
-          <path
-            fill="none"
-            stroke="currentColor"
-            stroke-width="8"
-            d="M75,35 A20,20 0 0 1 75,65"
-          />
-        </svg>
-        <svg v-else class="floating-music__vol-icon" viewBox="0 0 100 100" aria-hidden="true">
-          <path fill="currentColor" d="M10,30 L30,30 L60,10 L60,90 L30,70 L10,70 Z" />
-          <path
-            fill="none"
-            stroke="currentColor"
-            stroke-width="8"
-            stroke-linecap="round"
-            d="M70 30 L90 70 M90 30 L70 70"
-          />
-        </svg>
-      </button>
-    </div>
-    <div v-if="tracks.length" class="floating-music__progress-wrap" aria-label="播放进度，可拖动或点击">
-      <div class="floating-music__time-row">
-        <span>{{ formatTime(playbackCurrent) }}</span>
-        <span>{{ formatTime(playbackDuration) }}</span>
-      </div>
-      <div class="floating-music__progress-hit" @pointerdown.stop="onProgressPointerDown">
-        <div class="floating-music__progress-rail">
-          <div class="floating-music__progress-fill" :style="{ width: `${progressPct}%` }" />
-          <div class="floating-music__progress-thumb" :style="{ left: `${progressPct}%` }" />
+              class="floating-music__vol-btn"
+              :class="{ 'is-open': volumePanelOpen }"
+              :aria-expanded="volumePanelOpen ? 'true' : 'false'"
+              aria-controls="music-volume-popover"
+              aria-label="音量"
+              @click.stop="toggleVolumePanel"
+            >
+              <svg
+                v-if="volumeIconTier === 'high'"
+                class="floating-music__vol-icon"
+                viewBox="0 0 100 100"
+                aria-hidden="true"
+              >
+                <path fill="currentColor" d="M10,30 L30,30 L60,10 L60,90 L30,70 L10,70 Z" />
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="8"
+                  d="M75,35 A20,20 0 0 1 75,65"
+                />
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="8"
+                  d="M85,25 A30,30 0 0 1 85,75"
+                />
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="8"
+                  d="M95,15 A40,40 0 0 1 95,85"
+                />
+              </svg>
+              <svg
+                v-else-if="volumeIconTier === 'med'"
+                class="floating-music__vol-icon"
+                viewBox="0 0 100 100"
+                aria-hidden="true"
+              >
+                <path fill="currentColor" d="M10,30 L30,30 L60,10 L60,90 L30,70 L10,70 Z" />
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="8"
+                  d="M75,35 A20,20 0 0 1 75,65"
+                />
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="8"
+                  d="M85,25 A30,30 0 0 1 85,75"
+                />
+              </svg>
+              <svg
+                v-else-if="volumeIconTier === 'low'"
+                class="floating-music__vol-icon"
+                viewBox="0 0 100 100"
+                aria-hidden="true"
+              >
+                <path fill="currentColor" d="M10,30 L30,30 L60,10 L60,90 L30,70 L10,70 Z" />
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="8"
+                  d="M75,35 A20,20 0 0 1 75,65"
+                />
+              </svg>
+              <svg v-else class="floating-music__vol-icon" viewBox="0 0 100 100" aria-hidden="true">
+                <path fill="currentColor" d="M10,30 L30,30 L60,10 L60,90 L30,70 L10,70 Z" />
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="8"
+                  stroke-linecap="round"
+                  d="M70 30 L90 70 M90 30 L70 70"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
-    </div>
       </div>
       <aside
       v-show="volumePanelOpen"
@@ -1015,17 +1048,13 @@ onBeforeUnmount(() => {
 }
 
 .floating-music__track-head {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto auto;
-  gap: 0.2rem 0;
   margin-top: 0.55rem;
   min-width: 0;
+  min-height: 1.35em;
+  overflow: hidden;
 }
 
 .floating-music__track-name {
-  grid-row: 1;
-  grid-column: 1;
   margin: 0;
   min-width: 0;
   font-family: 'Playfair Display', 'Averia Gruesa Libre', Georgia, 'Times New Roman', serif;
@@ -1035,12 +1064,109 @@ onBeforeUnmount(() => {
   line-height: 1.3;
   letter-spacing: 0.02em;
   color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-title-next-enter-active,
+.track-title-next-leave-active,
+.track-title-prev-enter-active,
+.track-title-prev-leave-active {
+  transition:
+    transform 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.32s ease;
+}
+
+.track-title-fade-enter-active,
+.track-title-fade-leave-active {
+  transition: opacity 0.22s ease;
+}
+
+.track-title-next-enter-from {
+  transform: translateX(1.1rem);
+  opacity: 0;
+}
+
+.track-title-next-leave-to {
+  transform: translateX(-1.1rem);
+  opacity: 0;
+}
+
+.track-title-prev-enter-from {
+  transform: translateX(-1.1rem);
+  opacity: 0;
+}
+
+.track-title-prev-leave-to {
+  transform: translateX(1.1rem);
+  opacity: 0;
+}
+
+.track-title-next-enter-to,
+.track-title-next-leave-from,
+.track-title-prev-enter-to,
+.track-title-prev-leave-from {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.track-title-fade-enter-from,
+.track-title-fade-leave-to {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track-title-next-enter-active,
+  .track-title-next-leave-active,
+  .track-title-prev-enter-active,
+  .track-title-prev-leave-active {
+    transition: opacity 0.16s ease;
+  }
+
+  .track-title-next-enter-from,
+  .track-title-next-leave-to,
+  .track-title-prev-enter-from,
+  .track-title-prev-leave-to {
+    transform: none;
+  }
+}
+
+.floating-music__transport {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.45rem;
+}
+
+.floating-music__progress-wrap {
+  margin-top: 0.35rem;
+}
+
+.floating-music__time-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.65rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.floating-music__time-group {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.floating-music__time-sep {
+  opacity: 0.55;
+  user-select: none;
 }
 
 .floating-music__count {
-  grid-row: 2;
-  grid-column: 1;
-  justify-self: end;
+  flex-shrink: 0;
   font-size: 0.68rem;
   font-weight: 600;
   color: var(--color-text-muted);
@@ -1048,87 +1174,15 @@ onBeforeUnmount(() => {
   line-height: 1.2;
 }
 
-.floating-music__transport {
-  position: relative;
+.floating-music__progress-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin-top: 0.55rem;
-  min-height: 2.35rem;
-}
-
-.floating-music__transport-main {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-}
-
-.floating-music__skip {
-  flex-shrink: 0;
-  width: 2.1rem;
-  height: 2.1rem;
-  border-radius: 50%;
-  border: 1px solid var(--glass-card-border);
-  background: color-mix(in srgb, var(--glass-card-bg) 88%, transparent);
-  color: var(--color-text);
-  font-size: 0.72rem;
-  line-height: 1;
-  cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.floating-music__skip:hover:not(:disabled) {
-  border-color: color-mix(in srgb, var(--color-accent) 45%, var(--glass-card-border));
-  color: var(--color-accent);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 28%, transparent);
-}
-
-.floating-music__skip:disabled {
-  opacity: 0.38;
-  cursor: not-allowed;
-}
-
-.floating-music__play {
-  flex-shrink: 0;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 50%;
-  border: 1px solid var(--glass-card-border);
-  background: color-mix(in srgb, var(--glass-card-bg) 88%, transparent);
-  color: var(--color-text);
-  font-size: 0.85rem;
-  line-height: 1;
-  cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.floating-music__play:hover {
-  border-color: color-mix(in srgb, var(--color-accent) 45%, var(--glass-card-border));
-  color: var(--color-accent);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 28%, transparent);
-}
-
-.floating-music__progress-wrap {
-  margin-top: 0.45rem;
-}
-
-.floating-music__time-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.65rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-text-muted);
-  margin-bottom: 0.25rem;
+  gap: 0.45rem;
 }
 
 .floating-music__progress-hit {
+  flex: 1;
+  min-width: 0;
   padding: 0.55rem 0 0.35rem;
   margin: -0.35rem 0 -0.15rem;
   cursor: pointer;
@@ -1168,9 +1222,7 @@ onBeforeUnmount(() => {
 }
 
 .floating-music__vol-btn {
-  position: absolute;
-  top: 50%;
-  right: 0;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1182,7 +1234,6 @@ onBeforeUnmount(() => {
   background: color-mix(in srgb, var(--glass-card-bg) 88%, transparent);
   color: var(--color-text);
   cursor: pointer;
-  transform: translateY(-50%);
   transition:
     border-color 0.2s ease,
     color 0.2s ease,
