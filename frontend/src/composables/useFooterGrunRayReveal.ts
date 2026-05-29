@@ -22,6 +22,9 @@ const FOOTER_OVER_COVER_PROGRESS = 0.08
 
 const PROGRESS_EPS = 0.004
 
+/** 路由/首屏后等待主内容区高度稳定，避免异步加载导致页脚误判「已到底」 */
+const ROUTE_LAYOUT_SETTLE_MS = 160
+
 function clamp01(n: number) {
   return Math.min(1, Math.max(0, n))
 }
@@ -62,6 +65,60 @@ export function useFooterGrunRayReveal(
   let currentOffsets: number[] = []
   let pointerActive = false
   let metricsApplied = false
+  let revealSuppressedUntilLayoutSettled = false
+  let routeLayoutSettleTimer: ReturnType<typeof setTimeout> | null = null
+  let routeLayoutObserver: ResizeObserver | null = null
+
+  const clearRouteLayoutWatch = () => {
+    if (routeLayoutSettleTimer !== null) {
+      window.clearTimeout(routeLayoutSettleTimer)
+      routeLayoutSettleTimer = null
+    }
+    routeLayoutObserver?.disconnect()
+    routeLayoutObserver = null
+  }
+
+  const forceFooterHidden = () => {
+    smoothedProgress = 0
+    lastWrittenProgress = -1
+    applyRevealState(0, false, REVEAL_SPACE_PX + 999)
+  }
+
+  const scheduleRouteLayoutSettled = () => {
+    if (routeLayoutSettleTimer !== null) window.clearTimeout(routeLayoutSettleTimer)
+    routeLayoutSettleTimer = window.setTimeout(() => {
+      routeLayoutSettleTimer = null
+      revealSuppressedUntilLayoutSettled = false
+      routeLayoutObserver?.disconnect()
+      routeLayoutObserver = null
+      const { remaining, progress } = getScrollMetrics()
+      smoothedProgress = progress
+      applyRevealState(smoothedProgress, false, remaining)
+      requestScrollUpdate()
+    }, ROUTE_LAYOUT_SETTLE_MS)
+  }
+
+  const startRouteLayoutSettling = () => {
+    clearRouteLayoutWatch()
+    revealSuppressedUntilLayoutSettled = true
+    forceFooterHidden()
+
+    void nextTick(() => {
+      applyFooterMetrics()
+
+      if (typeof ResizeObserver !== 'undefined') {
+        const mainEl = document.querySelector('.app-main')
+        if (mainEl) {
+          routeLayoutObserver = new ResizeObserver(() => {
+            scheduleRouteLayoutSettled()
+          })
+          routeLayoutObserver.observe(mainEl)
+        }
+      }
+
+      scheduleRouteLayoutSettled()
+    })
+  }
 
   const applyRevealState = (progress: number, ready: boolean, remaining: number) => {
     if (Math.abs(progress - lastWrittenProgress) > 0.0001) {
@@ -165,6 +222,11 @@ export function useFooterGrunRayReveal(
 
     if (isXiqiSplitFooterLocked()) {
       applyXiqiSplitFooterSuppressed()
+      return { progress: 0, remaining: REVEAL_SPACE_PX + 999 }
+    }
+
+    if (revealSuppressedUntilLayoutSettled) {
+      forceFooterHidden()
       return { progress: 0, remaining: REVEAL_SPACE_PX + 999 }
     }
 
@@ -332,9 +394,9 @@ export function useFooterGrunRayReveal(
 
   onMounted(() => {
     applyFooterMetrics()
+    startRouteLayoutSettling()
     void nextTick(() => {
       bindBrandPointer()
-      requestScrollUpdate()
     })
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onResize, { passive: true })
@@ -356,10 +418,7 @@ export function useFooterGrunRayReveal(
   watch(
     () => route.fullPath,
     () => {
-      void nextTick(() => {
-        applyFooterMetrics()
-        requestScrollUpdate()
-      })
+      startRouteLayoutSettling()
     },
   )
 
@@ -383,6 +442,7 @@ export function useFooterGrunRayReveal(
   )
 
   onUnmounted(() => {
+    clearRouteLayoutWatch()
     if (revealRaf) cancelAnimationFrame(revealRaf)
     if (distortRaf) cancelAnimationFrame(distortRaf)
     if (scrollIdleTimer) window.clearTimeout(scrollIdleTimer)
