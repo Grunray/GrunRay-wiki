@@ -48,7 +48,8 @@ async function finishSlide() {
 function runSlide(dir: 'prev' | 'next') {
   emit('slide-start', dir)
   if (prefersReducedMotion.value) {
-    emit(dir === 'prev' ? 'prev' : 'next')
+    if (dir === 'prev') emit('prev')
+    else emit('next')
     return
   }
   pendingDir = dir
