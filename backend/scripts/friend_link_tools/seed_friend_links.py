@@ -22,33 +22,10 @@ from app.friend_validate import normalize_friend_url
 
 SEEDS = [
     {
-        "name": "lvyneko",
-        "url": "https://lvyovo-wiki.tech/",
-        "description": "happy coding",
-        "tags": ["blog"],
-    },
-    {
-        "name": "Eric-Terminal",
-        "url": "https://blog.ericterminal.com/",
-        "description": "记录折腾与思考的个人博客",
-        "tags": ["blog"],
-    },
-    {
-        "name": "七色的遥望之乡",
-        "url": "https://blog.monika.monster/",
-        "description": "Monika 的个人博客",
-        "tags": ["blog"],
-    },
-    {
-        "name": "晴猫的博客",
-        "url": "https://blog.bbleae.cn/",
-        "description": "嗨，靓仔，今天也要有个好心情哦！",
-        "tags": ["blog"],
-    },
-    {
-        "name": "拾雪的博客",
-        "url": "https://www.snowywar.top/",
-        "description": "记录胡言乱语与胡乱折腾，欢迎大家来玩",
+        "name": "Apos Blog",
+        "url": "https://apos-dt.github.io/AposBlog/index.html#/",
+        "description": "Building at the Edge of Manufacturing.",
+        "avatar_url": "https://apos-dt.github.io/AposBlog/avatar.jpg",
         "tags": ["blog"],
     },
 ]
@@ -71,7 +48,7 @@ def main() -> int:
                 url=item["url"],
                 url_normalized=norm,
                 description=item["description"],
-                avatar_url=None,
+                avatar_url=item.get("avatar_url"),
                 cover_url=None,
                 tags=item.get("tags"),
                 contact_email=None,

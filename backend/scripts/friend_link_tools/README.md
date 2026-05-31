@@ -27,7 +27,7 @@ python scripts/friend_link_tools/import_friend_links.py
 常用参数：
 
 - `--dir import/friend_link` 指定目录
-- `--id friend-lvyneko` 只导入一条（`public_id` 或文件名 stem）
+- `--id friend-apos` 只导入一条（`public_id` 或文件名 stem）
 - `--dry-run` 校验不写库
 
 按 `public_id` upsert：重复执行会更新同一条记录。

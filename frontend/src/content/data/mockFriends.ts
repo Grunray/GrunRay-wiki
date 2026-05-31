@@ -23,46 +23,12 @@ export type SpecialLink = {
 
 export const MOCK_FRIEND_LINKS: FriendLink[] = [
   {
-    id: 'lvyneko',
-    name: 'lvyneko',
-    url: 'https://lvyovo-wiki.tech/',
-    description: 'happy coding',
+    id: 'friend-apos',
+    name: 'Apos Blog',
+    url: 'https://apos-dt.github.io/AposBlog/index.html#/',
+    description: 'Building at the Edge of Manufacturing.',
+    avatar: 'https://apos-dt.github.io/AposBlog/avatar.jpg',
     tags: ['blog'],
-  },
-  {
-    id: 'eric-terminal',
-    name: 'Eric-Terminal',
-    url: 'https://blog.ericterminal.com/',
-    description: '记录折腾与思考的个人博客',
-    tags: ['blog'],
-  },
-  {
-    id: 'monika',
-    name: '七色的遥望之乡',
-    url: 'https://blog.monika.monster/',
-    description: 'Monika 的个人博客',
-    tags: ['blog'],
-  },
-  {
-    id: 'qingmao',
-    name: '晴猫的博客',
-    url: 'https://blog.bbleae.cn/',
-    description: '嗨，靓仔，今天也要有个好心情哦！',
-    tags: ['blog'],
-  },
-  {
-    id: 'snow',
-    name: '拾雪的博客',
-    url: 'https://www.snowywar.top/',
-    description: '记录胡言乱语与胡乱折腾，欢迎大家来玩',
-    tags: ['blog'],
-  },
-  {
-    id: 'canvas',
-    name: 'Canvas World',
-    url: 'https://example.com/canvas',
-    description: 'The world is your canvas!',
-    tags: ['dev'],
   },
 ]
 

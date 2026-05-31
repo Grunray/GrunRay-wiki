@@ -10,7 +10,7 @@
 
   python scripts/friend_link_tools/import_friend_links.py --dir import/friend_link
 
-  python scripts/friend_link_tools/import_friend_links.py --id friend-lvyneko
+  python scripts/friend_link_tools/import_friend_links.py --id friend-apos
 
   python scripts/friend_link_tools/import_friend_links.py --dry-run
 """
