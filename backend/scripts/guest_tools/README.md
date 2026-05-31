@@ -5,6 +5,8 @@
 ```bash
 cd backend
 python scripts/run_sql.py --file guest_message.sql
+# 若表已存在且需访客拉黑字段：
+python scripts/run_sql.py --file guest_user_blocked.sql
 ```
 
 （`guest_user` 与 `guest_message` 在同一份 SQL 中。）

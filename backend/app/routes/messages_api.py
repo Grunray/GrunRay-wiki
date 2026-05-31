@@ -6,6 +6,8 @@ from app.config import config
 from app.db import cursor
 from app.guest_message_repo import (
     apply_moderation_action,
+    block_author_of_message,
+    delete_message_tree,
     get_owner_reply,
     get_top_by_public_id,
     insert_message,
@@ -13,6 +15,7 @@ from app.guest_message_repo import (
     list_admin,
     list_published,
 )
+from app.guest_user_repo import is_guest_user_blocked
 from app.message_captcha import CaptchaError, create_math_captcha, verify_captcha
 from app.message_moderation import ModerationError
 from app.message_rate_limit import (
@@ -122,6 +125,40 @@ def moderate_message(public_id: str):
     return _ok(row_to_admin_message(row), message="操作成功")
 
 
+@bp.delete("/admin/<public_id>")
+def delete_message_admin(public_id: str):
+    _, err = _require_site_owner()
+    if err:
+        return err
+
+    try:
+        with cursor() as cur:
+            delete_message_tree(cur, public_id)
+    except ModerationError as e:
+        return _error(str(e))
+    except Exception:
+        return _error("删除留言失败", status=500)
+
+    return _ok(None, message="留言已删除")
+
+
+@bp.post("/admin/<public_id>/block")
+def block_message_author(public_id: str):
+    _, err = _require_site_owner()
+    if err:
+        return err
+
+    try:
+        with cursor() as cur:
+            block_author_of_message(cur, public_id)
+    except ModerationError as e:
+        return _error(str(e))
+    except Exception:
+        return _error("拉黑失败", status=500)
+
+    return _ok(None, message="已拉黑该用户")
+
+
 @bp.get("")
 def list_messages():
     sort = (request.args.get("sort") or "newest").strip().lower()
@@ -185,6 +222,8 @@ def create_message():
 
     try:
         with cursor() as cur:
+            if is_guest_user_blocked(cur, guest_user_id):
+                return _error("您的账号已被限制留言", status=403)
             row = insert_message(
                 cur,
                 guest_user_id=guest_user_id,

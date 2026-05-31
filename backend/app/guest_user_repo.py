@@ -29,7 +29,8 @@ def upsert_from_oauth(cur, profile: dict[str, Any]) -> dict[str, Any]:
     )
     cur.execute(
         """
-        SELECT id, provider, provider_user_id, login, name, email, avatar_url, profile_url
+        SELECT id, provider, provider_user_id, login, name, email, avatar_url, profile_url,
+               is_blocked
         FROM guest_user
         WHERE provider = %s AND provider_user_id = %s
         """,
@@ -39,6 +40,22 @@ def upsert_from_oauth(cur, profile: dict[str, Any]) -> dict[str, Any]:
     if not row:
         raise RuntimeError("guest_user upsert failed")
     return row
+
+
+def is_guest_user_blocked(cur, guest_user_id: int) -> bool:
+    cur.execute(
+        "SELECT is_blocked FROM guest_user WHERE id = %s",
+        (guest_user_id,),
+    )
+    row = cur.fetchone()
+    return bool(row and int(row.get("is_blocked") or 0))
+
+
+def block_guest_user(cur, guest_user_id: int) -> None:
+    cur.execute(
+        "UPDATE guest_user SET is_blocked = 1 WHERE id = %s",
+        (guest_user_id,),
+    )
 
 
 def session_user_from_oauth(profile: dict[str, Any], db_row: dict[str, Any]) -> dict[str, Any]:

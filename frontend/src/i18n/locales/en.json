@@ -140,7 +140,15 @@
     "replySubmitting": "Sending…",
     "replySuccess": "Reply posted",
     "replyFailed": "Failed to post reply",
-    "replyExists": "This message already has a host reply"
+    "replyExists": "This message already has a host reply",
+    "blockAuthor": "Block user",
+    "deleteMessage": "Delete",
+    "blockConfirm": "Block this user? Their published messages will be hidden and they cannot post again.",
+    "deleteConfirm": "Delete this message? Replies will be removed and this cannot be undone.",
+    "blockSuccess": "User blocked",
+    "blockFailed": "Block failed",
+    "deleteSuccess": "Message deleted",
+    "deleteFailed": "Delete failed"
   },
   "friends": {
     "title": "Friends",

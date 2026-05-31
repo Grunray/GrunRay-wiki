@@ -114,3 +114,16 @@ export async function moderateMessage(
     },
   )
 }
+
+export async function deleteMessage(publicId: string): Promise<void> {
+  await messageFetch<null>(`/api/messages/admin/${encodeURIComponent(publicId)}`, {
+    method: 'DELETE',
+  })
+}
+
+export async function blockMessageAuthor(publicId: string): Promise<void> {
+  await messageFetch<null>(
+    `/api/messages/admin/${encodeURIComponent(publicId)}/block`,
+    { method: 'POST' },
+  )
+}

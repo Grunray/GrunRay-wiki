@@ -13,6 +13,8 @@ import {
   fetchAdminMessages,
   fetchMessageCaptcha,
   fetchMessages,
+  blockMessageAuthor,
+  deleteMessage,
   moderateMessage,
 } from '@/services/messageApi'
 import {
@@ -196,6 +198,40 @@ async function onModerate(msg: AdminGuestMessage, action: 'approve' | 'reject') 
   } catch (e) {
     const err = e as Error & { status?: number }
     showSubmitToast(err.message || t('messages.moderationFailed'))
+  } finally {
+    moderationBusyId.value = null
+  }
+}
+
+async function onDeleteMessage(msg: GuestMessage | AdminGuestMessage) {
+  if (!window.confirm(t('messages.deleteConfirm'))) return
+  moderationBusyId.value = msg.id
+  try {
+    await deleteMessage(msg.id)
+    messages.value = messages.value.filter((m) => m.id !== msg.id)
+    messagesTotal.value = Math.max(0, messagesTotal.value - 1)
+    adminMessages.value = adminMessages.value.filter((m) => m.id !== msg.id)
+    adminTotal.value = Math.max(0, adminTotal.value - 1)
+    showSubmitToast(t('messages.deleteSuccess'))
+  } catch (e) {
+    const err = e as Error & { status?: number }
+    showSubmitToast(err.message || t('messages.deleteFailed'))
+  } finally {
+    moderationBusyId.value = null
+  }
+}
+
+async function onBlockAuthor(msg: GuestMessage | AdminGuestMessage) {
+  if (msg.isOwner) return
+  if (!window.confirm(t('messages.blockConfirm'))) return
+  moderationBusyId.value = msg.id
+  try {
+    await blockMessageAuthor(msg.id)
+    await loadActiveFeed()
+    showSubmitToast(t('messages.blockSuccess'))
+  } catch (e) {
+    const err = e as Error & { status?: number }
+    showSubmitToast(err.message || t('messages.blockFailed'))
   } finally {
     moderationBusyId.value = null
   }
@@ -578,6 +614,23 @@ onMounted(async () => {
                 >
                   {{ t('messages.moderationReject') }}
                 </button>
+                <button
+                  v-if="!msg.isOwner"
+                  type="button"
+                  class="message-admin-btn message-admin-btn--block"
+                  :disabled="moderationBusyId === msg.id"
+                  @click="onBlockAuthor(msg)"
+                >
+                  {{ t('messages.blockAuthor') }}
+                </button>
+                <button
+                  type="button"
+                  class="message-admin-btn message-admin-btn--delete"
+                  :disabled="moderationBusyId === msg.id"
+                  @click="onDeleteMessage(msg)"
+                >
+                  {{ t('messages.deleteMessage') }}
+                </button>
               </div>
             </div>
           </div>
@@ -619,6 +672,26 @@ onMounted(async () => {
                 <time class="message-time" :datetime="msg.createdAt">{{ formatMessageTime(msg.createdAt) }}</time>
               </div>
               <p class="message-body">{{ msg.content }}</p>
+
+              <div v-if="isSiteOwner" class="message-admin-actions">
+                <button
+                  v-if="!msg.isOwner"
+                  type="button"
+                  class="message-admin-btn message-admin-btn--block"
+                  :disabled="moderationBusyId === msg.id"
+                  @click="onBlockAuthor(msg)"
+                >
+                  {{ t('messages.blockAuthor') }}
+                </button>
+                <button
+                  type="button"
+                  class="message-admin-btn message-admin-btn--delete"
+                  :disabled="moderationBusyId === msg.id"
+                  @click="onDeleteMessage(msg)"
+                >
+                  {{ t('messages.deleteMessage') }}
+                </button>
+              </div>
 
               <div
                 v-if="isSiteOwner && !msg.reply"
@@ -1126,6 +1199,16 @@ onMounted(async () => {
 }
 
 .message-admin-btn--reject:hover:not(:disabled) {
+  border-color: color-mix(in srgb, #c45c5c 50%, var(--glass-card-border));
+  color: #c45c5c;
+}
+
+.message-admin-btn--block:hover:not(:disabled) {
+  border-color: color-mix(in srgb, #b8860b 50%, var(--glass-card-border));
+  color: #b8860b;
+}
+
+.message-admin-btn--delete:hover:not(:disabled) {
   border-color: color-mix(in srgb, #c45c5c 50%, var(--glass-card-border));
   color: #c45c5c;
 }

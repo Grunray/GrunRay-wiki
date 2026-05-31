@@ -140,7 +140,15 @@
     "replySubmitting": "发送中…",
     "replySuccess": "回复已发布",
     "replyFailed": "回复失败",
-    "replyExists": "该留言已有站长回复"
+    "replyExists": "该留言已有站长回复",
+    "blockAuthor": "拉黑",
+    "deleteMessage": "删除",
+    "blockConfirm": "确定拉黑该用户？其已发布留言将被隐藏，且无法再留言。",
+    "deleteConfirm": "确定删除这条留言？回复将一并删除，且无法恢复。",
+    "blockSuccess": "已拉黑该用户",
+    "blockFailed": "拉黑失败",
+    "deleteSuccess": "留言已删除",
+    "deleteFailed": "删除失败"
   },
   "friends": {
     "title": "友链",

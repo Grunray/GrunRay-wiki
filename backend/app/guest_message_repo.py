@@ -4,7 +4,14 @@ import uuid
 from typing import Any
 
 from app.message_moderation import ModerationError, status_for_action
-from app.message_status import STATUS_PENDING, STATUS_PUBLISHED
+from app.message_status import (
+    STATUS_HIDDEN,
+    STATUS_PENDING,
+    STATUS_PUBLISHED,
+    STATUS_REJECTED,
+)
+from app.guest_user_repo import block_guest_user
+from app.site_owner import message_row_is_owner
 
 _ROW_SELECT = """
     SELECT id, public_id, parent_id, guest_user_id, author_name, avatar_url,
@@ -206,6 +213,40 @@ def insert_owner_reply(
     if not row:
         raise RuntimeError("insert_owner_reply failed")
     return row
+
+
+def delete_message_tree(cur, public_id: str) -> None:
+    row = get_top_by_public_id(cur, public_id)
+    if not row:
+        raise ModerationError("留言不存在")
+    cur.execute("DELETE FROM guest_message WHERE id = %s", (int(row["id"]),))
+
+
+def block_author_of_message(cur, public_id: str) -> None:
+    row = get_top_by_public_id(cur, public_id)
+    if not row:
+        raise ModerationError("留言不存在")
+    if message_row_is_owner(row):
+        raise ModerationError("无法拉黑站长")
+    guest_user_id = row.get("guest_user_id")
+    if not guest_user_id:
+        raise ModerationError("该留言未关联登录用户，无法拉黑")
+    guest_user_id = int(guest_user_id)
+    block_guest_user(cur, guest_user_id)
+    cur.execute(
+        """
+        UPDATE guest_message SET status = %s
+        WHERE guest_user_id = %s AND parent_id IS NULL AND status = %s
+        """,
+        (STATUS_HIDDEN, guest_user_id, STATUS_PUBLISHED),
+    )
+    cur.execute(
+        """
+        UPDATE guest_message SET status = %s
+        WHERE guest_user_id = %s AND parent_id IS NULL AND status = %s
+        """,
+        (STATUS_REJECTED, guest_user_id, STATUS_PENDING),
+    )
 
 
 def apply_moderation_action(cur, public_id: str, action: str) -> dict[str, Any]:
