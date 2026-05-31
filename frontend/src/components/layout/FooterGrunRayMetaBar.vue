@@ -20,16 +20,6 @@ defineProps<{
         <div class="footer-grunray-meta-bar__inner">
           <div class="footer-grunray-meta-col footer-grunray-meta-col--start">
             <FooterExternalLinks />
-          </div>
-          <span class="footer-grunray-meta-divider" aria-hidden="true" />
-          <div class="footer-grunray-meta-col footer-grunray-meta-col--end">
-            <span class="footer-grunray-copyright">© 2026 · GrunRay ·</span>
-            <a
-              class="footer-grunray-icp-link"
-              href="https://icp.gov.moe/?keyword=20266668"
-              target="_blank"
-              rel="noopener noreferrer"
-            >萌ICP备20266668号</a>
             <span
               class="footer-grunray-meta-divider footer-grunray-meta-divider--inline"
               aria-hidden="true"
@@ -40,6 +30,25 @@ defineProps<{
               type="application/rss+xml"
               title="RSS 订阅本站博客更新"
             >RSS订阅</a>
+          </div>
+          <span class="footer-grunray-meta-divider" aria-hidden="true" />
+          <div class="footer-grunray-meta-col footer-grunray-meta-col--end">
+            <span class="footer-grunray-copyright">© 2026 · GrunRay ·</span>
+            <span class="footer-grunray-icp-links">
+              <a
+                class="footer-grunray-icp-link"
+                href="https://icp.gov.moe/?keyword=20266668"
+                target="_blank"
+                rel="noopener noreferrer"
+              >萌ICP备20266668号</a>
+              <span class="footer-grunray-icp-sep" aria-hidden="true">·</span>
+              <a
+                class="footer-grunray-icp-link"
+                href="https://beian.miit.gov.cn/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >黔ICP备2026008503号</a>
+            </span>
           </div>
         </div>
       </div>
