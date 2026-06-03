@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Affinity">
+  <defs>
+    <linearGradient id="afGrad" x1="8%" y1="8%" x2="92%" y2="92%">
+      <stop offset="0%" stop-color="#1CB0D8"/>
+      <stop offset="100%" stop-color="#0077CC"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#1B1B2F"/>
+  <path d="M17 47 L17 17 Q17 12 22 14 L45 30 Q50 32 45 35 L22 50 Q17 52 17 47 Z" fill="url(#afGrad)"/>
+</svg>
