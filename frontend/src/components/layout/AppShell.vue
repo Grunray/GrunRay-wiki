@@ -831,45 +831,50 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
   .glass-nav-inner {
-    padding: 0.55rem 0.85rem;
+    padding: 0.5rem 0.85rem;
   }
 
+  /* 顶栏两行：第一行「品牌 + 工具」分列两端，第二行导航整行居中，省去纵向三层堆叠的高度 */
   .header-inner {
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.45rem 0.5rem;
   }
 
+  /* 解散 header-left 盒子，让品牌行与导航各自参与 header-inner 的换行排布 */
   .header-left {
-    flex: none;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    gap: 0.45rem;
+    display: contents;
   }
 
   .header-brand-row {
-    justify-content: center;
-    width: 100%;
-  }
-
-  .header-left :deep(.nav.nav--shell) {
-    flex: none;
-    justify-content: center;
-    width: 100%;
-    max-width: 100%;
+    order: 0;
+    flex: 0 1 auto;
+    width: auto;
+    justify-content: flex-start;
   }
 
   .header-right {
-    margin-left: 0;
-    width: 100%;
-    justify-content: center;
-    gap: 0.45rem 0.65rem;
+    order: 1;
+    width: auto;
+    margin-left: auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.4rem 0.45rem;
   }
 
   .header-right .hint {
+    display: none;
+  }
+
+  /* 导航：强制换到第二行，整行居中；放不下时换行（不可用 overflow，否则会裁掉分组下拉） */
+  .header-left :deep(.nav.nav--shell) {
+    order: 2;
+    flex: 1 0 100%;
     width: 100%;
-    text-align: center;
+    max-width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 }
 
@@ -1432,13 +1437,7 @@ onUnmounted(() => {
   line-height: 1.3;
 }
 
-@media (max-width: 720px) {
-  .header-right {
-    width: 100%;
-    margin-left: 0;
-    justify-content: center;
-  }
-}
+/* 顶栏窄屏布局已统一到上方 max-width:768px 段 */
 
 </style>
 

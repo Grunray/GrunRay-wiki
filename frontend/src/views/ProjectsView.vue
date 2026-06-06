@@ -456,4 +456,38 @@ onMounted(async () => {
     font-size: 1rem;
   }
 }
+
+@media (max-width: 480px) {
+  /* 时间线改单列：日期作为卡片上方标签，圆点隐藏，卡片占满整行 */
+  .timeline-item {
+    grid-template-columns: 1fr;
+    row-gap: 0.15rem;
+  }
+
+  .timeline-dot {
+    display: none;
+  }
+
+  .timeline-date {
+    padding-top: 0;
+    font-size: 0.92rem;
+    font-weight: 700;
+  }
+
+  .timeline-title {
+    font-size: 1.05rem;
+  }
+
+  .timeline-summary {
+    font-size: 0.9rem;
+  }
+
+  .timeline-card {
+    padding: 0.75rem 0.85rem;
+  }
+
+  .tag-select-wrap {
+    width: 100%;
+  }
+}
 </style>

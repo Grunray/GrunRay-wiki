@@ -539,3 +539,61 @@ html[data-photo-bg='true'].page-photo-bg--swap::after {
     animation: none;
   }
 }
+
+/* ============================================================
+ * 移动端适配基线 —— 全站治本层
+ * 统一断点约定：768px = 平板/手机分界；480px = 小手机。
+ * 各页面/组件专属窄屏规则在各自 .vue / page-*.css 内补 ≤480 档，
+ * 但容器边距、触控目标、内容防溢出这三件事在此一次性兜底。
+ * ============================================================ */
+
+/* 媒体元素永不撑破容器（只限 max-width，不动 height 以免破坏 object-fit 头像） */
+img,
+video,
+canvas {
+  max-width: 100%;
+}
+
+/* 长表格 / 宽内容包一层 .scroll-x 即可在窄屏横向滚动而不撑破视口 */
+.scroll-x {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 超长 URL / 无空格长串在窄屏强制断行 */
+.break-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .app-main {
+    padding: 1rem 1rem 2.5rem;
+  }
+
+  .app-main.app-main--full-viewport {
+    padding: 0.85rem;
+  }
+
+  /* 触控目标：主操作按钮在手机达到 ~44px，便于点按 */
+  .btn-accent {
+    min-height: 44px;
+    padding: 0.6rem 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-main {
+    padding: 0.8rem 0.7rem 2rem;
+  }
+
+  .app-main.app-main--full-viewport {
+    padding: 0.7rem 0.6rem;
+  }
+
+  /* 紧凑屏：标签略缩，减少换行拥挤 */
+  .tag {
+    font-size: 0.72rem;
+  }
+}

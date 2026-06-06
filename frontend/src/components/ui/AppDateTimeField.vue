@@ -283,4 +283,26 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentPointe
   border-color: color-mix(in srgb, var(--color-accent) 56%, var(--color-border));
   background: color-mix(in srgb, var(--color-accent) 20%, var(--color-bg-surface));
 }
+
+@media (max-width: 768px) {
+  .datetime-display {
+    min-height: 2.6rem;
+  }
+
+  .datetime-trigger {
+    width: 2.6rem;
+    height: 2.6rem;
+  }
+
+  /* 日期/时间原生控件 ≥16px 防 iOS 聚焦缩放，并增大触控 */
+  .datetime-date-input,
+  .datetime-time-select {
+    font-size: 16px;
+    padding: 0.6rem 0.55rem;
+  }
+
+  .datetime-menu-btn {
+    min-height: 2.4rem;
+  }
+}
 </style>

@@ -332,4 +332,12 @@ onUnmounted(() => {
     animation: none;
   }
 }
+
+@media (max-width: 480px) {
+  /* 操作按钮触控放大 */
+  .not-found__unlock,
+  .not-found__replay {
+    min-height: 2.75rem;
+  }
+}
 </style>

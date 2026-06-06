@@ -568,4 +568,24 @@ onMounted(async () => {
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+@media (max-width: 480px) {
+  /* 输入控件 ≥16px 防 iOS 聚焦自动缩放，并增大触控 */
+  .friends-apply-input,
+  .friends-apply-textarea,
+  .friends-apply-captcha-input {
+    font-size: 16px;
+    padding: 0.7rem 0.8rem;
+  }
+
+  .friends-apply-captcha-field {
+    min-width: 0;
+  }
+
+  .friends-apply-captcha-refresh {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.6rem;
+  }
+}
 </style>

@@ -14,7 +14,7 @@ const props = withDefaults(
     minWidth?: string
   }>(),
   {
-    minWidth: '240px',
+    minWidth: 'min(240px, 100%)',
   },
 )
 
@@ -169,5 +169,17 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentPointe
 .select-option--active {
   background: color-mix(in srgb, var(--color-accent) 18%, transparent);
   color: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+  .select-btn {
+    min-height: 2.6rem;
+  }
+
+  .select-option {
+    display: flex;
+    align-items: center;
+    min-height: 2.6rem;
+  }
 }
 </style>

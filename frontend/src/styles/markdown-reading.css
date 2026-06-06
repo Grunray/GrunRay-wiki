@@ -191,3 +191,39 @@
 .markdown-reading :where(.codehilite .cm) {
   color: #6a9955;
 }
+
+/* —— 移动端正文 —— */
+@media (max-width: 768px) {
+  /*
+   * v-html 表格外层无法插入滚动容器，让 table 自身成为横向滚动块。
+   * nowrap 使单元格按真实宽度排布，整体超过视口时横滑查看，绝不撑破页面。
+   */
+  .markdown-reading :where(table) {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+
+  /* 代码块右侧给复制按钮预留的空白在窄屏收窄，避免短代码被强缩 */
+  .markdown-reading :where(pre.codehilite),
+  .markdown-reading :where(.codehilite pre) {
+    padding-right: 2.35rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .markdown-reading {
+    font-size: 0.98rem;
+    line-height: 1.65;
+  }
+
+  .markdown-reading :where(h1) {
+    font-size: 1.16rem;
+  }
+
+  .markdown-reading :where(h2) {
+    font-size: 1.06rem;
+  }
+}

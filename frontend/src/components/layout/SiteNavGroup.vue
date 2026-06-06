@@ -365,27 +365,35 @@ watch(
   line-height: 1.35;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .group-trigger {
-    padding: 0.52rem 0.72rem;
-    font-size: 0.86rem;
-    gap: 0.4rem;
+    padding: 0.5rem 0.56rem;
+    font-size: 0.85rem;
+    gap: 0.32rem;
+  }
+
+  /* 下拉脱离分组定位，相对全宽导航行铺满（两侧留边距），避免最右分组的下拉溢出右缘 */
+  .nav-group {
+    position: static;
   }
 
   .dropdown {
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0.75rem;
+    right: 0.75rem;
+    width: auto;
+    min-width: 0;
+    transform: none;
     transform-origin: top center;
   }
 
   .nav-group-dropdown-enter-from,
   .nav-group-dropdown-leave-to {
-    transform: translateX(-50%) translateY(10px) scale(0.96);
+    transform: translateY(10px) scale(0.97);
   }
 
   .nav-group-dropdown-enter-to,
   .nav-group-dropdown-leave-from {
-    transform: translateX(-50%) translateY(0) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 

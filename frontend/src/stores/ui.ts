@@ -14,6 +14,10 @@ function readMusicPlayerMinimized(): boolean {
   const v = localStorage.getItem(STORAGE_MUSIC_MINIMIZED)
   if (v === '0') return false
   if (v === '1') return true
+  // 无显式偏好：窄屏首次默认收起，避免浮动播放器遮挡手机首屏内容（桌面仍默认展开）
+  if (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches) {
+    return true
+  }
   return false
 }
 

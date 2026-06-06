@@ -1416,6 +1416,36 @@ a.message-author:hover {
     top: 0;
     left: 0;
   }
+
+  /* —— 移动端表单与触控 —— */
+  .message-auth-field,
+  .message-compose-form {
+    padding: 1.1rem;
+  }
+
+  /* 验证码字段不再固定 12rem，避免与刷新按钮挤压换行 */
+  .message-captcha-field {
+    min-width: 0;
+  }
+
+  /* 触控目标放大到便于点按 */
+  .message-social-btn {
+    min-height: 2.6rem;
+  }
+
+  .message-captcha-refresh,
+  .message-feed-tab,
+  .message-sort-btn,
+  .message-admin-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.4rem;
+  }
+
+  .message-admin-btn {
+    padding: 0.5rem 0.95rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
