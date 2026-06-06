@@ -225,15 +225,15 @@ const xiqiGroup = computed(() => ({
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .link {
-    padding: 0.52rem 0.72rem;
-    font-size: 0.86rem;
-    gap: 0.4rem;
+    padding: 0.5rem 0.56rem;
+    font-size: 0.85rem;
+    gap: 0.32rem;
   }
 
   .nav {
-    gap: 0.22rem 0.28rem;
+    gap: 0.2rem 0.2rem;
   }
 
   .link :deep(.shell-nav-icon) {

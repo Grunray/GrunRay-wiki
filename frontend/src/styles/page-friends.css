@@ -33,7 +33,7 @@
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1rem 1.1rem;
 }
 
@@ -503,5 +503,11 @@
 
   .friends-apply-notice.card {
     padding: 1.15rem 1.2rem;
+  }
+
+  /* 列表/特殊面板边距收窄，给卡片更多净宽 */
+  .friends-list-panel.card,
+  .friends-special-panel.card {
+    padding: 1.1rem 1.15rem;
   }
 }

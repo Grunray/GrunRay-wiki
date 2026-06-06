@@ -339,4 +339,26 @@ useSeoMeta(() => {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 480px) {
+  .title {
+    font-size: clamp(1.25rem, 6vw, 1.5rem);
+  }
+
+  /* 元信息窄屏上下堆叠 */
+  .meta {
+    grid-template-columns: 1fr;
+    gap: 0.1rem 0;
+  }
+
+  .meta dt {
+    margin-top: 0.4rem;
+  }
+
+  /* 操作按钮触控放大 */
+  .action-btn {
+    min-height: 2.6rem;
+    padding: 0.55rem 0.95rem;
+  }
+}
 </style>

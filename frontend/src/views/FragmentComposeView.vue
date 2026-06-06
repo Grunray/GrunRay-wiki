@@ -637,4 +637,26 @@ onMounted(async () => {
   max-width: 100%;
   border-radius: 0.35rem;
 }
+
+@media (max-width: 480px) {
+  /* 头部标题与操作按钮可换行 */
+  .compose-head {
+    flex-wrap: wrap;
+  }
+
+  /* 图片项中间的 alt 输入允许收缩，封面/输入/删除三列不再撑破 */
+  .compose-image-item {
+    gap: 0.5rem;
+  }
+
+  .compose-alt-input {
+    min-width: 0;
+    font-size: 16px;
+  }
+
+  /* 编辑区输入 ≥16px 防 iOS 聚焦自动缩放 */
+  .compose-textarea {
+    font-size: 16px;
+  }
+}
 </style>

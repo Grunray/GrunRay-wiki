@@ -349,4 +349,29 @@ useMarkdownCodeCopy(bodyMarkdownRef, codeCopyLabels, renderedBodyHtml)
 .empty {
   color: var(--color-text-muted);
 }
+
+@media (max-width: 480px) {
+  .title {
+    font-size: clamp(1.2rem, 5.5vw, 1.45rem);
+  }
+
+  /* 元信息窄屏改上下堆叠，避免 7rem 固定首列把值列压窄 */
+  .meta {
+    grid-template-columns: 1fr;
+    gap: 0.1rem 0;
+  }
+
+  .meta dt {
+    margin-top: 0.4rem;
+  }
+
+  .body {
+    padding: 0.85rem 0.9rem;
+  }
+
+  .body-markdown :deep(.md-code-copy-btn) {
+    height: 2rem;
+    min-width: 2.25rem;
+  }
+}
 </style>

@@ -35,3 +35,13 @@
     'Noto Sans SC',
     sans-serif;
 }
+
+/*
+ * 触摸设备没有持续的 pointermove，拖尾字符会停在左上角堆成「大字残影」，
+ * 且该特效本身依赖鼠标移动，在手机上无意义 —— 窄屏或触摸设备一律隐藏。
+ */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+  .cursor-trail-layer {
+    display: none;
+  }
+}

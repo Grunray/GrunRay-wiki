@@ -1391,6 +1391,9 @@ html[data-photo-bg='true'] .xiqi-hero-chip.xiqi-hero-title {
 
   .xiqi-chip {
     flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.25rem;
   }
 
   .xiqi-compose-entry.card {
@@ -1505,12 +1508,18 @@ html[data-photo-bg='true'] .xiqi-hero-chip.xiqi-hero-title {
   color: var(--color-text-muted);
 }
 
+.about-profile-intro {
+  min-width: 0;
+}
+
 .about-email {
   display: inline-block;
+  max-width: 100%;
   margin-top: 0.35rem;
   font-size: 0.88rem;
   color: var(--color-accent);
   text-decoration: none;
+  overflow-wrap: anywhere;
 }
 
 .about-email:hover {
