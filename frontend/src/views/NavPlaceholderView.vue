@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
+import { usePageEnterRegistration } from '@/composables/usePageEnterRegistration'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
 
@@ -15,6 +16,9 @@ const titleKey = computed(() => {
 })
 
 const pageTitle = computed(() => t(titleKey.value))
+const pageRoot = ref<HTMLElement | null>(null)
+
+usePageEnterRegistration(pageRoot)
 
 useSeoMeta(() => ({
   title: `${pageTitle.value} | ${SITE_NAME}`,
@@ -26,7 +30,7 @@ useSeoMeta(() => ({
 </script>
 
 <template>
-  <section class="wrap">
+  <section ref="pageRoot" class="wrap nav-placeholder-page">
     <h1>{{ pageTitle }}</h1>
     <p class="muted">{{ t('nav.placeholderSoon') }}</p>
   </section>

@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
 import type { AdminGuestMessage, GuestMessage } from '@/content/data/mockMessages'
-import { playPageEnter } from '@/composables/usePageEnterAnimation'
+import { toastPop } from '@/composables/gsap/gsapMotion'
+import { PAGE_ENTER_PLAY_CLASS, playPageEnter } from '@/composables/usePageEnterAnimation'
+import { usePageEnterRegistration } from '@/composables/usePageEnterRegistration'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
 import {
@@ -47,6 +49,8 @@ useSeoMeta(() => ({
 const pageRoot = ref<HTMLElement | null>(null)
 const enterPlayed = ref(false)
 
+usePageEnterRegistration(pageRoot)
+
 const messages = ref<GuestMessage[]>([])
 const messagesLoading = ref(true)
 const messagesTotal = ref(0)
@@ -72,6 +76,7 @@ const captchaAnswer = ref('')
 const captchaLoading = ref(false)
 const submitting = ref(false)
 const submitToast = ref<string | null>(null)
+const submitToastRef = ref<HTMLElement | null>(null)
 let submitToastTimer: ReturnType<typeof window.setTimeout> | null = null
 
 const contentLength = computed(() => content.value.length)
@@ -102,6 +107,12 @@ function showSubmitToast(text: string) {
     submitToastTimer = null
   }, 2800)
 }
+
+watch(submitToast, async (text) => {
+  if (!text) return
+  await nextTick()
+  toastPop(submitToastRef.value)
+})
 
 async function loadMessages() {
   messagesLoading.value = true
@@ -383,7 +394,9 @@ onMounted(async () => {
   await loadActiveFeed()
   if (!enterPlayed.value) {
     enterPlayed.value = true
-    await playPageEnter(pageRoot.value)
+    if (!pageRoot.value?.classList.contains(PAGE_ENTER_PLAY_CLASS)) {
+      await playPageEnter(pageRoot.value, { fromOrchestrator: true })
+    }
   }
   if (route.query.auth !== 'success') {
     await loadAuthState()
@@ -502,9 +515,12 @@ onMounted(async () => {
         </div>
       </form>
 
-      <Transition name="message-toast-fade">
-        <p v-if="submitToast" class="message-submit-toast" role="status">{{ submitToast }}</p>
-      </Transition>
+      <p
+        v-if="submitToast"
+        ref="submitToastRef"
+        class="message-submit-toast"
+        role="status"
+      >{{ submitToast }}</p>
     </section>
 
     <section class="message-feed" aria-labelledby="message-feed-heading">

@@ -186,7 +186,7 @@ watch(
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 75%),
     0 4px 14px rgb(170 205 185 / 15%);
-  animation: shell-nav-group-breath 4s ease-in-out infinite;
+  /* 呼吸由 useSiteNavGsap (GSAP) 驱动 */
 }
 
 .group-trigger:active:not(.active) {
@@ -239,16 +239,6 @@ watch(
   opacity: 1;
 }
 
-@keyframes shell-nav-group-breath {
-  0%,
-  100% {
-    transform: translateY(-2px) scale(1.015);
-  }
-  50% {
-    transform: translateY(-2px) scale(1.035);
-  }
-}
-
 .dropdown {
   position: absolute;
   top: 100%;
@@ -298,21 +288,7 @@ watch(
   transform: translateY(10px) scale(0.96);
 }
 
-.nav-group-dropdown-enter-active .dropdown-item {
-  animation: nav-dropdown-item-in 0.44s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(var(--nav-item-i, 0) * 0.055s + 0.08s);
-}
-
-@keyframes nav-dropdown-item-in {
-  from {
-    opacity: 0;
-    transform: translateX(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
+/* 下拉项 stagger 由 useSiteNavGsap (GSAP) 驱动 */
 
 .dropdown-item {
   display: flex;

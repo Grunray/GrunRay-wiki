@@ -5,7 +5,7 @@ import { RouterLink, useRoute } from 'vue-router'
 
 import FilmFeed from '@/components/media/FilmFeed.vue'
 import AvatarCircleSkeleton from '@/components/ui/AvatarCircleSkeleton.vue'
-import { playPageEnter } from '@/composables/usePageEnterAnimation'
+import { usePageEnterRegistration } from '@/composables/usePageEnterRegistration'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
 import '@/styles/page-enter-home.css'
@@ -103,11 +103,12 @@ function formatDateYmd(input?: string): string {
   return `${y}/${m}/${day}`
 }
 
+usePageEnterRegistration(homeRoot)
+
 onMounted(() => {
   loadAvatar()
   loadLatestUpdatedPost()
   loadRandomRecommendedPost()
-  void playPageEnter(homeRoot.value)
 })
 </script>
 
@@ -393,6 +394,7 @@ onMounted(() => {
 
 .greeting-art-line {
   margin: 0;
+  perspective: 720px;
   font-family: 'Playfair Display', 'Averia Gruesa Libre', Georgia, 'Times New Roman', serif;
   font-size: clamp(1.28rem, 2.6vw, 1.85rem);
   font-weight: 600;

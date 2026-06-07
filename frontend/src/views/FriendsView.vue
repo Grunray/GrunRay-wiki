@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
 import type { FriendLink, SpecialLink } from '@/content/data/mockFriends'
-import { playPageEnter } from '@/composables/usePageEnterAnimation'
+import { usePageEnterRegistration } from '@/composables/usePageEnterRegistration'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
 import { fetchFriendLinks, fetchSpecialLinks } from '@/services/friendsApi'
@@ -70,8 +70,9 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-  await playPageEnter(pageRoot.value)
 })
+
+usePageEnterRegistration(pageRoot)
 </script>
 
 <template>

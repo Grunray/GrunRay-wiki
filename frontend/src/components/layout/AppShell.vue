@@ -18,8 +18,17 @@ import PhotoBgNavIcon from '@/components/icons/PhotoBgNavIcon.vue'
 import SnailNavIcon from '@/components/icons/SnailNavIcon.vue'
 import TrailNavIcon from '@/components/icons/TrailNavIcon.vue'
 
+import { useGsapPopTrigger } from '@/composables/gsap/useGsapPopTrigger'
+import { useMusicNavBreathGsap } from '@/composables/gsap/useMusicNavBreathGsap'
+import { useSiteNavGsap } from '@/composables/gsap/useSiteNavGsap'
+import { useScrollReveal } from '@/composables/useScrollReveal'
+import { registerRouteContentTarget } from '@/composables/gsap/routeTransitionController'
+import { useCardHoverLift } from '@/composables/useCardHoverLift'
+import { useNavLinkMagnet } from '@/composables/useNavLinkMagnet'
+
 import CursorTrail from './CursorTrail.vue'
 import FooterGrunRayPanel from './FooterGrunRayPanel.vue'
+import RouteTransitionCurtain from './RouteTransitionCurtain.vue'
 import SiteNav from './SiteNav.vue'
 import ThemeDayNightToggle from './ThemeDayNightToggle.vue'
 
@@ -48,6 +57,31 @@ const localeBtnTitle = computed(() =>
 const overflowOpen = ref(false)
 const overflowWrapRef = ref<HTMLElement | null>(null)
 const headerRightRef = ref<HTMLElement | null>(null)
+const appMainRef = ref<HTMLElement | null>(null)
+const headerNavRef = ref<HTMLElement | null>(null)
+
+useCardHoverLift(appMainRef)
+useNavLinkMagnet(headerNavRef)
+useSiteNavGsap(headerNavRef)
+useMusicNavBreathGsap(headerRightRef, musicNavPlayingAnimated)
+
+const { bind: bindScrollReveal } = useScrollReveal(appMainRef)
+
+watch(
+  () => route.path,
+  () => {
+    void bindScrollReveal()
+  },
+)
+
+watch(
+  appMainRef,
+  (el) => {
+    registerRouteContentTarget(el ?? null)
+  },
+  { flush: 'post' },
+)
+
 /** 顶栏工具收进溢出后：溢出按钮先切到「音乐已展开未播放」配色，再播出现弹跳，最后还原 */
 const overflowTriggerCueMusicOpen = ref(false)
 const overflowTriggerCuePop = ref(false)
@@ -192,6 +226,22 @@ watch(isHomeRoute, (isHome, wasHome) => {
 
 /** 切入首页时顶栏左侧「弹」一下，避免占位切换生硬 */
 const headerLeftSettlePop = ref(false)
+
+useGsapPopTrigger(headerLeftSettlePop, () =>
+  document.querySelector<HTMLElement>('.header-brand-row'),
+)
+useGsapPopTrigger(photoBarSpringPop, () =>
+  headerRightRef.value?.querySelector<HTMLElement>('.photo-bg-nav-btn') ?? null,
+)
+useGsapPopTrigger(trailBarSpringPop, () =>
+  headerRightRef.value?.querySelector<HTMLElement>('.trail-nav-btn') ?? null,
+)
+useGsapPopTrigger(musicBarSpringPop, () =>
+  headerRightRef.value?.querySelector<HTMLElement>('.music-nav-btn') ?? null,
+)
+useGsapPopTrigger(overflowTriggerCuePop, () =>
+  overflowWrapRef.value?.querySelector<HTMLElement>('.nav-overflow-trigger') ?? null,
+)
 
 watch(isHomeRoute, async (isHome, wasHome) => {
   if (!isHome || wasHome === true) return
@@ -400,6 +450,7 @@ async function commitMusicFromPanel() {
 
 onMounted(() => {
   syncMotion()
+  void bindScrollReveal()
   mql = window.matchMedia('(prefers-reduced-motion: reduce)')
   mql.addEventListener('change', syncMotion)
 })
@@ -421,11 +472,12 @@ onUnmounted(() => {
   <div class="abstract-grid-bg" aria-hidden="true" />
   <FooterGrunRayPanel />
   <div class="app-root">
+    <RouteTransitionCurtain />
     <div class="app-page-cover">
     <header class="glass-nav-sticky-wrap" :data-nav-compact="navCompact ? 'true' : 'false'">
       <div class="glass-nav-inner">
         <div class="header-inner">
-        <div class="header-left">
+        <div ref="headerNavRef" class="header-left">
           <div
             class="header-brand-row"
             :class="{ 'header-brand-row--settle-pop': headerLeftSettlePop && !ui.prefersReducedMotion }"
@@ -671,7 +723,7 @@ onUnmounted(() => {
       </div>
     </header>
 
-    <main class="app-main" :class="appMainClasses">
+    <main ref="appMainRef" class="app-main" :class="appMainClasses">
       <RouterView />
     </main>
     </div>
@@ -1438,6 +1490,21 @@ onUnmounted(() => {
 }
 
 /* 顶栏窄屏布局已统一到上方 max-width:768px 段 */
+
+/* 以下关键帧已由 GSAP（useGsapPopTrigger / useSiteNavGsap）接管 */
+.header-brand-row--settle-pop,
+.toolbar-slot-spring-pop,
+.nav-toolbar-tool-enter-active .photo-bg-nav-btn,
+.nav-toolbar-tool-enter-active .trail-nav-btn,
+.nav-toolbar-tool-enter-active .music-nav-btn,
+.nav-toolbar-tool-leave-active .photo-bg-nav-btn,
+.nav-toolbar-tool-leave-active .trail-nav-btn,
+.nav-toolbar-tool-leave-active .music-nav-btn,
+.nav-overflow-trigger--cue-pop,
+.music-nav-btn--playing,
+.music-nav-btn--playing .music-nav-btn-icon {
+  animation: none !important;
+}
 
 </style>
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { animateXiqiFeedFilter } from '@/composables/gsap/useXiqiFeedFilterGsap'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
@@ -8,7 +9,7 @@ import RecommendStarRating from '@/components/xiqi/RecommendStarRating.vue'
 import XiqiCard from '@/components/xiqi/XiqiCard.vue'
 import XiqiPageHero from '@/components/xiqi/XiqiPageHero.vue'
 import XiqiSplitLayout from '@/components/xiqi/XiqiSplitLayout.vue'
-import { playPageEnter } from '@/composables/usePageEnterAnimation'
+import { usePageEnterRegistration } from '@/composables/usePageEnterRegistration'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
 import {
@@ -35,6 +36,12 @@ useSeoMeta(() => ({
 }))
 
 const pageRoot = ref<InstanceType<typeof XiqiSplitLayout> | null>(null)
+const pageEnterRoot = computed(() => {
+  const el = pageRoot.value?.$el
+  return el instanceof HTMLElement ? el : null
+})
+
+usePageEnterRegistration(pageEnterRoot)
 const selectedId = ref<string | null>(null)
 const detailDisplayId = ref<string | null>(null)
 const categoryFilter = ref<CategoryFilter>('all')
@@ -45,6 +52,8 @@ const listLoading = ref(true)
 const listError = ref('')
 const detail = ref<RecommendDetail | null>(null)
 const detailLoading = ref(false)
+const feedRef = ref<HTMLElement | null>(null)
+const feedFilterAnimated = ref(false)
 
 const categoryOptions = computed<Array<{ id: CategoryFilter; label: string }>>(() => [
   { id: 'all', label: t('recommend.categoryAll') },
@@ -99,6 +108,12 @@ async function loadList() {
     items.value = []
   } finally {
     listLoading.value = false
+    await nextTick()
+    if (feedFilterAnimated.value) {
+      animateXiqiFeedFilter(feedRef.value)
+    } else {
+      feedFilterAnimated.value = true
+    }
   }
 }
 
@@ -141,11 +156,6 @@ watch(visibleItems, (list) => {
 })
 
 onMounted(async () => {
-  const startEnter = async () => {
-    const root = pageRoot.value?.$el
-    if (root instanceof HTMLElement) await playPageEnter(root)
-  }
-  void startEnter()
   await loadList()
 })
 </script>
@@ -213,6 +223,7 @@ onMounted(async () => {
     <p v-else-if="listLoading" class="fragments-empty">{{ t('fragments.loading') }}</p>
     <TransitionGroup
       v-else-if="visibleItems.length"
+      ref="feedRef"
       name="xiqi-feed-item"
       tag="ul"
       class="recommend-feed xiqi-feed"

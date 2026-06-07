@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
+import { useFooterMetaGsap } from '@/composables/gsap/useFooterMetaGsap'
 import { useFooterGrunRayReveal } from '@/composables/useFooterGrunRayReveal'
 
 import FooterGrunRayBrand from './FooterGrunRayBrand.vue'
@@ -11,6 +12,8 @@ const brandWordRef = ref<HTMLElement | null>(null)
 
 const { metaBarVisible, isInteractive, isFullyRevealed, registerSlices, syncBrandLayout } =
   useFooterGrunRayReveal(footerRootRef, brandWordRef)
+
+useFooterMetaGsap(metaBarVisible)
 
 const rootClasses = computed(() => ({
   'is-interactive': isInteractive.value,

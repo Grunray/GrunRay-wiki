@@ -168,7 +168,7 @@ const xiqiGroup = computed(() => ({
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 75%),
     0 4px 14px rgb(170 205 185 / 15%);
-  animation: shell-nav-breath 4s ease-in-out infinite;
+  /* 呼吸动画由 useSiteNavGsap (GSAP) 驱动 */
 }
 
 :global([data-theme='dark']) .link.active {
@@ -213,16 +213,6 @@ const xiqiGroup = computed(() => ({
 .link:hover .grow-line {
   width: 70%;
   left: 15%;
-}
-
-@keyframes shell-nav-breath {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.03);
-  }
 }
 
 @media (max-width: 768px) {

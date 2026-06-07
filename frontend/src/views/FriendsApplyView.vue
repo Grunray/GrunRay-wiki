@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
-import { playPageEnter } from '@/composables/usePageEnterAnimation'
+import { usePageEnterRegistration } from '@/composables/usePageEnterRegistration'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { getFriendsApplySiteProfile } from '@/config/friendsSiteProfile'
 import { SITE_NAME } from '@/config/site'
@@ -35,6 +35,8 @@ useSeoMeta(() => ({
 }))
 
 const pageRoot = ref<HTMLElement | null>(null)
+
+usePageEnterRegistration(pageRoot)
 const localProfile = getFriendsApplySiteProfile()
 const siteProfile = ref<FriendsSiteProfile>({
   title: localProfile.title,
@@ -170,7 +172,6 @@ onMounted(async () => {
     siteProfile.value.description = t('friends.applyNoticeBio')
   }
   await refreshCaptcha()
-  await playPageEnter(pageRoot.value)
 })
 </script>
 

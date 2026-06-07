@@ -65,7 +65,7 @@ async function restartArticleEnterWhenReady() {
     })
     el = articleRoot.value
   }
-  if (el) restartPageEnter(el)
+  if (el) void restartPageEnter(el)
 }
 
 async function load(slug: string) {

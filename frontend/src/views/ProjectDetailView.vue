@@ -41,7 +41,7 @@ async function restartProjectEnterWhenReady() {
     })
     el = articleRoot.value
   }
-  if (el) restartPageEnter(el)
+  if (el) void restartPageEnter(el)
 }
 
 watch(

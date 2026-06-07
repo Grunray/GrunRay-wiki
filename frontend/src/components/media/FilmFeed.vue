@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
+import { useFilmFeedScroll } from '@/composables/gsap/useFilmFeedScroll'
+import { useFilmFrameHover } from '@/composables/gsap/useFilmFrameHover'
+
 type MediaType = 'image' | 'gif' | 'video'
 type MediaItem = {
   id: number
@@ -17,6 +20,12 @@ const loading = ref(false)
 const error = ref('')
 const speedSeconds = ref(20)
 const viewerItem = ref<MediaItem | null>(null)
+const trackRef = ref<HTMLElement | null>(null)
+const filmRootRef = ref<HTMLElement | null>(null)
+const trackPaused = computed(() => !!viewerItem.value)
+
+useFilmFeedScroll(trackRef, speedSeconds, trackPaused)
+useFilmFrameHover(filmRootRef)
 
 async function loadMedia() {
   loading.value = true
@@ -71,7 +80,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="film-container" @wheel.prevent="onWheel">
+  <div ref="filmRootRef" class="film-container" @wheel.prevent="onWheel">
     <div class="film">
       <div class="film-edge-overlay top" />
       <div class="film-edge-overlay bottom" />
@@ -82,12 +91,7 @@ onBeforeUnmount(() => {
         <div v-for="n in 10" :key="`r-${n}`" class="hole" />
       </div>
 
-      <div
-        v-if="loopItems.length"
-        class="track"
-        :class="{ paused: !!viewerItem }"
-        :style="{ animationDuration: `${speedSeconds}s` }"
-      >
+      <div v-if="loopItems.length" ref="trackRef" class="track" :class="{ paused: !!viewerItem }">
         <div v-for="item in loopItems" :key="`${item.id}-${item.url}`" class="frame" @click="openViewer(item)">
           <video v-if="item.type === 'video'" :src="item.url" muted loop playsinline preload="metadata" />
           <img v-else :src="item.url" :alt="item.title || 'media'" loading="lazy" />
@@ -207,20 +211,11 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: 14px;
   padding: 12px 0;
-  animation: scroll linear infinite;
+  /* 滚动由 useFilmFeedScroll (GSAP) 驱动 */
 }
 
 .track.paused {
-  animation-play-state: paused;
-}
-
-@keyframes scroll {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(-50%);
-  }
+  pointer-events: none;
 }
 
 .frame {

@@ -10,5 +10,7 @@ const Resolved = computed(() => resolveProjectBlock(props.block.type))
 </script>
 
 <template>
-  <component :is="Resolved" :block="block" />
+  <div class="project-block">
+    <component :is="Resolved" :block="block" />
+  </div>
 </template>

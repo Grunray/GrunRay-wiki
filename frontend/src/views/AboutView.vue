@@ -7,7 +7,7 @@ import { RouterLink } from 'vue-router'
 import AboutPrivateText from '@/components/xiqi/AboutPrivateText.vue'
 import XiqiPageHero from '@/components/xiqi/XiqiPageHero.vue'
 import { ABOUT_PROFILE, type AboutProfile } from '@/content/data/aboutResume'
-import { playPageEnter } from '@/composables/usePageEnterAnimation'
+import { usePageEnterRegistration } from '@/composables/usePageEnterRegistration'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { fetchAboutProfile } from '@/services/aboutApi'
 import { SITE_AVATAR_FALLBACK_URL, SITE_AVATAR_PHOTO_URL } from '@/config/siteAvatar'
@@ -37,8 +37,9 @@ function awardTierClass(tier: string): string {
   return `about-award-chip--${tier}`
 }
 
+usePageEnterRegistration(pageRoot)
+
 onMounted(async () => {
-  if (pageRoot.value) void playPageEnter(pageRoot.value)
   const remote = await fetchAboutProfile()
   if (remote) {
     profile.value = remote

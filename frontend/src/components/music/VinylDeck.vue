@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, ref, toRef } from 'vue'
+
+import { useVinylSpin } from '@/composables/gsap/useVinylSpin'
+import { useVinylTonearmGsap } from '@/composables/gsap/useVinylTonearmGsap'
 
 const props = defineProps<{
   playing: boolean
@@ -15,6 +18,11 @@ const emit = defineEmits<{
 }>()
 
 const trackRef = ref<HTMLElement | null>(null)
+const centerRecordRef = ref<HTMLElement | null>(null)
+const armRef = ref<HTMLElement | null>(null)
+
+useVinylSpin(centerRecordRef, toRef(props, 'playing'))
+useVinylTonearmGsap(armRef, toRef(props, 'playing'))
 const isAnimating = ref(false)
 const animOffset = ref('0px')
 /** 切歌归位后，中央唱片先保持侧碟色调再渐变至全黑 */
@@ -79,6 +87,7 @@ defineExpose({ goPrev, goNext })
 <template>
   <div class="vinyl-stage" aria-live="polite">
     <button
+      ref="armRef"
       type="button"
       class="vinyl-arm-wrap"
       :class="{ 'is-playing': playing }"
@@ -136,6 +145,7 @@ defineExpose({ goPrev, goNext })
         <div class="vinyl-slot vinyl-slot--current" :class="{ 'is-peek-tone': centerDimmed }">
           <div class="vinyl-platter-outer" aria-hidden="true">
             <div
+              ref="centerRecordRef"
               class="vinyl-record"
               :class="{
                 'is-playing': playing,
@@ -354,7 +364,7 @@ defineExpose({ goPrev, goNext })
     inset 0 0 0 2px rgb(255 255 255 / 0.04),
     0 0 0 1px rgb(0 0 0 / 0.6);
   position: relative;
-  animation: vinyl-spin 2.9s linear infinite paused;
+  /* 旋转由 useVinylSpin (GSAP) 驱动 */
   transition:
     filter 0.48s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.48s cubic-bezier(0.4, 0, 0.2, 1);
@@ -370,13 +380,7 @@ defineExpose({ goPrev, goNext })
 }
 
 .vinyl-slot--current .vinyl-record.is-playing {
-  animation-play-state: running;
-}
-
-@keyframes vinyl-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  /* GSAP */
 }
 
 .vinyl-grooves {
@@ -431,14 +435,8 @@ defineExpose({ goPrev, goNext })
   border: none;
   background: transparent;
   transform-origin: 82% 13%;
-  transform: rotate(-40deg);
-  transition: transform 0.88s cubic-bezier(0.33, 1.15, 0.52, 1);
   filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.35));
   cursor: pointer;
-}
-
-.vinyl-arm-wrap.is-playing {
-  transform: rotate(6deg);
 }
 
 .vinyl-arm-wrap:hover {

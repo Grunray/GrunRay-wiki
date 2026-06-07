@@ -24,13 +24,17 @@
 
   <Teleport to="body">
     <div v-if="ripple.show" class="theme-toggle-ripple-root" aria-hidden="true">
-      <div :key="ripple.key" class="theme-toggle-ripple-disk" :style="diskStyle" />
+      <div ref="diskRef" :key="ripple.key" class="theme-toggle-ripple-disk" :style="diskStyle" />
     </div>
   </Teleport>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
+
+import { gsap } from '@/composables/gsap/registerGsap'
+import { GSAP_EASE_SPRING } from '@/composables/gsap/gsapTokens'
+import { playThemeRippleGsap } from '@/composables/gsap/useThemeRippleGsap'
 import { useI18n } from 'vue-i18n'
 
 import ThemeNavIcon from '@/components/icons/ThemeNavIcon.vue'
@@ -51,6 +55,7 @@ const themeHoverTitle = computed(() => {
 })
 
 const anchorRef = ref<HTMLElement | null>(null)
+const diskRef = ref<HTMLElement | null>(null)
 
 const ripple = reactive({
   show: false,
@@ -86,11 +91,12 @@ function playRippleFromAnchor(ev?: MouseEvent) {
   ripple.key += 1
   ripple.show = true
 
-  if (rippleClearTimer) clearTimeout(rippleClearTimer)
-  rippleClearTimer = setTimeout(() => {
-    ripple.show = false
-    rippleClearTimer = null
-  }, 620)
+  void nextTick().then(() => {
+    if (!diskRef.value) return
+    playThemeRippleGsap(diskRef.value, () => {
+      ripple.show = false
+    })
+  })
 }
 
 watch(
@@ -106,8 +112,20 @@ watch(
   },
 )
 
+function spinThemeIcon() {
+  if (ui.prefersReducedMotion) return
+  const icon = anchorRef.value?.querySelector('.theme-nav-btn-icon')
+  if (!icon) return
+  gsap.fromTo(
+    icon,
+    { rotation: -120, scale: 0.72 },
+    { rotation: 0, scale: 1, duration: 0.52, ease: GSAP_EASE_SPRING },
+  )
+}
+
 function toggle(ev?: MouseEvent) {
   ui.cycleTheme()
+  spinThemeIcon()
   playRippleFromAnchor(ev instanceof MouseEvent ? ev : undefined)
 }
 </script>
@@ -273,33 +291,6 @@ function toggle(ev?: MouseEvent) {
   border-radius: 50%;
   transform: translate(-50%, -50%);
   will-change: width, height, opacity, filter;
-  animation: theme-toggle-ripple-pulse 0.55s ease-out forwards;
-}
-
-@keyframes theme-toggle-ripple-pulse {
-  0% {
-    width: 0;
-    height: 0;
-    opacity: 0;
-    filter: brightness(1);
-  }
-  10% {
-    opacity: 0.92;
-    filter: brightness(1.14);
-  }
-  35% {
-    opacity: 0.88;
-    filter: brightness(1.08);
-  }
-  70% {
-    opacity: 0.45;
-    filter: brightness(1.02);
-  }
-  100% {
-    width: 250vmax;
-    height: 250vmax;
-    opacity: 0;
-    filter: brightness(1);
-  }
+  /* 扩散由 playThemeRippleGsap (GSAP) 驱动 */
 }
 </style>

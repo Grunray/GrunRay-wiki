@@ -3,8 +3,11 @@ import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 
 import App from './App.vue'
+import { registerGsapPlugins } from './composables/gsap/registerGsap'
 import { i18n } from './i18n'
 import router from './router'
+
+registerGsapPlugins()
 import './styles/main.css'
 import './styles/markdown-reading.css'
 import './styles/footer-grunray.css'

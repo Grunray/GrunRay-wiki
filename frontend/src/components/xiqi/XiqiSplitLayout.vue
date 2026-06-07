@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import { flipTranslate, panelSlideIn, panelSlideOut } from '@/composables/gsap/gsapMotion'
 import { prefersReducedMotionMedia } from '@/composables/usePageEnterAnimation'
 import { setXiqiSplitFooterLock } from '@/composables/useXiqiSplitFooter'
 
@@ -27,7 +28,6 @@ const isOpen = computed(() => selectedKey.value !== null)
 const detailRailOpen = computed(() => isOpen.value || detailLeaving.value)
 
 const SPLIT_LAYOUT_MS = 580
-const MAIN_INNER_FLIP_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
 /** 打开分栏时主栏内滚动偏移，关闭时作 fallback */
 let preservedMainScroll = 0
@@ -66,11 +66,6 @@ async function afterSplitLayout() {
   })
 }
 
-function clearMainInnerFlipStyles(inner: HTMLElement) {
-  inner.style.transition = ''
-  inner.style.transform = ''
-}
-
 /** 分栏开关时主栏 FLIP：居中全宽 → 左侧固定宽（仅打开时使用） */
 function flipMainInnerAfterLayout(before: DOMRect | null) {
   const inner = getMainInner()
@@ -79,24 +74,23 @@ function flipMainInnerAfterLayout(before: DOMRect | null) {
   const after = inner.getBoundingClientRect()
   const dx = before.left - after.left
   const dy = before.top - after.top
-  if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return
+  flipTranslate(inner, dx, dy, SPLIT_LAYOUT_MS / 1000)
+}
 
-  clearMainInnerFlipStyles(inner)
-  inner.style.transform = `translate(${dx}px, ${dy}px)`
+function onDetailEnter(el: Element, done: () => void) {
+  if (prefersReducedMotionMedia()) {
+    done()
+    return
+  }
+  panelSlideIn(el, { onDone: done })
+}
 
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      inner.style.transition = `transform ${SPLIT_LAYOUT_MS}ms ${MAIN_INNER_FLIP_EASING}`
-      inner.style.transform = ''
-
-      const onEnd = (ev: TransitionEvent) => {
-        if (ev.target !== inner || ev.propertyName !== 'transform') return
-        inner.removeEventListener('transitionend', onEnd)
-        clearMainInnerFlipStyles(inner)
-      }
-      inner.addEventListener('transitionend', onEnd)
-    })
-  })
+function onDetailLeave(el: Element, done: () => void) {
+  if (prefersReducedMotionMedia()) {
+    done()
+    return
+  }
+  panelSlideOut(el, { onDone: done })
 }
 
 function closeDetail() {
@@ -137,8 +131,6 @@ watch(isOpen, async (open) => {
     detailLeaving.value = true
     const scrollToRestore = main?.scrollTop ?? preservedMainScroll
 
-    const inner = getMainInner()
-    if (inner) clearMainInnerFlipStyles(inner)
     layoutSplit.value = false
     setXiqiSplitFooterLock(false, { deferRefresh: true })
 
@@ -159,8 +151,6 @@ async function onDetailAfterLeave() {
 
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', onDocumentKeydown)
-  const inner = getMainInner()
-  if (inner) clearMainInnerFlipStyles(inner)
   layoutSplit.value = false
   detailLeaving.value = false
   preservedMainScroll = 0
@@ -169,7 +159,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="xiqi-page" :class="{ 'xiqi-page--split': layoutSplit }">
+  <section class="xiqi-page" data-page-enter-root :class="{ 'xiqi-page--split': layoutSplit }">
     <div
       class="xiqi-split"
       :class="{
@@ -187,7 +177,7 @@ onBeforeUnmount(() => {
         class="xiqi-split-detail-rail"
         :class="{ 'xiqi-split-detail-rail--open': detailRailOpen }"
       >
-        <Transition name="xiqi-detail" @after-leave="onDetailAfterLeave">
+        <Transition :css="false" @enter="onDetailEnter" @leave="onDetailLeave" @after-leave="onDetailAfterLeave">
           <aside
             v-if="isOpen"
             class="xiqi-split-detail card card-glass-dense"

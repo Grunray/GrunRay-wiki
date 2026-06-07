@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
+import { useNotFoundGsap } from '@/composables/gsap/useNotFoundGsap'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
 import { useUiStore } from '@/stores/ui'
@@ -13,6 +14,7 @@ const { t } = useI18n()
 const route = useRoute()
 const ui = useUiStore()
 
+const pageRoot = ref<HTMLElement | null>(null)
 const titleCorrupt = ref('404')
 const messageCorrupt = ref('')
 const hintCorrupt = ref('')
@@ -21,6 +23,9 @@ let corruptTimer: ReturnType<typeof setInterval> | null = null
 let replayTimer: ReturnType<typeof setTimeout> | null = null
 
 const glitchActive = computed(() => ui.theme !== 'abstract')
+
+useNotFoundGsap(pageRoot, glitchActive)
+
 const showUnlock = computed(() => !ui.abstractThemeUnlocked)
 const showApplyTheme = computed(() => ui.abstractThemeUnlocked && ui.theme !== 'abstract')
 const showReplayGlitch = computed(() => ui.abstractThemeUnlocked)
@@ -97,7 +102,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="not-found" :class="{ 'not-found--stable': showStableLayout }">
+  <section ref="pageRoot" class="not-found" :class="{ 'not-found--stable': showStableLayout }">
     <div class="not-found__signal" aria-hidden="true" />
 
     <p class="not-found__code" aria-hidden="true">{{ titleCorrupt }}</p>

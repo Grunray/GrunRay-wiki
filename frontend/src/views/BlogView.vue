@@ -5,7 +5,8 @@ import { useRoute, useRouter } from 'vue-router'
 
 import AppSelect from '@/components/ui/AppSelect.vue'
 import TimelinePageSkeleton from '@/components/ui/TimelinePageSkeleton.vue'
-import { playPageEnter } from '@/composables/usePageEnterAnimation'
+import { PAGE_ENTER_PLAY_CLASS, playPageEnter } from '@/composables/usePageEnterAnimation'
+import { usePageEnterRegistration } from '@/composables/usePageEnterRegistration'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
 import { listPostsForBlog } from '@/services/contentRepository'
@@ -60,6 +61,8 @@ const categoryGroupRef = ref<HTMLElement | null>(null)
 const categoryBtnRefs = ref<HTMLElement[]>([])
 const categoryPillStyle = ref<Record<string, string>>({ opacity: '0' })
 const pageRoot = ref<HTMLElement | null>(null)
+
+usePageEnterRegistration(pageRoot)
 const enterPlayed = ref(false)
 
 interface TimelineItem {
@@ -134,7 +137,9 @@ async function loadByCategory() {
     loading.value = false
     if (!enterPlayed.value) {
       enterPlayed.value = true
-      await playPageEnter(pageRoot.value)
+      if (!pageRoot.value?.classList.contains(PAGE_ENTER_PLAY_CLASS)) {
+        await playPageEnter(pageRoot.value, { fromOrchestrator: true })
+      }
     }
   }
 }

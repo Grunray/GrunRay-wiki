@@ -699,7 +699,7 @@ onBeforeUnmount(() => {
   <audio ref="audioRef" class="floating-music__audio" preload="metadata" />
   <Transition name="music-player-shell">
     <div
-      v-show="!musicPlayerMinimized"
+      v-show="tracks.length && !musicPlayerMinimized"
       class="floating-music__shell"
       :class="{ 'is-dragging': dragging }"
       :style="playerStyle"

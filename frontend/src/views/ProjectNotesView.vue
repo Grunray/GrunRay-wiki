@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+
+import { PAGE_ENTER_PLAY_CLASS, playPageEnter } from '@/composables/usePageEnterAnimation'
+import { usePageEnterRegistration } from '@/composables/usePageEnterRegistration'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
@@ -20,6 +23,10 @@ const ok = computed(() => project.value && project.value.status !== 'hidden')
 const posts = ref<Post[]>([])
 const loading = ref(false)
 const loadError = ref(false)
+const pageRoot = ref<HTMLElement | null>(null)
+const enterPlayed = ref(false)
+
+usePageEnterRegistration(pageRoot)
 
 watch(
   slug,
@@ -36,6 +43,12 @@ watch(
       posts.value = []
     } finally {
       loading.value = false
+      if (!enterPlayed.value && !loadError.value && ok.value) {
+        enterPlayed.value = true
+        if (!pageRoot.value?.classList.contains(PAGE_ENTER_PLAY_CLASS)) {
+          void playPageEnter(pageRoot.value, { fromOrchestrator: true })
+        }
+      }
     }
   },
   { immediate: true },
@@ -82,7 +95,7 @@ useSeoMeta(() => {
 <template>
   <p v-if="loadError" class="empty">加载失败，请确认后端已启动并已导入项目数据。</p>
   <NotesListSkeleton v-else-if="loading" />
-  <div v-else-if="ok && project">
+  <div v-else-if="ok && project" ref="pageRoot" class="project-notes-page">
     <p class="back">
       <RouterLink :to="`/projects/${project.slug}`">← {{ project.title }}</RouterLink>
     </p>

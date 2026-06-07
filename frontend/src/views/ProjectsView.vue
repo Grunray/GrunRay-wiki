@@ -5,7 +5,8 @@ import { useRoute, useRouter } from 'vue-router'
 
 import AppSelect from '@/components/ui/AppSelect.vue'
 import TimelinePageSkeleton from '@/components/ui/TimelinePageSkeleton.vue'
-import { playPageEnter } from '@/composables/usePageEnterAnimation'
+import { PAGE_ENTER_PLAY_CLASS, playPageEnter } from '@/composables/usePageEnterAnimation'
+import { usePageEnterRegistration } from '@/composables/usePageEnterRegistration'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
 import { ensureProjectsLoaded, listProjectsPublic } from '@/services/contentRepository'
@@ -28,6 +29,8 @@ const loading = ref(true)
 const loadError = ref<string | null>(null)
 const pageRoot = ref<HTMLElement | null>(null)
 const enterPlayed = ref(false)
+
+usePageEnterRegistration(pageRoot)
 
 interface TimelineItem {
   project: Project
@@ -122,7 +125,9 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
 watch(loading, async (isLoading) => {
   if (enterPlayed.value || isLoading) return
   enterPlayed.value = true
-  await playPageEnter(pageRoot.value)
+  if (!pageRoot.value?.classList.contains(PAGE_ENTER_PLAY_CLASS)) {
+    await playPageEnter(pageRoot.value, { fromOrchestrator: true })
+  }
 })
 
 onMounted(async () => {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -8,7 +8,8 @@ import XiqiCard from '@/components/xiqi/XiqiCard.vue'
 import XiqiPageHero from '@/components/xiqi/XiqiPageHero.vue'
 import XiqiSplitLayout from '@/components/xiqi/XiqiSplitLayout.vue'
 import { type FragmentMood } from '@/content/data/mockFragments'
-import { playPageEnter } from '@/composables/usePageEnterAnimation'
+import { animateXiqiFeedFilter } from '@/composables/gsap/useXiqiFeedFilterGsap'
+import { usePageEnterRegistration } from '@/composables/usePageEnterRegistration'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
 import { fetchFragmentDetail, fetchFragments, type Fragment, type FragmentDetail } from '@/services/fragmentsApi'
@@ -31,6 +32,12 @@ useSeoMeta(() => ({
 }))
 
 const pageRoot = ref<InstanceType<typeof XiqiSplitLayout> | null>(null)
+const pageEnterRoot = computed(() => {
+  const el = pageRoot.value?.$el
+  return el instanceof HTMLElement ? el : null
+})
+
+usePageEnterRegistration(pageEnterRoot)
 const selectedFragmentId = ref<string | null>(null)
 /** 关闭动画期间仍展示详情，避免 slot 清空导致面板塌陷 */
 const detailDisplayId = ref<string | null>(null)
@@ -42,6 +49,8 @@ const listError = ref('')
 const detail = ref<FragmentDetail | null>(null)
 const detailLoading = ref(false)
 const isSiteOwner = ref(false)
+const feedRef = ref<HTMLElement | null>(null)
+const feedFilterAnimated = ref(false)
 
 const moodOptions = computed<Array<{ id: MoodFilter; label: string }>>(() => [
   { id: 'all', label: t('fragments.moodAll') },
@@ -108,6 +117,12 @@ async function loadList() {
     fragments.value = []
   } finally {
     listLoading.value = false
+    await nextTick()
+    if (feedFilterAnimated.value) {
+      animateXiqiFeedFilter(feedRef.value)
+    } else {
+      feedFilterAnimated.value = true
+    }
   }
 }
 
@@ -154,11 +169,6 @@ watch(visibleFragments, (list) => {
 })
 
 onMounted(async () => {
-  const startEnter = async () => {
-    const root = pageRoot.value?.$el
-    if (root instanceof HTMLElement) await playPageEnter(root)
-  }
-  void startEnter()
   try {
     const user = await fetchMessageAuthUser()
     isSiteOwner.value = Boolean(user?.isSiteOwner)
@@ -239,6 +249,7 @@ onMounted(async () => {
     <p v-else-if="listLoading" class="fragments-empty">{{ t('fragments.loading') }}</p>
     <TransitionGroup
       v-else-if="visibleFragments.length"
+      ref="feedRef"
       name="xiqi-feed-item"
       tag="ul"
       class="fragments-feed xiqi-feed"

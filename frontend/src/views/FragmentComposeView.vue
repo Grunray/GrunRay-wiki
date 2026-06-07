@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+
+import { usePageEnterRegistration } from '@/composables/usePageEnterRegistration'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -43,6 +45,9 @@ const submitting = ref(false)
 const submitMessage = ref('')
 const submitError = ref('')
 const importCommand = ref('')
+const pageRoot = ref<HTMLElement | null>(null)
+
+usePageEnterRegistration(pageRoot)
 
 const moodOptions: FragmentMood[] = ['rant', 'sketch', 'flash', 'daily']
 
@@ -175,6 +180,7 @@ onMounted(async () => {
     const user = await fetchMessageAuthUser()
     if (!user?.isSiteOwner) {
       router.replace({ name: 'fragments' })
+      return
     }
   } catch {
     router.replace({ name: 'fragments' })
@@ -183,7 +189,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="compose-page">
+  <div ref="pageRoot" class="compose-page">
     <header class="compose-head card card-glass-dense">
       <div>
         <p class="compose-eyebrow">{{ t('fragments.compose.eyebrow') }}</p>
