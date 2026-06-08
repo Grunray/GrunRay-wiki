@@ -317,6 +317,11 @@ def related(slug: str):
 @bp.get("/media/files/<path:filename>")
 def media_file(filename: str):
     media_dir = config.CONTENT_ROOT / "media"
+    from app.media_webp import maybe_webp_response
+
+    webp = maybe_webp_response(media_dir, filename, request)
+    if webp is not None:
+        return webp
     return send_from_directory(str(media_dir), filename)
 
 

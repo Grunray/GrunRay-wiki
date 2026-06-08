@@ -6,3 +6,6 @@ node_modules/
 /frontend.zip
 designed/Web_exp/_temp.zip
 designed/Web_exp/_pptx_unpack/
+
+# 媒体 WebP 运行时缓存（按需转码生成，不入库）
+backend/content/media/.webp_cache/
