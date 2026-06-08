@@ -1,6 +1,7 @@
 node_modules/
 
 # Local archives / pptx build temp
+/GrunRay_wiki.zip
 /backend.zip
 /frontend.zip
 designed/Web_exp/_temp.zip
