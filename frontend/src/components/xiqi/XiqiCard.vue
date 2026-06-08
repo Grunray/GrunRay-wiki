@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+import AppImage from '@/components/ui/AppImage.vue'
+
 export type XiqiCardAccent =
   | 'rant'
   | 'sketch'
@@ -66,12 +68,7 @@ function onClick(event: MouseEvent) {
     @click="onClick"
   >
     <div v-if="hasCover" class="xiqi-card-cover">
-      <img
-        :src="coverSrc"
-        :alt="coverAlt"
-        loading="lazy"
-        decoding="async"
-      />
+      <AppImage :src="coverSrc ?? ''" :alt="coverAlt" :min-loader-ms="900" />
     </div>
 
     <div class="xiqi-card-content">

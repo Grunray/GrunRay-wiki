@@ -36,9 +36,14 @@ const pageKey = computed(() => {
 const resolvedMedia = computed(() => {
   const override = props.mediaSrc?.trim()
   if (override) return override
+  // 后端配置的 hero 图优先（运营可在后台配置）；无配置时回退本地 public 图。
+  // 若后端图加载失败，再由 AppImage 的 fallback-src 兜底到本地图（见 template）。
   if (apiHeroUrl.value) return apiHeroUrl.value
   return resolveXiqiHeroImage(pageKey.value)
 })
+
+/** 本地 public 兜底图（后端图加载失败时用，避免显示破图/404） */
+const localFallback = computed(() => resolveXiqiHeroImage(pageKey.value) ?? '')
 
 const hasMedia = computed(() => Boolean(resolvedMedia.value))
 
@@ -95,7 +100,13 @@ function onPointerLeave() {
 
     <template v-if="hasMedia">
       <div class="xiqi-hero-media" aria-hidden="true">
-        <AppImage :src="resolvedMedia ?? ''" :alt="mediaAlt" eager :min-loader-ms="1500" />
+        <AppImage
+          :src="resolvedMedia ?? ''"
+          :fallback-src="localFallback"
+          :alt="mediaAlt"
+          eager
+          :min-loader-ms="1500"
+        />
       </div>
     </template>
 

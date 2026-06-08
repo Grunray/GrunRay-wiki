@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router'
 import { RouterLink } from 'vue-router'
 
 import AboutPrivateText from '@/components/xiqi/AboutPrivateText.vue'
+import AppImage from '@/components/ui/AppImage.vue'
 import XiqiPageHero from '@/components/xiqi/XiqiPageHero.vue'
 import { ABOUT_PROFILE, type AboutProfile } from '@/content/data/aboutResume'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
@@ -29,9 +30,7 @@ useSeoMeta(() => ({
 const pageRoot = ref<HTMLElement | null>(null)
 const avatarSrc = ref(SITE_AVATAR_PHOTO_URL)
 
-function onAvatarError() {
-  avatarSrc.value = SITE_AVATAR_FALLBACK_URL
-}
+// 头像加载失败由 AppImage 的 fallback-src（SITE_AVATAR_FALLBACK_URL）兜底
 
 function awardTierClass(tier: string): string {
   return `about-award-chip--${tier}`
@@ -59,13 +58,11 @@ onMounted(async () => {
       <section class="about-profile card card-glass-dense" aria-labelledby="about-profile-heading">
         <div class="about-profile-head">
           <div class="about-avatar">
-            <img
+            <AppImage
               :src="avatarSrc"
+              :fallback-src="SITE_AVATAR_FALLBACK_URL"
               :alt="profile.alias"
-              class="about-avatar-img"
-              loading="lazy"
-              decoding="async"
-              @error="onAvatarError"
+              :min-loader-ms="800"
             />
           </div>
           <div class="about-profile-intro">

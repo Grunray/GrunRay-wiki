@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { gsap } from 'gsap'
 
 import SnailNavIcon from '@/components/icons/SnailNavIcon.vue'
 
 /**
- * 图片懒加载 + GSAP 加载动画（蜗牛爬行）。针对服务器慢、图片加载慢的场景：
- * - 加载中：液态玻璃绿色占位 + 一只蜗牛沿地面线缓缓爬行（慢加载的隐喻）
- * - 加载完成（占位至少展示 minLoaderMs 防闪）：GSAP 淡入图片
- * - 加载失败降级；只用 opacity 淡入，兼容外层视差/object-fit 等样式；尊重 reduced-motion
+ * 图片懒加载 + GSAP 蜗牛爬行加载动画。针对服务器慢、图片加载慢的场景：
+ * - 加载中：液态玻璃绿色占位 + 蜗牛(SnailNavIcon)沿地面/黏液线缓缓爬行
+ * - 加载完成（占位至少展示 minLoaderMs 防闪）：GSAP 淡入
+ * - 加载失败：若提供 fallbackSrc 则回退到兜底图（避免破图/404）；否则降级
+ * - 只用 opacity 淡入以兼容外层视差/object-fit 等样式；尊重 reduced-motion
  */
 const props = withDefaults(
   defineProps<{
@@ -16,19 +17,32 @@ const props = withDefaults(
     alt?: string
     minLoaderMs?: number
     eager?: boolean
+    /** 主图加载失败时回退的兜底图（如本地 public 图） */
+    fallbackSrc?: string
   }>(),
-  { alt: '', minLoaderMs: 600, eager: false },
+  { alt: '', minLoaderMs: 600, eager: false, fallbackSrc: '' },
 )
 
 const rootRef = ref<HTMLElement | null>(null)
 const imgRef = ref<HTMLImageElement | null>(null)
 const phRef = ref<HTMLElement | null>(null)
 const status = ref<'loading' | 'loaded' | 'error'>('loading')
+/** 实际加载的 src：主图失败时切到 fallbackSrc */
+const currentSrc = ref(props.src)
 
 let ctx: ReturnType<typeof gsap.context> | undefined
 let mountedAt = 0
 let revealed = false
 let reduced = false
+let triedFallback = false
+
+watch(
+  () => props.src,
+  (v) => {
+    currentSrc.value = v
+    triedFallback = false
+  },
+)
 
 function reveal() {
   if (revealed) return
@@ -52,6 +66,12 @@ function onLoad() {
 
 function onError() {
   if (revealed) return
+  // 主图失败 → 回退兜底图（仅尝试一次），避免破图/404
+  if (props.fallbackSrc && !triedFallback && currentSrc.value !== props.fallbackSrc) {
+    triedFallback = true
+    currentSrc.value = props.fallbackSrc
+    return
+  }
   status.value = 'error'
   ctx?.revert()
 }
@@ -89,7 +109,7 @@ onUnmounted(() => ctx?.revert())
     <img
       ref="imgRef"
       class="app-image__img"
-      :src="src"
+      :src="currentSrc"
       :alt="alt"
       :loading="eager ? 'eager' : 'lazy'"
       decoding="async"
