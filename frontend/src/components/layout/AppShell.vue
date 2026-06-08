@@ -207,8 +207,15 @@ watch(isHomeRoute, async (isHome, wasHome) => {
   }, 500)
 })
 
+/**
+ * 容器布局跟随「正在显示的页面」而非 route 本身。
+ * 否则 out-in 转场时 route 一变就立刻切换 .app-main 的 max-width（960px ↔ 全宽），
+ * 旧页内容会先被塞进新宽度（向内收缩 / 向左平移）再淡出 —— 即「先移动后转场」。
+ * 改为只在新页 enter 时更新（见 onRouteEnter），leave 期间保持旧布局。
+ */
+const displayedLayout = ref(route.meta.appMainLayout)
 const appMainClasses = computed(() => ({
-  'app-main--full-viewport': route.meta.appMainLayout === 'full-viewport',
+  'app-main--full-viewport': displayedLayout.value === 'full-viewport',
 }))
 
 let mql: MediaQueryList | null = null
@@ -429,6 +436,8 @@ function onRouteLeave(el: Element, done: () => void) {
 }
 
 function onRouteEnter(el: Element, done: () => void) {
+  // 新页进入时才切换容器布局（此刻旧页 leave 已结束），避免转场前的宽度突变
+  displayedLayout.value = route.meta.appMainLayout
   if (ui.prefersReducedMotion) {
     done()
     return
