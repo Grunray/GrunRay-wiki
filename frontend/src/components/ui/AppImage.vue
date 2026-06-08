@@ -19,8 +19,10 @@ const props = withDefaults(
     eager?: boolean
     /** 主图加载失败时回退的兜底图（如本地 public 图） */
     fallbackSrc?: string
+    /** 宽高比（如 '16/10'）：用于自适应高度容器，给占位/图一个稳定高度，避免塌陷或滚动抖动 */
+    ratio?: string
   }>(),
-  { alt: '', minLoaderMs: 600, eager: false, fallbackSrc: '' },
+  { alt: '', minLoaderMs: 600, eager: false, fallbackSrc: '', ratio: '' },
 )
 
 const rootRef = ref<HTMLElement | null>(null)
@@ -105,7 +107,12 @@ onUnmounted(() => ctx?.revert())
 </script>
 
 <template>
-  <div ref="rootRef" class="app-image" :class="`app-image--${status}`">
+  <div
+    ref="rootRef"
+    class="app-image"
+    :class="`app-image--${status}`"
+    :style="ratio ? { aspectRatio: ratio, height: 'auto' } : undefined"
+  >
     <img
       ref="imgRef"
       class="app-image__img"
@@ -136,6 +143,7 @@ onUnmounted(() => ctx?.revert())
   display: block;
   width: 100%;
   height: 100%;
+  max-height: 100%;
   object-fit: cover;
   opacity: 0;
 }

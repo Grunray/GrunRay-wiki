@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { ProjectLayoutBlock } from '@/types/content'
 
+import AppImage from '@/components/ui/AppImage.vue'
+
 defineProps<{ block: ProjectLayoutBlock }>()
 </script>
 
@@ -9,7 +11,7 @@ defineProps<{ block: ProjectLayoutBlock }>()
     <h2 v-if="block.title" class="title">{{ block.title }}</h2>
     <div v-if="block.images?.length" class="grid">
       <figure v-for="(src, i) in block.images" :key="i" class="fig">
-        <img :src="src" :alt="`${block.title ?? 'gallery'} ${i + 1}`" loading="lazy" />
+        <AppImage :src="src" :alt="`${block.title ?? 'gallery'} ${i + 1}`" ratio="16/10" />
       </figure>
     </div>
   </section>

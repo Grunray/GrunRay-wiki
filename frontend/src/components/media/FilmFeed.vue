@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
+import AppImage from '@/components/ui/AppImage.vue'
+
 type MediaType = 'image' | 'gif' | 'video'
 type MediaItem = {
   id: number
@@ -90,7 +92,7 @@ onBeforeUnmount(() => {
       >
         <div v-for="item in loopItems" :key="`${item.id}-${item.url}`" class="frame" @click="openViewer(item)">
           <video v-if="item.type === 'video'" :src="item.url" muted loop playsinline preload="metadata" />
-          <img v-else :src="item.url" :alt="item.title || 'media'" loading="lazy" />
+          <AppImage v-else :src="item.url" :alt="item.title || 'media'" ratio="4/5" />
         </div>
       </div>
 
