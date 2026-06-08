@@ -30,7 +30,8 @@
     "overflowLabel": "显示隐藏的图标",
     "overflowRegion": "更多顶栏操作",
     "localeTitleEn": "切换为 English 界面",
-    "localeTitleZh": "切换为中文界面"
+    "localeTitleZh": "切换为中文界面",
+    "backToTop": "回到顶部"
   },
   "home": {
     "tagline": "个人成果与笔记：项目、开发记录与算法心得。",

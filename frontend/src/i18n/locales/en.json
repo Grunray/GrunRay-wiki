@@ -30,7 +30,8 @@
     "overflowLabel": "Show hidden icons",
     "overflowRegion": "Additional header actions",
     "localeTitleEn": "Switch interface to English",
-    "localeTitleZh": "Switch interface to Chinese"
+    "localeTitleZh": "Switch interface to Chinese",
+    "backToTop": "Back to top"
   },
   "home": {
     "tagline": "Portfolio, build notes, and algorithm write-ups.",

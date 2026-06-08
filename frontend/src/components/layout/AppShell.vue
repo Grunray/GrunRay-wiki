@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { gsap } from 'gsap'
 import { storeToRefs } from 'pinia'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -18,8 +19,10 @@ import PhotoBgNavIcon from '@/components/icons/PhotoBgNavIcon.vue'
 import SnailNavIcon from '@/components/icons/SnailNavIcon.vue'
 import TrailNavIcon from '@/components/icons/TrailNavIcon.vue'
 
+import BackToTop from './BackToTop.vue'
 import CursorTrail from './CursorTrail.vue'
 import FooterGrunRayPanel from './FooterGrunRayPanel.vue'
+import ScrollProgress from './ScrollProgress.vue'
 import SiteNav from './SiteNav.vue'
 import ThemeDayNightToggle from './ThemeDayNightToggle.vue'
 
@@ -415,12 +418,37 @@ onUnmounted(() => {
   overflowTriggerCuePop.value = false
   overflowTriggerCueMusicOpen.value = false
 })
+
+/** 路由跳转转场（GSAP 驱动 Vue Transition，:css=false）：离开淡出上移、进入淡入浮起；尊重 reduced-motion */
+function onRouteLeave(el: Element, done: () => void) {
+  if (ui.prefersReducedMotion) {
+    done()
+    return
+  }
+  gsap.to(el, { autoAlpha: 0, y: -10, duration: 0.26, ease: 'power2.in', onComplete: done })
+}
+
+function onRouteEnter(el: Element, done: () => void) {
+  if (ui.prefersReducedMotion) {
+    done()
+    return
+  }
+  gsap.from(el, {
+    autoAlpha: 0,
+    y: 16,
+    duration: 0.46,
+    ease: 'power3.out',
+    clearProps: 'transform,opacity,visibility',
+    onComplete: done,
+  })
+}
 </script>
 
 <template>
   <div class="abstract-grid-bg" aria-hidden="true" />
   <FooterGrunRayPanel />
   <div class="app-root">
+    <ScrollProgress />
     <div class="app-page-cover">
     <header class="glass-nav-sticky-wrap" :data-nav-compact="navCompact ? 'true' : 'false'">
       <div class="glass-nav-inner">
@@ -672,11 +700,16 @@ onUnmounted(() => {
     </header>
 
     <main class="app-main" :class="appMainClasses">
-      <RouterView />
+      <RouterView v-slot="{ Component }">
+        <Transition :css="false" mode="out-in" @enter="onRouteEnter" @leave="onRouteLeave">
+          <component :is="Component" :key="route.fullPath" />
+        </Transition>
+      </RouterView>
     </main>
     </div>
 
     <CursorTrail />
+    <BackToTop />
   </div>
 </template>
 
