@@ -1,23 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import AppShell from '@/components/layout/AppShell.vue'
-import AboutView from '@/views/AboutView.vue'
-import BlogView from '@/views/BlogView.vue'
-import FragmentComposeView from '@/views/FragmentComposeView.vue'
-import FragmentsView from '@/views/FragmentsView.vue'
-import HomeView from '@/views/HomeView.vue'
-import NotFoundView from '@/views/NotFoundView.vue'
-import PostDetailView from '@/views/PostDetailView.vue'
-import ProjectDetailView from '@/views/ProjectDetailView.vue'
-import ProjectNotesView from '@/views/ProjectNotesView.vue'
-import FriendsApplyView from '@/views/FriendsApplyView.vue'
-import FriendsView from '@/views/FriendsView.vue'
-import MessagesView from '@/views/MessagesView.vue'
-import ProjectsView from '@/views/ProjectsView.vue'
-import RecommendView from '@/views/RecommendView.vue'
 import { syncPageCorruptForRoute } from '@/theme/pageCorruptState'
 import { applyPagePhotoBackgroundToDocument } from '@/theme/pagePhotoBackgrounds'
 
+/**
+ * 各页面用动态 import 懒加载：首屏只下核心包 + 首页 chunk，其余页面进入时按需加载，
+ * 大幅减小首屏体积（对慢服务器尤其有效）。AppShell 是全局布局，首屏必需，保持静态。
+ */
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -25,40 +15,40 @@ const router = createRouter({
       path: '/',
       component: AppShell,
       children: [
-        { path: '', name: 'home', component: HomeView, meta: { appMainLayout: 'full-viewport' } },
-        { path: 'projects', name: 'projects', component: ProjectsView },
-        { path: 'projects/:slug', name: 'project-detail', component: ProjectDetailView },
-        { path: 'projects/:slug/notes', name: 'project-notes', component: ProjectNotesView },
-        { path: 'blog', name: 'blog', component: BlogView },
-        { path: 'blog/:slug', name: 'post-detail', component: PostDetailView },
-        { path: 'messages', name: 'messages', component: MessagesView },
-        { path: 'friends', name: 'friends', component: FriendsView },
-        { path: 'friends/apply', name: 'friends-apply', component: FriendsApplyView },
+        { path: '', name: 'home', component: () => import('@/views/HomeView.vue'), meta: { appMainLayout: 'full-viewport' } },
+        { path: 'projects', name: 'projects', component: () => import('@/views/ProjectsView.vue') },
+        { path: 'projects/:slug', name: 'project-detail', component: () => import('@/views/ProjectDetailView.vue') },
+        { path: 'projects/:slug/notes', name: 'project-notes', component: () => import('@/views/ProjectNotesView.vue') },
+        { path: 'blog', name: 'blog', component: () => import('@/views/BlogView.vue') },
+        { path: 'blog/:slug', name: 'post-detail', component: () => import('@/views/PostDetailView.vue') },
+        { path: 'messages', name: 'messages', component: () => import('@/views/MessagesView.vue') },
+        { path: 'friends', name: 'friends', component: () => import('@/views/FriendsView.vue') },
+        { path: 'friends/apply', name: 'friends-apply', component: () => import('@/views/FriendsApplyView.vue') },
         {
           path: 'fragments',
           name: 'fragments',
-          component: FragmentsView,
+          component: () => import('@/views/FragmentsView.vue'),
           meta: { appMainLayout: 'full-viewport' },
         },
         {
           path: 'fragments/compose',
           name: 'fragments-compose',
-          component: FragmentComposeView,
+          component: () => import('@/views/FragmentComposeView.vue'),
           meta: { appMainLayout: 'full-viewport' },
         },
         {
           path: 'about',
           name: 'about',
-          component: AboutView,
+          component: () => import('@/views/AboutView.vue'),
           meta: { appMainLayout: 'full-viewport' },
         },
         {
           path: 'recommend',
           name: 'recommend',
-          component: RecommendView,
+          component: () => import('@/views/RecommendView.vue'),
           meta: { appMainLayout: 'full-viewport' },
         },
-        { path: ':pathMatch(.*)*', name: 'not-found', component: NotFoundView },
+        { path: ':pathMatch(.*)*', name: 'not-found', component: () => import('@/views/NotFoundView.vue') },
       ],
     },
   ],

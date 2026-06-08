@@ -7,21 +7,8 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- display=swap：先以系统字体排版，字体文件到达后再替换，减轻阻塞感；media=print+onload 将样式表移出关键渲染路径 -->
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Averia+Gruesa+Libre&family=Playfair+Display:ital,wght@0,500;1,500&display=swap"
-      media="print"
-      onload="this.media='all'"
-    />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Averia+Gruesa+Libre&family=Playfair+Display:ital,wght@0,500;1,500&display=swap"
-      />
-    </noscript>
+    <!-- 自托管字体：去 Google Fonts 外链（国内访问稳定、不依赖外部）；@font-face 用 display:swap，系统字体先排版 -->
+    <link rel="stylesheet" href="/fonts/fonts.css" />
     <link
       rel="alternate"
       type="application/rss+xml"
