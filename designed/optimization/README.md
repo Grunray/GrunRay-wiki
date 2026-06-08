@@ -19,7 +19,8 @@
 | 5 | 服务器 / 仓库清理 | 运维 | 服务器 frontend 18M→5.5M；仓库 untrack 40M zip + 1875 个 node_modules 文件 | [05](./05-server-repo-cleanup.md) |
 | 6 | SEO | SEO | sitemap（28 URL）+ robots + 静态兜底 OG meta；预渲染评估结论 | [06](./06-seo-sitemap-meta.md) |
 | 7 | 图片 WebP 内容协商 | 后端性能 | 实测 446KB→226KB（**省 48%**）；Accept 协商 + 磁盘缓存，前端零改动 | [07](./07-image-webp.md) |
-| 8 | 后续建议 | 规划 | gunicorn 替代 Flask dev server、canonical 域名统一、CI/CD 等 | [08](./08-future-recommendations.md) |
+| 8 | 后端 gunicorn | 后端性能/安全 | Flask 单线程 dev server → gunicorn 3 worker；关 debug；绑 127.0.0.1（不再对外） | [09](./09-backend-gunicorn.md) |
+| 9 | 后续建议 | 规划 | canonical 域名统一、CI/CD、HTTP/2 等 | [08](./08-future-recommendations.md) |
 
 ---
 
@@ -39,5 +40,5 @@
 ## 部署速记
 
 服务器无 git / node，部署 = 本地构建 → tar → scp → ssh 解压（旧 `dist` 备份为 `dist.bak.*` 回滚点）。
-后端为 systemd `grunray-wiki.service`，改动后 `systemctl restart`。nginx 配置改动先 `nginx -t` 再 reload。
+后端为 systemd `grunray-wiki.service`（gunicorn 3 worker，见 [09](./09-backend-gunicorn.md)），改动后 `systemctl restart`。nginx 配置改动先 `nginx -t` 再 reload。
 完整命令见各篇「部署与验证」小节。

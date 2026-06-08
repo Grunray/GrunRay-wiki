@@ -2,26 +2,11 @@
 
 本轮未做、但值得后续推进的项，按收益/性价比排序。
 
-## 1. 【高】用 gunicorn 替代 Flask 开发服务器
+## 1. ✅【已完成】用 gunicorn 替代 Flask 开发服务器
 
-后端 systemd 当前直接跑 `python run.py`，日志可见：
-
-```
-WARNING: This is a development server. Do not use it in a production deployment.
-* Debug mode: on
-```
-
-Flask 自带 server **单线程**、且开了 debug —— 多图/多请求并发时**串行排队**，这才是
-「图片加载慢」更根本的原因（比图片格式影响更大）。建议：
-
-```bash
-/var/www/GrunRay_wiki/backend/.venv/bin/pip install gunicorn
-# systemd ExecStart 改为（4 worker 示例）：
-# gunicorn -w 4 -b 127.0.0.1:5000 "app:create_app()"
-```
-
-并关闭 debug 模式（生产不应开 `Debug mode: on` / Werkzeug 调试器）。
-> 属于改动后端运行方式，需停机重启验证，建议单独安排。
+原 systemd 直接跑 `python run.py`（Flask 单线程开发服务器 + debug on），并发请求串行排队，
+是「图片加载慢」更根本的原因。**已切换为 gunicorn 3 worker、关闭 debug、绑回环 127.0.0.1**，
+详见 [09-backend-gunicorn.md](./09-backend-gunicorn.md)。
 
 ## 2. 【中】canonical 域名统一（www vs 非 www）
 
