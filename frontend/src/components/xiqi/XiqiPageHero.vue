@@ -95,7 +95,7 @@ function onPointerLeave() {
 
     <template v-if="hasMedia">
       <div class="xiqi-hero-media" aria-hidden="true">
-        <AppImage :src="resolvedMedia ?? ''" :alt="mediaAlt" eager :min-loader-ms="700" />
+        <AppImage :src="resolvedMedia ?? ''" :alt="mediaAlt" eager :min-loader-ms="1500" />
       </div>
     </template>
 
