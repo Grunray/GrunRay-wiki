@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
+import AppImage from '@/components/ui/AppImage.vue'
 import { fetchXiqiPageConfig } from '@/services/fragmentsApi'
 import { resolveXiqiHeroImage } from '@/theme/xiqiHeroMedia'
 
@@ -94,12 +95,7 @@ function onPointerLeave() {
 
     <template v-if="hasMedia">
       <div class="xiqi-hero-media" aria-hidden="true">
-        <img
-          :src="resolvedMedia"
-          :alt="mediaAlt"
-          loading="eager"
-          decoding="async"
-        />
+        <AppImage :src="resolvedMedia ?? ''" :alt="mediaAlt" eager :min-loader-ms="700" />
       </div>
     </template>
 
