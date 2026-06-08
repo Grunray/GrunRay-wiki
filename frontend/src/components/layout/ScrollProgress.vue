@@ -1,37 +1,49 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { gsap } from 'gsap'
-import 'gsap/ScrollTrigger'
 
 /**
  * 顶部滚动进度条：液态玻璃绿渐变细线，scaleX 随页面滚动 0→1。
- * 用 ScrollTrigger scrub 平滑跟随；gsap.context 统一在卸载时 revert（含 ScrollTrigger）。
+ * 实时计算（每帧用当前页面高度），并减去底部 footer 揭开预留区，
+ * 使「滚到内容底」即为 100%——避免：
+ *   1) footer 预留滚动区把总长算大，导致到内容底还不满；
+ *   2) 异步内容（如博客正文）加载后总高变化、ScrollTrigger 不刷新导致提前满。
+ * GSAP quickTo 平滑跟随。
  */
 const barRef = ref<HTMLElement | null>(null)
-let ctx: ReturnType<typeof gsap.context> | undefined
+let setScaleX: ((value: number) => void) | null = null
+let rafId = 0
+
+function computeProgress(): number {
+  const root = document.documentElement
+  const reveal = parseFloat(getComputedStyle(root).getPropertyValue('--footer-reveal-space')) || 0
+  const max = root.scrollHeight - window.innerHeight - reveal
+  if (max <= 0) return 0
+  return Math.min(1, Math.max(0, window.scrollY / max))
+}
+
+function update() {
+  rafId = 0
+  setScaleX?.(computeProgress())
+}
+
+function requestUpdate() {
+  if (rafId) return
+  rafId = requestAnimationFrame(update)
+}
 
 onMounted(() => {
   if (!barRef.value) return
-  ctx = gsap.context(() => {
-    gsap.fromTo(
-      barRef.value,
-      { scaleX: 0 },
-      {
-        scaleX: 1,
-        ease: 'none',
-        transformOrigin: 'left center',
-        scrollTrigger: {
-          start: 0,
-          end: 'max',
-          scrub: 0.3,
-        },
-      },
-    )
-  })
+  setScaleX = gsap.quickTo(barRef.value, 'scaleX', { duration: 0.3, ease: 'power3.out' })
+  update()
+  window.addEventListener('scroll', requestUpdate, { passive: true })
+  window.addEventListener('resize', requestUpdate, { passive: true })
 })
 
 onUnmounted(() => {
-  ctx?.revert()
+  if (rafId) cancelAnimationFrame(rafId)
+  window.removeEventListener('scroll', requestUpdate)
+  window.removeEventListener('resize', requestUpdate)
 })
 </script>
 
