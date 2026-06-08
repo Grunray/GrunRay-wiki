@@ -53,6 +53,32 @@ function photoBgEnabledOnDocument(): boolean {
   return document.documentElement.dataset.photoBg === 'true'
 }
 
+let photoBgPreloader: HTMLImageElement | null = null
+
+/** 预加载背景图：标记 loading 态（CSS 触发光晕呼吸 + blur-up），加载完成/失败后清除 */
+function preloadPhotoBg(url: string): void {
+  const root = document.documentElement
+  if (root.dataset.photoBg !== 'true') return
+  root.dataset.photoBgLoading = 'true'
+  const img = new Image()
+  photoBgPreloader = img
+  const done = () => {
+    if (photoBgPreloader === img) {
+      photoBgPreloader = null
+      delete root.dataset.photoBgLoading
+    }
+  }
+  img.onload = done
+  img.onerror = done
+  img.src = url
+  if (img.complete) done()
+}
+
+/** 在已开启背景的当前页重新触发一次加载动画（用于刚开启 photo-bg 时） */
+export function preloadCurrentPhotoBg(): void {
+  if (lastResolvedPhotoBgUrl) preloadPhotoBg(lastResolvedPhotoBgUrl)
+}
+
 export function applyPagePhotoBackgroundToDocument(route: RouteLocationNormalized): void {
   const url = resolvePagePhotoBackgroundUrl(route)
   const root = document.documentElement
@@ -78,4 +104,5 @@ export function applyPagePhotoBackgroundToDocument(route: RouteLocationNormalize
   }
 
   lastResolvedPhotoBgUrl = url
+  if (enabled) preloadPhotoBg(url)
 }

@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 
 import type { ThemeId } from '@/types/content'
 import { setPageCorruptState } from '@/theme/pageCorruptState'
+import { preloadCurrentPhotoBg } from '@/theme/pagePhotoBackgrounds'
 
 const STORAGE_THEME = 'ui.theme'
 const STORAGE_THEME_ABSTRACT_UNLOCKED = 'ui.themeAbstractUnlocked'
@@ -34,6 +35,8 @@ function readPhotoBackground(): boolean {
 function applyPhotoBgToDocument(enabled: boolean) {
   if (enabled) {
     document.documentElement.dataset.photoBg = 'true'
+    // 刚开启背景：触发当前页背景图的加载动画（光晕呼吸 + blur-up）
+    preloadCurrentPhotoBg()
   } else {
     delete document.documentElement.dataset.photoBg
   }

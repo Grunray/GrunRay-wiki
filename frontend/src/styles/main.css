@@ -432,6 +432,63 @@ html[data-photo-bg='true'] body::before {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  /* Blur-up：加载完成时从模糊压暗 → 清晰归位淡入 */
+  transition:
+    filter 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 背景图加载期：模糊 + 压暗 + 轻微放大；加载完移除该态即触发 blur-up */
+html[data-photo-bg-loading='true'] body::before {
+  filter: blur(26px) brightness(0.72) saturate(0.92);
+  transform: scale(1.08);
+}
+
+/* 背景图加载期：屏幕中心主题绿柔光呼吸（液态玻璃式「酝酿」），加载完淡出 */
+html[data-photo-bg='true'] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    closest-side at 50% 46%,
+    color-mix(in srgb, var(--color-accent) 30%, transparent) 0%,
+    color-mix(in srgb, var(--color-accent) 12%, transparent) 40%,
+    transparent 72%
+  );
+  transition: opacity 0.6s ease;
+}
+
+html[data-photo-bg-loading='true'] body::after {
+  animation: photo-bg-loading-pulse 1.7s ease-in-out infinite;
+}
+
+@keyframes photo-bg-loading-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.86);
+  }
+  50% {
+    opacity: 0.82;
+    transform: scale(1.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-photo-bg='true'] body::before {
+    transition: none;
+  }
+  html[data-photo-bg-loading='true'] body::before {
+    filter: none;
+    transform: none;
+  }
+  html[data-photo-bg-loading='true'] body::after {
+    animation: none;
+    opacity: 0.5;
+  }
 }
 
 html[data-photo-bg='true']::before {
