@@ -44,6 +44,26 @@ def create_app():
         body = build_rss_xml(rows)
         return Response(body, mimetype="application/rss+xml; charset=utf-8")
 
+    @app.get("/sitemap.xml")
+    def sitemap_xml():
+        from flask import Response
+
+        from app.db import cursor
+        from app.sitemap_feed import build_sitemap_xml, fetch_sitemap_rows
+
+        with cursor() as cur:
+            data = fetch_sitemap_rows(cur)
+        body = build_sitemap_xml(data)
+        return Response(body, mimetype="application/xml; charset=utf-8")
+
+    @app.get("/robots.txt")
+    def robots_txt():
+        from flask import Response
+
+        from app.sitemap_feed import build_robots_txt
+
+        return Response(build_robots_txt(), mimetype="text/plain; charset=utf-8")
+
     app.register_blueprint(api_bp)
     app.register_blueprint(fragments_bp)
     app.register_blueprint(auth_bp)
