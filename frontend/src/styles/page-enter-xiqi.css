@@ -132,20 +132,6 @@
     transform: none;
   }
 
-  .xiqi-detail-enter-active,
-  .xiqi-detail-leave-active {
-    transition: opacity 0.2s ease;
-  }
-
-  .xiqi-detail-enter-from,
-  .xiqi-detail-leave-to {
-    transform: none;
-  }
-
-  .xiqi-card--interactive:hover {
-    transform: none;
-  }
-
   .xiqi-detail-close:hover {
     transform: none;
   }
