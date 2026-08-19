@@ -25,6 +25,14 @@ export default defineConfig({
       },
     },
   },
+  optimizeDeps: {
+    /* 上游 bug（vitejs/vite#22303）：懒加载路由（项目详情→MarkdownBlock）里的
+     * dep 在导航中途触发 re-optimize，已 serve 模块里硬编码的旧 ?v= hash 立即
+     * 504 → 动态 import 失败 → 点击卡片路由中止「没反应」。include 预声明在
+     * rolldown-vite 8 的按需打包下不生效；marked/dompurify 均为纯 ESM 且无
+     * 运行时依赖，直接 exclude 出优化管线，从根上避开 hash 竞态。 */
+    exclude: ['marked', 'dompurify'],
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),

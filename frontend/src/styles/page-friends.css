@@ -456,7 +456,7 @@
 
 .friends-apply-entry:hover {
   text-decoration: none;
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   border-left-color: var(--color-accent);
 }
 
