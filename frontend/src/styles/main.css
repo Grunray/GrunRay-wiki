@@ -2,6 +2,7 @@
 @import './themes/tokens.dark.css';
 @import './themes/tokens.abstract.css';
 @import './themes/page-corrupt.css';
+@import './card-hover-g.css';
 
 *,
 *::before,
@@ -12,8 +13,11 @@
 html {
   min-height: 100%;
   font-family: var(--font-sans);
+  /* 基准 17px（106.25%）：Windows 中文在 <13px 明显发虚，全局 rem 等比放大 6.25%（DESIGN.md §3） */
+  font-size: 106.25%;
   color: var(--color-text);
   background: var(--color-bg-base);
+  --app-main-max: 960px;
   /* 首屏默认；导航后由 router.afterEach + theme/pagePhotoBackgrounds.ts 写入内联 --page-photo-bg-image */
   --page-photo-bg-image: url('/api/media/files/film/main/background/bg_homeview.png');
   transition:
@@ -25,7 +29,8 @@ body {
   margin: 0;
   min-height: 100vh;
   min-height: 100dvh;
-  line-height: 1.55;
+  /* 中文阅读行高偏松（DESIGN.md §3） */
+  line-height: 1.7;
 }
 
 /* 全局隐藏滚动条（保留滚动能力） */
@@ -77,12 +82,19 @@ a:hover {
 }
 
 .app-root {
+  --app-main-max: 960px;
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   min-height: 100dvh;
+}
+
+/* 详情滚动侧栏 Teleport 挂点：在 app-page-cover 外，避免 footer clip；fixed 子项相对视口 */
+.detail-scroll-rail-host {
+  position: relative;
+  z-index: 40;
 }
 
 /*
@@ -130,7 +142,8 @@ html[data-footer-revealing] .app-page-cover {
   padding: 1rem;
 }
 
-/* 液态玻璃卡片（参考 designed/LiquidGlass post-card 思路：半透明 + backdrop-filter） */
+/* 卡片：纸面/终端面 + hairline 边（材质由 glass 令牌承载，DESIGN.md §4）
+ * 纸面纪律：卡片不做 hover 扫光/浮起；可点击卡的反馈由组件自身定义（如 timeline-card）。 */
 .card {
   position: relative;
   isolation: isolate;
@@ -138,8 +151,8 @@ html[data-footer-revealing] .app-page-cover {
   border-radius: var(--radius-md);
   border: 1px solid var(--glass-card-border);
   background: var(--glass-card-bg);
-  backdrop-filter: blur(var(--glass-blur)) saturate(140%) brightness(1.02);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%) brightness(1.02);
+  backdrop-filter: blur(var(--glass-blur)) saturate(112%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(112%);
   box-shadow: var(--shadow-card);
   padding: 1rem 1.25rem;
   transform: translateZ(0);
@@ -149,34 +162,14 @@ html[data-footer-revealing] .app-page-cover {
     border-color 0.22s ease;
 }
 
-.card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 0;
-  background: linear-gradient(
-    120deg,
-    transparent 22%,
-    color-mix(in srgb, var(--color-accent) 18%, transparent) 50%,
-    transparent 76%
-  );
-  transform: translate3d(-35%, 0, 0);
-  transition:
-    opacity 0.28s ease,
-    transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
 .card > * {
   position: relative;
   z-index: 1;
 }
 
 /*
- * 更不透明的液态玻璃：glass token 与页面底色混色，正文可读性更好。
- * 配方参考 footer-grunray fallback 与 Blog 筛选按钮的 surface 混色。
+ * 更不透明的面：glass token 与页面底色混色，正文可读性更好。
+ * 纸面纪律：不再叠 accent 渐变，层级靠色阶（DESIGN.md §6）。
  */
 .card.card-overflow-visible {
   overflow: visible;
@@ -188,11 +181,6 @@ html[data-footer-revealing] .app-page-cover {
 
 .card.card-glass-dense {
   background: color-mix(in srgb, var(--glass-card-bg) 88%, var(--color-bg-base));
-  background-image: linear-gradient(
-    165deg,
-    color-mix(in srgb, var(--color-accent) 5%, transparent) 0%,
-    transparent 50%
-  );
   box-shadow:
     var(--shadow-card),
     inset 0 1px 0 color-mix(in srgb, #fff 10%, transparent);
@@ -204,21 +192,6 @@ html[data-theme='light'] .card.card-glass-dense {
 
 html[data-photo-bg='true'] .card.card-glass-dense {
   background: color-mix(in srgb, var(--glass-card-bg) 72%, var(--color-bg-surface));
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .card:hover {
-    transform: translate3d(0, -3px, 0);
-    border-color: color-mix(in srgb, var(--color-accent) 28%, var(--glass-card-border));
-    box-shadow:
-      0 18px 40px -24px rgb(0 0 0 / 0.2),
-      var(--shadow-card);
-  }
-
-  .card:hover::after {
-    opacity: 1;
-    transform: translate3d(35%, 0, 0);
-  }
 }
 
 /*
@@ -254,9 +227,9 @@ html[data-photo-bg='true'] .card.card-glass-dense {
   border: none;
   border-bottom: 1px solid var(--glass-nav-border);
   border-radius: 0;
-  backdrop-filter: blur(var(--glass-nav-blur)) saturate(125%);
-  -webkit-backdrop-filter: blur(var(--glass-nav-blur)) saturate(125%);
-  box-shadow: 0 12px 36px -20px rgb(0 0 0 / 0.2);
+  backdrop-filter: blur(var(--glass-nav-blur)) saturate(110%);
+  -webkit-backdrop-filter: blur(var(--glass-nav-blur)) saturate(110%);
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
   z-index: 0;
   pointer-events: none;
   transition:
@@ -304,7 +277,6 @@ html[data-photo-bg='true'] .card.card-glass-dense {
 
 @media (prefers-reduced-motion: reduce) {
   .card,
-  .card::after,
   .glass-nav-sticky-wrap,
   .glass-nav-sticky-wrap::before,
   .glass-nav-inner {
@@ -313,10 +285,6 @@ html[data-photo-bg='true'] .card.card-glass-dense {
 
   .card:hover {
     transform: none;
-  }
-
-  .card:hover::after {
-    opacity: 0;
   }
 
   .btn-accent:hover:not(:disabled) {
@@ -329,16 +297,20 @@ html[data-photo-bg='true'] .card.card-glass-dense {
   font-size: 0.75rem;
   padding: 0.15rem 0.5rem;
   border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
   background: var(--color-bg-elevated);
   color: var(--color-text-muted);
   margin-right: 0.35rem;
   margin-bottom: 0.35rem;
 }
 
+/* 编辑式 kicker：mono + 大写 + 字距（DESIGN.md §4） */
 .badge {
-  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   padding: 0.2rem 0.45rem;
   border: 1px solid var(--color-border);
   color: var(--color-text-muted);
@@ -507,11 +479,11 @@ html[data-photo-bg='true']::before {
 }
 
 html[data-theme='light'][data-photo-bg='true']::before {
-  background: linear-gradient(rgb(236 242 247 / 0.12), rgb(236 242 247 / 0.12));
+  background: linear-gradient(rgb(244 241 232 / 0.32), rgb(244 241 232 / 0.32));
 }
 
 html[data-theme='dark'][data-photo-bg='true']::before {
-  background: linear-gradient(rgb(15 23 42 / 0.52), rgb(15 23 42 / 0.52));
+  background: linear-gradient(rgb(13 18 16 / 0.58), rgb(13 18 16 / 0.58));
 }
 
 /* 照片背景 URL 切换：旧图叠在新图之上再淡出（由 pagePhotoBackgrounds.ts 打 class） */
