@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>博客详情 · 滚动侧栏预览</title>
+<link rel="stylesheet" href="./shared.css" />
+</head>
+<body>
+<div class="demo-shell">
+  <p class="demo-hint" data-demo-hint>已展开 · 向下滚动到正文收拢成侧栏</p>
+
+  <article class="detail" data-detail>
+    <div class="fold-zone" data-fold-zone>
+      <p class="back" data-fold-block><a href="#">← 博客</a></p>
+
+      <div class="post-lead" data-fold-block>
+        <h1 class="title">重学线段树：从模板到懒标记</h1>
+        <p class="summary">把区间修改拆成「不下传就记住」之后，代码短了一半，也没那么容易写挂了。这篇记一下从朴素写法到懒标记的过渡。</p>
+        <div class="tags">
+          <span class="tag">数据结构</span>
+          <span class="tag">线段树</span>
+          <span class="tag">题解</span>
+        </div>
+      </div>
+
+      <dl class="spec" data-fold-block>
+        <dt>系列</dt><dd>基础数据结构复习</dd>
+        <dt>难度</dt><dd>提高 / 省选-</dd>
+        <dt>平台</dt><dd>洛谷</dd>
+        <dt>题号</dt><dd>P3372</dd>
+        <dt>OI-wiki</dt><dd><a href="https://oi-wiki.org/ds/seg/" target="_blank" rel="noopener">oi-wiki.org/ds/seg</a></dd>
+      </dl>
+    </div>
+
+    <div class="body-zone prose" data-body-zone>
+      <h2>为什么又回来写线段树</h2>
+      <p>第一次学的时候只会抄模板，区间加、区间求和背得滚瓜烂熟，一到要下传标记就开始抖。后来才明白，<strong>懒标记不是优化，是把「以后会做」改成「现在先记账」</strong>。</p>
+      <p>这篇用同一道题（P3372）从朴素写法一路改到带懒标记的版本，每一步都保留可提交的代码。</p>
+
+      <h2>先把查询写对</h2>
+      <p>查询没有标记要管，逻辑最短。很多同学先写修改再写查询，改到后面查询也带一堆 pushdown，反而乱。</p>
+      <pre><code>long long query(int p, int l, int r, int x, int y) {
+    if (x &lt;= l &amp;&amp; r &lt;= y) return sum[p];
+    pushdown(p, l, r);
+    int mid = (l + r) &gt;&gt; 1;
+    long long ans = 0;
+    if (x &lt;= mid) ans += query(p &lt;&lt; 1, l, mid, x, y);
+    if (y &gt; mid) ans += query(p &lt;&lt; 1 | 1, mid + 1, r, x, y);
+    return ans;
+}</code></pre>
+
+      <blockquote>pushdown 只在「要继续往下走」的时候调用，叶子节点不需要。</blockquote>
+
+      <h2>懒标记到底记什么</h2>
+      <p>对区间加来说，标记就是「这个整段还要再加多少」。记的是<strong>还没下传的部分</strong>，不是累计总和。</p>
+      <p>写的时候可以问自己：如果这一层再也不被访问，这个值留在当前节点对不对？对，就对了。</p>
+
+      <h2>常见挂点</h2>
+      <p>1. 标记下传后忘了清零；2. pushdown 里先改儿子再改标记，顺序反了；3. 区间赋值和区间加混用时不处理覆盖关系。</p>
+      <p>这些在调试时都很疼，不如写的时候就用同一套模板，少自由发挥。</p>
+
+      <h2>最后</h2>
+      <p>线段树不难，难的是忍住不提前优化。先把朴素版本写稳，再一格一格往上加功能。</p>
+    </div>
+  </article>
+
+  <aside class="sidebar-rail" data-sidebar-rail aria-hidden="true">
+    <span class="sidebar-spine" data-sidebar-spine aria-hidden="true"></span>
+    <div class="sidebar-card" data-sidebar-card>
+      <p class="side-kicker">本文信息</p>
+      <h3 class="side-title">重学线段树：从模板到懒标记</h3>
+      <div data-sidebar-slots></div>
+    </div>
+  </aside>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="./shared.js"></script>
+</body>
+</html>
