@@ -163,20 +163,17 @@ watch(
   transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.group-trigger:hover,
+/* hover 只提文字色 + 生长线（与 .link 同语言）；展开/选中态才给染色底 */
+.group-trigger:hover {
+  color: var(--color-text);
+}
+
 .nav-group:focus-within > .group-trigger,
 .nav-group.is-expanded > .group-trigger,
 .group-trigger.active {
   color: var(--color-text);
   background-color: color-mix(in srgb, var(--color-accent) 18%, transparent);
   border-color: color-mix(in srgb, var(--color-accent) 16%, transparent);
-  transform: translateY(-2px) scale(1.015);
-}
-
-.group-trigger:hover .link-icon:not(.link-icon--chevron),
-.nav-group:focus-within > .group-trigger .link-icon:not(.link-icon--chevron),
-.nav-group.is-expanded > .group-trigger .link-icon:not(.link-icon--chevron) {
-  transform: translateY(-1px) rotate(-2deg);
 }
 
 .group-trigger.active {
@@ -210,7 +207,12 @@ watch(
   width: 0;
   height: 2px;
   border-radius: 10px;
-  background: linear-gradient(90deg, transparent, rgb(153 210 174 / 70%), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-accent) 70%, transparent),
+    transparent
+  );
   transition: width 0.5s ease, left 0.5s ease, opacity 0.35s ease;
   pointer-events: none;
 }
@@ -259,8 +261,8 @@ watch(
   padding: 0.65rem;
   border-radius: 1.25rem;
   background: color-mix(in srgb, var(--glass-nav-bg) 72%, rgb(248 252 249 / 55%));
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(var(--glass-nav-blur));
+  -webkit-backdrop-filter: blur(var(--glass-nav-blur));
   border: 1px solid color-mix(in srgb, var(--glass-nav-border) 55%, rgb(220 234 226 / 70%));
   box-shadow: 0 16px 40px rgb(124 148 136 / 12%);
   transform-origin: top left;
@@ -329,16 +331,15 @@ watch(
     color 0.35s ease;
 }
 
-.dropdown-item:hover,
-.dropdown-item.active {
-  background: color-mix(in srgb, var(--color-accent) 22%, transparent);
+/* hover = 色阶表面 + 轻移；active（当前页）才给 accent 染色 */
+.dropdown-item:hover {
+  background: var(--color-bg-elevated);
   color: var(--color-text);
-  transform: translateX(4px);
 }
 
-.dropdown-item:hover .link-icon,
-.dropdown-item.active .link-icon {
-  transform: translateY(-1px) rotate(-3deg);
+.dropdown-item.active {
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  color: var(--color-text);
 }
 
 .dropdown-item .link-icon {
