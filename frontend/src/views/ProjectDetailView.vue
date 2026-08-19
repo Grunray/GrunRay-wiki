@@ -3,7 +3,9 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
+import DetailScrollSidebar from '@/components/detail/DetailScrollSidebar.vue'
 import ProjectDetailPageSkeleton from '@/components/ui/ProjectDetailPageSkeleton.vue'
+import { useDetailScrollSidebar } from '@/composables/useDetailScrollSidebar'
 import { restartPageEnter } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
@@ -19,6 +21,11 @@ const project = ref<Project | null>(null)
 const loading = ref(true)
 const loadError = ref(false)
 const articleRoot = ref<HTMLElement | null>(null)
+const foldZoneRef = ref<HTMLElement | null>(null)
+const sidebarContentKey = computed(() => project.value?.slug ?? '')
+const { progress: sidebarProgress, wideEnough: sidebarWide } = useDetailScrollSidebar(foldZoneRef, {
+  contentKey: sidebarContentKey,
+})
 const ok = computed(() => {
   const p = project.value
   return p && canAccessProjectPublic(p)
@@ -127,22 +134,22 @@ useSeoMeta(() => {
   </article>
   <ProjectDetailPageSkeleton v-else-if="loading" />
   <article v-else-if="ok && project" ref="articleRoot" class="project-detail">
-    <p class="back">
-      <RouterLink to="/projects">← {{ t('common.back') }}</RouterLink>
-    </p>
+    <div ref="foldZoneRef" class="project-fold">
+      <p class="back">
+        <RouterLink to="/projects">← {{ t('common.back') }}</RouterLink>
+      </p>
 
-    <header class="hero card">
-      <div class="head">
-        <h1 class="title">{{ project.title }}</h1>
-        <span v-if="project.status === 'archived'" class="badge">{{ t('projects.archived') }}</span>
-      </div>
-      <p class="summary">{{ project.summary }}</p>
-      <div class="tags">
-        <span v-for="tag in project.tags" :key="tag" class="tag">{{ tag }}</span>
-      </div>
-    </header>
+      <header class="hero card">
+        <div class="head">
+          <h1 class="title">{{ project.title }}</h1>
+          <span v-if="project.status === 'archived'" class="badge">{{ t('projects.archived') }}</span>
+        </div>
+        <p class="summary">{{ project.summary }}</p>
+        <div class="tags">
+          <span v-for="tag in project.tags" :key="tag" class="tag">{{ tag }}</span>
+        </div>
+      </header>
 
-    <div class="detail-grid">
       <div class="top-panels">
         <section class="card facts">
           <h2 class="card-title">{{ t('projects.factsTitle') }}</h2>
@@ -173,7 +180,9 @@ useSeoMeta(() => {
           </div>
         </section>
       </div>
+    </div>
 
+    <div class="detail-grid">
       <section class="main-content">
         <!-- <section class="card content-head">
           <h2 class="content-title">{{ t('projects.contentTitle') }}</h2>
@@ -183,12 +192,48 @@ useSeoMeta(() => {
         </div>
       </section>
     </div>
+
+    <DetailScrollSidebar
+      v-if="sidebarWide"
+      :progress="sidebarProgress"
+      :kicker="t('projects.sidebarKicker')"
+      :title="project.title"
+      :label="t('projects.sidebarLabel')"
+    >
+      <p v-if="project.summary" class="summary">{{ project.summary }}</p>
+      <div v-if="project.tags.length" class="tags">
+        <span v-for="tag in project.tags" :key="tag" class="tag">{{ tag }}</span>
+      </div>
+      <dl class="meta">
+        <dt>{{ t('projects.factsPeriod') }}</dt>
+        <dd>{{ periodText }}</dd>
+        <dt>{{ t('projects.factsStatus') }}</dt>
+        <dd>{{ project.status === 'archived' ? t('projects.archived') : t('projects.active') }}</dd>
+      </dl>
+      <div class="actions">
+        <a
+          v-if="project.github_url"
+          :href="project.github_url"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {{ t('projects.openGithub') }}
+        </a>
+        <RouterLink :to="`/projects/${project.slug}/notes`">{{ t('projects.notes') }}</RouterLink>
+      </div>
+    </DetailScrollSidebar>
   </article>
   <p v-else class="empty">{{ t('common.notFound') }}</p>
 </template>
 
 <style scoped>
 .project-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.project-fold {
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
