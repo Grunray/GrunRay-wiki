@@ -39,7 +39,17 @@ const { t } = useI18n()
 }
 .title {
   margin: 0;
-  font-size: 1.1rem;
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+.title a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+.title a:hover {
+  color: var(--color-accent);
+  text-decoration: none;
 }
 .summary {
   margin: 0.5rem 0;
@@ -48,6 +58,8 @@ const { t } = useI18n()
 }
 .meta {
   margin: 0.75rem 0 0;
-  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
 }
 </style>
