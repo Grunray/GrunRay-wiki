@@ -92,7 +92,7 @@ onMounted(async () => {
       </section>
 
       <div class="about-facts-grid">
-        <section class="about-block card card-glass-dense" aria-labelledby="about-edu-heading">
+        <section class="about-block" aria-labelledby="about-edu-heading">
           <h2 id="about-edu-heading" class="about-block-title">{{ t('about.education') }}</h2>
           <p class="about-block-primary">
             {{ profile.education.schoolPublic }} · {{ profile.education.degree }}
@@ -109,7 +109,7 @@ onMounted(async () => {
           </p>
         </section>
 
-        <section class="about-block card card-glass-dense" aria-labelledby="about-intern-heading">
+        <section class="about-block" aria-labelledby="about-intern-heading">
           <h2 id="about-intern-heading" class="about-block-title">{{ t('about.internship') }}</h2>
           <p class="about-block-primary">{{ profile.internship.companyPublic }}</p>
           <p class="about-block-secondary">
@@ -139,7 +139,7 @@ onMounted(async () => {
       </section>
 
       <div class="about-facts-grid">
-        <section class="about-block card card-glass-dense" aria-labelledby="about-club-heading">
+        <section class="about-block" aria-labelledby="about-club-heading">
           <h2 id="about-club-heading" class="about-block-title">{{ t('about.club') }}</h2>
           <p class="about-block-primary about-block-primary--private">
             <AboutPrivateText
@@ -158,7 +158,7 @@ onMounted(async () => {
           </p>
         </section>
 
-        <section class="about-block card card-glass-dense" aria-labelledby="about-cert-heading">
+        <section class="about-block" aria-labelledby="about-cert-heading">
           <h2 id="about-cert-heading" class="about-block-title">{{ t('about.certificates') }}</h2>
           <ul class="about-cert-list">
             <li v-for="cert in profile.certificates" :key="cert">{{ cert }}</li>

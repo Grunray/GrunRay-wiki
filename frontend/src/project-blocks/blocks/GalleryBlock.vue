@@ -7,6 +7,7 @@ defineProps<{ block: ProjectLayoutBlock }>()
 </script>
 
 <template>
+  <!-- 画廊是媒体，允许保留卡片厚度（DESIGN.md §6） -->
   <section class="block card">
     <h2 v-if="block.title" class="title">{{ block.title }}</h2>
     <div v-if="block.images?.length" class="grid">
@@ -24,7 +25,9 @@ defineProps<{ block: ProjectLayoutBlock }>()
 }
 .title {
   margin: 0 0 0.75rem;
-  font-size: 1.15rem;
+  font-family: var(--font-serif);
+  font-size: 1.18rem;
+  font-weight: 600;
 }
 .grid {
   display: grid;

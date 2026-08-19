@@ -970,19 +970,20 @@ onMounted(async () => {
   min-height: 5.5rem;
   padding: 0.72rem 0.85rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--glass-card-border);
-  background: color-mix(in srgb, var(--color-bg-base) 50%, var(--glass-card-bg));
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
   color: var(--color-text);
   font: inherit;
   line-height: 1.55;
   resize: vertical;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease;
 }
 
+/* focus = 2px accent outline（DESIGN.md §7） */
 .message-compose-textarea:focus {
-  outline: none;
-  border-color: color-mix(in srgb, var(--color-accent) 48%, var(--glass-card-border));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 18%, transparent);
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+  border-color: transparent;
 }
 
 .message-char-count {
