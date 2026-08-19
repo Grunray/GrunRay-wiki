@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>项目详情 · 滚动侧栏预览</title>
+<link rel="stylesheet" href="./shared.css" />
+<style>
+  /* 项目详情比博客宽，正文之上是 hero + 两张面板卡 */
+  .detail { max-width: 60rem; }
+  @media (min-width: 1100px) {
+    .detail.is-folded .body-zone { margin-left: 17.5rem; max-width: calc(100% - 17.5rem); }
+  }
+  .sidebar-rail { left: max(1rem, calc(50vw - 34rem)); }
+</style>
+</head>
+<body>
+<div class="demo-shell">
+  <p class="demo-hint" data-demo-hint>已展开 · 向下滚动到正文收拢成侧栏</p>
+
+  <article class="detail" data-detail>
+    <div class="fold-zone" data-fold-zone>
+      <p class="back" data-fold-block><a href="#">← 返回</a></p>
+
+      <header class="proj-hero" data-fold-block>
+        <h1 class="title">GrunRay wiki</h1>
+        <p class="summary">个人 wiki / 博客 / 项目展示一体站，前端 Vue 3 + Vite，后端 FastAPI，自己写导入工具把 Markdown 灌进数据库。</p>
+        <div class="tags">
+          <span class="tag">Vue 3</span>
+          <span class="tag">FastAPI</span>
+          <span class="tag">SQLite</span>
+          <span class="tag">个人站点</span>
+        </div>
+      </header>
+
+      <div class="proj-panels" data-fold-block>
+        <section class="card">
+          <h2>项目信息</h2>
+          <dl class="spec" style="margin:0;padding:0;border:none;grid-template-columns:5.5rem 1fr;">
+            <dt>周期</dt><dd>2026/03 - 进行中</dd>
+            <dt>状态</dt><dd>进行中</dd>
+          </dl>
+        </section>
+        <section class="card">
+          <h2>操作</h2>
+          <div class="btn-row">
+            <a class="btn-accent" href="#" onclick="return false">打开 GitHub</a>
+            <a class="btn-accent" href="#" onclick="return false">笔记</a>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div class="body-zone prose" data-body-zone>
+      <h2>为什么又写了一个 wiki</h2>
+      <p>不想再依赖第三方笔记：文章、项目、胶片、留言都想放在自己库里，顺便把 SEO 和主题也自己控制。</p>
+      <p>整站按「编辑式纸面」来做：纸面不是玻璃，强调色只有一个墨绿，标题衬线、正文无衬线、元数据等宽。</p>
+
+      <h2>内容不是手输的</h2>
+      <p>所有文章和项目都从 <code>backend/import</code> 下的 Markdown 导入，带 YAML front matter。改文章 = 改文件 + 重跑脚本。</p>
+      <pre><code>python content_tools/import_markdown_posts.py
+python content_tools/import_projects.py</code></pre>
+
+      <blockquote>目标是「写作在编辑器里完成，网站只是展示层」。</blockquote>
+
+      <h2>项目页是布局驱动的</h2>
+      <p>每个项目的 YAML 里带一个 <code>layout</code> 数组，overview / gallery / demo / changelog / markdown 都是 block，前端按顺序渲染，正文段落本身平铺，不再套卡片。</p>
+      <p>这样项目页可以长很不一一样，但阅读节奏是一致的。</p>
+
+      <h2>接下来</h2>
+      <p>文章详情滚动侧栏（系列 / 难度 / OI-wiki）单独做，先出动画原型再落进 Vue。</p>
+    </div>
+  </article>
+
+  <aside class="sidebar-rail" data-sidebar-rail aria-hidden="true">
+    <span class="sidebar-spine" data-sidebar-spine aria-hidden="true"></span>
+    <div class="sidebar-card" data-sidebar-card>
+      <p class="side-kicker">项目信息</p>
+      <h3 class="side-title">GrunRay wiki</h3>
+      <div data-sidebar-slots></div>
+    </div>
+  </aside>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="./shared.js"></script>
+</body>
+</html>

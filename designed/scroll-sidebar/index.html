@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>106-2 详情滚动侧栏 · 动画方案对比</title>
+<style>
+  /* ===== 站点令牌（浅色纸面，与 DESIGN.md 对齐） ===== */
+  :root {
+    --bg: #f4f1e8;
+    --surface: #faf8f1;
+    --elev: #ece7d8;
+    --ink: #2b2823;
+    --muted: #6e675b;
+    --faint: #a39a88;
+    --border: #ddd5c2;
+    --accent: #2e6b4f;
+    --accent-muted: #9dbba9;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --shadow-card: 0 1px 2px rgb(43 40 35 / 5%);
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --font-serif: 'Noto Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
+    --font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: auto; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-size: 17px;
+    line-height: 1.75;
+  }
+
+  .page {
+    max-width: 88rem;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 8rem;
+  }
+
+  .page-head {
+    margin-bottom: 2.2rem;
+    padding-bottom: 1.4rem;
+    border-bottom: 2px solid color-mix(in srgb, var(--ink) 82%, transparent);
+  }
+  .page-head .kicker {
+    margin: 0 0 0.3rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+  }
+  .page-head h1 {
+    margin: 0 0 0.3rem;
+    font-family: var(--font-serif);
+    font-size: clamp(1.5rem, 3vw, 1.9rem);
+    font-weight: 600;
+  }
+  .page-head p { margin: 0; color: var(--muted); font-size: 0.95rem; max-width: 46rem; }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0 0 1.8rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .toolbar button {
+    padding: 0.32rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+  }
+  .toolbar button:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+  .toolbar button[data-scheme].is-active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  }
+
+  .scheme-note {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .scheme-note code {
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    background: var(--elev);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+  }
+
+  /* ===== 每套方案 = 一个可滚动 iframe 预览窗（单列上下排列） ===== */
+  .preview-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+  .preview-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    min-width: 0;
+  }
+  .preview-card .bar {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .preview-card .bar h2 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.02rem;
+    font-weight: 600;
+  }
+  .preview-card .bar span {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: var(--faint);
+    letter-spacing: 0.05em;
+  }
+  .preview-card iframe {
+    display: block;
+    width: 100%;
+    height: min(78vh, 52rem);
+    border: 0;
+    background: var(--bg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="page-head">
+    <p class="kicker">106-2 · TODO 文章详情滚动侧栏</p>
+    <h1>博客详情 / 项目详情 · 正文以上收成侧栏</h1>
+    <p>向下滚动到正文区间时，题录、元信息、操作按钮<strong>随滚动丝滑收拢</strong>成左侧固定侧栏（ScrollTrigger scrub）；向上滚回则展开。下方先博客详情，再项目详情。</p>
+  </header>
+
+  <div class="toolbar" role="toolbar" aria-label="动画方案">
+    <button type="button" data-scheme="flip" class="is-active">A · FLIP 回流</button>
+    <button type="button" data-scheme="fold">B · 折缝掀起</button>
+    <button type="button" data-scheme="stack">C · 逐块错开归位</button>
+    <button type="button" data-scheme="ghost">D · 纸面淡出，侧栏印出</button>
+  </div>
+
+  <p class="scheme-note" id="scheme-note">方案 A：原区块直接「飞」到侧栏位置，最接近真实实现（GSAP Flip）。</p>
+
+  <div class="preview-grid">
+    <section class="preview-card">
+      <div class="bar"><h2>博客详情（题解版式）</h2><span>post-detail</span></div>
+      <iframe id="frame-post" src="./post.html" title="博客详情预览"></iframe>
+    </section>
+    <section class="preview-card">
+      <div class="bar"><h2>项目详情（宽版式）</h2><span>project-detail</span></div>
+      <iframe id="frame-project" src="./project.html" title="项目详情预览"></iframe>
+    </section>
+  </div>
+</div>
+
+<script>
+  const note = document.getElementById('scheme-note')
+  const frames = [document.getElementById('frame-post'), document.getElementById('frame-project')]
+  const notes = {
+    flip: '方案 A：滚动联动 FLIP，块随 scrub 飞向侧栏，带轻微旋转与阴影。',
+    fold: '方案 B：题录区 clip 折起 + rotateX 透视，侧栏 accent 竖线生长。',
+    stack: '方案 C：各块错开 110ms 进度，依次落位，节奏更明显。',
+    ghost: '方案 D：题录随滚动自然离开视口，滚出后侧栏卡片淡入印出。',
+  }
+  document.querySelectorAll('[data-scheme]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-scheme]').forEach((b) => b.classList.toggle('is-active', b === btn))
+      note.textContent = notes[btn.dataset.scheme]
+      frames.forEach((f) => {
+        try { f.contentWindow.postMessage({ type: 'scroll-sidebar-scheme', scheme: btn.dataset.scheme }, '*') } catch (e) {}
+      })
+    })
+  })
+  window.addEventListener('message', (ev) => {
+    if (ev.data?.type === 'scroll-sidebar-ready') {
+      const active = document.querySelector('[data-scheme].is-active')
+      ev.source.postMessage({ type: 'scroll-sidebar-scheme', scheme: active?.dataset.scheme || 'flip' }, '*')
+    }
+  })
+</script>
+</body>
+</html>
