@@ -66,7 +66,9 @@ const hasDemoUrl = computed(() => Boolean(props.block.demoUrl))
 
 .title {
   margin: 0 0 0.4rem;
-  font-size: 1.1rem;
+  font-family: var(--font-serif);
+  font-size: 1.18rem;
+  font-weight: 600;
 }
 
 .body {

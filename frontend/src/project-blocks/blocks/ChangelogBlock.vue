@@ -5,7 +5,7 @@ defineProps<{ block: ProjectLayoutBlock }>()
 </script>
 
 <template>
-  <section class="block card">
+  <section class="block">
     <h2 v-if="block.title" class="title">{{ block.title }}</h2>
     <div v-if="block.body" class="prose">{{ block.body }}</div>
   </section>
@@ -14,10 +14,14 @@ defineProps<{ block: ProjectLayoutBlock }>()
 <style scoped>
 .block {
   margin-bottom: 0;
-  padding: 0.95rem 1rem;
+  padding: 1rem 0 1.1rem;
+  border-top: 1px solid var(--color-border);
 }
 .title {
   margin: 0 0 0.5rem;
-  font-size: 1.15rem;
+  font-family: var(--font-serif);
+  font-size: 1.18rem;
+  font-weight: 600;
+  color: var(--color-text);
 }
 </style>

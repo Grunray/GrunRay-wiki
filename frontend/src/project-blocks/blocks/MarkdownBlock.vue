@@ -26,18 +26,18 @@ const bodyHtml = computed(() => {
 </template>
 
 <style scoped>
+/* 与 PostDetailView 正文 `.body` 一致：平铺阅读，不加框 */
 .block-markdown-reading {
   margin-bottom: 0;
-  padding: 1rem 1.25rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
-  background: var(--color-reading-bg, var(--color-bg-surface));
-  box-shadow: var(--shadow-card);
+  padding: 1rem 0 1.1rem;
+  border-top: 1px solid var(--color-border);
 }
 
 .title {
   margin: 0 0 0.65rem;
-  font-size: 1.15rem;
+  font-family: var(--font-serif);
+  font-size: 1.18rem;
+  font-weight: 600;
   color: var(--color-text);
 }
 </style>

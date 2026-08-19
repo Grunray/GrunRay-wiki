@@ -465,8 +465,8 @@ onMounted(async () => {
   width: 100%;
   padding: 0.62rem 0.75rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--glass-card-border);
-  background: color-mix(in srgb, var(--color-bg-base) 35%, var(--glass-card-bg));
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
   color: var(--color-text);
   font-size: 0.92rem;
   font-family: inherit;
@@ -474,10 +474,12 @@ onMounted(async () => {
   transition: border-color 0.2s ease;
 }
 
+/* focus = 2px accent outline（DESIGN.md §7） */
 .friends-apply-input:focus,
 .friends-apply-textarea:focus {
-  outline: none;
-  border-color: color-mix(in srgb, var(--color-accent) 45%, var(--glass-card-border));
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+  border-color: transparent;
 }
 
 .friends-apply-textarea {
