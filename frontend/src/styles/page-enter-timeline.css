@@ -103,7 +103,7 @@
 
 .projects-page.page-enter--play .timeline-item .timeline-date,
 .blog-page.page-enter--play .timeline-item .timeline-date {
-  animation: page-enter-timeline-date 0.58s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: page-enter-timeline-date 0.58s cubic-bezier(0.22, 1, 0.36, 1) backwards;
   animation-delay: calc(0.4s + var(--enter-ti, 0) * 0.1s);
 }
 
@@ -116,7 +116,7 @@
 .projects-page.page-enter--play .timeline-item .timeline-card,
 .blog-page.page-enter--play .timeline-item .timeline-card {
   transform-origin: left center;
-  animation: page-enter-timeline-card 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: page-enter-timeline-card 0.7s cubic-bezier(0.22, 1, 0.36, 1) backwards;
   animation-delay: calc(0.62s + var(--enter-ti, 0) * 0.1s);
 }
 

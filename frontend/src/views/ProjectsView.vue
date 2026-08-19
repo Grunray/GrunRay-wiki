@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
+import CardCornerVineLazy from '@/components/hover/CardCornerVineLazy.vue'
 import AppSelect from '@/components/ui/AppSelect.vue'
 import TimelinePageSkeleton from '@/components/ui/TimelinePageSkeleton.vue'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
@@ -187,7 +188,7 @@ onMounted(async () => {
             <time class="timeline-date">{{ item.dateLabel }}</time>
             <span class="timeline-dot" aria-hidden="true" />
             <div
-              class="timeline-card card timeline-card--clickable"
+              class="timeline-card card timeline-card--clickable card-hover-g"
               role="link"
               tabindex="0"
               @click="onCardClick(item.project.slug)"
@@ -201,6 +202,7 @@ onMounted(async () => {
               <div class="timeline-tags">
                 <span v-for="tag in item.project.tags" :key="tag" class="tag">{{ tag }}</span>
               </div>
+              <CardCornerVineLazy />
             </div>
           </article>
         </div>
@@ -222,6 +224,10 @@ onMounted(async () => {
 
 .h {
   margin: 0 0 1rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.6rem, 3.4vw, 2.1rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .toolbar {
@@ -286,11 +292,11 @@ onMounted(async () => {
   background: transparent;
 }
 .toggle-end--right {
-  background: color-mix(in srgb, var(--color-accent) 90%, #19d3ff);
+  background: var(--color-accent);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 14%, transparent);
 }
 .checkbox:not(:checked) ~ .toggle-visual .toggle-end--left {
-  background: color-mix(in srgb, var(--color-accent) 90%, #19d3ff);
+  background: var(--color-accent);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 14%, transparent);
 }
 .checkbox:not(:checked) ~ .toggle-visual .toggle-end--right {
@@ -318,99 +324,6 @@ onMounted(async () => {
 }
 .empty {
   color: var(--color-text-muted);
-}
-
-.timeline-year-group {
-  margin-bottom: 1.4rem;
-}
-
-.timeline-year-head {
-  display: flex;
-  align-items: baseline;
-  gap: 0.9rem;
-  margin-bottom: 0.55rem;
-}
-
-.timeline-year {
-  margin: 0;
-  font-size: 2rem;
-  line-height: 1;
-}
-
-.timeline-year-count {
-  margin: 0;
-  margin-left: auto;
-  color: var(--color-text-muted);
-  font-size: 1rem;
-  text-align: right;
-}
-
-.timeline-items {
-  position: relative;
-}
-
-.timeline-item {
-  display: grid;
-  grid-template-columns: var(--timeline-date-col) var(--timeline-dot-col) minmax(0, 1fr);
-  column-gap: var(--timeline-gap);
-  align-items: start;
-  margin-bottom: var(--timeline-item-gap);
-}
-.timeline-item:last-child {
-  margin-bottom: 0;
-}
-
-.timeline-date {
-  padding-top: 0.95rem;
-  font-size: 1.2rem;
-  color: var(--color-text-muted);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-.timeline-dot {
-  position: relative;
-  margin-top: var(--timeline-dot-offset);
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--color-accent) 75%, #19d3ff);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 12%, transparent);
-}
-
-.timeline-card {
-  padding: 0.85rem 1rem;
-}
-
-.timeline-card--clickable {
-  cursor: pointer;
-}
-
-.timeline-card--clickable:hover {
-  border-color: color-mix(in srgb, var(--color-accent) 38%, var(--color-border));
-  transform: translateY(-1px);
-}
-
-.timeline-card-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.45rem;
-}
-
-.timeline-title {
-  margin: 0;
-  font-size: 1.15rem;
-}
-
-.timeline-summary {
-  margin: 0.45rem 0 0.55rem;
-  color: var(--color-text-muted);
-  line-height: 1.5;
-}
-
-.timeline-tags {
-  margin-bottom: 0.3rem;
 }
 
 @media (max-width: 760px) {
@@ -449,43 +362,15 @@ onMounted(async () => {
   }
 
   .timeline-year {
-    font-size: 1.65rem;
+    font-size: 1.9rem;
   }
 
   .timeline-date {
-    font-size: 1rem;
+    font-size: 0.78rem;
   }
 }
 
 @media (max-width: 480px) {
-  /* 时间线改单列：日期作为卡片上方标签，圆点隐藏，卡片占满整行 */
-  .timeline-item {
-    grid-template-columns: 1fr;
-    row-gap: 0.15rem;
-  }
-
-  .timeline-dot {
-    display: none;
-  }
-
-  .timeline-date {
-    padding-top: 0;
-    font-size: 0.92rem;
-    font-weight: 700;
-  }
-
-  .timeline-title {
-    font-size: 1.05rem;
-  }
-
-  .timeline-summary {
-    font-size: 0.9rem;
-  }
-
-  .timeline-card {
-    padding: 0.75rem 0.85rem;
-  }
-
   .tag-select-wrap {
     width: 100%;
   }

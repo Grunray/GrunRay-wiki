@@ -23,57 +23,72 @@ onMounted(() => {
 </script>
 
 <template>
-  <article class="card item">
-    <div class="head">
-      <h2 class="title">
-        <RouterLink :to="postLink">{{ post.title }}</RouterLink>
-      </h2>
+  <article class="post-card">
+    <div class="post-card-meta">
+      <time v-if="post.published_at" class="post-card-date" :datetime="post.published_at">{{
+        post.published_at.slice(0, 10)
+      }}</time>
       <span v-if="post.pinned" class="badge">{{ t('blog.pinned') }}</span>
     </div>
-    <p class="summary">{{ post.summary }}</p>
-    <p v-if="post.type === 'algorithm' && (post as AlgorithmPost).series" class="meta">
+    <div class="timeline-card-head">
+      <h2 class="timeline-title">
+        <RouterLink :to="postLink">{{ post.title }}</RouterLink>
+      </h2>
+    </div>
+    <p class="timeline-summary">{{ post.summary }}</p>
+    <p v-if="post.type === 'algorithm' && (post as AlgorithmPost).series" class="post-card-meta-line">
       {{ t('post.series') }}: {{ (post as AlgorithmPost).series }}
     </p>
-    <p v-if="post.type === 'project_note' && projectTitle" class="meta">
+    <p v-if="post.type === 'project_note' && projectTitle" class="post-card-meta-line">
       {{ t('post.projectNote') }} · {{ projectTitle }}
     </p>
-    <div class="tags">
+    <div v-if="post.tags.length" class="timeline-tags">
       <span v-for="tag in post.tags" :key="tag" class="tag">{{ tag }}</span>
     </div>
-    <time v-if="post.published_at" class="time" :datetime="post.published_at">{{
-      post.published_at.slice(0, 10)
-    }}</time>
   </article>
 </template>
 
 <style scoped>
-.item {
-  margin-bottom: 1rem;
+.post-card {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--color-border);
 }
-.head {
+
+.post-card:first-child {
+  border-top: 1px solid var(--color-border);
+}
+
+.post-card-meta {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.35rem;
 }
-.title {
-  margin: 0;
-  font-size: 1.05rem;
-}
-.summary {
-  margin: 0.45rem 0;
-  color: var(--color-text-muted);
-  font-size: 0.9rem;
-}
-.meta {
-  margin: 0;
-  font-size: 0.8rem;
+
+.post-card-date {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
   color: var(--color-text-muted);
 }
-.time {
-  display: block;
-  margin-top: 0.5rem;
-  font-size: 0.75rem;
+
+.timeline-title :deep(a) {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.timeline-title :deep(a:hover) {
+  color: var(--color-accent);
+}
+
+.post-card-meta-line {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
   color: var(--color-text-muted);
 }
 </style>

@@ -1,0 +1,171 @@
+/*
+ * 可点击卡 hover · 方案 G（C 翻角 + E 错位 + F 檐角生长）
+ * 挂在 .card-hover-g 上。折角叠在花藤之上；静止时花藤 opacity:0。
+ */
+
+.card-hover-g {
+  --card-vine-size: 60px;
+  --card-vine-inset: 8px;
+  --card-vine-gutter: 4.25rem;
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.card-hover-g::before {
+  content: '';
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  z-index: 2;
+  width: 0;
+  height: 0;
+  border-radius: 0 0 var(--radius-md) 0;
+  background: linear-gradient(
+    135deg,
+    transparent 50%,
+    color-mix(in srgb, var(--color-accent) 26%, var(--color-bg-surface)) 50%
+  );
+  box-shadow: -2px -2px 4px color-mix(in srgb, var(--color-text) 8%, transparent);
+  transition:
+    width 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.card-hover-g:is(:hover, :focus-visible, :focus-within) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 22px -14px color-mix(in srgb, var(--color-text) 30%, transparent),
+    var(--shadow-card);
+  border-color: color-mix(in srgb, var(--color-accent) 32%, var(--color-border));
+}
+
+.card-hover-g:is(:hover, :focus-visible, :focus-within)::before {
+  width: 24px;
+  height: 24px;
+}
+
+.card-hover-g .card-corner-vine {
+  position: absolute;
+  right: var(--card-vine-inset);
+  bottom: var(--card-vine-inset);
+  z-index: 1;
+  width: var(--card-vine-size);
+  height: var(--card-vine-size);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.card-hover-g:is(:hover, :focus-visible, :focus-within) .card-corner-vine {
+  opacity: 1;
+}
+
+.card-hover-g .flower-fill {
+  fill: var(--color-accent);
+}
+
+.card-hover-g .grow {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 56;
+  stroke-linecap: butt;
+  stroke-linejoin: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  transition: stroke-dashoffset 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: 0s;
+}
+
+.card-hover-g .grow-main {
+  stroke-width: 60;
+}
+
+/*
+ * 懒挂载时父级往往已是 :hover。必须等 SVG 以 dashoffset:100 上屏后再加
+ * --vine-ready，否则浏览器看不到起点，首帧会直接画满。
+ */
+.card-hover-g.card-hover-g--vine-ready:is(:hover, :focus-visible, :focus-within) .grow {
+  stroke-dashoffset: 0;
+  transition-delay: var(--grow-delay, 0s);
+  transition-duration: 0.48s;
+}
+
+.card-hover-g.card-hover-g--vine-ready:is(:hover, :focus-visible, :focus-within) .grow-main {
+  transition-duration: 1.05s;
+}
+
+.card-hover-g .timeline-title,
+.card-hover-g .cover-story-title,
+.card-hover-g .cover-story-title a {
+  transition:
+    color 0.25s ease,
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card-hover-g .tag {
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.card-hover-g:is(:hover, :focus-visible, :focus-within) .timeline-title {
+  transform: translateX(6px);
+  color: var(--color-accent);
+}
+
+.card-hover-g:is(:hover, :focus-visible, :focus-within) .tag {
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg-elevated));
+  border-color: color-mix(in srgb, var(--color-accent) 30%, var(--color-border));
+  color: var(--color-text);
+}
+
+.timeline-item:has(.card-hover-g) .timeline-date {
+  transition:
+    color 0.25s ease,
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.timeline-item:has(.card-hover-g:is(:hover, :focus-visible, :focus-within)) .timeline-date {
+  transform: translateX(-4px);
+  color: var(--color-accent);
+}
+
+.cover-story.card-hover-g .cover-story-kicker {
+  transition: letter-spacing 0.3s ease;
+}
+
+.cover-story.card-hover-g:is(:hover, :focus-within) .cover-story-kicker {
+  letter-spacing: 0.22em;
+}
+
+.cover-story.card-hover-g:is(:hover, :focus-within) .cover-story-title {
+  transform: translateX(8px);
+}
+
+.cover-story.card-hover-g:is(:hover, :focus-within) .cover-story-title a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-hover-g::before,
+  .card-hover-g .card-corner-vine {
+    display: none;
+  }
+
+  .card-hover-g:is(:hover, :focus-visible, :focus-within),
+  .card-hover-g:is(:hover, :focus-visible, :focus-within) .timeline-title,
+  .cover-story.card-hover-g:is(:hover, :focus-within) .cover-story-title,
+  .timeline-item:has(.card-hover-g:is(:hover, :focus-visible, :focus-within)) .timeline-date {
+    transform: none;
+  }
+
+  .cover-story.card-hover-g:is(:hover, :focus-within) .cover-story-kicker {
+    letter-spacing: inherit;
+  }
+}
