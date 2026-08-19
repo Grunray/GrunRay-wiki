@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { gsap } from 'gsap'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -8,7 +9,7 @@ import XiqiCard from '@/components/xiqi/XiqiCard.vue'
 import XiqiPageHero from '@/components/xiqi/XiqiPageHero.vue'
 import XiqiSplitLayout from '@/components/xiqi/XiqiSplitLayout.vue'
 import { type FragmentMood } from '@/content/data/mockFragments'
-import { playPageEnter } from '@/composables/usePageEnterAnimation'
+import { playPageEnter, prefersReducedMotionMedia } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
 import { fetchFragmentDetail, fetchFragments, type Fragment, type FragmentDetail } from '@/services/fragmentsApi'
@@ -42,6 +43,8 @@ const listError = ref('')
 const detail = ref<FragmentDetail | null>(null)
 const detailLoading = ref(false)
 const isSiteOwner = ref(false)
+const detailArticleRef = ref<HTMLElement | null>(null)
+let detailBodyTween: gsap.core.Tween | gsap.core.Timeline | null = null
 
 const moodOptions = computed<Array<{ id: MoodFilter; label: string }>>(() => [
   { id: 'all', label: t('fragments.moodAll') },
@@ -138,7 +141,53 @@ watch(selectedFragmentId, (id) => {
   }
 })
 
+function playFragmentDetailReveal(opts?: { firstOpen?: boolean }) {
+  const el = detailArticleRef.value
+  if (!el) return
+  detailBodyTween?.kill()
+  const parts = el.querySelectorAll('.fragment-detail-head, .fragment-detail-body--excerpt')
+  if (!parts.length) return
+  const firstOpen = opts?.firstOpen ?? true
+  if (prefersReducedMotionMedia() || firstOpen) {
+    /* 首次打开：正文已在纸面上，由面板 clip 揭开，不再整段淡入以免栏里先空一截 */
+    gsap.set(el.querySelectorAll('.fragment-detail-head, .fragment-detail-body'), { autoAlpha: 1, y: 0 })
+    return
+  }
+  detailBodyTween = gsap.fromTo(
+    parts,
+    { autoAlpha: 0, y: 8 },
+    {
+      autoAlpha: 1,
+      y: 0,
+      duration: 0.34,
+      stagger: 0.06,
+      ease: 'power3.out',
+      delay: 0.04,
+    },
+  )
+}
+
+function playFragmentHtmlUpgrade() {
+  const htmlBody = detailArticleRef.value?.querySelector('.fragment-detail-body--html')
+  if (!htmlBody) return
+  gsap.set(htmlBody, { autoAlpha: 1, y: 0 })
+}
+
+watch(detailDisplayId, async (id, prev) => {
+  if (!id) return
+  await nextTick()
+  playFragmentDetailReveal({ firstOpen: !prev })
+})
+
+watch(detailLoading, async (loading) => {
+  if (loading || !detailDisplayId.value || !detail.value?.bodyHtml) return
+  await nextTick()
+  playFragmentHtmlUpgrade()
+})
+
 function onDetailPanelClosed() {
+  detailBodyTween?.kill()
+  detailBodyTween = null
   detailDisplayId.value = null
   detail.value = null
 }
@@ -166,6 +215,11 @@ onMounted(async () => {
     isSiteOwner.value = false
   }
   await loadList()
+})
+
+onBeforeUnmount(() => {
+  detailBodyTween?.kill()
+  detailBodyTween = null
 })
 </script>
 
@@ -268,20 +322,19 @@ onMounted(async () => {
     <p v-else class="fragments-empty">{{ t('fragments.empty') }}</p>
 
     <template #detail>
-      <article v-if="displayedFragment" class="fragment-detail">
+      <article v-if="displayedFragment" ref="detailArticleRef" class="fragment-detail">
         <header class="fragment-detail-head">
           <FragmentMoodBadge :mood="displayedFragment.mood" size="md" />
           <time class="xiqi-card-time fragment-time" :datetime="displayedFragment.createdAt">
             {{ formatTime(displayedFragment.createdAt) }}
           </time>
         </header>
-        <p v-if="detailLoading" class="fragment-detail-body">{{ t('fragments.loading') }}</p>
         <div
-          v-else-if="detail?.bodyHtml"
-          class="fragment-detail-body prose body-markdown markdown-reading"
+          v-if="detail?.bodyHtml && !detailLoading"
+          class="fragment-detail-body fragment-detail-body--html prose body-markdown markdown-reading"
           v-html="detail.bodyHtml"
         />
-        <p v-else class="fragment-detail-body">{{ displayedFragment.content }}</p>
+        <p v-else class="fragment-detail-body fragment-detail-body--excerpt">{{ displayedFragment.content }}</p>
       </article>
     </template>
   </XiqiSplitLayout>
