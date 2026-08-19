@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>首页方案预览 · GrunRay wiki</title>
+<link
+  href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@600;700&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  /* ===== 站点令牌（浅色纸面档预览） ===== */
+  :root {
+    --paper: #f4f1e8;
+    --surface: #faf8f1;
+    --elev: #ece7d8;
+    --ink: #2b2823;
+    --muted: #6e675b;
+    --faint: #a39a88;
+    --border: #ddd5c2;
+    --accent: #2e6b4f;
+    --film-bg: #101512;
+    --film-bg2: #181f1b;
+    --serif: 'Playfair Display', 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
+    --sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    --mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #23261f; }
+  body { font-family: var(--sans); color: var(--ink); line-height: 1.7; }
+  img { display: block; }
+  a { color: inherit; text-decoration: none; }
+
+  /* ===== 预览切换条（非站点内容） ===== */
+  .switcher {
+    position: fixed; inset: 0 0 auto 0; z-index: 99;
+    height: 46px; display: flex; align-items: center; gap: 6px;
+    padding: 0 14px; background: #1d201a; border-bottom: 1px solid #343829;
+    font-family: var(--mono);
+  }
+  .switcher .brand { color: #8a9077; font-size: 11px; letter-spacing: .12em; margin-right: 10px; }
+  .switcher button {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .04em;
+    color: #b9bfa8; background: transparent; border: 1px solid #3c4130;
+    border-radius: 999px; padding: 4px 13px; cursor: pointer;
+  }
+  .switcher button:hover { border-color: #8a9077; color: #e6e9d6; }
+  .switcher button.on { background: #d8dcc4; border-color: #d8dcc4; color: #23261f; font-weight: 500; }
+  .switcher .hint { margin-left: auto; color: #6c7159; font-size: 11px; }
+  .variant { display: none; padding-top: 46px; }
+  .variant.on { display: block; }
+
+  /* 方案说明条（非站点内容） */
+  .meta-note {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .05em; color: var(--muted);
+    border-bottom: 1px dashed var(--faint); padding: 10px 0;
+    background: var(--paper);
+  }
+  .meta-note b { color: var(--accent); font-weight: 500; }
+
+  /* ===== 共用排版件 ===== */
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 44px); }
+  .paper { background: var(--paper); }
+  .kicker { font-family: var(--mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); }
+  .kicker--muted { color: var(--muted); }
+  .rule2 { border-top: 2px solid var(--ink); }
+  .hairline { border-top: 1px solid var(--border); }
+  .tag {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .04em;
+    border: 1px solid var(--border); border-radius: 3px; padding: 1px 6px; color: var(--muted);
+    white-space: nowrap;
+  }
+  .serif { font-family: var(--serif); }
+
+  /* ===== 胶片带（共用） ===== */
+  .filmstrip {
+    position: relative; overflow: hidden;
+    background: var(--film-bg);
+  }
+  .filmstrip .holes {
+    height: 16px;
+    background-image: radial-gradient(circle, var(--paper) 3.2px, transparent 4px);
+    background-size: 30px 100%;
+    background-position: center;
+    opacity: .9;
+  }
+  .filmstrip .lane { overflow: hidden; }
+  .filmstrip .track {
+    display: flex; gap: 14px; width: max-content; padding: 6px 0;
+    animation: scrollX var(--dur, 30s) linear infinite;
+  }
+  .filmstrip .track.rev { animation-direction: reverse; }
+  @keyframes scrollX { to { transform: translateX(-50%); } }
+  .filmstrip .track img {
+    width: var(--fw, 150px); height: var(--fh, 190px);
+    object-fit: cover; border-radius: 2px; background: var(--film-bg2);
+    filter: saturate(.92);
+  }
+
+  /* ================================================================
+     方案 A · 本周刊
+     ================================================================ */
+  .mast {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 14px 0 12px;
+  }
+  .mast .vol { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; color: var(--muted); }
+  .mast .vol b { color: var(--ink); font-weight: 500; }
+  .mast .avatar {
+    width: 44px; height: 44px; border-radius: 50%; overflow: hidden;
+    border: 1px solid var(--border); background: var(--elev); flex-shrink: 0;
+  }
+  .mast .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  .cover-story { padding: clamp(28px, 5vw, 56px) 0 clamp(24px, 4vw, 40px); }
+  .cover-story h1 {
+    font-family: var(--serif); font-weight: 700;
+    font-size: clamp(2.1rem, 5vw, 3.7rem); line-height: 1.18; letter-spacing: .01em;
+    margin: 14px 0 16px; max-width: 16em;
+  }
+  .cover-story .lede { max-width: 36em; color: var(--muted); font-size: 15.5px; }
+  .cover-story .meta {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    margin-top: 20px; font-family: var(--mono); font-size: 11.5px; color: var(--muted); letter-spacing: .06em;
+  }
+  .cover-story .read {
+    margin-left: auto; color: var(--accent); font-weight: 500; font-size: 12px;
+    border-bottom: 1px solid var(--accent); padding-bottom: 1px;
+  }
+
+  .now {
+    display: grid; grid-template-columns: 130px 1fr; gap: 18px; align-items: start;
+    padding: 18px 0;
+  }
+  .now ul { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 26px; }
+  .now li { font-size: 13.5px; color: var(--muted); }
+  .now li b { color: var(--ink); font-weight: 500; }
+  .now li::before { content: '·'; color: var(--accent); margin-right: 8px; }
+
+  .toc3 { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: clamp(20px, 3.4vw, 44px); padding: 26px 0 40px; }
+  .toc-col > header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px;
+  }
+  .toc-col > header .cnt { font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
+  .toc-row { display: block; padding: 11px 2px; border-bottom: 1px solid var(--border); }
+  .toc-row:hover { background: var(--surface); }
+  .toc-row .d { font-family: var(--mono); font-size: 10.5px; color: var(--faint); letter-spacing: .06em; }
+  .toc-row h3 { font-family: var(--serif); font-size: 16.5px; font-weight: 600; line-height: 1.4; margin: 2px 0; }
+  .toc-row p { font-size: 12.5px; color: var(--muted); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .toc-row .yr { font-family: var(--mono); font-size: 10.5px; color: var(--faint); float: right; }
+  .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+  .status-dot.on { background: var(--accent); }
+  .status-dot.off { background: var(--faint); }
+
+  .foot { padding: 14px 0 26px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; color: var(--faint); display: flex; justify-content: space-between; }
+
+  /* ================================================================
+     方案 B · 索引页
+     ================================================================ */
+  .idx-wrap { max-width: 780px; margin: 0 auto; padding: clamp(28px, 6vh, 64px) 24px 60px; }
+  .today h1 { font-family: var(--serif); font-size: 30px; font-weight: 700; }
+  .today .line { margin-top: 6px; color: var(--muted); font-size: 14.5px; max-width: 40em; }
+  .today .line b { color: var(--ink); font-weight: 500; }
+  .today .sig { margin-top: 10px; font-family: var(--mono); font-size: 11px; color: var(--faint); letter-spacing: .1em; }
+
+  .idx-group { margin-top: 38px; }
+  .idx-group > header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    border-bottom: 1px solid var(--ink); padding-bottom: 6px;
+  }
+  .idx-group > header .cnt { font-family: var(--mono); font-size: 10.5px; color: var(--faint); letter-spacing: .1em; }
+  .idx-row {
+    display: grid; grid-template-columns: minmax(150px, auto) 1fr 64px; gap: 18px; align-items: baseline;
+    padding: 10px 8px; border-bottom: 1px solid var(--border); cursor: pointer;
+  }
+  .idx-row:hover { background: var(--surface); }
+  .idx-row .t { font-family: var(--serif); font-size: 15.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .idx-row .s { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .idx-row .y { font-family: var(--mono); font-size: 11px; color: var(--faint); text-align: right; }
+
+  /* ================================================================
+     方案 C · 胶片首屏
+     ================================================================ */
+  .hero-film {
+    position: relative; height: calc(100vh - 46px); min-height: 520px;
+    background: var(--film-bg); overflow: hidden;
+    display: flex; flex-direction: column; justify-content: center; gap: 5vh;
+  }
+  .hero-film .filmstrip { --fw: 190px; --fh: 240px; --dur: 46s; }
+  .hero-scrim { position: absolute; inset: 0; background: rgba(12, 16, 13, .46); }
+  .hero-copy {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; gap: 18px; padding: 0 20px;
+  }
+  .hero-copy .kicker { color: #cfe3d4; }
+  .hero-copy h1 {
+    font-family: var(--serif); font-weight: 700; color: var(--paper);
+    font-size: clamp(2.6rem, 7.4vw, 5.6rem); line-height: 1.14; letter-spacing: .02em;
+  }
+  .hero-copy .sub { color: rgba(244, 241, 232, .72); font-size: 14.5px; max-width: 34em; }
+  .hero-copy .scroll {
+    position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .3em; color: rgba(244, 241, 232, .6);
+  }
+  .c-after { padding: clamp(28px, 5vw, 48px) 0 44px; }
+  .c-cover { display: grid; grid-template-columns: 1.5fr 1fr; gap: clamp(20px, 4vw, 56px); padding-bottom: 30px; }
+  .c-cover h2 { font-family: var(--serif); font-size: clamp(1.6rem, 3vw, 2.3rem); font-weight: 700; line-height: 1.25; margin: 10px 0 12px; }
+  .c-cover .lede { color: var(--muted); font-size: 14.5px; }
+  .c-cover .side { border-left: 1px solid var(--border); padding-left: clamp(16px, 2.4vw, 32px); align-self: center; }
+  .c-cover .side p { font-family: var(--mono); font-size: 11.5px; color: var(--muted); letter-spacing: .08em; line-height: 2.1; }
+  .toc2 { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(20px, 3.4vw, 44px); padding-top: 24px; }
+
+  /* ================================================================
+     方案 MIX · A 的结构 + C 的刊头
+     ================================================================ */
+  .mix-band {
+    position: relative; height: 46vh; min-height: 340px; overflow: hidden; background: var(--film-bg);
+  }
+  .mix-band .filmstrip { position: absolute; inset: 0; --fw: 160px; --fh: 100%; --dur: 40s; display: flex; flex-direction: column; }
+  .mix-band .filmstrip .lane { flex: 1; }
+  .mix-band .filmstrip .track { height: 100%; align-items: center; }
+  .mix-band .scrim { position: absolute; inset: 0; background: rgba(12, 16, 13, .5); }
+  .mix-band .copy {
+    position: absolute; inset: auto 0 0 0; padding: 0 0 26px;
+  }
+  .mix-band .copy h1 {
+    font-family: var(--serif); font-weight: 700; color: var(--paper);
+    font-size: clamp(1.9rem, 4.6vw, 3.4rem); line-height: 1.2;
+  }
+  .mix-band .copy .kicker { color: #cfe3d4; margin-bottom: 10px; display: block; }
+
+  @media (max-width: 760px) {
+    .toc3, .toc2, .c-cover { grid-template-columns: 1fr; }
+    .c-cover .side { border-left: 0; border-top: 1px solid var(--border); padding: 16px 0 0; }
+    .idx-row { grid-template-columns: 1fr 56px; }
+    .idx-row .s { display: none; }
+    .now { grid-template-columns: 1fr; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="switcher">
+  <span class="brand">首页方案预览</span>
+  <button data-v="a" class="on">A · 本周刊</button>
+  <button data-v="b">B · 索引页</button>
+  <button data-v="c">C · 胶片首屏</button>
+  <button data-v="mix">A+C · 混合</button>
+  <span class="hint">浅色档预览 · 按 1-4 切换</span>
+</nav>
+
+<!-- ================= 方案 A · 本周刊 ================= -->
+<main class="variant on paper" id="v-a">
+  <div class="wrap">
+    <div class="meta-note"><b>方案 A · 本周刊</b> —— 刊号刊期 + 封面故事 + NOW 现状 + 三栏目录；胶片退为页脚细带，不再横切首屏</div>
+
+    <header class="mast rule2" style="margin-top: 14px;">
+      <p class="vol"><b>GRUNRAY WIKI</b> · VOL.2026 · NO.33 · 2026/08/17 周一 · 本期 4 篇新稿</p>
+      <span class="avatar"><img src="https://picsum.photos/seed/grava/96/96" alt="" /></span>
+    </header>
+
+    <section class="cover-story">
+      <p class="kicker">封面故事 · Cover Story</p>
+      <h1>回文串与 Manacher：从暴力枚举到线性扫一遍</h1>
+      <p class="lede">从 O(n²) 中心扩展讲起，把 Manacher 的臂长数组拆成三张图，最后落到一道 ICPC 真题的板子。附 Python 实现与常见边界坑。</p>
+      <div class="meta">
+        <span>2026/08/10</span><span>·</span><span>算法 / 字符串</span><span>·</span><span>约 12 min</span>
+        <span class="tag">算法</span><span class="tag">字符串系列</span>
+        <a class="read" href="#">开始阅读 →</a>
+      </div>
+    </section>
+
+    <section class="now hairline">
+      <p class="kicker kicker--muted">NOW · 此刻</p>
+      <ul>
+        <li>在写 <b>crsea 2.0</b> 的支护模型校验</li>
+        <li>在读 <b>《设计中的设计》</b></li>
+        <li>本周碎片 <b>6</b> 条</li>
+      </ul>
+    </section>
+
+    <section class="toc3">
+      <div class="toc-col">
+        <header><span class="kicker kicker--muted">最新文章</span><span class="cnt">04</span></header>
+        <a class="toc-row" href="#"><span class="d">2026/08/10</span><h3>回文串与 Manacher</h3><p>从暴力到线性的回文子串梳理，附板子与边界坑。</p></a>
+        <a class="toc-row" href="#"><span class="d">2026/07/28</span><h3>三档主题的三次踩坑</h3><p>设计令牌、扩散动画与叠层上下文的三次返工。</p></a>
+        <a class="toc-row" href="#"><span class="d">2026/07/15</span><h3>LCP 从 4.1s 到 1.2s</h3><p>图片懒加载、字体交换与首屏骨架的工程账。</p></a>
+        <a class="toc-row" href="#"><span class="d">2026/06/30</span><h3>竞价排序 DP</h3><p>打表出奇迹，一道省选题的完整推导。</p></a>
+      </div>
+      <div class="toc-col">
+        <header><span class="kicker kicker--muted">项目</span><span class="cnt">03</span></header>
+        <a class="toc-row" href="#"><span class="yr">2025</span><h3><span class="status-dot on"></span>GrunRay wiki</h3><p>这个站点本身：Vue 3 + Python 的全栈练手场。</p></a>
+        <a class="toc-row" href="#"><span class="yr">2025</span><h3><span class="status-dot off"></span>crsea</h3><p>煤矿巷道支护评价系统，Three.js 可视化。</p></a>
+        <a class="toc-row" href="#"><span class="yr">2024</span><h3><span class="status-dot off"></span>HLTV 数据链路</h3><p>电竞新闻采集 → Spark → 推荐 → 展示。</p></a>
+      </div>
+      <div class="toc-col">
+        <header><span class="kicker kicker--muted">碎片</span><span class="cnt">06</span></header>
+        <a class="toc-row" href="#"><h3>胶片带的 key 修了，循环终于顺了</h3><p>#工程 · 2d 前</p></a>
+        <a class="toc-row" href="#"><h3>《孤独摇滚》二刷完毕</h3><p>#番剧 · 4d 前</p></a>
+        <a class="toc-row" href="#"><h3>Manacher 板子又默写了一遍</h3><p>#算法 · 6d 前</p></a>
+      </div>
+    </section>
+  </div>
+
+  <div class="filmstrip" style="--fw: 64px; --fh: 80px; --dur: 26s;">
+    <div class="holes"></div>
+    <div class="lane"><div class="track">
+      <img src="https://picsum.photos/seed/gr1/128/160" alt="" /><img src="https://picsum.photos/seed/gr2/128/160" alt="" /><img src="https://picsum.photos/seed/gr3/128/160" alt="" /><img src="https://picsum.photos/seed/gr4/128/160" alt="" /><img src="https://picsum.photos/seed/gr5/128/160" alt="" /><img src="https://picsum.photos/seed/gr6/128/160" alt="" /><img src="https://picsum.photos/seed/gr7/128/160" alt="" /><img src="https://picsum.photos/seed/gr8/128/160" alt="" />
+    </div></div>
+    <div class="holes"></div>
+  </div>
+
+  <footer class="paper"><div class="wrap foot"><span>© 2026 GRUNRAY</span><span>每周更新 · NEXT ISSUE 08/24</span></div></footer>
+</main>
+
+<!-- ================= 方案 B · 索引页 ================= -->
+<main class="variant paper" id="v-b">
+  <div class="wrap" style="max-width: 860px;">
+    <div class="meta-note"><b>方案 B · 索引页</b> —— 首页即全站目录：一句话现状 + 三组清单（项目在前）；零装饰、最快、最 wiki（brianlovin / rauno 式）</div>
+  </div>
+  <div class="idx-wrap">
+    <header class="today">
+      <h1>GrunRay</h1>
+      <p class="line">大三在读，全栈练手中。现在在忙 <b>crsea 2.0 的支护模型校验</b>，顺带给这个 wiki 换皮。喜欢看番，偶尔去算法竞赛现场。</p>
+      <p class="sig">2026 夏 · 合肥 · UTC+8</p>
+    </header>
+
+    <section class="idx-group">
+      <header><span class="kicker">项目 · Projects</span><span class="cnt">03</span></header>
+      <a class="idx-row" href="#"><span class="t">GrunRay wiki</span><span class="s">这个站点本身：Vue 3 + Python 的全栈练手场</span><span class="y">2025</span></a>
+      <a class="idx-row" href="#"><span class="t">crsea</span><span class="s">煤矿巷道支护评价系统，Three.js 可视化</span><span class="y">2025</span></a>
+      <a class="idx-row" href="#"><span class="t">HLTV 数据链路</span><span class="s">电竞新闻采集 → Spark → 推荐 → 展示</span><span class="y">2024</span></a>
+    </section>
+
+    <section class="idx-group">
+      <header><span class="kicker">文章 · Writing</span><span class="cnt">24</span></header>
+      <a class="idx-row" href="#"><span class="t">回文串与 Manacher</span><span class="s">从暴力到线性的回文子串梳理</span><span class="y">08/10</span></a>
+      <a class="idx-row" href="#"><span class="t">三档主题的三次踩坑</span><span class="s">令牌、扩散动画与叠层上下文</span><span class="y">07/28</span></a>
+      <a class="idx-row" href="#"><span class="t">LCP 从 4.1s 到 1.2s</span><span class="s">图片懒加载、字体交换与首屏骨架</span><span class="y">07/15</span></a>
+      <a class="idx-row" href="#"><span class="t">竞价排序 DP</span><span class="s">打表出奇迹，省选题完整推导</span><span class="y">06/30</span></a>
+    </section>
+
+    <section class="idx-group">
+      <header><span class="kicker">碎片 · Fragments</span><span class="cnt">112</span></header>
+      <a class="idx-row" href="#"><span class="t">胶片带的 key 修了</span><span class="s">循环终于顺了，是 Vue 的撞 key 问题</span><span class="y">2d</span></a>
+      <a class="idx-row" href="#"><span class="t">《孤独摇滚》二刷</span><span class="s">吃盐一样看番</span><span class="y">4d</span></a>
+      <a class="idx-row" href="#"><span class="t">Manacher 板子默写</span><span class="s">又一遍，肌肉记忆 +1</span><span class="y">6d</span></a>
+    </section>
+
+    <footer class="foot" style="margin-top: 44px; border-top: 1px solid var(--border);">
+      <span>GRUNRAY.WIKI</span><span>以索引为家</span>
+    </footer>
+  </div>
+</main>
+
+<!-- ================= 方案 C · 胶片首屏 ================= -->
+<main class="variant" id="v-c">
+  <div class="paper"><div class="wrap">
+    <div class="meta-note"><b>方案 C · 胶片首屏</b> —— 整屏无限滚动胶片 + 巨大衬线刊名压上；滚过首屏才见内容。记忆点最强，也最重</div>
+  </div></div>
+
+  <section class="hero-film">
+    <div class="filmstrip">
+      <div class="holes"></div>
+      <div class="lane"><div class="track">
+        <img src="https://picsum.photos/seed/gr1/380/480" alt="" /><img src="https://picsum.photos/seed/gr2/380/480" alt="" /><img src="https://picsum.photos/seed/gr3/380/480" alt="" /><img src="https://picsum.photos/seed/gr4/380/480" alt="" /><img src="https://picsum.photos/seed/gr5/380/480" alt="" /><img src="https://picsum.photos/seed/gr6/380/480" alt="" /><img src="https://picsum.photos/seed/gr7/380/480" alt="" /><img src="https://picsum.photos/seed/gr8/380/480" alt="" />
+      </div></div>
+      <div class="holes"></div>
+    </div>
+    <div class="filmstrip">
+      <div class="holes"></div>
+      <div class="lane"><div class="track rev">
+        <img src="https://picsum.photos/seed/gr9/380/480" alt="" /><img src="https://picsum.photos/seed/gr10/380/480" alt="" /><img src="https://picsum.photos/seed/gr11/380/480" alt="" /><img src="https://picsum.photos/seed/gr12/380/480" alt="" /><img src="https://picsum.photos/seed/gr13/380/480" alt="" /><img src="https://picsum.photos/seed/gr14/380/480" alt="" /><img src="https://picsum.photos/seed/gr15/380/480" alt="" /><img src="https://picsum.photos/seed/gr16/380/480" alt="" />
+      </div></div>
+      <div class="holes"></div>
+    </div>
+    <div class="hero-scrim"></div>
+    <div class="hero-copy">
+      <p class="kicker">GRUNRAY WIKI · 个人杂志</p>
+      <h1>既有作品，<br />也有笔记。</h1>
+      <p class="sub">项目、算法与随手记，都在这里。</p>
+      <p class="scroll">SCROLL ↓ 读刊</p>
+    </div>
+  </section>
+
+  <section class="c-after paper">
+    <div class="wrap">
+      <div class="c-cover">
+        <div>
+          <p class="kicker">封面故事</p>
+          <h2>回文串与 Manacher：从暴力枚举到线性扫一遍</h2>
+          <p class="lede">从 O(n²) 中心扩展讲起，把臂长数组拆成三张图，最后落到 ICPC 真题板子。</p>
+        </div>
+        <div class="side">
+          <p>2026/08/10 · 算法 / 字符串<br />约 12 min<br />系列：字符串 03<br /><a href="#" style="color: var(--accent); border-bottom: 1px solid var(--accent);">开始阅读 →</a></p>
+        </div>
+      </div>
+      <div class="toc2 hairline">
+        <div class="toc-col">
+          <header><span class="kicker kicker--muted">最新文章</span><span class="cnt">04</span></header>
+          <a class="toc-row" href="#"><span class="d">2026/08/10</span><h3>回文串与 Manacher</h3></a>
+          <a class="toc-row" href="#"><span class="d">2026/07/28</span><h3>三档主题的三次踩坑</h3></a>
+          <a class="toc-row" href="#"><span class="d">2026/07/15</span><h3>LCP 从 4.1s 到 1.2s</h3></a>
+        </div>
+        <div class="toc-col">
+          <header><span class="kicker kicker--muted">项目</span><span class="cnt">03</span></header>
+          <a class="toc-row" href="#"><span class="yr">2025</span><h3><span class="status-dot on"></span>GrunRay wiki</h3></a>
+          <a class="toc-row" href="#"><span class="yr">2025</span><h3><span class="status-dot off"></span>crsea</h3></a>
+          <a class="toc-row" href="#"><span class="yr">2024</span><h3><span class="status-dot off"></span>HLTV 数据链路</h3></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ================= 方案 MIX · A + C ================= -->
+<main class="variant paper" id="v-mix">
+  <div class="wrap">
+    <div class="meta-note"><b>方案 A+C · 混合</b> —— 保留 A 的整页结构，刊头换成「刊名压在胶片上」的电影感横幅；胶片仍是主角但只占 46vh</div>
+
+    <header class="mast rule2" style="margin-top: 14px;">
+      <p class="vol"><b>GRUNRAY WIKI</b> · VOL.2026 · NO.33 · 2026/08/17 周一</p>
+      <span class="avatar"><img src="https://picsum.photos/seed/grava/96/96" alt="" /></span>
+    </header>
+  </div>
+
+  <section class="mix-band" style="margin-top: 14px;">
+    <div class="filmstrip">
+      <div class="holes"></div>
+      <div class="lane"><div class="track">
+        <img src="https://picsum.photos/seed/gr1/320/400" alt="" /><img src="https://picsum.photos/seed/gr2/320/400" alt="" /><img src="https://picsum.photos/seed/gr3/320/400" alt="" /><img src="https://picsum.photos/seed/gr4/320/400" alt="" /><img src="https://picsum.photos/seed/gr5/320/400" alt="" /><img src="https://picsum.photos/seed/gr6/320/400" alt="" /><img src="https://picsum.photos/seed/gr7/320/400" alt="" /><img src="https://picsum.photos/seed/gr8/320/400" alt="" />
+      </div></div>
+      <div class="holes"></div>
+    </div>
+    <div class="scrim"></div>
+    <div class="copy wrap">
+      <span class="kicker">个人杂志 · 持续更新中</span>
+      <h1>既有作品，也有笔记。</h1>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="cover-story">
+      <p class="kicker">封面故事 · Cover Story</p>
+      <h1 style="font-size: clamp(1.8rem, 3.6vw, 2.8rem);">回文串与 Manacher：从暴力枚举到线性扫一遍</h1>
+      <p class="lede">从 O(n²) 中心扩展讲起，把臂长数组拆成三张图，最后落到 ICPC 真题板子。</p>
+      <div class="meta">
+        <span>2026/08/10</span><span>·</span><span>算法 / 字符串</span><span>·</span><span>约 12 min</span>
+        <a class="read" href="#">开始阅读 →</a>
+      </div>
+    </section>
+
+    <section class="now hairline">
+      <p class="kicker kicker--muted">NOW · 此刻</p>
+      <ul>
+        <li>在写 <b>crsea 2.0</b> 的支护模型校验</li>
+        <li>在读 <b>《设计中的设计》</b></li>
+        <li>本周碎片 <b>6</b> 条</li>
+      </ul>
+    </section>
+
+    <section class="toc3">
+      <div class="toc-col">
+        <header><span class="kicker kicker--muted">最新文章</span><span class="cnt">04</span></header>
+        <a class="toc-row" href="#"><span class="d">2026/08/10</span><h3>回文串与 Manacher</h3></a>
+        <a class="toc-row" href="#"><span class="d">2026/07/28</span><h3>三档主题的三次踩坑</h3></a>
+        <a class="toc-row" href="#"><span class="d">2026/07/15</span><h3>LCP 从 4.1s 到 1.2s</h3></a>
+        <a class="toc-row" href="#"><span class="d">2026/06/30</span><h3>竞价排序 DP</h3></a>
+      </div>
+      <div class="toc-col">
+        <header><span class="kicker kicker--muted">项目</span><span class="cnt">03</span></header>
+        <a class="toc-row" href="#"><span class="yr">2025</span><h3><span class="status-dot on"></span>GrunRay wiki</h3></a>
+        <a class="toc-row" href="#"><span class="yr">2025</span><h3><span class="status-dot off"></span>crsea</h3></a>
+        <a class="toc-row" href="#"><span class="yr">2024</span><h3><span class="status-dot off"></span>HLTV 数据链路</h3></a>
+      </div>
+      <div class="toc-col">
+        <header><span class="kicker kicker--muted">碎片</span><span class="cnt">06</span></header>
+        <a class="toc-row" href="#"><h3>胶片带的 key 修了，循环终于顺了</h3><p>#工程 · 2d 前</p></a>
+        <a class="toc-row" href="#"><h3>《孤独摇滚》二刷完毕</h3><p>#番剧 · 4d 前</p></a>
+        <a class="toc-row" href="#"><h3>Manacher 板子又默写了一遍</h3><p>#算法 · 6d 前</p></a>
+      </div>
+    </section>
+
+    <footer class="foot"><span>© 2026 GRUNRAY</span><span>NEXT ISSUE 08/24</span></footer>
+  </div>
+</main>
+
+<script>
+  // 方案切换
+  const btns = document.querySelectorAll('.switcher button');
+  const order = ['a', 'b', 'c', 'mix'];
+  function show(id) {
+    document.querySelectorAll('.variant').forEach(v => v.classList.toggle('on', v.id === 'v-' + id));
+    btns.forEach(b => b.classList.toggle('on', b.dataset.v === id));
+    window.scrollTo(0, 0);
+  }
+  btns.forEach(b => b.addEventListener('click', () => show(b.dataset.v)));
+  addEventListener('keydown', e => {
+    const i = ['1', '2', '3', '4'].indexOf(e.key);
+    if (i >= 0) show(order[i]);
+  });
+  // 胶片轨道复制一份，拼成 -50% 无缝循环
+  document.querySelectorAll('.track').forEach(t => { t.innerHTML += t.innerHTML; });
+</script>
+</body>
+</html>
