@@ -149,16 +149,10 @@ const xiqiGroup = computed(() => ({
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* hover 只提升文字色；着色交给下方生长线（accent 唯一交互点，DESIGN.md §7） */
 .link:hover {
   color: var(--color-text);
   text-decoration: none;
-  background-color: color-mix(in srgb, var(--color-accent) 18%, transparent);
-  border-color: color-mix(in srgb, var(--color-accent) 16%, transparent);
-  transform: translateY(-2px) scale(1.015);
-}
-
-.link:hover .link-icon {
-  transform: translateY(-1px) rotate(-2deg);
 }
 
 .link.active {
@@ -205,7 +199,12 @@ const xiqiGroup = computed(() => ({
   width: 0;
   height: 2px;
   border-radius: 10px;
-  background: linear-gradient(90deg, transparent, rgb(153 210 174 / 70%), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-accent) 70%, transparent),
+    transparent
+  );
   transition: width 0.5s ease, left 0.5s ease;
   pointer-events: none;
 }

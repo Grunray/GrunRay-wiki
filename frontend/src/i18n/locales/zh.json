@@ -33,13 +33,32 @@
     "localeTitleZh": "切换为中文界面",
     "backToTop": "回到顶部"
   },
+  "filmFeed": {
+    "wheelHintScroll": "滚轮滚动页面",
+    "wheelHintShift": "Shift + 滚轮才调速度"
+  },
   "home": {
     "tagline": "个人成果与笔记：项目、开发记录与算法心得。",
     "meme": "弔图",
     "featured": "精选项目",
     "enterBlog": "进入博客",
     "greeting": "你好，我是GrunRay",
-    "internshipNote": "找不到实习捏——代码不跑我跑！"
+    "internshipNote": "找不到实习捏——代码不跑我跑！",
+    "coverStoryKicker": "COVER STORY · 封面故事",
+    "readStory": "开始阅读",
+    "nowKicker": "NOW · 此刻",
+    "nowDoing": "在写 crsea 2.0 的支护模型校验",
+    "nowReading": "在读《设计中的设计》",
+    "nowReread": "旧文重读",
+    "colLatest": "LATEST · 最新文章",
+    "colProjects": "PROJECTS · 项目",
+    "colAbout": "ABOUT · 站长自述",
+    "colRandom": "REREAD · 旧文重读",
+    "colAll": "全部",
+    "moreAbout": "更多关于我",
+    "emptyPosts": "暂无可展示文章",
+    "emptyProjects": "暂无公开项目",
+    "emptyRandom": "暂无推荐"
   },
   "projects": {
     "title": "项目",
@@ -57,6 +76,8 @@
     "demoEmpty": "暂无 Demo 预览内容",
     "demoNoEmbed": "暂未配置内嵌 Demo，使用外部链接查看",
     "demoPlaceholderHint": "后续可通过数据库字段提供 demo 网页代码",
+    "sidebarKicker": "项目信息",
+    "sidebarLabel": "项目信息",
     "factsTitle": "项目信息",
     "factsPeriod": "项目周期",
     "factsStatus": "状态",
@@ -359,7 +380,9 @@
     "oj": "平台",
     "problem": "题号",
     "copyCode": "复制代码",
-    "copyCodeDone": "已复制"
+    "copyCodeDone": "已复制",
+    "sidebarKicker": "本文信息",
+    "sidebarLabel": "文章信息"
   },
   "ui": {
     "theme": "界面风格",

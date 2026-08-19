@@ -136,9 +136,9 @@ function toggle(ev?: MouseEvent) {
 }
 
 .theme-nav-btn:hover {
-  transform: scale(1.08);
+  color: var(--color-text-muted);
   border-color: color-mix(in srgb, var(--color-accent) 42%, var(--glass-nav-border));
-  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--glass-nav-bg) 88%, transparent);
 }
 
 .theme-nav-btn-icon {
@@ -147,10 +147,6 @@ function toggle(ev?: MouseEvent) {
   justify-content: center;
   line-height: 0;
   transition: filter 0.2s ease, transform 0.2s ease;
-}
-
-.theme-nav-btn:hover .theme-nav-btn-icon {
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-accent) 50%, transparent));
 }
 
 /* 浅色当前主题：与拖尾开启态一致的渐变高亮，太阳图标发光 */
@@ -170,7 +166,9 @@ function toggle(ev?: MouseEvent) {
 }
 
 .theme-nav-btn--light:hover {
+  color: #fff6cf;
   border-color: color-mix(in srgb, var(--color-accent) 62%, var(--glass-nav-border));
+  background: linear-gradient(135deg, #8f7cff 0%, #4fc3ff 46%, #7fffd0 100%);
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--color-accent) 42%, transparent),
     0 0 18px color-mix(in srgb, var(--color-accent) 52%, transparent);
@@ -199,7 +197,9 @@ function toggle(ev?: MouseEvent) {
 }
 
 .theme-nav-btn--dark:hover {
+  color: #f1f5f9;
   border-color: color-mix(in srgb, #cbd5e1 55%, var(--glass-nav-border));
+  background: linear-gradient(145deg, #1e293b 0%, #334155 52%, #475569 100%);
   box-shadow:
     0 0 0 1px rgb(255 255 255 / 18%),
     0 0 22px rgb(203 213 225 / 42%);
@@ -229,7 +229,9 @@ function toggle(ev?: MouseEvent) {
 }
 
 .theme-nav-btn--abstract:hover {
+  color: #ffdb00;
   border-color: #ffdb00;
+  background: linear-gradient(145deg, #0a2330 0%, #123848 52%, #167095 100%);
   box-shadow:
     0 0 0 1px rgb(255 219 0 / 45%),
     4px 4px 0 rgb(255 219 0 / 0.95);

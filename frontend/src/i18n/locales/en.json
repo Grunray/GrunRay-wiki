@@ -33,13 +33,32 @@
     "localeTitleZh": "Switch interface to Chinese",
     "backToTop": "Back to top"
   },
+  "filmFeed": {
+    "wheelHintScroll": "Scroll to move the page",
+    "wheelHintShift": "Shift + scroll to adjust speed"
+  },
   "home": {
     "tagline": "Portfolio, build notes, and algorithm write-ups.",
     "meme": "Meme",
     "featured": "Featured projects",
     "enterBlog": "Blog",
     "greeting": "Hi, I'm GrunRay.",
-    "internshipNote": "Still looking for an internship. Code doesn't run, I run!"
+    "internshipNote": "Still looking for an internship. Code doesn't run, I run!",
+    "coverStoryKicker": "COVER STORY",
+    "readStory": "Read",
+    "nowKicker": "NOW",
+    "nowDoing": "Building crsea 2.0 support-model checks",
+    "nowReading": "Reading Designing Design",
+    "nowReread": "Rereading",
+    "colLatest": "LATEST",
+    "colProjects": "PROJECTS",
+    "colAbout": "ABOUT",
+    "colRandom": "REREAD",
+    "colAll": "All",
+    "moreAbout": "More about me",
+    "emptyPosts": "No posts yet",
+    "emptyProjects": "No public projects",
+    "emptyRandom": "Nothing to recommend"
   },
   "projects": {
     "title": "Projects",
@@ -57,6 +76,8 @@
     "demoEmpty": "No demo preview available",
     "demoNoEmbed": "Embedded demo is not configured, open external link instead",
     "demoPlaceholderHint": "A future database field can provide demo HTML code",
+    "sidebarKicker": "Project",
+    "sidebarLabel": "Project info",
     "factsTitle": "Project facts",
     "factsPeriod": "Timeline",
     "factsStatus": "Status",
@@ -359,7 +380,9 @@
     "oj": "Platform",
     "problem": "Problem",
     "copyCode": "Copy code",
-    "copyCodeDone": "Copied"
+    "copyCodeDone": "Copied",
+    "sidebarKicker": "Article",
+    "sidebarLabel": "Article info"
   },
   "ui": {
     "theme": "Theme",
