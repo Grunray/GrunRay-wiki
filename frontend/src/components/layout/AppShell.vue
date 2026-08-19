@@ -457,6 +457,8 @@ function onRouteEnter(el: Element, done: () => void) {
   <div class="abstract-grid-bg" aria-hidden="true" />
   <FooterGrunRayPanel />
   <div class="app-root">
+    <!-- 须先于 RouterView 挂上，避免详情页 Teleport 找不到目标 -->
+    <div id="detail-scroll-rail-host" class="detail-scroll-rail-host" />
     <ScrollProgress />
     <div class="app-page-cover">
     <header class="glass-nav-sticky-wrap" :data-nav-compact="navCompact ? 'true' : 'false'">
@@ -990,9 +992,9 @@ function onRouteEnter(el: Element, done: () => void) {
 }
 
 .nav-overflow-trigger:hover {
-  transform: scale(1.08);
+  color: var(--color-text-muted);
   border-color: color-mix(in srgb, var(--color-accent) 42%, var(--glass-nav-border));
-  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--glass-nav-bg) 88%, transparent);
 }
 
 .nav-overflow-trigger.is-open {
@@ -1225,9 +1227,9 @@ function onRouteEnter(el: Element, done: () => void) {
 }
 
 .trail-toggle:hover {
-  transform: scale(1.08);
+  color: var(--color-text-muted);
   border-color: color-mix(in srgb, var(--color-accent) 42%, var(--glass-nav-border));
-  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--glass-nav-bg) 88%, transparent);
 }
 
 .trail-toggle-icon {
@@ -1280,9 +1282,9 @@ function onRouteEnter(el: Element, done: () => void) {
 }
 
 .photo-bg-nav-btn:hover {
-  transform: scale(1.08);
+  color: var(--color-text-muted);
   border-color: color-mix(in srgb, var(--color-accent) 42%, var(--glass-nav-border));
-  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--glass-nav-bg) 88%, transparent);
 }
 
 .photo-bg-nav-btn-icon {
@@ -1336,9 +1338,9 @@ function onRouteEnter(el: Element, done: () => void) {
 
 .music-nav-btn:hover,
 .splash-nav-btn:hover {
-  transform: scale(1.08);
+  color: var(--color-text-muted);
   border-color: color-mix(in srgb, var(--color-accent) 42%, var(--glass-nav-border));
-  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--glass-nav-bg) 88%, transparent);
 }
 
 .splash-nav-btn-icon {
@@ -1458,14 +1460,13 @@ function onRouteEnter(el: Element, done: () => void) {
 }
 
 .locale-nav-btn:hover {
-  transform: scale(1.08);
   border-color: color-mix(in srgb, var(--color-accent) 42%, var(--glass-nav-border));
-  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--glass-nav-bg) 88%, transparent);
   color: var(--color-text-muted);
 }
 
 .locale-nav-btn-label {
-  font-size: 0.68rem;
+  font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   line-height: 1;
