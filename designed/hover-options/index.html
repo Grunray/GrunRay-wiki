@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>卡片悬停效果</title>
+<style>
+  /* ===== 站点令牌（浅色纸面，与 tokens.light.css 对齐） ===== */
+  :root {
+    --bg: #f4f1e8;
+    --surface: #faf8f1;
+    --elevated: #ece7d8;
+    --text: #2b2823;
+    --muted: #6e675b;
+    --border: #ddd5c2;
+    --accent: #2e6b4f;
+    --accent-soft: rgb(46 107 79 / 8%);
+    --radius-md: 10px;
+    --shadow-card: 0 1px 2px rgb(43 40 35 / 5%);
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --font-serif: 'Noto Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
+    --font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 2.5rem 1.5rem 4rem;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-size: 17px;
+    line-height: 1.7;
+  }
+
+  .page { max-width: 72rem; margin: 0 auto; }
+
+  .page-head {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 2px solid color-mix(in srgb, var(--text) 82%, transparent);
+  }
+  .page-head h1 {
+    margin: 0 0 0.3rem;
+    font-family: var(--font-serif);
+    font-size: 1.9rem;
+    font-weight: 600;
+  }
+  .page-head p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+  .page-head code {
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    background: var(--elevated);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+  }
+
+  /* ===== 方案区块 ===== */
+  .option { margin-bottom: 3.5rem; }
+  .option-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    margin-bottom: 0.35rem;
+  }
+  .option-key {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+  }
+  .option-name {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    font-weight: 600;
+  }
+  .option-desc { margin: 0 0 1.1rem; color: var(--muted); font-size: 0.9rem; }
+
+  .demo-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 1.2rem;
+    align-items: start;
+  }
+  @media (max-width: 900px) { .demo-row { grid-template-columns: 1fr; } }
+
+  .demo-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.45rem;
+  }
+
+  /* ===== 卡片基座（与线上一致：纸面 + hairline + 轻阴影） ===== */
+  .tcard,
+  .ccard {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    box-shadow: var(--shadow-card);
+    cursor: pointer;
+    transition:
+      transform 0.25s var(--ease),
+      box-shadow 0.25s ease,
+      border-color 0.25s ease,
+      background-color 0.25s ease;
+  }
+  .tcard { padding: 0.95rem 1.1rem; }
+  .ccard {
+    padding: 1.3rem 1.4rem;
+    border-left: 3px solid var(--accent);
+  }
+
+  .t-meta {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+    transition: color 0.25s ease, transform 0.25s var(--ease);
+  }
+  .t-title {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.42;
+    transition: color 0.25s ease, transform 0.25s var(--ease);
+  }
+  .t-summary {
+    margin: 0.45rem 0 0.55rem;
+    color: var(--muted);
+    font-size: 0.94rem;
+    line-height: 1.62;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .t-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .tag {
+    font-size: 0.76rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  }
+
+  .c-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.5rem;
+  }
+  .c-title {
+    margin: 0 0 0.5rem;
+    font-family: var(--font-serif);
+    font-size: 1.55rem;
+    font-weight: 600;
+    line-height: 1.35;
+    transition: color 0.25s ease, transform 0.25s var(--ease);
+  }
+  .c-lede { margin: 0 0 0.7rem; color: var(--muted); font-size: 0.98rem; }
+  .c-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .c-read {
+    margin-left: auto;
+    font-family: system-ui, sans-serif;
+    font-weight: 600;
+    color: var(--accent);
+    transition: transform 0.25s var(--ease);
+  }
+
+  .arrow-ind {
+    position: absolute;
+    top: 1rem;
+    right: 1.1rem;
+    font-family: var(--font-mono);
+    color: var(--accent);
+    opacity: 0;
+    transform: translateX(-8px);
+    transition: opacity 0.25s ease, transform 0.25s var(--ease);
+  }
+
+  /* ============================================================
+     A · 铅字压印 —— 手指按进纸里：下沉 + 内阴影 + 标题着墨
+     ============================================================ */
+  .opt-a .tcard:hover,
+  .opt-a .ccard:hover {
+    transform: translateY(1px);
+    background: var(--elevated);
+    box-shadow:
+      inset 0 2px 6px rgb(43 40 35 / 10%),
+      0 0 0 rgb(0 0 0 / 0);
+    border-color: color-mix(in srgb, var(--text) 30%, var(--border));
+  }
+  .opt-a .tcard:hover .t-title,
+  .opt-a .ccard:hover .c-title { color: var(--accent); }
+  .opt-a .tcard:hover .t-meta,
+  .opt-a .ccard:hover .c-meta { color: var(--text); }
+
+  /* ============================================================
+     B · 编辑批注 —— 卡片不动，标题下划线从左划到右 + 箭头滑入
+     ============================================================ */
+  .opt-b .t-title,
+  .opt-b .c-title {
+    background-image: linear-gradient(var(--accent), var(--accent));
+    background-repeat: no-repeat;
+    background-position: 0 96%;
+    background-size: 0% 2px;
+    transition: background-size 0.38s var(--ease);
+    display: inline;
+  }
+  .opt-b .tcard:hover,
+  .opt-b .ccard:hover { border-color: color-mix(in srgb, var(--text) 24%, var(--border)); }
+  .opt-b .tcard:hover .t-title,
+  .opt-b .ccard:hover .c-title { background-size: 100% 2px; }
+  .opt-b .tcard:hover .arrow-ind,
+  .opt-b .ccard:hover .arrow-ind { opacity: 1; transform: translateX(0); }
+  .opt-b .ccard:hover .c-read { transform: translateX(4px); }
+
+  /* ============================================================
+     C · 纸张翻角 —— 右下角掀起一个折角 + 轻微浮起
+     ============================================================ */
+  .opt-c .tcard::before,
+  .opt-c .ccard::before {
+    content: '';
+    position: absolute;
+    right: -1px;
+    bottom: -1px;
+    width: 0;
+    height: 0;
+    border-radius: 0 0 var(--radius-md) 0;
+    background: linear-gradient(135deg, transparent 50%, color-mix(in srgb, var(--accent) 26%, var(--surface)) 50%);
+    box-shadow: -2px -2px 4px rgb(43 40 35 / 8%);
+    transition: width 0.28s var(--ease), height 0.28s var(--ease);
+    pointer-events: none;
+  }
+  .opt-c .tcard:hover,
+  .opt-c .ccard:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 10px 22px -14px rgb(43 40 35 / 30%),
+      var(--shadow-card);
+  }
+  .opt-c .tcard:hover::before,
+  .opt-c .ccard:hover::before { width: 24px; height: 24px; }
+
+  /* ============================================================
+     D · 墨色晕染 —— 左缘墨线晕开成整卡 4% 染色 + 日期着墨
+     ============================================================ */
+  .opt-d .tcard,
+  .opt-d .ccard { overflow: hidden; }
+  .opt-d .tcard::after,
+  .opt-d .ccard::after {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 2px;
+    background: var(--accent);
+    opacity: 0;
+    transition: width 0.4s var(--ease), opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .opt-d .tcard:hover::after,
+  .opt-d .ccard:hover::after { width: 100%; opacity: 0.05; }
+  .opt-d .tcard:hover { border-left: 2px solid var(--accent); }
+  .opt-d .tcard:hover .t-meta { color: var(--accent); }
+  .opt-d .ccard:hover .c-meta { color: var(--text); }
+  .opt-d .ccard:hover .c-read { transform: translateX(4px); }
+
+  /* ============================================================
+     E · 排版错位 —— 标题右移 / 日期左移 / 标签提亮，目录活起来
+     ============================================================ */
+  .opt-e .tcard:hover { border-color: color-mix(in srgb, var(--text) 24%, var(--border)); }
+  .opt-e .tcard:hover .t-title { transform: translateX(6px); }
+  .opt-e .tcard:hover .t-meta { transform: translateX(-4px); color: var(--accent); }
+  .opt-e .tcard:hover .tag {
+    background: var(--accent-soft);
+    border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+    color: var(--text);
+  }
+  .opt-e .ccard:hover .c-title { transform: translateX(8px); }
+  .opt-e .ccard:hover .c-kicker { letter-spacing: 0.12em; }
+  .opt-e .ccard .c-kicker { transition: letter-spacing 0.3s ease; }
+  .opt-e .ccard:hover .c-read { transform: translateX(4px); }
+
+  /* ============================================================
+     F · 檐角生长 —— 用户提供的花藤剪影（逆时针 45°），右下角
+     实现：SVG 双重 mask —— 内层用 PNG alpha 裁出花藤形（颜色随
+     主题 accent），外层用沿主茎走向的白色粗 path 做 dashoffset
+     生长遮罩，hover 时花藤从右下角沿茎被「画」出来，离开收回。
+     ============================================================ */
+  .opt-f .flower {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    width: 60px;
+    height: 60px;
+    pointer-events: none;
+    /* 非 hover 必须完全不可见：mask 内 39 条 round cap 粗线在 dashoffset
+       收尽后仍会在起点漏出残片，整图 opacity 兜底 */
+    opacity: 0;
+  }
+  .opt-f .tcard:hover .flower,
+  .opt-f .ccard:hover .flower { opacity: 1; }
+  .opt-f .flower-fill { fill: var(--accent); }
+
+  /* 生长遮罩：骨架路径 dashoffset 绘制。线宽故意大于剪影半径，
+     过冲由 PNG alpha mask 裁掉，从而保证画满且仍是沿线画出。
+     delay 写在每条 path 的 --grow-delay 上；离开时 delay=0 一起收回。 */
+  .opt-f .grow {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 56;
+    stroke-linecap: butt;
+    stroke-linejoin: round;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    transition: stroke-dashoffset 0.4s var(--ease);
+    transition-delay: 0s;
+  }
+  .opt-f .grow-main { stroke-width: 60; }
+  .opt-f .tcard:hover .grow,
+  .opt-f .ccard:hover .grow {
+    stroke-dashoffset: 0;
+    transition-delay: var(--grow-delay, 0s);
+    transition-duration: 0.48s;
+  }
+  .opt-f .tcard:hover .grow-main,
+  .opt-f .ccard:hover .grow-main { transition-duration: 1.05s; }
+
+  /* 卡片本体保持安静，只让标题随生长着墨 */
+  .opt-f .tcard,
+  .opt-f .ccard { overflow: hidden; }
+  .opt-f .tcard:hover .t-title,
+  .opt-f .ccard:hover .c-title { color: var(--accent); }
+  .opt-f .tcard:hover,
+  .opt-f .ccard:hover {
+    border-color: color-mix(in srgb, var(--accent) 32%, var(--border));
+  }
+
+  /* ============================================================
+     G · 三合一（C + E + F）—— 翻角 + 排版错位 + 檐角生长
+     ============================================================ */
+  .opt-g .tcard,
+  .opt-g .ccard { overflow: hidden; }
+
+  .opt-g .tcard::before,
+  .opt-g .ccard::before {
+    content: '';
+    position: absolute;
+    right: -1px;
+    bottom: -1px;
+    z-index: 2;
+    width: 0;
+    height: 0;
+    border-radius: 0 0 var(--radius-md) 0;
+    background: linear-gradient(135deg, transparent 50%, color-mix(in srgb, var(--accent) 26%, var(--surface)) 50%);
+    box-shadow: -2px -2px 4px rgb(43 40 35 / 8%);
+    transition: width 0.28s var(--ease), height 0.28s var(--ease);
+    pointer-events: none;
+  }
+  .opt-g .tcard:hover,
+  .opt-g .ccard:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 10px 22px -14px rgb(43 40 35 / 30%),
+      var(--shadow-card);
+    border-color: color-mix(in srgb, var(--accent) 32%, var(--border));
+  }
+  .opt-g .tcard:hover::before,
+  .opt-g .ccard:hover::before { width: 24px; height: 24px; }
+
+  .opt-g .tcard:hover .t-title {
+    transform: translateX(6px);
+    color: var(--accent);
+  }
+  .opt-g .tcard:hover .t-meta {
+    transform: translateX(-4px);
+    color: var(--accent);
+  }
+  .opt-g .tcard:hover .tag {
+    background: var(--accent-soft);
+    border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+    color: var(--text);
+  }
+  .opt-g .ccard:hover .c-title {
+    transform: translateX(8px);
+    color: var(--accent);
+  }
+  .opt-g .ccard .c-kicker { transition: letter-spacing 0.3s ease; }
+  .opt-g .ccard:hover .c-kicker { letter-spacing: 0.12em; }
+  .opt-g .ccard:hover .c-read { transform: translateX(4px); }
+
+  .opt-g .flower {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    z-index: 1;
+    width: 60px;
+    height: 60px;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .opt-g .tcard:hover .flower,
+  .opt-g .ccard:hover .flower { opacity: 1; }
+  .opt-g .flower-fill { fill: var(--accent); }
+  .opt-g .grow {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 56;
+    stroke-linecap: butt;
+    stroke-linejoin: round;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    transition: stroke-dashoffset 0.4s var(--ease);
+    transition-delay: 0s;
+  }
+  .opt-g .grow-main { stroke-width: 60; }
+  .opt-g .tcard:hover .grow,
+  .opt-g .ccard:hover .grow {
+    stroke-dashoffset: 0;
+    transition-delay: var(--grow-delay, 0s);
+    transition-duration: 0.48s;
+  }
+  .opt-g .tcard:hover .grow-main,
+  .opt-g .ccard:hover .grow-main { transition-duration: 1.05s; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="page-head">
+    <h1>卡片悬停效果</h1>
+    <p>把鼠标移到卡片上感受。每版同时演示列表卡（<code>timeline-card</code>）与封面故事卡（<code>cover-story</code>）。方案 G 为 C + E + F 的合订版。</p>
+  </header>
+
+  <!-- A · 铅字压印 -->
+  <section class="option opt-a">
+    <div class="option-head">
+      <span class="option-key">A</span>
+      <h2 class="option-name">铅字压印</h2>
+    </div>
+    <p class="option-desc">hover 时卡片微微下沉 1px、表面变深并出现内阴影，像手指把铅字按进纸里；标题着墨绿。方向与常见「浮起」相反，是纸面世界才有的反馈。</p>
+    <div class="demo-row">
+      <div>
+        <p class="demo-label">timeline-card</p>
+        <article class="tcard">
+          <p class="t-meta">2025-07-10 · 已归档</p>
+          <h3 class="t-title">HLTV 新闻标题爬虫与数据链路（大作业）</h3>
+          <p class="t-summary">围绕 HLTV 电竞新闻构建采集→PySpark 预处理→MongoDB/MySQL/Memurai 存储→词频与 ItemCF 推荐→简易 Web 展示的完整数据链路。</p>
+          <div class="t-tags"><span class="tag">Python</span><span class="tag">PySpark</span><span class="tag">MongoDB</span></div>
+        </article>
+      </div>
+      <div>
+        <p class="demo-label">cover-story</p>
+        <article class="ccard">
+          <p class="c-kicker">Cover Story · 封面故事</p>
+          <h3 class="c-title">栖息：碎念、关于与推荐</h3>
+          <p class="c-lede">XiqiSplitLayout 分栏、碎念/关于/推荐三页 API 与 import 管线、分栏页脚联动说明。</p>
+          <p class="c-meta"><time>2026/05/26</time><span class="tag">Vue</span><span class="tag">碎念</span><span class="c-read">开始阅读 →</span></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- B · 编辑批注 -->
+  <section class="option opt-b">
+    <div class="option-head">
+      <span class="option-key">B</span>
+      <h2 class="option-name">编辑批注</h2>
+    </div>
+    <p class="option-desc">卡片本身完全不动，只有编辑动作：标题下划出一条墨绿下划线（从左向右生长），右上角「→」滑入。最克制，杂志目录感最强。</p>
+    <div class="demo-row">
+      <div>
+        <p class="demo-label">timeline-card</p>
+        <article class="tcard">
+          <p class="t-meta">2025-07-10 · 已归档</p>
+          <h3 class="t-title">HLTV 新闻标题爬虫与数据链路（大作业）</h3>
+          <p class="t-summary">围绕 HLTV 电竞新闻构建采集→PySpark 预处理→MongoDB/MySQL/Memurai 存储→词频与 ItemCF 推荐→简易 Web 展示的完整数据链路。</p>
+          <div class="t-tags"><span class="tag">Python</span><span class="tag">PySpark</span><span class="tag">MongoDB</span></div>
+          <span class="arrow-ind">→</span>
+        </article>
+      </div>
+      <div>
+        <p class="demo-label">cover-story</p>
+        <article class="ccard">
+          <p class="c-kicker">Cover Story · 封面故事</p>
+          <h3 class="c-title">栖息：碎念、关于与推荐</h3>
+          <p class="c-lede">XiqiSplitLayout 分栏、碎念/关于/推荐三页 API 与 import 管线、分栏页脚联动说明。</p>
+          <p class="c-meta"><time>2026/05/26</time><span class="tag">Vue</span><span class="tag">碎念</span><span class="c-read">开始阅读 →</span></p>
+          <span class="arrow-ind">→</span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- C · 纸张翻角 -->
+  <section class="option opt-c">
+    <div class="option-head">
+      <span class="option-key">C</span>
+      <h2 class="option-name">纸张翻角</h2>
+    </div>
+    <p class="option-desc">hover 时右下角掀起一个小折角，同时卡片轻轻浮起 2px。物理感最强的一版，像真的捏起一张纸；折角是它独一无二的记忆点。</p>
+    <div class="demo-row">
+      <div>
+        <p class="demo-label">timeline-card</p>
+        <article class="tcard">
+          <p class="t-meta">2025-07-10 · 已归档</p>
+          <h3 class="t-title">HLTV 新闻标题爬虫与数据链路（大作业）</h3>
+          <p class="t-summary">围绕 HLTV 电竞新闻构建采集→PySpark 预处理→MongoDB/MySQL/Memurai 存储→词频与 ItemCF 推荐→简易 Web 展示的完整数据链路。</p>
+          <div class="t-tags"><span class="tag">Python</span><span class="tag">PySpark</span><span class="tag">MongoDB</span></div>
+        </article>
+      </div>
+      <div>
+        <p class="demo-label">cover-story</p>
+        <article class="ccard">
+          <p class="c-kicker">Cover Story · 封面故事</p>
+          <h3 class="c-title">栖息：碎念、关于与推荐</h3>
+          <p class="c-lede">XiqiSplitLayout 分栏、碎念/关于/推荐三页 API 与 import 管线、分栏页脚联动说明。</p>
+          <p class="c-meta"><time>2026/05/26</time><span class="tag">Vue</span><span class="tag">碎念</span><span class="c-read">开始阅读 →</span></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- D · 墨色晕染 -->
+  <section class="option opt-d">
+    <div class="option-head">
+      <span class="option-key">D</span>
+      <h2 class="option-name">墨色晕染</h2>
+    </div>
+    <p class="option-desc">左缘一条墨线，hover 时向右晕开成整卡 5% 的极淡墨绿（像墨在宣纸上化开），日期同时着墨。保留了现在的左缘竖线基因，但多了一层「化开」的过程。</p>
+    <div class="demo-row">
+      <div>
+        <p class="demo-label">timeline-card</p>
+        <article class="tcard">
+          <p class="t-meta">2025-07-10 · 已归档</p>
+          <h3 class="t-title">HLTV 新闻标题爬虫与数据链路（大作业）</h3>
+          <p class="t-summary">围绕 HLTV 电竞新闻构建采集→PySpark 预处理→MongoDB/MySQL/Memurai 存储→词频与 ItemCF 推荐→简易 Web 展示的完整数据链路。</p>
+          <div class="t-tags"><span class="tag">Python</span><span class="tag">PySpark</span><span class="tag">MongoDB</span></div>
+        </article>
+      </div>
+      <div>
+        <p class="demo-label">cover-story</p>
+        <article class="ccard">
+          <p class="c-kicker">Cover Story · 封面故事</p>
+          <h3 class="c-title">栖息：碎念、关于与推荐</h3>
+          <p class="c-lede">XiqiSplitLayout 分栏、碎念/关于/推荐三页 API 与 import 管线、分栏页脚联动说明。</p>
+          <p class="c-meta"><time>2026/05/26</time><span class="tag">Vue</span><span class="tag">碎念</span><span class="c-read">开始阅读 →</span></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- E · 排版错位 -->
+  <section class="option opt-e">
+    <div class="option-head">
+      <span class="option-key">E</span>
+      <h2 class="option-name">排版错位</h2>
+    </div>
+    <p class="option-desc">卡片不动，内容动：标题向右移 6px、日期向左移 4px 并着墨、标签提亮——像活版印刷里字模被重新排过。纯排版层的反馈，零阴影零位移。</p>
+    <div class="demo-row">
+      <div>
+        <p class="demo-label">timeline-card</p>
+        <article class="tcard">
+          <p class="t-meta">2025-07-10 · 已归档</p>
+          <h3 class="t-title">HLTV 新闻标题爬虫与数据链路（大作业）</h3>
+          <p class="t-summary">围绕 HLTV 电竞新闻构建采集→PySpark 预处理→MongoDB/MySQL/Memurai 存储→词频与 ItemCF 推荐→简易 Web 展示的完整数据链路。</p>
+          <div class="t-tags"><span class="tag">Python</span><span class="tag">PySpark</span><span class="tag">MongoDB</span></div>
+        </article>
+      </div>
+      <div>
+        <p class="demo-label">cover-story</p>
+        <article class="ccard">
+          <p class="c-kicker">Cover Story · 封面故事</p>
+          <h3 class="c-title">栖息：碎念、关于与推荐</h3>
+          <p class="c-lede">XiqiSplitLayout 分栏、碎念/关于/推荐三页 API 与 import 管线、分栏页脚联动说明。</p>
+          <p class="c-meta"><time>2026/05/26</time><span class="tag">Vue</span><span class="tag">碎念</span><span class="c-read">开始阅读 →</span></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- F · 檐角生长 -->
+  <section class="option opt-f">
+    <div class="option-head">
+      <span class="option-key">F</span>
+      <h2 class="option-name">檐角生长</h2>
+    </div>
+    <p class="option-desc">使用你提供的花藤剪影（逆时针旋转 45°、染主题 accent 色）。hover 时从右下角沿植株骨架把每一条枝、每一片叶都「画」出来——主干先行，侧枝按接到主干的时机错时跟上；离开沿原路收回。没有淡出，全部是路径绘制。</p>
+    <div class="demo-row">
+      <div>
+        <p class="demo-label">timeline-card</p>
+        <article class="tcard">
+          <p class="t-meta">2025-07-10 · 已归档</p>
+          <h3 class="t-title">HLTV 新闻标题爬虫与数据链路（大作业）</h3>
+          <p class="t-summary">围绕 HLTV 电竞新闻构建采集→PySpark 预处理→MongoDB/MySQL/Memurai 存储→词频与 ItemCF 推荐→简易 Web 展示的完整数据链路。</p>
+          <div class="t-tags"><span class="tag">Python</span><span class="tag">PySpark</span><span class="tag">MongoDB</span></div>
+          <svg class="flower" viewBox="0 0 326 327" aria-hidden="true">
+            <defs>
+              <mask id="fv-shape-t" maskUnits="userSpaceOnUse" style="mask-type:alpha">
+                <image href="flower-vine.png" x="0" y="0" width="326" height="327" />
+              </mask>
+              <mask id="fv-grow-t" maskUnits="userSpaceOnUse">
+                <rect width="326" height="327" fill="#000" />
+                <path class="grow grow-main" pathLength="100" style="--grow-delay:0s" d="M 303,303 L 301,304 L 299,305 L 297,305 L 295,305 L 293,305 L 291,305 L 289,305 L 287,304 L 285,303 L 283,301 L 282,299 L 280,298 L 278,297 L 276,297 L 274,297 L 272,297 L 270,298 L 268,298 L 266,298 L 264,298 L 262,298 L 260,298 L 258,298 L 256,297 L 254,296 L 252,296 L 250,295 L 248,295 L 246,297 L 244,299 L 242,299 L 240,298 L 238,298 L 236,298 L 234,298 L 232,298 L 230,298 L 228,298 L 226,298 L 224,298 L 222,298 L 220,298 L 218,298 L 216,298 L 214,298 L 212,298 L 210,297 L 208,296 L 206,295 L 206,293 L 206,291 L 207,289 L 208,287 L 209,285 L 210,283 L 211,281 L 211,279 L 212,277 L 213,275 L 212,273 L 213,271 L 213,269 L 213,267 L 213,265 L 213,263 L 212,261 L 212,259 L 212,257 L 211,255 L 210,253 L 209,251 L 208,249 L 207,247 L 206,245 L 205,243 L 203,241 L 201,239 L 200,237 L 198,235 L 196,233 L 194,231 L 192,229 L 191,227 L 189,225 L 187,224 L 185,222 L 183,220 L 181,218 L 179,216 L 177,214 L 175,212 L 173,210 L 171,209 L 169,207 L 167,206 L 165,204 L 163,203 L 161,202 L 159,201 L 157,200 L 155,199 L 153,198 L 151,198 L 149,197 L 147,197 L 145,196 L 143,196 L 141,196 L 139,195 L 137,195 L 135,195 L 133,196 L 131,196 L 129,196 L 127,196 L 125,196 L 123,197 L 121,197 L 119,197 L 117,198 L 115,198 L 113,199 L 111,199 L 109,200 L 107,200 L 105,200 L 103,200 L 101,200 L 99,200 L 97,200 L 95,200 L 93,200 L 91,200 L 89,200 L 87,199 L 85,197 L 83,196 L 81,195 L 79,194 L 77,192 L 75,191 L 73,190 L 71,188 L 70,186 L 68,184 L 67,182 L 65,180 L 64,178 L 62,176 L 61,174 L 60,172 L 60,170 L 60,168 L 62,166 L 63,164 L 64,162 L 64,160 L 65,158 L 65,156 L 65,154 L 66,152 L 66,150 L 67,148 L 67,146 L 67,144 L 67,142 L 65,140 L 65,138 L 66,136 L 66,134 L 67,132 L 67,130 L 67,128 L 65,126 L 63,124 L 62,122 L 61,120 L 59,118 L 58,116 L 58,114 L 57,112 L 57,110 L 56,108 L 56,106 L 56,104 L 56,102 L 56,100 L 56,98 L 56,96 L 57,94 L 58,92 L 59,90 L 57,88 L 55,86 L 54,84 L 53,82 L 52,80 L 50,78 L 49,76 L 49,74 L 48,72 L 47,70 L 47,68 L 46,66 L 46,64 L 46,62 L 45,60 L 45,58 L 45,56 L 44,54 L 44,52 L 44,50 L 45,48 L 46,46 L 44,44 L 42,42 L 40,40 L 38,38 L 36,36 L 34,34 L 32,33 L 30,31 L 28,29 L 27,28" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.15s" d="M 303,303 L 304,301 L 304,299 L 304,297 L 304,295 L 304,293 L 304,291 L 303,289 L 302,287 L 300,285 L 298,283 L 297,281 L 297,279 L 296,277 L 296,275 L 297,273 L 298,271 L 297,269 L 298,267 L 298,265 L 298,263 L 298,261 L 297,259 L 297,257 L 296,255 L 295,253 L 295,251 L 296,249 L 298,247 L 298,245 L 298,243 L 298,241 L 298,239 L 297,237 L 297,235 L 297,233 L 297,231 L 297,229 L 297,227 L 297,225 L 297,223 L 297,221 L 297,219 L 297,217 L 297,215 L 297,213 L 297,211 L 296,209 L 295,207 L 293,206 L 291,207 L 289,208 L 287,208 L 285,209 L 283,210 L 281,211 L 279,212 L 277,212 L 275,213 L 273,213 L 271,213 L 269,213 L 267,213 L 265,213 L 263,213 L 261,213 L 259,212 L 257,212 L 255,211 L 253,211 L 251,210 L 249,209 L 247,208 L 245,207 L 243,205 L 241,204 L 239,202 L 237,200 L 235,199 L 233,197 L 231,196 L 230,194 L 228,192 L 226,191 L 224,189 L 223,187 L 221,186 L 219,184 L 218,182 L 216,180 L 214,178 L 213,176 L 211,174 L 209,172 L 207,170 L 206,168 L 205,166 L 203,164 L 202,162 L 201,160 L 200,158 L 199,156 L 198,154 L 197,152 L 196,150 L 196,148 L 196,146 L 196,144 L 195,142 L 195,140 L 195,138 L 195,136 L 195,134 L 195,132 L 196,130 L 196,128 L 196,126 L 196,124 L 197,122 L 197,120 L 197,118 L 198,116 L 198,114 L 198,112 L 199,110 L 199,108 L 199,106 L 199,104 L 200,102 L 199,100 L 199,98 L 199,96 L 199,94 L 199,92 L 199,90 L 199,88 L 197,86 L 196,84 L 194,82 L 193,80 L 192,78 L 190,76 L 189,74 L 187,72 L 185,70 L 183,68 L 181,66 L 179,65 L 177,64 L 175,62 L 173,61 L 171,61 L 169,60 L 167,61 L 165,63 L 163,64 L 161,65 L 159,65 L 157,66 L 155,66 L 153,66 L 151,67 L 149,67 L 147,67 L 145,67 L 143,67 L 141,66 L 140,64 L 139,62 L 138,60 L 136,62 L 134,64 L 132,66 L 130,68 L 128,68 L 126,66 L 124,64 L 122,62 L 120,61 L 118,61 L 116,59 L 114,59 L 112,58 L 110,57 L 108,57 L 106,57 L 104,56 L 102,56 L 100,56 L 98,56 L 96,57 L 94,57 L 92,58 L 90,59 L 88,58 L 86,56 L 84,55 L 82,54 L 80,53 L 78,51 L 76,50 L 74,49 L 72,49 L 70,48 L 68,47 L 66,47 L 64,47 L 62,46 L 60,46 L 58,46 L 56,45 L 54,45 L 52,45 L 50,45 L 48,45" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.167s" d="M 292,304 L 292,302 L 292,300 L 292,298 L 292,296 L 291,294 L 289,295 L 287,295" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.181s" d="M 283,301 L 281,303 L 279,305 L 277,307 L 276,308" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.233s" d="M 295,250 L 293,249 L 291,248 L 289,247 L 287,246 L 285,245 L 283,244 L 281,244 L 279,244 L 277,244 L 275,244 L 273,245 L 271,246 L 269,248 L 267,250 L 265,252 L 264,254 L 264,256 L 264,258 L 264,260 L 263,262 L 262,263" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.236s" d="M 249,295 L 248,293 L 247,291 L 246,289 L 245,287 L 244,285 L 243,283 L 243,281 L 243,279 L 243,277 L 244,275 L 245,273 L 246,271 L 248,269 L 250,267 L 252,265 L 254,265 L 256,264 L 258,264 L 260,264 L 261,263" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.238s" d="M 298,247 L 300,247 L 302,246 L 304,246 L 306,245 L 308,244 L 310,242 L 312,241 L 314,239" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.244s" d="M 244,299 L 244,301 L 244,303 L 244,305 L 244,307 L 243,309 L 241,311" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.302s" d="M 294,206 L 295,204 L 296,202 L 298,200 L 300,198 L 301,197" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.571s" d="M 88,200 L 87,202 L 86,204 L 85,206 L 84,208 L 82,210 L 82,212 L 82,214 L 82,216 L 82,218 L 81,220 L 81,222 L 80,224 L 80,226 L 80,228 L 80,230 L 81,232 L 81,234 L 82,236 L 83,238 L 84,240 L 85,242 L 86,244 L 86,246 L 84,248 L 82,249 L 80,251 L 78,253 L 76,255 L 74,257 L 73,259 L 71,261 L 69,263 L 67,265 L 65,266 L 63,267 L 61,269 L 59,271 L 58,273 L 56,275 L 54,277 L 52,279 L 52,281 L 52,283 L 52,285 L 51,287 L 51,289 L 51,291 L 51,293 L 51,295 L 51,297 L 51,299 L 53,300 L 55,301 L 57,301 L 59,301 L 61,301 L 63,301 L 65,302 L 67,302 L 69,302 L 71,303 L 73,303 L 75,303 L 77,304 L 79,303 L 81,303" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.571s" d="M 199,89 L 201,88 L 203,87 L 205,86 L 207,85 L 209,84 L 211,83 L 213,83 L 215,83 L 217,82 L 219,82 L 221,81 L 223,81 L 225,81 L 227,81 L 229,81 L 231,81 L 233,82 L 235,83 L 237,83 L 239,84 L 241,85 L 243,87 L 245,88 L 247,86 L 248,84 L 250,82 L 252,80 L 253,78 L 255,76 L 257,76 L 259,74 L 261,72 L 263,70 L 264,68 L 265,66 L 266,64 L 268,62 L 270,60 L 272,59 L 274,57 L 276,55 L 278,53 L 280,53 L 282,52 L 284,52 L 286,53 L 288,53 L 290,53 L 292,53 L 294,52 L 296,52 L 298,52 L 299,54 L 300,56 L 300,58 L 301,60 L 301,62 L 301,64 L 301,66 L 302,68 L 302,70 L 302,72 L 303,74 L 301,75 L 299,75 L 297,75" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.587s" d="M 82,210 L 80,210 L 78,210 L 76,210 L 74,210 L 72,211 L 70,211 L 68,212 L 66,212 L 64,213 L 62,213 L 60,213 L 58,213 L 56,213 L 54,213 L 52,213 L 50,214 L 48,214 L 46,212 L 44,211 L 42,210 L 40,209 L 38,207 L 36,206 L 34,204 L 32,203 L 30,201 L 28,199 L 27,197 L 26,195 L 25,193 L 25,191 L 23,189 L 21,188 L 19,186 L 17,185 L 15,184 L 13,183 L 11,181 L 9,179 L 8,177 L 9,175 L 11,173 L 13,171 L 15,170 L 17,169 L 19,168 L 21,167 L 23,165 L 25,164 L 27,164 L 28,165" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.588s" d="M 210,83 L 209,81 L 209,79 L 209,77 L 209,75 L 210,73 L 211,71 L 211,69 L 211,67 L 212,65 L 212,63 L 212,61 L 212,59 L 213,57 L 213,55 L 213,53 L 213,51 L 213,49 L 212,47 L 210,45 L 209,43 L 208,41 L 207,39 L 205,37 L 204,35 L 202,33 L 200,31 L 198,29 L 196,27 L 194,26 L 192,25 L 190,25 L 188,27 L 187,29 L 187,31 L 187,33 L 186,35 L 184,37 L 182,39 L 181,41 L 179,42 L 177,43 L 175,43 L 173,42 L 171,40 L 169,39 L 168,37 L 167,35 L 166,33 L 166,31 L 165,29" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.639s" d="M 49,214 L 48,216 L 47,218 L 46,220 L 45,222 L 44,224 L 43,226 L 41,228 L 41,230 L 39,232 L 38,234 L 37,236 L 36,238 L 34,240 L 33,242 L 32,244 L 31,246 L 33,248 L 35,250 L 37,250 L 39,251 L 41,251 L 43,252 L 44,252" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.64s" d="M 213,50 L 215,49 L 217,48 L 219,47 L 221,46 L 223,45 L 225,44 L 227,42 L 229,42 L 231,40 L 233,39 L 235,37 L 237,36 L 239,35 L 241,33 L 243,33 L 245,32 L 247,33 L 248,35 L 250,37 L 250,39 L 251,41 L 251,43 L 251,44" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.642s" d="M 86,245 L 88,246 L 90,247 L 92,248 L 94,249 L 96,250 L 98,250 L 100,251 L 102,251 L 104,251 L 106,251 L 108,251 L 110,251 L 112,252 L 114,250 L 116,248 L 118,248 L 120,247 L 122,247 L 124,246 L 126,246 L 128,246 L 130,246 L 132,244 L 132,242 L 132,240 L 132,238 L 132,236 L 132,234 L 132,232 L 132,230 L 133,228 L 133,226 L 134,224 L 135,222 L 136,220 L 136,218 L 138,216 L 139,214 L 141,212 L 143,210 L 145,210 L 147,210 L 149,209 L 150,208" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.643s" d="M 245,88 L 246,90 L 247,92 L 248,94 L 249,96 L 250,98 L 250,100 L 250,102 L 250,104 L 250,106 L 251,108 L 251,110 L 251,112 L 249,114 L 248,116 L 247,118 L 247,120 L 246,122 L 246,124 L 246,126 L 246,128 L 245,130 L 244,132 L 242,132 L 240,132 L 238,132 L 236,132 L 234,132 L 232,132 L 230,132 L 228,133 L 226,133 L 224,134 L 222,134 L 220,136 L 218,136 L 216,138 L 214,139 L 212,141 L 210,143 L 209,145 L 208,147 L 209,149 L 207,151" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.661s" d="M 75,256 L 73,255 L 71,254 L 69,253 L 67,253 L 65,253 L 63,253 L 61,253 L 59,253 L 57,253 L 55,253 L 53,253 L 51,253 L 49,253 L 47,253 L 45,252" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.662s" d="M 255,76 L 254,74 L 253,72 L 252,70 L 252,68 L 252,66 L 252,64 L 252,62 L 253,60 L 253,58 L 252,56 L 253,54 L 252,52 L 252,50 L 252,48 L 252,46 L 252,45" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.673s" d="M 65,140 L 63,140 L 61,139 L 59,139 L 57,139 L 55,139 L 53,139 L 51,140 L 49,140 L 47,141 L 45,142 L 43,142 L 41,144 L 39,145 L 37,147 L 35,148 L 33,150 L 31,152 L 29,154 L 28,156 L 27,158 L 27,160 L 26,162" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.679s" d="M 138,60 L 138,58 L 139,56 L 139,54 L 139,52 L 139,50 L 140,48 L 141,46 L 142,44 L 143,42 L 144,40 L 145,38 L 147,36 L 149,34 L 151,32 L 153,30 L 155,29 L 157,28 L 159,27 L 161,26 L 163,26 L 164,28" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.679s" d="M 251,111 L 253,112 L 255,113 L 257,113 L 259,113 L 261,113 L 263,113 L 265,113 L 267,113 L 269,112 L 271,112 L 273,112 L 275,111 L 277,111 L 279,110 L 281,110 L 283,109 L 285,108 L 287,107 L 289,105 L 291,104 L 293,102 L 295,100 L 296,98 L 298,96 L 299,94 L 300,92 L 301,90 L 302,88 L 302,86 L 303,84 L 303,82 L 303,81" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.681s" d="M 111,252 L 112,254 L 113,256 L 113,258 L 113,260 L 113,262 L 112,264 L 112,266 L 112,268 L 112,270 L 112,272 L 111,274 L 111,276 L 110,278 L 110,280 L 109,282 L 108,284 L 107,286 L 106,288 L 104,290 L 103,292 L 101,294 L 99,296 L 97,297 L 95,299 L 93,300 L 91,301 L 89,302 L 87,302 L 85,303 L 83,303 L 82,303" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.686s" d="M 24,190 L 26,189 L 28,188 L 30,187 L 32,187 L 34,186 L 36,185 L 38,183 L 40,182 L 41,180 L 42,178 L 42,176 L 42,174 L 41,172 L 39,170 L 37,169 L 35,168 L 33,167 L 31,166 L 29,165" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.686s" d="M 190,25 L 189,23 L 188,21 L 186,19 L 185,17 L 184,15 L 182,13 L 180,11 L 178,9 L 176,9 L 174,10 L 172,12 L 170,14 L 169,16 L 168,18 L 167,20 L 166,22 L 165,24 L 164,25" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.69s" d="M 67,129 L 69,128 L 71,127 L 73,127 L 75,126 L 77,125 L 79,124 L 81,124 L 83,124 L 85,123 L 87,123 L 89,122 L 91,122 L 93,122 L 95,122 L 97,122 L 99,122 L 101,122 L 103,122 L 105,123 L 107,123 L 109,123 L 111,123 L 113,124 L 115,125 L 117,125 L 119,125 L 121,125 L 123,125 L 124,123" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.695s" d="M 128,68 L 127,70 L 127,72 L 126,74 L 125,76 L 124,78 L 124,80 L 123,82 L 123,84 L 122,86 L 122,88 L 122,90 L 121,92 L 121,94 L 121,96 L 121,98 L 121,100 L 121,102 L 122,104 L 122,106 L 122,108 L 123,110 L 123,112 L 123,114 L 124,116 L 124,118 L 124,120 L 124,122" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.7s" d="M 52,279 L 50,277 L 49,275 L 48,273 L 47,271 L 47,269 L 47,267 L 47,265 L 46,263 L 44,261 L 43,260" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.701s" d="M 277,54 L 276,52 L 274,50 L 272,49 L 270,48 L 268,48 L 266,48 L 264,48 L 263,47" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.711s" d="M 245,131 L 246,133 L 248,135 L 250,137 L 252,138 L 254,140 L 256,142 L 258,144 L 260,146 L 262,148 L 263,150 L 265,152 L 267,154" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.712s" d="M 131,245 L 133,247 L 135,249 L 137,251 L 139,253 L 141,255 L 143,257 L 145,259 L 146,261 L 148,262 L 150,264 L 151,266 L 153,268 L 154,270 L 153,272 L 151,274" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.751s" d="M 59,90 L 61,90 L 63,90 L 65,90 L 67,90 L 69,90 L 71,90 L 73,90 L 75,90 L 77,90 L 79,90 L 81,90 L 83,91 L 85,90 L 87,90 L 89,89 L 91,91 L 93,93 L 95,94 L 97,96 L 99,98 L 100,99" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.754s" d="M 90,59 L 90,61 L 90,63 L 90,65 L 90,67 L 89,69 L 89,71 L 89,73 L 89,75 L 89,77 L 90,79 L 90,81 L 90,83 L 90,85 L 90,87" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.839s" d="M 34,34 L 35,32 L 37,30 L 39,28 L 39,27" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.709s" d="M 120,41 L 121,39 L 123,37 L 124,35 L 125,33 L 125,31 L 125,29 L 125,27 L 124,25 L 123,23 L 122,21 L 120,19 L 118,17 L 116,15 L 114,15 L 112,14 L 110,14 L 108,12 L 106,10" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.709s" d="M 41,120 L 39,122 L 37,124 L 35,124 L 33,125 L 31,126 L 29,125 L 27,125 L 25,125 L 23,124 L 21,123 L 19,121 L 17,119 L 15,117 L 14,115 L 14,113 L 14,111" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.37s" d="M 303,177 L 304,175 L 304,173 L 304,171 L 304,169 L 305,167 L 304,165 L 304,163 L 304,161 L 304,159 L 304,157 L 304,155 L 305,153 L 304,151 L 304,149 L 305,147 L 304,145 L 304,143 L 305,141 L 304,139 L 304,137 L 304,135 L 305,133 L 304,131 L 304,129 L 304,127 L 304,125 L 304,123 L 304,121 L 305,119 L 304,117 L 304,115 L 304,113 L 304,111 L 304,109 L 304,108" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.513s" d="M 141,173 L 139,171 L 137,169 L 137,167 L 138,165 L 138,163 L 139,161 L 139,159 L 139,157 L 139,155 L 139,153 L 139,151 L 139,149 L 139,147 L 139,145 L 139,143 L 139,141 L 141,140 L 143,140 L 145,139 L 147,140 L 149,140 L 151,139 L 153,140 L 155,140 L 157,139 L 159,139 L 161,139 L 163,139 L 165,139 L 167,138 L 169,137 L 170,135 L 172,133 L 172,131 L 173,129 L 174,127 L 175,125 L 176,123 L 177,121 L 177,119 L 179,117 L 181,116 L 183,115 L 184,114" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.371s" d="M 177,305 L 175,305 L 173,305 L 171,305 L 169,305 L 167,305 L 165,305 L 163,305 L 161,305 L 159,305 L 157,305 L 155,305 L 153,305 L 151,305 L 149,305 L 147,305 L 145,305 L 143,305 L 141,305 L 139,305 L 137,305 L 135,305 L 133,305 L 131,305 L 129,305 L 127,305 L 125,305 L 123,305 L 121,305 L 119,305 L 117,305 L 115,305 L 113,305 L 111,305 L 109,305 L 107,305 L 105,305 L 103,305" />
+              </mask>
+            </defs>
+            <g mask="url(#fv-grow-t)">
+              <g mask="url(#fv-shape-t)">
+                <rect class="flower-fill" width="326" height="327" />
+              </g>
+            </g>
+          </svg>
+        </article>
+      </div>
+      <div>
+        <p class="demo-label">cover-story</p>
+        <article class="ccard">
+          <p class="c-kicker">Cover Story · 封面故事</p>
+          <h3 class="c-title">栖息：碎念、关于与推荐</h3>
+          <p class="c-lede">XiqiSplitLayout 分栏、碎念/关于/推荐三页 API 与 import 管线、分栏页脚联动说明。</p>
+          <p class="c-meta"><time>2026/05/26</time><span class="tag">Vue</span><span class="tag">碎念</span><span class="c-read">开始阅读 →</span></p>
+          <svg class="flower" viewBox="0 0 326 327" aria-hidden="true">
+            <defs>
+              <mask id="fv-shape-c" maskUnits="userSpaceOnUse" style="mask-type:alpha">
+                <image href="flower-vine.png" x="0" y="0" width="326" height="327" />
+              </mask>
+              <mask id="fv-grow-c" maskUnits="userSpaceOnUse">
+                <rect width="326" height="327" fill="#000" />
+                <path class="grow grow-main" pathLength="100" style="--grow-delay:0s" d="M 303,303 L 301,304 L 299,305 L 297,305 L 295,305 L 293,305 L 291,305 L 289,305 L 287,304 L 285,303 L 283,301 L 282,299 L 280,298 L 278,297 L 276,297 L 274,297 L 272,297 L 270,298 L 268,298 L 266,298 L 264,298 L 262,298 L 260,298 L 258,298 L 256,297 L 254,296 L 252,296 L 250,295 L 248,295 L 246,297 L 244,299 L 242,299 L 240,298 L 238,298 L 236,298 L 234,298 L 232,298 L 230,298 L 228,298 L 226,298 L 224,298 L 222,298 L 220,298 L 218,298 L 216,298 L 214,298 L 212,298 L 210,297 L 208,296 L 206,295 L 206,293 L 206,291 L 207,289 L 208,287 L 209,285 L 210,283 L 211,281 L 211,279 L 212,277 L 213,275 L 212,273 L 213,271 L 213,269 L 213,267 L 213,265 L 213,263 L 212,261 L 212,259 L 212,257 L 211,255 L 210,253 L 209,251 L 208,249 L 207,247 L 206,245 L 205,243 L 203,241 L 201,239 L 200,237 L 198,235 L 196,233 L 194,231 L 192,229 L 191,227 L 189,225 L 187,224 L 185,222 L 183,220 L 181,218 L 179,216 L 177,214 L 175,212 L 173,210 L 171,209 L 169,207 L 167,206 L 165,204 L 163,203 L 161,202 L 159,201 L 157,200 L 155,199 L 153,198 L 151,198 L 149,197 L 147,197 L 145,196 L 143,196 L 141,196 L 139,195 L 137,195 L 135,195 L 133,196 L 131,196 L 129,196 L 127,196 L 125,196 L 123,197 L 121,197 L 119,197 L 117,198 L 115,198 L 113,199 L 111,199 L 109,200 L 107,200 L 105,200 L 103,200 L 101,200 L 99,200 L 97,200 L 95,200 L 93,200 L 91,200 L 89,200 L 87,199 L 85,197 L 83,196 L 81,195 L 79,194 L 77,192 L 75,191 L 73,190 L 71,188 L 70,186 L 68,184 L 67,182 L 65,180 L 64,178 L 62,176 L 61,174 L 60,172 L 60,170 L 60,168 L 62,166 L 63,164 L 64,162 L 64,160 L 65,158 L 65,156 L 65,154 L 66,152 L 66,150 L 67,148 L 67,146 L 67,144 L 67,142 L 65,140 L 65,138 L 66,136 L 66,134 L 67,132 L 67,130 L 67,128 L 65,126 L 63,124 L 62,122 L 61,120 L 59,118 L 58,116 L 58,114 L 57,112 L 57,110 L 56,108 L 56,106 L 56,104 L 56,102 L 56,100 L 56,98 L 56,96 L 57,94 L 58,92 L 59,90 L 57,88 L 55,86 L 54,84 L 53,82 L 52,80 L 50,78 L 49,76 L 49,74 L 48,72 L 47,70 L 47,68 L 46,66 L 46,64 L 46,62 L 45,60 L 45,58 L 45,56 L 44,54 L 44,52 L 44,50 L 45,48 L 46,46 L 44,44 L 42,42 L 40,40 L 38,38 L 36,36 L 34,34 L 32,33 L 30,31 L 28,29 L 27,28" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.15s" d="M 303,303 L 304,301 L 304,299 L 304,297 L 304,295 L 304,293 L 304,291 L 303,289 L 302,287 L 300,285 L 298,283 L 297,281 L 297,279 L 296,277 L 296,275 L 297,273 L 298,271 L 297,269 L 298,267 L 298,265 L 298,263 L 298,261 L 297,259 L 297,257 L 296,255 L 295,253 L 295,251 L 296,249 L 298,247 L 298,245 L 298,243 L 298,241 L 298,239 L 297,237 L 297,235 L 297,233 L 297,231 L 297,229 L 297,227 L 297,225 L 297,223 L 297,221 L 297,219 L 297,217 L 297,215 L 297,213 L 297,211 L 296,209 L 295,207 L 293,206 L 291,207 L 289,208 L 287,208 L 285,209 L 283,210 L 281,211 L 279,212 L 277,212 L 275,213 L 273,213 L 271,213 L 269,213 L 267,213 L 265,213 L 263,213 L 261,213 L 259,212 L 257,212 L 255,211 L 253,211 L 251,210 L 249,209 L 247,208 L 245,207 L 243,205 L 241,204 L 239,202 L 237,200 L 235,199 L 233,197 L 231,196 L 230,194 L 228,192 L 226,191 L 224,189 L 223,187 L 221,186 L 219,184 L 218,182 L 216,180 L 214,178 L 213,176 L 211,174 L 209,172 L 207,170 L 206,168 L 205,166 L 203,164 L 202,162 L 201,160 L 200,158 L 199,156 L 198,154 L 197,152 L 196,150 L 196,148 L 196,146 L 196,144 L 195,142 L 195,140 L 195,138 L 195,136 L 195,134 L 195,132 L 196,130 L 196,128 L 196,126 L 196,124 L 197,122 L 197,120 L 197,118 L 198,116 L 198,114 L 198,112 L 199,110 L 199,108 L 199,106 L 199,104 L 200,102 L 199,100 L 199,98 L 199,96 L 199,94 L 199,92 L 199,90 L 199,88 L 197,86 L 196,84 L 194,82 L 193,80 L 192,78 L 190,76 L 189,74 L 187,72 L 185,70 L 183,68 L 181,66 L 179,65 L 177,64 L 175,62 L 173,61 L 171,61 L 169,60 L 167,61 L 165,63 L 163,64 L 161,65 L 159,65 L 157,66 L 155,66 L 153,66 L 151,67 L 149,67 L 147,67 L 145,67 L 143,67 L 141,66 L 140,64 L 139,62 L 138,60 L 136,62 L 134,64 L 132,66 L 130,68 L 128,68 L 126,66 L 124,64 L 122,62 L 120,61 L 118,61 L 116,59 L 114,59 L 112,58 L 110,57 L 108,57 L 106,57 L 104,56 L 102,56 L 100,56 L 98,56 L 96,57 L 94,57 L 92,58 L 90,59 L 88,58 L 86,56 L 84,55 L 82,54 L 80,53 L 78,51 L 76,50 L 74,49 L 72,49 L 70,48 L 68,47 L 66,47 L 64,47 L 62,46 L 60,46 L 58,46 L 56,45 L 54,45 L 52,45 L 50,45 L 48,45" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.167s" d="M 292,304 L 292,302 L 292,300 L 292,298 L 292,296 L 291,294 L 289,295 L 287,295" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.181s" d="M 283,301 L 281,303 L 279,305 L 277,307 L 276,308" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.233s" d="M 295,250 L 293,249 L 291,248 L 289,247 L 287,246 L 285,245 L 283,244 L 281,244 L 279,244 L 277,244 L 275,244 L 273,245 L 271,246 L 269,248 L 267,250 L 265,252 L 264,254 L 264,256 L 264,258 L 264,260 L 263,262 L 262,263" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.236s" d="M 249,295 L 248,293 L 247,291 L 246,289 L 245,287 L 244,285 L 243,283 L 243,281 L 243,279 L 243,277 L 244,275 L 245,273 L 246,271 L 248,269 L 250,267 L 252,265 L 254,265 L 256,264 L 258,264 L 260,264 L 261,263" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.238s" d="M 298,247 L 300,247 L 302,246 L 304,246 L 306,245 L 308,244 L 310,242 L 312,241 L 314,239" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.244s" d="M 244,299 L 244,301 L 244,303 L 244,305 L 244,307 L 243,309 L 241,311" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.302s" d="M 294,206 L 295,204 L 296,202 L 298,200 L 300,198 L 301,197" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.571s" d="M 88,200 L 87,202 L 86,204 L 85,206 L 84,208 L 82,210 L 82,212 L 82,214 L 82,216 L 82,218 L 81,220 L 81,222 L 80,224 L 80,226 L 80,228 L 80,230 L 81,232 L 81,234 L 82,236 L 83,238 L 84,240 L 85,242 L 86,244 L 86,246 L 84,248 L 82,249 L 80,251 L 78,253 L 76,255 L 74,257 L 73,259 L 71,261 L 69,263 L 67,265 L 65,266 L 63,267 L 61,269 L 59,271 L 58,273 L 56,275 L 54,277 L 52,279 L 52,281 L 52,283 L 52,285 L 51,287 L 51,289 L 51,291 L 51,293 L 51,295 L 51,297 L 51,299 L 53,300 L 55,301 L 57,301 L 59,301 L 61,301 L 63,301 L 65,302 L 67,302 L 69,302 L 71,303 L 73,303 L 75,303 L 77,304 L 79,303 L 81,303" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.571s" d="M 199,89 L 201,88 L 203,87 L 205,86 L 207,85 L 209,84 L 211,83 L 213,83 L 215,83 L 217,82 L 219,82 L 221,81 L 223,81 L 225,81 L 227,81 L 229,81 L 231,81 L 233,82 L 235,83 L 237,83 L 239,84 L 241,85 L 243,87 L 245,88 L 247,86 L 248,84 L 250,82 L 252,80 L 253,78 L 255,76 L 257,76 L 259,74 L 261,72 L 263,70 L 264,68 L 265,66 L 266,64 L 268,62 L 270,60 L 272,59 L 274,57 L 276,55 L 278,53 L 280,53 L 282,52 L 284,52 L 286,53 L 288,53 L 290,53 L 292,53 L 294,52 L 296,52 L 298,52 L 299,54 L 300,56 L 300,58 L 301,60 L 301,62 L 301,64 L 301,66 L 302,68 L 302,70 L 302,72 L 303,74 L 301,75 L 299,75 L 297,75" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.587s" d="M 82,210 L 80,210 L 78,210 L 76,210 L 74,210 L 72,211 L 70,211 L 68,212 L 66,212 L 64,213 L 62,213 L 60,213 L 58,213 L 56,213 L 54,213 L 52,213 L 50,214 L 48,214 L 46,212 L 44,211 L 42,210 L 40,209 L 38,207 L 36,206 L 34,204 L 32,203 L 30,201 L 28,199 L 27,197 L 26,195 L 25,193 L 25,191 L 23,189 L 21,188 L 19,186 L 17,185 L 15,184 L 13,183 L 11,181 L 9,179 L 8,177 L 9,175 L 11,173 L 13,171 L 15,170 L 17,169 L 19,168 L 21,167 L 23,165 L 25,164 L 27,164 L 28,165" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.588s" d="M 210,83 L 209,81 L 209,79 L 209,77 L 209,75 L 210,73 L 211,71 L 211,69 L 211,67 L 212,65 L 212,63 L 212,61 L 212,59 L 213,57 L 213,55 L 213,53 L 213,51 L 213,49 L 212,47 L 210,45 L 209,43 L 208,41 L 207,39 L 205,37 L 204,35 L 202,33 L 200,31 L 198,29 L 196,27 L 194,26 L 192,25 L 190,25 L 188,27 L 187,29 L 187,31 L 187,33 L 186,35 L 184,37 L 182,39 L 181,41 L 179,42 L 177,43 L 175,43 L 173,42 L 171,40 L 169,39 L 168,37 L 167,35 L 166,33 L 166,31 L 165,29" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.639s" d="M 49,214 L 48,216 L 47,218 L 46,220 L 45,222 L 44,224 L 43,226 L 41,228 L 41,230 L 39,232 L 38,234 L 37,236 L 36,238 L 34,240 L 33,242 L 32,244 L 31,246 L 33,248 L 35,250 L 37,250 L 39,251 L 41,251 L 43,252 L 44,252" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.64s" d="M 213,50 L 215,49 L 217,48 L 219,47 L 221,46 L 223,45 L 225,44 L 227,42 L 229,42 L 231,40 L 233,39 L 235,37 L 237,36 L 239,35 L 241,33 L 243,33 L 245,32 L 247,33 L 248,35 L 250,37 L 250,39 L 251,41 L 251,43 L 251,44" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.642s" d="M 86,245 L 88,246 L 90,247 L 92,248 L 94,249 L 96,250 L 98,250 L 100,251 L 102,251 L 104,251 L 106,251 L 108,251 L 110,251 L 112,252 L 114,250 L 116,248 L 118,248 L 120,247 L 122,247 L 124,246 L 126,246 L 128,246 L 130,246 L 132,244 L 132,242 L 132,240 L 132,238 L 132,236 L 132,234 L 132,232 L 132,230 L 133,228 L 133,226 L 134,224 L 135,222 L 136,220 L 136,218 L 138,216 L 139,214 L 141,212 L 143,210 L 145,210 L 147,210 L 149,209 L 150,208" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.643s" d="M 245,88 L 246,90 L 247,92 L 248,94 L 249,96 L 250,98 L 250,100 L 250,102 L 250,104 L 250,106 L 251,108 L 251,110 L 251,112 L 249,114 L 248,116 L 247,118 L 247,120 L 246,122 L 246,124 L 246,126 L 246,128 L 245,130 L 244,132 L 242,132 L 240,132 L 238,132 L 236,132 L 234,132 L 232,132 L 230,132 L 228,133 L 226,133 L 224,134 L 222,134 L 220,136 L 218,136 L 216,138 L 214,139 L 212,141 L 210,143 L 209,145 L 208,147 L 209,149 L 207,151" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.661s" d="M 75,256 L 73,255 L 71,254 L 69,253 L 67,253 L 65,253 L 63,253 L 61,253 L 59,253 L 57,253 L 55,253 L 53,253 L 51,253 L 49,253 L 47,253 L 45,252" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.662s" d="M 255,76 L 254,74 L 253,72 L 252,70 L 252,68 L 252,66 L 252,64 L 252,62 L 253,60 L 253,58 L 252,56 L 253,54 L 252,52 L 252,50 L 252,48 L 252,46 L 252,45" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.673s" d="M 65,140 L 63,140 L 61,139 L 59,139 L 57,139 L 55,139 L 53,139 L 51,140 L 49,140 L 47,141 L 45,142 L 43,142 L 41,144 L 39,145 L 37,147 L 35,148 L 33,150 L 31,152 L 29,154 L 28,156 L 27,158 L 27,160 L 26,162" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.679s" d="M 138,60 L 138,58 L 139,56 L 139,54 L 139,52 L 139,50 L 140,48 L 141,46 L 142,44 L 143,42 L 144,40 L 145,38 L 147,36 L 149,34 L 151,32 L 153,30 L 155,29 L 157,28 L 159,27 L 161,26 L 163,26 L 164,28" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.679s" d="M 251,111 L 253,112 L 255,113 L 257,113 L 259,113 L 261,113 L 263,113 L 265,113 L 267,113 L 269,112 L 271,112 L 273,112 L 275,111 L 277,111 L 279,110 L 281,110 L 283,109 L 285,108 L 287,107 L 289,105 L 291,104 L 293,102 L 295,100 L 296,98 L 298,96 L 299,94 L 300,92 L 301,90 L 302,88 L 302,86 L 303,84 L 303,82 L 303,81" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.681s" d="M 111,252 L 112,254 L 113,256 L 113,258 L 113,260 L 113,262 L 112,264 L 112,266 L 112,268 L 112,270 L 112,272 L 111,274 L 111,276 L 110,278 L 110,280 L 109,282 L 108,284 L 107,286 L 106,288 L 104,290 L 103,292 L 101,294 L 99,296 L 97,297 L 95,299 L 93,300 L 91,301 L 89,302 L 87,302 L 85,303 L 83,303 L 82,303" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.686s" d="M 24,190 L 26,189 L 28,188 L 30,187 L 32,187 L 34,186 L 36,185 L 38,183 L 40,182 L 41,180 L 42,178 L 42,176 L 42,174 L 41,172 L 39,170 L 37,169 L 35,168 L 33,167 L 31,166 L 29,165" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.686s" d="M 190,25 L 189,23 L 188,21 L 186,19 L 185,17 L 184,15 L 182,13 L 180,11 L 178,9 L 176,9 L 174,10 L 172,12 L 170,14 L 169,16 L 168,18 L 167,20 L 166,22 L 165,24 L 164,25" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.69s" d="M 67,129 L 69,128 L 71,127 L 73,127 L 75,126 L 77,125 L 79,124 L 81,124 L 83,124 L 85,123 L 87,123 L 89,122 L 91,122 L 93,122 L 95,122 L 97,122 L 99,122 L 101,122 L 103,122 L 105,123 L 107,123 L 109,123 L 111,123 L 113,124 L 115,125 L 117,125 L 119,125 L 121,125 L 123,125 L 124,123" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.695s" d="M 128,68 L 127,70 L 127,72 L 126,74 L 125,76 L 124,78 L 124,80 L 123,82 L 123,84 L 122,86 L 122,88 L 122,90 L 121,92 L 121,94 L 121,96 L 121,98 L 121,100 L 121,102 L 122,104 L 122,106 L 122,108 L 123,110 L 123,112 L 123,114 L 124,116 L 124,118 L 124,120 L 124,122" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.7s" d="M 52,279 L 50,277 L 49,275 L 48,273 L 47,271 L 47,269 L 47,267 L 47,265 L 46,263 L 44,261 L 43,260" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.701s" d="M 277,54 L 276,52 L 274,50 L 272,49 L 270,48 L 268,48 L 266,48 L 264,48 L 263,47" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.711s" d="M 245,131 L 246,133 L 248,135 L 250,137 L 252,138 L 254,140 L 256,142 L 258,144 L 260,146 L 262,148 L 263,150 L 265,152 L 267,154" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.712s" d="M 131,245 L 133,247 L 135,249 L 137,251 L 139,253 L 141,255 L 143,257 L 145,259 L 146,261 L 148,262 L 150,264 L 151,266 L 153,268 L 154,270 L 153,272 L 151,274" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.751s" d="M 59,90 L 61,90 L 63,90 L 65,90 L 67,90 L 69,90 L 71,90 L 73,90 L 75,90 L 77,90 L 79,90 L 81,90 L 83,91 L 85,90 L 87,90 L 89,89 L 91,91 L 93,93 L 95,94 L 97,96 L 99,98 L 100,99" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.754s" d="M 90,59 L 90,61 L 90,63 L 90,65 L 90,67 L 89,69 L 89,71 L 89,73 L 89,75 L 89,77 L 90,79 L 90,81 L 90,83 L 90,85 L 90,87" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.839s" d="M 34,34 L 35,32 L 37,30 L 39,28 L 39,27" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.709s" d="M 120,41 L 121,39 L 123,37 L 124,35 L 125,33 L 125,31 L 125,29 L 125,27 L 124,25 L 123,23 L 122,21 L 120,19 L 118,17 L 116,15 L 114,15 L 112,14 L 110,14 L 108,12 L 106,10" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.709s" d="M 41,120 L 39,122 L 37,124 L 35,124 L 33,125 L 31,126 L 29,125 L 27,125 L 25,125 L 23,124 L 21,123 L 19,121 L 17,119 L 15,117 L 14,115 L 14,113 L 14,111" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.37s" d="M 303,177 L 304,175 L 304,173 L 304,171 L 304,169 L 305,167 L 304,165 L 304,163 L 304,161 L 304,159 L 304,157 L 304,155 L 305,153 L 304,151 L 304,149 L 305,147 L 304,145 L 304,143 L 305,141 L 304,139 L 304,137 L 304,135 L 305,133 L 304,131 L 304,129 L 304,127 L 304,125 L 304,123 L 304,121 L 305,119 L 304,117 L 304,115 L 304,113 L 304,111 L 304,109 L 304,108" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.513s" d="M 141,173 L 139,171 L 137,169 L 137,167 L 138,165 L 138,163 L 139,161 L 139,159 L 139,157 L 139,155 L 139,153 L 139,151 L 139,149 L 139,147 L 139,145 L 139,143 L 139,141 L 141,140 L 143,140 L 145,139 L 147,140 L 149,140 L 151,139 L 153,140 L 155,140 L 157,139 L 159,139 L 161,139 L 163,139 L 165,139 L 167,138 L 169,137 L 170,135 L 172,133 L 172,131 L 173,129 L 174,127 L 175,125 L 176,123 L 177,121 L 177,119 L 179,117 L 181,116 L 183,115 L 184,114" />
+<path class="grow grow-br" pathLength="100" style="--grow-delay:0.371s" d="M 177,305 L 175,305 L 173,305 L 171,305 L 169,305 L 167,305 L 165,305 L 163,305 L 161,305 L 159,305 L 157,305 L 155,305 L 153,305 L 151,305 L 149,305 L 147,305 L 145,305 L 143,305 L 141,305 L 139,305 L 137,305 L 135,305 L 133,305 L 131,305 L 129,305 L 127,305 L 125,305 L 123,305 L 121,305 L 119,305 L 117,305 L 115,305 L 113,305 L 111,305 L 109,305 L 107,305 L 105,305 L 103,305" />
+              </mask>
+            </defs>
+            <g mask="url(#fv-grow-c)">
+              <g mask="url(#fv-shape-c)">
+                <rect class="flower-fill" width="326" height="327" />
+              </g>
+            </g>
+          </svg>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- G · 三合一（C + E + F） -->
+  <section class="option opt-g">
+    <div class="option-head">
+      <span class="option-key">G</span>
+      <h2 class="option-name">翻角 · 错位 · 檐角</h2>
+    </div>
+    <p class="option-desc">C + E + F 合订：hover 时卡片轻浮并掀起右下折角，标题/日期左右错位、标签提亮，同时花藤从右下角沿线长出。离开折角收回、排版归位、花藤沿原路缩回。</p>
+    <div class="demo-row">
+      <div>
+        <p class="demo-label">timeline-card</p>
+        <article class="tcard">
+          <p class="t-meta">2025-07-10 · 已归档</p>
+          <h3 class="t-title">HLTV 新闻标题爬虫与数据链路（大作业）</h3>
+          <p class="t-summary">围绕 HLTV 电竞新闻构建采集→PySpark 预处理→MongoDB/MySQL/Memurai 存储→词频与 ItemCF 推荐→简易 Web 展示的完整数据链路。</p>
+          <div class="t-tags"><span class="tag">Python</span><span class="tag">PySpark</span><span class="tag">MongoDB</span></div>
+        </article>
+      </div>
+      <div>
+        <p class="demo-label">cover-story</p>
+        <article class="ccard">
+          <p class="c-kicker">Cover Story · 封面故事</p>
+          <h3 class="c-title">栖息：碎念、关于与推荐</h3>
+          <p class="c-lede">XiqiSplitLayout 分栏、碎念/关于/推荐三页 API 与 import 管线、分栏页脚联动说明。</p>
+          <p class="c-meta"><time>2026/05/26</time><span class="tag">Vue</span><span class="tag">碎念</span><span class="c-read">开始阅读 →</span></p>
+        </article>
+      </div>
+    </div>
+  </section>
+</div>
+<script>
+  /* 把 F 的花藤 SVG 克隆到 G，并改写 mask id，避免重复粘贴路径 */
+  (function () {
+    const pairs = [
+      ['.opt-f .tcard .flower', '.opt-g .tcard', '-gt'],
+      ['.opt-f .ccard .flower', '.opt-g .ccard', '-gc'],
+    ];
+    for (const [srcSel, destSel, suffix] of pairs) {
+      const src = document.querySelector(srcSel);
+      const dest = document.querySelector(destSel);
+      if (!src || !dest) continue;
+      const html = src.outerHTML
+        .replaceAll(/id="([^"]+)"/g, 'id="$1' + suffix + '"')
+        .replaceAll(/url\(#([^)]+)\)/g, 'url(#$1' + suffix + ')');
+      dest.insertAdjacentHTML('beforeend', html);
+    }
+  })();
+</script>
+</body>
+</html>
