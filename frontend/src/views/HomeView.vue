@@ -146,33 +146,33 @@ onMounted(() => {
 
 <template>
   <section ref="homeRoot" class="home-layout">
-    <!-- 刊号行：VOL / NO / 日期 + 头像（splash 动画落点保留） -->
-    <header class="home-mast">
-      <p class="mast-vol">
-        <strong>{{ SITE_NAME }}</strong> · VOL.{{ issue.year }} · NO.{{ issue.no }} · {{ issue.date }}
-      </p>
-      <div class="avatar">
-        <img
-          v-if="avatarUrl"
-          data-splash-avatar-target
-          :class="{ 'home-avatar--splash-fly': ui.splashAvatarHandoff }"
-          :src="avatarUrl"
-          alt="头像"
-        />
-        <AvatarCircleSkeleton v-else />
-      </div>
-    </header>
+    <!-- 刊号 + 胶片横幅：收束为单层 Hero，避免双抬头 -->
+    <div class="home-hero-stack">
+      <header class="home-mast" aria-label="刊号">
+        <p class="mast-vol">
+          <strong>{{ SITE_NAME }}</strong> · VOL.{{ issue.year }} · NO.{{ issue.no }} · {{ issue.date }}
+        </p>
+        <div class="avatar">
+          <img
+            v-if="avatarUrl"
+            data-splash-avatar-target
+            :class="{ 'home-avatar--splash-fly': ui.splashAvatarHandoff }"
+            :src="avatarUrl"
+            alt="头像"
+          />
+          <AvatarCircleSkeleton v-else />
+        </div>
+      </header>
 
-    <!-- 电影感横幅：胶片为背景，刊名压上（cover-text 文案保留于此） -->
-    <section class="home-band" aria-label="封面横幅">
-      <FilmFeed horizontal class="home-band-film" />
-      <div class="home-band-scrim" aria-hidden="true"></div>
-      <div class="home-band-copy">
-        <p class="cover-kicker">{{ SITE_NAME }} · {{ t('home.tagline') }}</p>
-        <h1 class="cover-greeting">{{ t('home.greeting') }}</h1>
-        <p class="cover-note">{{ t('home.internshipNote') }}</p>
-      </div>
-    </section>
+      <section class="home-band" aria-label="封面横幅">
+        <FilmFeed horizontal class="home-band-film" />
+        <div class="home-band-scrim" aria-hidden="true"></div>
+        <div class="home-band-copy">
+          <h1 class="cover-greeting">{{ t('home.greeting') }}</h1>
+          <p class="cover-note">{{ t('home.internshipNote') }}</p>
+        </div>
+      </section>
+    </div>
 
     <!-- 封面故事：最新一篇文章当本期主角 -->
     <section v-if="coverStory" class="cover-story card-hover-g" aria-label="封面故事">
@@ -311,22 +311,29 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* 首页 = 刊号行 → 胶片横幅（刊名压上） → 封面故事 → NOW → 三栏目录（方案 A+C 混合） */
+/* 首页 = Hero 栈（刊号 + 胶片） → 封面故事 → NOW → 三栏目录 */
 .home-layout {
   display: flex;
   flex-direction: column;
   gap: clamp(1.6rem, 3.2vw, 2.4rem);
 }
 
-/* —— 刊号行 —— */
+.home-hero-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border-top: 2px solid color-mix(in srgb, var(--color-text) 82%, transparent);
+  padding-top: 0.65rem;
+}
+
+/* —— 刊号行（叠在 Hero 栈顶，不与横幅分两层抬头） —— */
 .home-mast {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.25rem;
+  gap: 1rem;
   margin: 0;
-  padding-top: 1rem;
-  border-top: 2px solid color-mix(in srgb, var(--color-text) 82%, transparent);
+  padding: 0 0.05rem;
 }
 
 .mast-vol {
@@ -345,7 +352,7 @@ onMounted(() => {
 
 .avatar {
   flex: 0 0 auto;
-  width: 3rem;
+  width: 2.65rem;
   aspect-ratio: 1 / 1;
   border-radius: 50%;
   overflow: hidden;
@@ -409,20 +416,10 @@ onMounted(() => {
 }
 
 /* 横幅永远是深色胶片底，文案固定浅色系，不随主题令牌变化 */
-.cover-kicker {
-  margin: 0 0 0.6rem;
-  font-family: var(--font-mono);
-  font-size: 0.74rem;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--color-accent) 45%, #ffffff);
-}
-
 .cover-greeting {
   margin: 0;
   font-family: var(--font-serif);
-  font-size: clamp(1.85rem, 4.4vw, 3.1rem);
+  font-size: clamp(2rem, 4.8vw, 3.35rem);
   font-weight: 600;
   font-style: italic;
   line-height: 1.22;
@@ -431,8 +428,8 @@ onMounted(() => {
 }
 
 .cover-note {
-  margin: 0.7rem 0 0;
-  font-size: 0.88rem;
+  margin: 0.65rem 0 0;
+  font-size: 0.92rem;
   line-height: 1.65;
   color: rgb(244 241 232 / 72%);
   max-width: 34rem;
@@ -452,7 +449,7 @@ onMounted(() => {
   margin: 0;
   font-family: var(--font-mono);
   font-size: 0.74rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--color-accent);
@@ -461,7 +458,7 @@ onMounted(() => {
 .cover-story-title {
   margin: 0.55rem 0 0;
   font-family: var(--font-serif);
-  font-size: clamp(1.6rem, 3.6vw, 2.5rem);
+  font-size: clamp(1.72rem, 3.8vw, 2.65rem);
   font-weight: 700;
   line-height: 1.24;
   letter-spacing: 0.01em;
@@ -481,7 +478,7 @@ onMounted(() => {
 .cover-story-lede {
   margin: 0.7rem 0 0;
   max-width: 38em;
-  font-size: 0.95rem;
+  font-size: 1.02rem;
   line-height: 1.75;
   color: var(--color-text-muted);
 }
@@ -608,10 +605,10 @@ onMounted(() => {
   border-bottom: 1px solid var(--color-border);
   font-family: var(--font-mono);
   font-size: 0.74rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--color-text) 76%, transparent);
+  color: color-mix(in srgb, var(--color-text) 84%, transparent);
 }
 
 .toc-head::after {
@@ -698,7 +695,7 @@ onMounted(() => {
 .toc-title {
   margin: 0.25rem 0 0;
   font-family: var(--font-serif);
-  font-size: 1.02rem;
+  font-size: 1.1rem;
   font-weight: 600;
   line-height: 1.42;
   color: var(--color-text);
@@ -711,7 +708,7 @@ onMounted(() => {
   -webkit-box-orient: vertical;
   overflow: hidden;
   margin: 0.28rem 0 0;
-  font-size: 0.84rem;
+  font-size: 0.9rem;
   line-height: 1.65;
   color: var(--color-text-muted);
 }
@@ -759,7 +756,7 @@ onMounted(() => {
 
 .self-intro-text {
   margin: 0.9rem 0 0;
-  font-size: 0.84rem;
+  font-size: 0.9rem;
   line-height: 1.8;
   color: var(--color-text);
 }
@@ -795,8 +792,25 @@ onMounted(() => {
 }
 
 @media (max-width: 640px) {
+  .home-hero-stack {
+    padding-top: 0.55rem;
+    gap: 0.28rem;
+  }
+
   .home-mast {
-    padding-top: 0.8rem;
+    padding-top: 0;
+  }
+
+  .avatar {
+    width: 2.4rem;
+  }
+
+  .cover-greeting {
+    font-size: clamp(1.75rem, 7.2vw, 2.35rem);
+  }
+
+  .cover-note {
+    font-size: 0.88rem;
   }
 
   .home-band {

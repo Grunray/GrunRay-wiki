@@ -137,14 +137,15 @@ cd frontend; npm run dev;
 - 根因：横向格 `height:100%` + `aspect-ratio:4/5`，容器变矮 → 格变窄 → `measureLoopCopies` 改 `repeatCount` → `:key="repeatCount"` 整轨重挂载、图片反复读盘。只裁切外框会挡住胶片上半，不可用。
 - 做法：容器变矮并铺满；`FilmFeed` 去掉轨道 `:key`、只观察 `.film`、布局未完成时不冲 `MAX_REPEAT`。改完后用 **Edge 或 Chrome** 打开首页停留/滚动 30 秒确认无卡死且胶片上下齿孔都可见，再勾选 [x]。
 
-- [ ] 108-3 Hero 改为**左文右图**（暂缓，待 P0 验证稳定后再做）：左栏衬线问候 + 个人简介；右栏头像/形象图 + 向纸底的自然渐变融边
-- [ ] 108-4 刊号行 `home-mast`：与新版 Hero 合并或收束（暂缓，同 108-3）
+- [x] 108-4 刊号行 `home-mast` 与 Hero 收束：`home-hero-stack` 合并刊号行 + 胶片横幅为单层抬头（顶线、小间距），头像不与 FilmFeed 滚轮提示叠层
+
+- ~~108-3~~ **已废弃**：不做左文右图 Hero 大改
 
 **P1 — 栏目与字阶**
 
-- [ ] 108-5 分区标题加粗：`toc-head`（LATEST / PROJECTS / ABOUT / REREAD）及 Cover Story kicker 适度提字重，仍用 mono kicker，勿变渐变字
-- [ ] 108-6 导航栏外正文放大：`.toc-summary`、项目描述、Cover Story lede 等**正文级**略增；`.toc-title` / `.cover-story-title` / Hero 问候**分别加大**；日期、标签、`.toc-meta` 保持较小（≥0.76rem 下限，DESIGN.md §3）
-- [ ] 108-7 三主题 + 移动端目视；必要时同步博客/项目列表摘要字号，避免首页与列表落差过大
+- [x] 108-5 分区标题加粗：`toc-head`（LATEST / PROJECTS / ABOUT / REREAD）及 Cover Story kicker 适度提字重，仍用 mono kicker，勿变渐变字
+- [x] 108-6 导航栏外正文放大：`.toc-summary`、项目描述、Cover Story lede 等**正文级**略增；`.toc-title` / `.cover-story-title` / Hero 问候**分别加大**；日期、标签、`.toc-meta` 保持较小（≥0.76rem 下限，DESIGN.md §3）
+- [x] 108-7 三主题 + 移动端目视；博客/项目列表 `.timeline-summary` 略增，避免与首页摘要落差过大
 
 **涉及文件**
 `frontend/src/views/HomeView.vue`、`frontend/src/styles/page-enter-home.css`、`frontend/src/i18n/locales/{zh,en}.json`；字阶若跨页则改 `main.css` / `markdown-reading.css` 时注明范围。
