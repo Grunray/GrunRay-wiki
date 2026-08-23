@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>107 · 全屏遮罩跳转 · 方案对比</title>
+<style>
+  :root {
+    --bg: #f4f1e8;
+    --surface: #faf8f1;
+    --elev: #ece7d8;
+    --ink: #2b2823;
+    --muted: #6e675b;
+    --faint: #a39a88;
+    --border: #ddd5c2;
+    --accent: #2e6b4f;
+    --accent-muted: #9dbba9;
+    --on-accent: #f4f1e8;
+    --ease-paper: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-wipe: cubic-bezier(0.77, 0, 0.175, 1);
+    --font-serif: 'Noto Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
+    --font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+    --font-sans: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: #e8e4d6;
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.7;
+  }
+
+  .doc {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 4rem;
+  }
+  .doc-head { margin-bottom: 1.2rem; }
+  .doc-head .kicker {
+    margin: 0 0 0.28rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .doc-head h1 {
+    margin: 0 0 0.35rem;
+    font-family: var(--font-serif);
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
+    font-weight: 600;
+  }
+  .doc-head p {
+    margin: 0;
+    max-width: 46rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0 0 0.65rem;
+  }
+  .toolbar button, .replay {
+    padding: 0.32rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 0.88rem;
+    cursor: pointer;
+  }
+  .toolbar button:hover, .replay:hover {
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  }
+  .toolbar button.is-active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  }
+  .replay {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+  }
+  .scheme-note {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  /* ===== 站点预览：遮罩盖住整个壳，含导航 ===== */
+  .shell {
+    position: relative;
+    isolation: isolate;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--bg);
+    box-shadow: 0 1px 2px rgb(43 40 35 / 6%);
+    overflow: hidden;
+    min-height: 34rem;
+  }
+  .shell.is-busy { pointer-events: none; }
+
+  .site-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem 0.85rem;
+    padding: 0.7rem 1.1rem;
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+  }
+  .brand {
+    margin-right: 0.35rem;
+    font-family: var(--font-serif);
+    font-weight: 600;
+  }
+  .nav-link {
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font-size: 0.92rem;
+    padding: 0.2rem 0.12rem;
+    cursor: pointer;
+    position: relative;
+  }
+  .nav-link:hover { color: var(--ink); }
+  .nav-link.is-current { color: var(--accent); }
+  .nav-link.is-current::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -2px;
+    height: 1.5px;
+    background: var(--accent);
+  }
+  .nav-hint {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--faint);
+  }
+
+  .site-main { padding: 1.35rem 1.35rem 1.8rem; max-width: 40rem; min-height: 22rem; }
+  .page .kicker {
+    margin: 0 0 0.2rem;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+  .page h2 {
+    margin: 0 0 0.5rem;
+    font-family: var(--font-serif);
+    font-size: 1.55rem;
+    font-weight: 600;
+  }
+  .page .lead { margin: 0 0 1rem; color: var(--muted); }
+  .film {
+    height: 4.4rem;
+    margin: 0 0 1.1rem;
+    border-radius: 6px;
+    background:
+      repeating-linear-gradient(90deg, #101512 0 10px, transparent 10px 18px) top / 100% 8px no-repeat,
+      linear-gradient(90deg, #1a221e, #24302a 40%, #1a221e);
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 5.2rem 1fr;
+    gap: 0.75rem;
+    padding: 0.7rem 0;
+    border-top: 1px solid var(--border);
+  }
+  .row:last-child { border-bottom: 1px solid var(--border); }
+  .row .date {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--faint);
+  }
+  .chips { display: flex; gap: 0.4rem; margin: 0 0 1rem; }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.12rem 0.55rem;
+    color: var(--muted);
+  }
+  .site-foot {
+    padding: 0.55rem 1.1rem;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--faint);
+  }
+
+  /* ===== 跳转遮罩（盖住导航+正文+页脚） ===== */
+  .curtain {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .panel {
+    position: absolute;
+    inset: 0;
+    will-change: transform;
+  }
+  .panel-lead { background: var(--accent); }
+  .panel-main { background: var(--ink); }
+  .panel-paper { background: var(--bg); }
+  .mark {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .mark .mk {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .mark .mw {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    font-weight: 600;
+    line-height: 1.1;
+  }
+  .mark.on-ink .mk { color: var(--accent-muted); }
+  .mark.on-ink .mw { color: var(--bg); }
+  .mark.on-paper .mk { color: var(--accent); }
+  .mark.on-paper .mw { color: var(--ink); }
+  .mark.on-accent .mk { color: color-mix(in srgb, var(--on-accent) 70%, transparent); }
+  .mark.on-accent .mw { color: var(--on-accent); }
+
+  .hair {
+    position: absolute;
+    z-index: 6;
+    background: var(--accent);
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .vine-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    opacity: 0;
+    pointer-events: none;
+    transform-origin: 50% 0%;
+  }
+  .vine-fill { fill: var(--accent); }
+  .vine-layer .grow {
+    fill: none;
+    stroke: #fff;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+  }
+  .vine-layer .grow-main { stroke-width: 52; }
+  .vine-layer .grow-br { stroke-width: 38; }
+  .vine-layer .grow-twig { stroke-width: 22; }
+  .vine-shape-stem {
+    fill: none;
+    stroke: #fff;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .bundle {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    overflow: visible;
+  }
+  .panel-main { overflow: visible; }
+  .hem {
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    height: 11%;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .bundle.is-vine .hem { opacity: 1; }
+  .hem-top { top: -7%; }
+  .hem-bot { bottom: -5%; }
+  .f-stem { fill: #fff; }
+  .bundle.is-sprig .hem { opacity: 0; }
+
+  .leaf {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 34%;
+    height: 44%;
+    z-index: 6;
+    pointer-events: none;
+    opacity: 0;
+    transform-origin: 50% 100%;
+    transform: translate(-50%, -46%);
+  }
+  .leaf-fill { fill: var(--accent); }
+  .leaf .leaf-grow {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 16;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+  }
+  .leaf path.leaf-shape {
+    stroke: #fff;
+    stroke-width: 3;
+    stroke-linejoin: round;
+  }
+</style>
+</head>
+<body>
+<div class="doc">
+  <header class="doc-head">
+    <p class="kicker">107 · 全屏遮罩跳转</p>
+    <h1>单独一层动画盖住整个界面，再揭开新页</h1>
+    <p>结构对齐 jiejoe：固定遮罩盖住导航和正文，两层色块刮入 → 中间露出去向 → 色块刮走。下面按本站纸面令牌改成墨绿 / 墨色 / 暖纸，不要霓虹绿、不要 LOADING。</p>
+  </header>
+
+  <div class="toolbar" role="toolbar" aria-label="遮罩方案">
+    <button type="button" data-scheme="dual" class="is-active">A · 双层横刮</button>
+    <button type="button" data-scheme="drop">B · 整页落纸</button>
+    <button type="button" data-scheme="book">C · 对开合页</button>
+    <button type="button" data-scheme="ink">D · 墨色盖印</button>
+    <button type="button" data-scheme="vine">E · 花藤勾帘</button>
+    <button type="button" data-scheme="sprig">F · 墨上生枝</button>
+    <button type="button" class="replay" id="replay">重播</button>
+  </div>
+  <p class="scheme-note" id="scheme-note"></p>
+
+  <div class="shell" id="shell">
+    <nav class="site-nav">
+      <span class="brand">GrunRay</span>
+      <button type="button" class="nav-link is-current" data-page="home">首页</button>
+      <button type="button" class="nav-link" data-page="blog">博客</button>
+      <button type="button" class="nav-link" data-page="projects">项目</button>
+      <button type="button" class="nav-link" data-page="xiqi">栖息</button>
+      <span class="nav-hint">遮罩会盖住这一整块</span>
+    </nav>
+    <main class="site-main">
+      <div class="page" id="page"></div>
+    </main>
+    <footer class="site-foot">预览壳 · 正式落地时遮罩挂在 AppShell 最外层</footer>
+
+    <div class="curtain" id="curtain" aria-hidden="true">
+      <div class="panel panel-lead" id="lead"></div>
+      <div class="bundle" id="bundle">
+      <div class="panel panel-main" id="mainp">
+        <svg class="hem hem-top" viewBox="0 0 400 80" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0,22 C 54,6 92,40 138,18 C 184,0 228,36 268,14 C 308,-4 348,24 400,8 L400,80 L0,80 Z" />
+        </svg>
+        <svg class="hem hem-bot" viewBox="0 0 400 80" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0,18 C 48,4 86,36 132,22 C 176,8 214,40 248,18 C 286,-2 328,28 400,10 L400,80 L0,80 Z" />
+        </svg>
+      </div>
+      <div class="panel panel-paper" id="paperp"></div>
+      <div class="hair" id="hair"></div>
+      <svg class="vine-layer" id="vine" viewBox="0 0 400 1000" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
+        <defs>
+          <mask id="vine-shape" maskUnits="userSpaceOnUse" style="mask-type: alpha">
+            <path class="vine-shape-stem" d="M 206,0 C 238,78 164,148 198,238 C 236,338 148,418 192,522 C 236,628 156,708 198,750 C 224,778 272,802 246,838 C 228,862 248,888 268,906" stroke-width="15" />
+            <path class="vine-shape-stem" d="M 190,168 C 142,176 108,154 72,178 C 48,194 28,186 12,204" stroke-width="6" />
+            <path class="vine-shape-stem" d="M 210,286 C 258,274 304,298 344,282 C 368,274 384,288 396,276" stroke-width="6.5" />
+            <path class="vine-shape-stem" d="M 184,412 C 138,428 96,408 58,436 C 36,450 16,442 4,460" stroke-width="6" />
+            <path class="vine-shape-stem" d="M 208,548 C 256,536 304,562 348,544 C 372,536 386,552 398,538" stroke-width="6" />
+            <path class="vine-shape-stem" d="M 186,662 C 148,678 108,662 74,688 C 52,704 28,694 10,714" stroke-width="5.5" />
+            <image href="./flower-vine.png" x="8" y="96" width="118" height="118" transform="rotate(-28 67 155)" />
+            <image href="./flower-vine.png" x="248" y="214" width="132" height="132" transform="rotate(22 314 280)" />
+            <image href="./flower-vine.png" x="2" y="348" width="124" height="124" transform="rotate(-18 64 410)" />
+            <image href="./flower-vine.png" x="236" y="478" width="128" height="128" transform="rotate(26 300 542)" />
+            <image href="./flower-vine.png" x="28" y="598" width="108" height="108" transform="rotate(-24 82 652)" />
+            <image href="./flower-vine.png" x="196" y="778" width="96" height="96" transform="rotate(38 244 826)" />
+          </mask>
+          <mask id="vine-grow" maskUnits="userSpaceOnUse">
+            <rect width="400" height="1000" fill="#000" />
+            <path class="grow grow-main" pathLength="100" d="M 206,0 C 238,78 164,148 198,238 C 236,338 148,418 192,522 C 236,628 156,708 198,750 C 224,778 272,802 246,838 C 228,862 248,888 268,906" />
+            <path class="grow grow-br" pathLength="100" d="M 190,168 C 142,176 108,154 72,178 C 48,194 28,186 12,204" />
+            <path class="grow grow-br" pathLength="100" d="M 210,286 C 258,274 304,298 344,282 C 368,274 384,288 396,276" />
+            <path class="grow grow-br" pathLength="100" d="M 184,412 C 138,428 96,408 58,436 C 36,450 16,442 4,460" />
+            <path class="grow grow-br" pathLength="100" d="M 208,548 C 256,536 304,562 348,544 C 372,536 386,552 398,538" />
+            <path class="grow grow-br" pathLength="100" d="M 186,662 C 148,678 108,662 74,688 C 52,704 28,694 10,714" />
+            <path class="grow grow-twig" pathLength="100" d="M 72,178 C 54,208 36,226 18,254" />
+            <path class="grow grow-twig" pathLength="100" d="M 344,282 C 358,312 378,328 392,358" />
+            <path class="grow grow-twig" pathLength="100" d="M 58,436 C 40,466 22,484 8,512" />
+            <path class="grow grow-twig" pathLength="100" d="M 348,544 C 364,574 382,590 396,618" />
+            <path class="grow grow-twig" pathLength="100" d="M 74,688 C 56,716 34,732 16,760" />
+            <path class="grow grow-twig" pathLength="100" d="M 246,838 C 262,860 270,884 258,906" />
+          </mask>
+        </defs>
+        <g mask="url(#vine-grow)">
+          <g mask="url(#vine-shape)">
+            <rect class="vine-fill" width="400" height="1000" />
+          </g>
+        </g>
+      </svg>
+      <div class="mark on-ink" id="mark">
+        <p class="mk" id="mk">HOME</p>
+        <p class="mw" id="mw">首页</p>
+      </div>
+      <svg class="leaf" id="leaf" viewBox="0 0 260 320" aria-hidden="true">
+        <defs>
+          <mask id="leaf-shape" maskUnits="userSpaceOnUse" style="mask-type: alpha">
+            <path class="leaf-shape" d="M 130,314 C 156,262 120,238 128,202 C 134,174 156,168 156,150" fill="none" />
+            <path class="leaf-shape" d="M 128,202 C 108,196 92,178 98,156 C 104,136 124,132 130,118 C 136,104 124,88 110,92 C 96,96 92,114 104,124 C 84,118 64,124 56,142 C 48,160 60,178 78,180 C 62,192 56,214 68,230 C 80,246 104,246 118,232 C 114,252 122,274 130,314 Z" />
+            <path class="leaf-shape" d="M 132,190 C 152,184 168,166 162,144 C 156,124 136,120 130,106 C 124,92 136,76 150,80 C 164,84 168,102 156,112 C 176,106 196,112 204,130 C 212,148 200,166 182,168 C 198,180 204,202 192,218 C 180,234 156,234 142,220 C 146,240 138,262 132,314 Z" />
+            <path class="leaf-shape" d="M 130,100 C 128,84 132,68 142,58 C 152,48 164,50 168,62 C 172,74 162,86 148,86 C 158,94 162,108 154,120 C 146,132 130,132 122,122 C 112,132 96,130 88,118 C 80,106 86,92 98,88 C 86,82 82,66 92,56 C 102,46 118,50 124,62 C 122,76 126,88 130,100 Z" />
+          </mask>
+          <mask id="leaf-grow" maskUnits="userSpaceOnUse">
+            <rect width="260" height="320" fill="#000" />
+            <path class="leaf-grow" pathLength="100" d="M 130,314 C 156,262 120,238 128,202 C 134,174 156,168 156,150" />
+            <path class="leaf-grow" pathLength="100" d="M 128,202 C 108,196 92,178 98,156" />
+            <path class="leaf-grow" pathLength="100" d="M 132,190 C 152,184 168,166 162,144" />
+            <path class="leaf-grow" pathLength="100" d="M 130,100 C 128,84 132,68 142,58" />
+          </mask>
+        </defs>
+        <g mask="url(#leaf-grow)">
+          <g mask="url(#leaf-shape)">
+            <rect class="leaf-fill" width="260" height="320" />
+          </g>
+        </g>
+      </svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const EASE = 'cubic-bezier(0.77, 0, 0.175, 1)'
+  const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)'
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  const pages = {
+    home: `
+      <p class="kicker">Masthead · 2026</p>
+      <h2>一本一直在写的个人杂志</h2>
+      <p class="lead">点上面导航。遮罩应把顶栏一起盖住，而不是只让正文位移。</p>
+      <div class="film"></div>
+      <div class="row"><span class="date">08-12</span><div><b>树状数组笔记</b></div></div>
+      <div class="row"><span class="date">07-03</span><div><b>纸面重构备忘</b></div></div>`,
+    blog: `
+      <p class="kicker">Blog · Timeline</p>
+      <h2>文章目录</h2>
+      <p class="lead">新页在完全被盖住时替换，揭开后已经是博客。</p>
+      <div class="row"><span class="date">2026</span><div><b>最短路与势能</b></div></div>
+      <div class="row"><span class="date">2025</span><div><b>字符串哈希踩坑</b></div></div>
+      <div class="row"><span class="date">2024</span><div><b>线段树懒标记</b></div></div>`,
+    projects: `
+      <p class="kicker">Projects · Index</p>
+      <h2>在做的东西</h2>
+      <p class="lead">列表仍是目录。遮罩中间的字是去向，不是 Loading。</p>
+      <div class="row"><span class="date">wiki</span><div><b>GrunRay wiki</b></div></div>
+      <div class="row"><span class="date">tool</span><div><b>导入脚本</b></div></div>`,
+    xiqi: `
+      <p class="kicker">Xiqi · Habitat</p>
+      <h2>栖息</h2>
+      <div class="chips"><span class="chip">碎念</span><span class="chip">关于</span><span class="chip">推荐</span></div>
+      <p class="lead">落地时遮罩挂在壳最外层，不跟 app-main 宽度走。</p>`,
+  }
+
+  const labels = {
+    home: ['HOME', '首页'],
+    blog: ['BLOG', '文章'],
+    projects: ['PROJECTS', '项目'],
+    xiqi: ['XIQI', '栖息'],
+  }
+
+  const notes = {
+    dual: '方案 A（最接近 jiejoe 结构）：墨绿块先从右侧刮满，墨色块紧随盖住；中间衬线写出向；再整组向左刮走。圆角只在运动中出现。',
+    drop: '方案 B：一张暖纸从天顶落下盖住界面，顶边一根 accent 发丝；中间写出向；纸再向下抽走。更像翻杂志、少一层霓虹前导。',
+    book: '方案 C：左右两页纸向中缝合上，停一下，再向两侧打开。书册感，时长略长。',
+    ink: '方案 D：整屏墨色从下铺上盖住，中间纸色衬线标题；再从下向上揭开。最安静的一档。',
+    vine: '方案 E：花藤用卡片同款贴图遮罩沿骨架生长，主茎勾到约 3/4 屏后细梢扣住帘边；墨色从下升起盖满。揭开时整帘（墨+藤）上收。',
+    sprig: '方案 F：纯方案 D 墨色从下盖满；盖满后在中央长出一枝简化花藤（贴图遮罩 + 逐段描边生长，同卡片 hover）；随后连帘带枝向上收走。',
+  }
+
+  const shell = document.getElementById('shell')
+  const pageEl = document.getElementById('page')
+  const noteEl = document.getElementById('scheme-note')
+  const lead = document.getElementById('lead')
+  const mainp = document.getElementById('mainp')
+  const paperp = document.getElementById('paperp')
+  const mark = document.getElementById('mark')
+  const mk = document.getElementById('mk')
+  const mw = document.getElementById('mw')
+  const hair = document.getElementById('hair')
+  const vine = document.getElementById('vine')
+  const vineMain = vine.querySelector('.grow-main')
+  const vineBranches = [...vine.querySelectorAll('.grow-br, .grow-twig')]
+  const bundle = document.getElementById('bundle')
+  const leaf = document.getElementById('leaf')
+  const leafGrows = [...leaf.querySelectorAll('.leaf-grow')]
+
+  let scheme = 'dual'
+  let current = 'home'
+  let lastTo = 'blog'
+  let busy = false
+
+  noteEl.textContent = notes.dual
+  pageEl.innerHTML = pages.home
+  park()
+
+  function park() {
+    lead.style.transform = 'translateX(100%)'
+    mainp.style.transform = 'translateX(100%)'
+    paperp.style.transform = 'translateX(100%)'
+    lead.style.borderRadius = '0'
+    mainp.style.borderRadius = '0'
+    paperp.style.borderRadius = '0'
+    mark.style.opacity = '0'
+    hair.style.opacity = '0'
+    hair.style.cssText += ';inset:auto;'
+    vine.style.opacity = '0'
+    vine.style.transform = 'translateY(0) rotate(0deg)'
+    vineMain.style.strokeDashoffset = '100'
+    vineBranches.forEach((p) => { p.style.strokeDashoffset = '100' })
+    bundle.style.transform = 'translateY(0)'
+    bundle.style.clipPath = 'none'
+    bundle.classList.remove('is-vine')
+    bundle.classList.remove('is-sprig')
+    mainp.style.clipPath = ''
+    leaf.style.opacity = '0'
+    leafGrows.forEach((p) => { p.style.strokeDashoffset = '100' })
+  }
+
+  function anim(el, frames, opts) {
+    return el.animate(frames, { fill: 'forwards', easing: EASE, ...opts }).finished
+  }
+
+  function syncNav(name) {
+    document.querySelectorAll('.nav-link').forEach((b) => {
+      b.classList.toggle('is-current', b.dataset.page === name)
+    })
+  }
+
+  function setMark(to, tone) {
+    mk.textContent = labels[to][0]
+    mw.textContent = labels[to][1]
+    mark.className = 'mark ' + tone
+  }
+
+  async function go(to) {
+    if (busy || to === current) return
+    busy = true
+    shell.classList.add('is-busy')
+    lastTo = to
+
+    if (reduced) {
+      pageEl.innerHTML = pages[to]
+      current = to
+      syncNav(to)
+      busy = false
+      shell.classList.remove('is-busy')
+      return
+    }
+
+    try {
+      if (scheme === 'dual') await runDual(to)
+      else if (scheme === 'drop') await runDrop(to)
+      else if (scheme === 'book') await runBook(to)
+      else if (scheme === 'ink') await runInk(to)
+      else if (scheme === 'vine') await runVine(to)
+      else await runSprig(to)
+    } finally {
+      park()
+      current = to
+      syncNav(to)
+      busy = false
+      shell.classList.remove('is-busy')
+    }
+  }
+
+  async function runDual(to) {
+    setMark(to, 'on-ink')
+    lead.style.borderRadius = '0 1.6rem 1.6rem 0'
+    mainp.style.borderRadius = '0 1.6rem 1.6rem 0'
+    paperp.style.transform = 'translateX(100%)'
+    await Promise.all([
+      anim(lead, [
+        { transform: 'translateX(100%)', borderRadius: '0 1.6rem 1.6rem 0' },
+        { transform: 'translateX(0%)', borderRadius: '0px' },
+      ], { duration: 560 }),
+      anim(mainp, [
+        { transform: 'translateX(100%)', borderRadius: '0 1.6rem 1.6rem 0' },
+        { transform: 'translateX(0%)', borderRadius: '0px' },
+      ], { duration: 560, delay: 90 }),
+    ])
+    await anim(mark, [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 320, easing: EASE_OUT })
+    pageEl.innerHTML = pages[to]
+    await new Promise((r) => setTimeout(r, 280))
+    await anim(mark, [{ opacity: 1 }, { opacity: 0 }], { duration: 180 })
+    lead.style.borderRadius = '1.6rem 0 0 1.6rem'
+    mainp.style.borderRadius = '1.6rem 0 0 1.6rem'
+    await Promise.all([
+      anim(lead, [
+        { transform: 'translateX(0%)' },
+        { transform: 'translateX(-100%)' },
+      ], { duration: 520, delay: 40 }),
+      anim(mainp, [
+        { transform: 'translateX(0%)' },
+        { transform: 'translateX(-100%)' },
+      ], { duration: 520 }),
+    ])
+  }
+
+  async function runDrop(to) {
+    setMark(to, 'on-paper')
+    lead.style.transform = 'translateY(-100%)'
+    mainp.style.transform = 'translateX(100%)'
+    paperp.style.transform = 'translateY(-100%)'
+    hair.style.cssText = 'opacity:1;left:0;right:0;top:0;height:2px;transform:scaleX(0);transform-origin:left center;'
+    await Promise.all([
+      anim(paperp, [
+        { transform: 'translateY(-100%)' },
+        { transform: 'translateY(0%)' },
+      ], { duration: 640 }),
+      anim(hair, [
+        { transform: 'scaleX(0)', opacity: 1 },
+        { transform: 'scaleX(1)', opacity: 1 },
+      ], { duration: 420 }),
+    ])
+    await anim(mark, [{ opacity: 0, transform: 'translateY(-8px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 300, easing: EASE_OUT })
+    pageEl.innerHTML = pages[to]
+    await new Promise((r) => setTimeout(r, 260))
+    await anim(mark, [{ opacity: 1 }, { opacity: 0 }], { duration: 160 })
+    await Promise.all([
+      anim(paperp, [
+        { transform: 'translateY(0%)' },
+        { transform: 'translateY(100%)' },
+      ], { duration: 560 }),
+      anim(hair, [{ opacity: 1 }, { opacity: 0 }], { duration: 200 }),
+    ])
+  }
+
+  async function runBook(to) {
+    setMark(to, 'on-paper')
+    lead.style.background = 'var(--elev)'
+    mainp.style.background = 'var(--bg)'
+    lead.style.transform = 'translateX(-100%)'
+    mainp.style.transform = 'translateX(100%)'
+    paperp.style.transform = 'translateX(100%)'
+    await Promise.all([
+      anim(lead, [{ transform: 'translateX(-100%)' }, { transform: 'translateX(-50%)' }], { duration: 520 }),
+      anim(mainp, [{ transform: 'translateX(100%)' }, { transform: 'translateX(50%)' }], { duration: 520 }),
+    ])
+    await anim(mark, [{ opacity: 0 }, { opacity: 1 }], { duration: 260, easing: EASE_OUT })
+    pageEl.innerHTML = pages[to]
+    await new Promise((r) => setTimeout(r, 240))
+    await anim(mark, [{ opacity: 1 }, { opacity: 0 }], { duration: 160 })
+    await Promise.all([
+      anim(lead, [{ transform: 'translateX(-50%)' }, { transform: 'translateX(-100%)' }], { duration: 480 }),
+      anim(mainp, [{ transform: 'translateX(50%)' }, { transform: 'translateX(100%)' }], { duration: 480 }),
+    ])
+    lead.style.background = ''
+    mainp.style.background = ''
+  }
+
+  async function runInk(to) {
+    setMark(to, 'on-ink')
+    lead.style.transform = 'translateX(100%)'
+    paperp.style.transform = 'translateX(100%)'
+    mainp.style.transform = 'translateY(100%)'
+    await anim(mainp, [
+      { transform: 'translateY(100%)' },
+      { transform: 'translateY(0%)' },
+    ], { duration: 600 })
+    await anim(mark, [{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 340, easing: EASE_OUT })
+    pageEl.innerHTML = pages[to]
+    await new Promise((r) => setTimeout(r, 300))
+    await anim(mark, [{ opacity: 1 }, { opacity: 0 }], { duration: 180 })
+    await anim(mainp, [
+      { clipPath: 'inset(0 0 0 0)' },
+      { clipPath: 'inset(0 0 100% 0)' },
+    ], { duration: 520, easing: EASE_OUT })
+    mainp.style.clipPath = ''
+  }
+
+  async function runVine(to) {
+    setMark(to, 'on-ink')
+    lead.style.transform = 'translateX(100%)'
+    paperp.style.transform = 'translateX(100%)'
+    mainp.style.transform = 'translateY(100%)'
+    mainp.style.clipPath = 'none'
+    bundle.style.transform = 'translateY(0)'
+    bundle.classList.add('is-vine')
+    vine.style.opacity = '1'
+    vine.style.transform = 'translateY(-8%) rotate(-1.1deg)'
+
+    const growMain = anim(vineMain, [
+      { strokeDashoffset: 100 },
+      { strokeDashoffset: 0 },
+    ], { duration: 1100, easing: EASE_OUT })
+
+    vineBranches.forEach((p, i) => {
+      anim(p, [
+        { strokeDashoffset: 100 },
+        { strokeDashoffset: 0 },
+      ], { duration: 560, delay: 260 + i * 48, easing: EASE_OUT })
+    })
+
+    await Promise.all([
+      growMain,
+      anim(vine, [
+        { transform: 'translateY(-8%) rotate(-1.1deg)' },
+        { transform: 'translateY(0%) rotate(0.2deg)' },
+      ], { duration: 1100, easing: EASE_OUT }),
+    ])
+
+    await anim(mainp, [
+      { transform: 'translateY(100%)' },
+      { transform: 'translateY(0%)' },
+    ], { duration: 640 })
+
+    await anim(vine, [
+      { transform: 'translateY(0%) rotate(0.2deg)' },
+      { transform: 'translateY(2%) rotate(0deg)' },
+    ], { duration: 280, easing: EASE_OUT })
+
+    await anim(mark, [
+      { opacity: 0, transform: 'translateY(10px)' },
+      { opacity: 1, transform: 'translateY(0)' },
+    ], { duration: 340, easing: EASE_OUT })
+    pageEl.innerHTML = pages[to]
+    await new Promise((r) => setTimeout(r, 260))
+    await anim(mark, [{ opacity: 1 }, { opacity: 0 }], { duration: 180 })
+
+    await anim(bundle, [
+      { transform: 'translateY(0%)' },
+      { transform: 'translateY(-108%)' },
+    ], { duration: 760 })
+  }
+
+  async function runSprig(to) {
+    setMark(to, 'on-ink')
+    lead.style.transform = 'translateX(100%)'
+    paperp.style.transform = 'translateX(100%)'
+    bundle.classList.add('is-sprig')
+    mainp.style.transform = 'translateY(100%)'
+    mainp.style.clipPath = 'none'
+    leaf.style.opacity = '0'
+    leaf.style.transform = 'translate(-50%, -46%) scale(0.9)'
+
+    await anim(mainp, [
+      { transform: 'translateY(100%)' },
+      { transform: 'translateY(0%)' },
+    ], { duration: 600 })
+
+    leaf.style.opacity = '1'
+    await Promise.all([
+      anim(leafGrows[0], [
+        { strokeDashoffset: 100 },
+        { strokeDashoffset: 0 },
+      ], { duration: 720, easing: EASE_OUT }),
+      anim(leaf, [
+        { opacity: 1, transform: 'translate(-50%, -46%) scale(0.9)' },
+        { opacity: 1, transform: 'translate(-50%, -46%) scale(1)' },
+      ], { duration: 720, easing: EASE_OUT }),
+    ])
+    await Promise.all([
+      ...leafGrows.slice(1).map((p, i) => anim(p, [
+        { strokeDashoffset: 100 },
+        { strokeDashoffset: 0 },
+      ], { duration: 460, delay: i * 78, easing: EASE_OUT })),
+      anim(mark, [
+        { opacity: 0, transform: 'translateY(10px)' },
+        { opacity: 1, transform: 'translateY(0)' },
+      ], { duration: 320, delay: 140, easing: EASE_OUT }),
+    ])
+
+    pageEl.innerHTML = pages[to]
+    await new Promise((r) => setTimeout(r, 280))
+    await Promise.all([
+      anim(mark, [{ opacity: 1 }, { opacity: 0 }], { duration: 180 }),
+      anim(leaf, [{ opacity: 1 }, { opacity: 0 }], { duration: 220 }),
+    ])
+
+    await anim(mainp, [
+      { clipPath: 'inset(0 0 0 0)' },
+      { clipPath: 'inset(0 0 100% 0)' },
+    ], { duration: 560, easing: EASE_OUT })
+    mainp.style.clipPath = ''
+  }
+
+  document.querySelectorAll('[data-scheme]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-scheme]').forEach((b) => b.classList.toggle('is-active', b === btn))
+      scheme = btn.dataset.scheme
+      noteEl.textContent = notes[scheme]
+    })
+  })
+  document.querySelectorAll('.nav-link').forEach((btn) => {
+    btn.addEventListener('click', () => go(btn.dataset.page))
+  })
+  document.getElementById('replay').addEventListener('click', () => {
+    const to = current === 'home' ? lastTo : 'home'
+    if (to === current) go(current === 'home' ? 'blog' : 'home')
+    else go(to)
+  })
+</script>
+</body>
+</html>
