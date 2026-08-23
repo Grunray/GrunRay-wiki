@@ -293,10 +293,27 @@ layout:
       2026-05-25  栖息分栏与页脚揭示联动优化。
 
       2026-05-25  新增 GrunRay Wiki 项目卡片与工程开发笔记。
+
+      2026-08-20  纸面视觉重构：DESIGN.md 设计令牌、三主题 tokens、中文衬线自托管、markdown-reading 与全局字阶；接入 GSAP 并全局注册 ScrollTrigger。
+
+      2026-08-20  首页纸面重构：刊号行 + 胶片横幅 Hero + Cover Story + NOW + 三栏目录；`page-enter-home.css` 分区入场；`FilmFeed` 横向封面模式（齿孔、滚轮提示、Shift 调速）。
+
+      2026-08-20  导航与卡片交互：SiteNav 下拉 blur 收令牌；顶栏工具按钮去 scale/glow；时间线卡片花藤悬停（option G / `CardCornerVineLazy`）与共用 timeline 样式。
+
+      2026-08-20  详情页滚动侧栏：博客/项目详情 overlay 侧栏（`DetailScrollSidebar` + `useDetailScrollSidebar`）；栖息分栏关闭详情时恢复滚动与入场动画修复。
+
+      2026-08-20  设计原型入库：`designed/home-options`、`hover-options`、`redesign-check`、`scroll-sidebar` 等 HTML 预览；项目块与多页视图小修。
+
+      2026-08-23  全屏路由跳转遮罩原型（`designed/page-transition`，任务 107，待选方案合入 Vue）。
+
+      2026-08-23  首页 Hero 降高（108.P0）：压低 `home-band` 同时修复 `FilmFeed` 副本测量（去轨道 `:key`、rAF 合并测量、`minSet` 门槛），避免 Chrome/Edge 卡死；工程笔记 `grunray-wiki-note-home-filmfeed-height`；胶片资源新增 `duck.jpg`、`Columbina_Sandrone.gif`。
 related_posts:
   - slug: grunray-wiki-note-home
     label: 首页布局与 API
     pinned: true
+  - slug: grunray-wiki-note-home-filmfeed-height
+    label: 首页 Hero 降高与 FilmFeed 卡死
+    pinned: false
   - slug: grunray-wiki-note-create
     label: 创作：项目与博客
     pinned: true

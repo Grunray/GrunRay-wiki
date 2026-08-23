@@ -372,10 +372,10 @@ onMounted(() => {
   pointer-events: none;
 }
 
-/* —— 电影感横幅：FilmFeed 铺满 + 暗场 + 刊名压上 —— */
+/* —— 电影感横幅：FilmFeed 铺满变矮后的容器（不裁切上沿） —— */
 .home-band {
   position: relative;
-  height: clamp(19rem, 46vh, 28rem);
+  height: clamp(13rem, 32vh, 20rem);
   border-radius: var(--radius-md);
   overflow: hidden;
 }
@@ -800,7 +800,7 @@ onMounted(() => {
   }
 
   .home-band {
-    height: clamp(15rem, 38vh, 22rem);
+    height: clamp(10rem, 26vh, 16rem);
   }
 
   .cover-story-read {

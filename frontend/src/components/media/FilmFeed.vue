@@ -41,6 +41,8 @@ const hintVisible = computed(() => filmHovered.value && !viewerItem.value)
 let loopObserver: ResizeObserver | null = null
 let motionMql: MediaQueryList | null = null
 let hintTween: gsap.core.Timeline | gsap.core.Tween | null = null
+let measureQueued = false
+let measuring = false
 
 function syncReducedMotion() {
   reducedMotion.value = prefersReducedMotionMedia()
@@ -73,20 +75,38 @@ const loopItems = computed(() => {
   return copies
 })
 
+function scheduleMeasureLoopCopies() {
+  if (measureQueued) return
+  measureQueued = true
+  requestAnimationFrame(() => {
+    measureQueued = false
+    measureLoopCopies()
+  })
+}
+
 function measureLoopCopies() {
-  if (reducedMotion.value) return
+  if (reducedMotion.value || measuring) return
   const film = filmRef.value
   const track = trackRef.value
-  if (!film || !track || !items.value.length) return
+  const n = items.value.length
+  if (!film || !track || !n) return
   const viewport = horizontal.value ? film.clientWidth : film.clientHeight
   const total = horizontal.value ? track.scrollWidth : track.scrollHeight
   const setSize = total / repeatCount.value
   if (viewport < 1 || setSize < 1) return
+  /* 布局未完成时格宽会接近 0，ceil(viewport/setSize) 会冲到 MAX_REPEAT，
+   * 再叠加 :key 整轨重挂载就会把 Chrome/Edge 打满。未就绪时先不改副本数。 */
+  const minSet = horizontal.value
+    ? n * Math.max(48, track.clientHeight * 0.45)
+    : n * 80
+  if (setSize < minSet) return
   const needed = Math.min(MAX_REPEAT, Math.max(2, Math.ceil(viewport / setSize) + 1))
-  if (needed !== repeatCount.value) {
-    repeatCount.value = needed
-    void nextTick(measureLoopCopies)
-  }
+  if (needed === repeatCount.value) return
+  measuring = true
+  repeatCount.value = needed
+  void nextTick(() => {
+    measuring = false
+  })
 }
 
 function openViewer(item: MediaItem) {
@@ -113,8 +133,7 @@ function onKeydown(e: KeyboardEvent) {
 
 watch([items, trackRef], async () => {
   await nextTick()
-  if (loopObserver && trackRef.value) loopObserver.observe(trackRef.value)
-  measureLoopCopies()
+  scheduleMeasureLoopCopies()
 })
 
 watch(hintVisible, (show) => {
@@ -128,7 +147,7 @@ onMounted(() => {
   motionMql.addEventListener('change', syncReducedMotion)
   window.addEventListener('keydown', onKeydown)
   window.addEventListener('keyup', onShiftKeyup)
-  loopObserver = new ResizeObserver(() => measureLoopCopies())
+  loopObserver = new ResizeObserver(() => scheduleMeasureLoopCopies())
   if (filmRef.value) loopObserver.observe(filmRef.value)
   gsap.set(hintRef.value, { autoAlpha: 0, y: -12, x: 10, scale: 0.94 })
 })
@@ -215,7 +234,6 @@ onBeforeUnmount(() => {
 
       <div
         v-if="loopItems.length"
-        :key="repeatCount"
         ref="trackRef"
         class="track"
         :class="{ paused: !!viewerItem || reducedMotion, 'track--reduced': reducedMotion }"
