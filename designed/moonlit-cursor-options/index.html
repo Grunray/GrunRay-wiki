@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN" data-preview-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>星座月相指针 · Moonlit Cursor</title>
+    <link rel="stylesheet" href="shared.css" />
+  </head>
+  <body>
+    <canvas id="cursor-canvas" aria-hidden="true"></canvas>
+
+    <div class="preview-switcher">
+      <span class="brand">MOONLIT CURSOR · 星座月相</span>
+      <span class="sep">|</span>
+      <button type="button" class="theme-btn on" data-theme="light">浅色</button>
+      <button type="button" class="theme-btn" data-theme="dark">深色</button>
+      <span class="hint">移动鼠标 · 停驻 2 秒看静憩态（空羽推摇篮）· 悬停链接/项目 · 点击看祈愿</span>
+    </div>
+
+    <main class="variant scheme-d" id="variant-d">
+      <p class="meta-note">
+        <b>星座月相（哥伦比娅 / 御月鸽座）</b>
+        命之座为<strong>月相序列</strong>拖尾；指针为 Columbina 线稿 + Damselette 热点；停驻 2 秒进入<strong>静憩态</strong>（sleep 月摇篮 + Kuuhenki 推摇）。素材见
+        <code>assets/</code>。
+        <span class="tag">御月鸽座</span>
+      </p>
+      <div class="mock-page">
+        <header class="mock-nav">
+          <span class="mock-nav-brand">GrunRay</span>
+          <nav class="mock-nav-links" aria-hidden="true">
+            <span>首页</span>
+            <span class="on">博客</span>
+            <span>项目</span>
+          </nav>
+        </header>
+        <div class="mock-hero">
+          <p class="mock-kicker">CONSTELLATION · 星座</p>
+          <h1>月相连成轨迹，线稿随指针而行</h1>
+          <p>切换「深色」最接近参考图 cyan 辉光；悬停链接/芯片时出现虹月·恒月·霜月三轨。</p>
+        </div>
+        <div class="mock-grid">
+          <div class="mock-col">
+            <h2>LATEST</h2>
+            <a class="toc-row" href="#"><h3>回文树 PAM 模板</h3><span class="meta">2025/07/21</span></a>
+            <a class="toc-row" href="#"><h3>社区：留言板与友链</h3><span class="meta">2026/05/26</span></a>
+          </div>
+          <div class="mock-col">
+            <h2>PROJECT</h2>
+            <span class="project-chip">GrunRay Wiki</span>
+            <p style="margin:0.65rem 0 0;color:var(--muted);font-size:0.82rem">点击可看到祈愿姿态与原石散落。</p>
+          </div>
+        </div>
+      </div>
+      <div class="demo-panel">
+        <strong>说明：</strong> Damselette 标示点击热点；Columbina 线稿偏移不重叠。悬停三月绕线稿中心旋转；点击后指针淡出并显现祈愿，原石从轨道内侧散落。
+      </div>
+    </main>
+
+    <script src="shared.js"></script>
+  </body>
+</html>
