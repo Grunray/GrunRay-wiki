@@ -51,6 +51,21 @@ def _load_layout(meta: dict[str, Any], md_path: Path) -> list[dict[str, Any]]:
     raise ValueError("必须提供 layout（YAML 数组）或 layout_file（相对路径 JSON）")
 
 
+def _normalize_media_url(url: Any) -> str:
+    s = str(url).strip().replace("\\", "/")
+    return "".join(c for c in s if ord(c) >= 32)
+
+
+def _sanitize_layout(layout: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for block in layout:
+        b = dict(block)
+        if b.get("type") == "gallery" and isinstance(b.get("images"), list):
+            b["images"] = [_normalize_media_url(u) for u in b["images"]]
+        out.append(b)
+    return out
+
+
 def _normalize_related(meta: dict[str, Any]) -> list[dict[str, Any]] | None:
     raw = meta.get("related_posts")
     if raw is None:
@@ -135,7 +150,7 @@ def validate_project_meta(meta: dict[str, Any], body: str, md_path: Path) -> dic
     demo_url = meta.get("demo_url")
     demo_url = str(demo_url).strip() if demo_url else None
 
-    layout = _load_layout(meta, md_path)
+    layout = _sanitize_layout(_load_layout(meta, md_path))
     related = _normalize_related(meta)
 
     return {

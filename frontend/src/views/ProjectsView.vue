@@ -189,6 +189,7 @@ onMounted(async () => {
             <span class="timeline-dot" aria-hidden="true" />
             <div
               class="timeline-card card timeline-card--clickable card-hover-g"
+              data-cursor-hover="project"
               role="link"
               tabindex="0"
               @click="onCardClick(item.project.slug)"

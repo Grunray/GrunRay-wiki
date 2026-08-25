@@ -10,7 +10,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <article class="card item">
+  <article class="card item" data-cursor-hover="project">
     <div class="head">
       <h2 class="title">
         <RouterLink :to="`/projects/${project.slug}`">{{ project.title }}</RouterLink>

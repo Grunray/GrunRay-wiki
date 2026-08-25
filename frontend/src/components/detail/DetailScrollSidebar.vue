@@ -9,7 +9,7 @@ const props = defineProps<{
 }>()
 
 const p = computed(() => Math.min(1, Math.max(0, props.progress)))
-const interactive = computed(() => p.value > 0.72)
+const interactive = computed(() => p.value > 0.55)
 const railStyle = computed(
   () =>
     ({

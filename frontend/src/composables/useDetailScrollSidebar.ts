@@ -12,11 +12,11 @@ import {
 import { onBeforeRouteLeave } from 'vue-router'
 
 /**
- * 方案 D：题录区滚出视口顶之后，侧栏才开始淡入。
+ * 方案 D：题录区滚出视口顶之后，侧栏淡入并稳定展示（不再随正文滚动半露半隐）。
  * 侧栏是视口 overlay，不改 app-main 宽度、不给正文加 margin。
  */
 const WIDE_MQ = '(min-width: 1280px)'
-const REVEAL_SPAN_PX = 220
+const REVEAL_DURATION = 0.42
 
 export function useDetailScrollSidebar(
   foldZone: Ref<HTMLElement | null>,
@@ -29,13 +29,37 @@ export function useDetailScrollSidebar(
 
   let mm: ReturnType<typeof gsap.matchMedia> | undefined
   let refreshTimer = 0
+  let revealTween: gsap.core.Tween | null = null
+  let activeTrigger: ScrollTrigger | null = null
+  const tweenState = { p: 0 }
 
   function applyProgress(p: number) {
-    progress.value = gsap.utils.clamp(0, 1, p)
+    const clamped = gsap.utils.clamp(0, 1, p)
+    tweenState.p = clamped
+    progress.value = clamped
+  }
+
+  function tweenProgress(to: number, immediate = false) {
+    revealTween?.kill()
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (immediate || reduced) {
+      applyProgress(to)
+      return
+    }
+    revealTween = gsap.to(tweenState, {
+      p: to,
+      duration: REVEAL_DURATION,
+      ease: 'power2.out',
+      onUpdate: () => applyProgress(tweenState.p),
+    })
   }
 
   function teardown() {
     window.clearTimeout(refreshTimer)
+    revealTween?.kill()
+    revealTween = null
+    activeTrigger?.kill()
+    activeTrigger = null
     mm?.revert()
     mm = undefined
     wideEnough.value = false
@@ -44,6 +68,10 @@ export function useDetailScrollSidebar(
 
   function setup() {
     window.clearTimeout(refreshTimer)
+    revealTween?.kill()
+    revealTween = null
+    activeTrigger?.kill()
+    activeTrigger = null
     mm?.revert()
     mm = undefined
     applyProgress(0)
@@ -57,26 +85,26 @@ export function useDetailScrollSidebar(
     mm = gsap.matchMedia()
     mm.add(WIDE_MQ, () => {
       wideEnough.value = true
-      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      ScrollTrigger.create({
+
+      activeTrigger = ScrollTrigger.create({
         trigger,
         start: 'bottom top',
-        end: `+=${REVEAL_SPAN_PX}`,
         invalidateOnRefresh: true,
-        ...(reduced
-          ? {
-              onEnter: () => applyProgress(1),
-              onLeaveBack: () => applyProgress(0),
-            }
-          : {
-              scrub: 0.5,
-              onUpdate: (self) => applyProgress(self.progress),
-              onLeaveBack: () => applyProgress(0),
-            }),
+        onEnter: () => tweenProgress(1),
+        onLeaveBack: () => tweenProgress(0),
       })
+
       ScrollTrigger.refresh()
+      if (activeTrigger.isActive) {
+        tweenProgress(1, true)
+      }
+
       return () => {
         wideEnough.value = false
+        revealTween?.kill()
+        revealTween = null
+        activeTrigger?.kill()
+        activeTrigger = null
         applyProgress(0)
       }
     })
