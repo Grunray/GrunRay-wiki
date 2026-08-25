@@ -21,10 +21,15 @@
     "placeholderSoon": "页面建设中，敬请期待。",
     "musicExpand": "展开音乐播放器",
     "musicCollapse": "收起音乐播放器",
-    "trailOn": "点击开启光标拖尾",
-    "trailOff": "点击关闭光标拖尾",
+    "trailOn": "点击开启月相拖尾",
+    "trailOff": "点击关闭月相拖尾",
     "photoBgOn": "使用图片背景",
     "photoBgOff": "使用默认背景",
+    "photoBgBlurHint": "右键调节模糊",
+    "photoBgBlurTitle": "背景模糊",
+    "photoBgBlurAmount": "模糊强度",
+    "photoBgBlurReset": "恢复默认",
+    "photoBgBlurPopoverHint": "拖动滑杆即时预览；设置会保存在本机。",
     "overflowShow": "显示更多工具",
     "overflowHide": "收起工具面板",
     "overflowLabel": "显示隐藏的图标",
@@ -68,6 +73,7 @@
     "archived": "已归档",
     "active": "进行中",
     "notes": "笔记",
+    "notesEmpty": "暂无笔记。",
     "timelineCount": "{count} 个项目",
     "openGithub": "打开 GitHub",
     "openDemo": "打开 Demo",
@@ -91,7 +97,11 @@
     "contentTitle": "项目内容",
     "inProgress": "进行中",
     "unknownDate": "--/--",
-    "empty": "没有匹配的项目。"
+    "empty": "没有匹配的项目。",
+    "galleryPreviewKicker": "图片预览",
+    "galleryOpenFull": "点击查看大图",
+    "galleryClose": "关闭",
+    "galleryViewerHint": "滚轮缩放 · 按住拖拽"
   },
   "messages": {
     "title": "留言",
@@ -393,7 +403,8 @@
     "themeLight": "浅色",
     "themeDark": "深色",
     "themeAbstract": "抽象",
-    "cursorTrail": "光标拖尾",
+    "cursorTrail": "月相拖尾",
+    "cursorTrailReduced": "系统减少动效，月相拖尾已关闭",
     "locale": "语言"
   },
   "common": {

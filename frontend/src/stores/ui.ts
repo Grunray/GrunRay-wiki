@@ -3,6 +3,12 @@ import { computed, ref, watch } from 'vue'
 
 import type { ThemeId } from '@/types/content'
 import { setPageCorruptState } from '@/theme/pageCorruptState'
+import {
+  applyPhotoBackgroundBlur,
+  readPhotoBackgroundBlur,
+  STORAGE_PHOTO_BG_BLUR,
+  clampPhotoBackgroundBlur,
+} from '@/theme/photoBackgroundBlur'
 import { preloadCurrentPhotoBg } from '@/theme/pagePhotoBackgrounds'
 
 const STORAGE_THEME = 'ui.theme'
@@ -76,6 +82,8 @@ export const useUiStore = defineStore('ui', () => {
   const splashAvatarHandoff = ref(false)
   /** 全屏图片背景（与 main.css 中 html[data-photo-bg] 联动） */
   const photoBackgroundEnabled = ref(readPhotoBackground())
+  /** 图片背景常态模糊（px）；右键顶栏照片钮可调 */
+  const photoBackgroundBlurPx = ref(readPhotoBackgroundBlur())
   /** 404 彩蛋：是否已解锁 abstract 配色 */
   const abstractThemeUnlocked = ref(readAbstractUnlocked())
 
@@ -101,6 +109,17 @@ export const useUiStore = defineStore('ui', () => {
     (v) => {
       localStorage.setItem(STORAGE_PHOTO_BG, v ? '1' : '0')
       applyPhotoBgToDocument(v)
+    },
+    { immediate: true },
+  )
+
+  watch(
+    photoBackgroundBlurPx,
+    (px) => {
+      const blur = clampPhotoBackgroundBlur(px)
+      localStorage.setItem(STORAGE_PHOTO_BG_BLUR, String(blur))
+      applyPhotoBackgroundBlur(blur)
+      if (blur !== px) photoBackgroundBlurPx.value = blur
     },
     { immediate: true },
   )
@@ -166,6 +185,10 @@ export const useUiStore = defineStore('ui', () => {
     photoBackgroundEnabled.value = !photoBackgroundEnabled.value
   }
 
+  function setPhotoBackgroundBlur(px: number) {
+    photoBackgroundBlurPx.value = clampPhotoBackgroundBlur(px)
+  }
+
   return {
     theme,
     cursorTrailEnabled,
@@ -176,6 +199,7 @@ export const useUiStore = defineStore('ui', () => {
     splashWoniuReplayTick,
     splashAvatarHandoff,
     photoBackgroundEnabled,
+    photoBackgroundBlurPx,
     abstractThemeUnlocked,
     setTheme,
     cycleTheme,
@@ -187,5 +211,6 @@ export const useUiStore = defineStore('ui', () => {
     requestSplashWoniuReplay,
     setSplashAvatarHandoff,
     togglePhotoBackground,
+    setPhotoBackgroundBlur,
   }
 })

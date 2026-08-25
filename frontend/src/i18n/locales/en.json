@@ -21,10 +21,15 @@
     "placeholderSoon": "This page is under construction.",
     "musicExpand": "Expand music player",
     "musicCollapse": "Collapse music player",
-    "trailOn": "Turn on cursor trail",
-    "trailOff": "Turn off cursor trail",
+    "trailOn": "Turn on moonlit cursor trail",
+    "trailOff": "Turn off moonlit cursor trail",
     "photoBgOn": "Use photo background",
     "photoBgOff": "Use default background",
+    "photoBgBlurHint": "Right-click to adjust blur",
+    "photoBgBlurTitle": "Background blur",
+    "photoBgBlurAmount": "Blur amount",
+    "photoBgBlurReset": "Reset",
+    "photoBgBlurPopoverHint": "Drag to preview live. Saved on this device.",
     "overflowShow": "Show more toolbar actions",
     "overflowHide": "Hide toolbar overflow",
     "overflowLabel": "Show hidden icons",
@@ -68,6 +73,7 @@
     "archived": "Archived",
     "active": "Active",
     "notes": "Notes",
+    "notesEmpty": "No notes yet.",
     "timelineCount": "{count} projects",
     "openGithub": "Open GitHub",
     "openDemo": "Open demo",
@@ -91,7 +97,11 @@
     "contentTitle": "Project content",
     "inProgress": "In progress",
     "unknownDate": "--/--",
-    "empty": "No matching projects."
+    "empty": "No matching projects.",
+    "galleryPreviewKicker": "Image preview",
+    "galleryOpenFull": "Click to view full size",
+    "galleryClose": "Close",
+    "galleryViewerHint": "Scroll to zoom · Drag to pan"
   },
   "messages": {
     "title": "Messages",
@@ -393,7 +403,8 @@
     "themeLight": "Light",
     "themeDark": "Dark",
     "themeAbstract": "Abstract",
-    "cursorTrail": "Cursor trail",
+    "cursorTrail": "Moonlit trail",
+    "cursorTrailReduced": "Reduced motion is on; moonlit trail is off",
     "locale": "Language"
   },
   "common": {
