@@ -20,7 +20,6 @@
   --font-sans: 'JetBrains Mono', ui-monospace, monospace;
   --font-serif: 'JetBrains Mono', ui-monospace, monospace;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --cursor-trail-dot: rgb(255 219 0 / 55%);
   /* 抽象档扩展：装饰层透明度 */
   --abstract-grid-opacity: 0.12;
   --glass-blur: 18px;

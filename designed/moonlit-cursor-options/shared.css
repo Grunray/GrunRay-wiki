@@ -1,0 +1,359 @@
+/* Moonlit Editorial Cursor · 纸面预览共用 */
+
+:root {
+  --paper: #f4f1e8;
+  --surface: #faf8f1;
+  --elev: #ece7d8;
+  --ink: #2b2823;
+  --muted: #6e675b;
+  --faint: #a39a88;
+  --border: #ddd5c2;
+  --accent: #2e6b4f;
+  --accent-muted: #9dbba9;
+  --mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+  --serif: 'Georgia', 'Noto Serif SC', 'Songti SC', serif;
+  --sans: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-preview-theme='dark'] {
+  --paper: #0d1210;
+  --surface: #141a17;
+  --elev: #1c2420;
+  --ink: #e8ede9;
+  --muted: #8a9a92;
+  --faint: #5c6b64;
+  --border: #2b3833;
+  --accent: #8fd6ae;
+  --accent-muted: #4e8a6b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html {
+    cursor: none;
+  }
+
+  .scheme-btn,
+  .theme-btn,
+  a,
+  .project-chip {
+    cursor: pointer;
+  }
+}
+
+body {
+  padding-bottom: 2rem;
+}
+
+.preview-switcher {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  padding: 0.55rem 0.85rem;
+  background: color-mix(in srgb, var(--paper) 92%, var(--ink));
+  border-bottom: 1px solid var(--border);
+  font-size: 0.72rem;
+}
+
+.preview-switcher .brand {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-right: 0.25rem;
+}
+
+.scheme-btn,
+.theme-btn {
+  padding: 0.28rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  cursor: pointer;
+  transition:
+    background 0.2s var(--ease),
+    color 0.2s var(--ease),
+    border-color 0.2s var(--ease);
+}
+
+.scheme-btn:hover,
+.theme-btn:hover {
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+
+.scheme-btn.on,
+.theme-btn.on {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+}
+
+.preview-switcher .sep {
+  color: var(--faint);
+  margin: 0 0.15rem;
+}
+
+.preview-switcher .hint {
+  color: var(--faint);
+  font-size: 0.65rem;
+  margin-left: auto;
+}
+
+.variant {
+  display: block;
+  padding: 1rem 1.25rem 2rem;
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.meta-note {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.meta-note b {
+  color: var(--ink);
+}
+
+.meta-note .tag {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--accent);
+}
+
+.mock-page {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  overflow: hidden;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--ink) 4%, transparent);
+}
+
+.mock-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+}
+
+.mock-nav-brand {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.mock-nav-links {
+  display: flex;
+  gap: 0.65rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.mock-nav-links .on {
+  color: var(--accent);
+}
+
+.mock-hero {
+  padding: 1.25rem 1.25rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.mock-kicker {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  color: var(--faint);
+  margin-bottom: 0.35rem;
+}
+
+.mock-hero h1 {
+  font-family: var(--serif);
+  font-size: 1.65rem;
+  font-weight: 600;
+  margin: 0 0 0.35rem;
+  line-height: 1.25;
+}
+
+.mock-hero p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.mock-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.mock-col {
+  padding: 1rem 1.25rem;
+}
+
+.mock-col + .mock-col {
+  border-left: 1px solid var(--border);
+}
+
+.mock-col h2 {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: var(--faint);
+  margin: 0 0 0.75rem;
+}
+
+.toc-row {
+  display: block;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.2s ease;
+}
+
+.toc-row:last-child {
+  border-bottom: none;
+}
+
+.toc-row:hover {
+  color: var(--accent);
+}
+
+.toc-row h3 {
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  margin: 0 0 0.2rem;
+  font-weight: 600;
+}
+
+.toc-row .meta {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--faint);
+}
+
+.project-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  cursor: pointer;
+  background: var(--paper);
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.project-chip:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  color: var(--accent);
+}
+
+.demo-panel {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.demo-panel strong {
+  color: var(--ink);
+}
+
+#cursor-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 50;
+}
+
+@media (max-width: 720px) {
+  .mock-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mock-col + .mock-col {
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+
+  .preview-switcher .hint {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+  #cursor-canvas {
+    display: none;
+  }
+
+  .preview-switcher .hint::after {
+    content: ' · 触屏设备已隐藏 Canvas';
+  }
+}
+
+.variant.scheme-d .mock-hero {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, #1a2a38 18%, var(--surface)) 0%,
+    var(--surface) 55%
+  );
+}
+
+.variant.scheme-d .demo-panel {
+  border-color: color-mix(in srgb, var(--accent) 25%, var(--border));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scheme-btn,
+  .theme-btn,
+  .toc-row,
+  .project-chip {
+    transition: none;
+  }
+}

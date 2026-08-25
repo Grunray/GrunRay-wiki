@@ -1,47 +1,33 @@
 /**
- * 自 designed/cursor 迁入的文字拖尾样式（可通过 --cursor-trail-text / --cursor-trail-glow 随主题微调）
+ * 星座月相光标：全屏 Canvas，不拦截点击。
+ * 旧字母拖尾令牌（如 --cursor-trail-dot）已删除；语义见 DESIGN.md §11。
  */
-.cursor-trail-layer {
+.cursor-trail-canvas {
   position: fixed;
   inset: 0;
+  width: 100vw;
+  height: 100vh;
   pointer-events: none;
   z-index: 9999;
 }
 
-.cursor-trail {
-  position: absolute;
-  top: 0;
-  left: 20px;
-  pointer-events: none;
+@media (pointer: fine) {
+  html.moonlit-cursor-on {
+    cursor: none;
+  }
+
+  html.moonlit-cursor-on.moonlit-cursor-input,
+  html.moonlit-cursor-on.moonlit-cursor-input * {
+    cursor: auto;
+  }
+
+  html.moonlit-cursor-on.moonlit-cursor-input :is(input, textarea, [contenteditable='true']) {
+    cursor: text;
+  }
 }
 
-.cursor-trail__char {
-  position: absolute;
-  font-size: 2em;
-  color: var(--cursor-trail-text, #00ff9a);
-  text-shadow:
-    0 0 15px var(--cursor-trail-glow, #00ff9a),
-    0 0 50px var(--cursor-trail-glow, #00ff9a);
-  transform: translate(-50%, -50%);
-  will-change: transform;
-  /* 英文等宽 + 中文回退；不再 text-transform，保留 props.text 原样大小写与中文字形 */
-  font-family:
-    'Courier New',
-    Courier,
-    ui-monospace,
-    monospace,
-    'PingFang SC',
-    'Microsoft YaHei',
-    'Noto Sans SC',
-    sans-serif;
-}
-
-/*
- * 触摸设备没有持续的 pointermove，拖尾字符会停在左上角堆成「大字残影」，
- * 且该特效本身依赖鼠标移动，在手机上无意义 —— 窄屏或触摸设备一律隐藏。
- */
 @media (max-width: 768px), (hover: none) and (pointer: coarse) {
-  .cursor-trail-layer {
+  .cursor-trail-canvas {
     display: none;
   }
 }

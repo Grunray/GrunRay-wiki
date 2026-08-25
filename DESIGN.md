@@ -165,3 +165,24 @@
 3. 标题 serif、正文 sans、元数据 mono。
 4. 列表像目录，不像仪表盘。
 5. 抽象档不动。
+
+## 11. Pointer & Cursor Trail（星座月相）
+
+已选定并合入生产：**方案 D · 星座月相**（Columbina 线稿 + Damselette 热点 + 月相点拖尾）。原型在 `designed/moonlit-cursor-options/`；运行时是单全屏 Canvas + 单 rAF（`useMoonlitCursor` + `CursorTrail.vue`）。
+
+### 视觉契约
+
+- 拖尾只有月相圆点，**无连线**；idle 从末端收回；顶满时羽状微粒散开。克制、低饱和，不抢正文。
+- 悬停 **link**（`.toc-row`、文章链接）：虹月·恒月·霜月内收，虹月近读。调参：`frontend/src/cursor/moonlitCursorConfig.ts` 的 `CONSTELLATION_HOVER_TUNING.link`。
+- 悬停 **project**（项目卡、`.timeline-card`）：同一三月，外张、霜月更清楚。调参：`CONSTELLATION_HOVER_TUNING.project`。
+- 点击 **祈愿**：指针完全淡出 → `wish.svg` 显现 → 轨道虚线+节点圆旋转 → 多颗 `Primogem` 从圆内侧散落（青白 / 薰衣草 / 粉）。已替换旧 `water.svg` 水纹。
+- 静憩：指针停驻 ≥2s，Columbina / Damselette 淡出，切 `sleep.svg` 月摇篮 + `Kuuhenki.svg` 推摇；月光晕与银河落尘在世界坐标，不随月弯摇。
+- 浅色纸面月光偏冷灰蓝；深色/abstract 用 cyan 线稿。强调色仍只给 UI 交互点，拖尾不占用 `accent`。
+
+### 行为契约
+
+- 仅 `pointer: fine` 启用；触屏不挂载。
+- `prefers-reduced-motion` 或顶栏关闭：不挂载 Canvas（`ui.cursorTrailActive`）。
+- 输入框 / `contenteditable` / `cursor: text`：恢复系统光标，不画自定义指针。
+- Canvas `pointer-events: none`，不挡 hit-test；坐标不进 Vue 响应式。
+- 静止无动画时 rAF 休眠，`pointermove` 唤醒。

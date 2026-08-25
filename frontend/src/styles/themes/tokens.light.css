@@ -24,7 +24,6 @@
   --font-serif:
     'Playfair Display', 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', serif;
   --font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, 'Courier New', monospace;
-  --cursor-trail-dot: rgb(46 107 79 / 30%);
   /* 纸面微透（沿用 glass 键名，材质已改：低模糊 + 近不透明） */
   --glass-blur: 8px;
   --glass-nav-blur: 10px;
