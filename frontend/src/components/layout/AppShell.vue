@@ -12,6 +12,7 @@ import {
 } from '@/composables/useHeaderToolbarLayoutShift'
 import { useNavScrollCompact } from '@/composables/useNavScrollCompact'
 import { persistLocale } from '@/i18n'
+import '@/styles/nav-toolbar.css'
 
 import ChevronUpNavIcon from '@/components/icons/ChevronUpNavIcon.vue'
 import MusicNavIcon from '@/components/icons/MusicNavIcon.vue'
@@ -25,6 +26,7 @@ import FooterGrunRayPanel from './FooterGrunRayPanel.vue'
 import ScrollProgress from './ScrollProgress.vue'
 import SiteNav from './SiteNav.vue'
 import ThemeDayNightToggle from './ThemeDayNightToggle.vue'
+import PhotoBgBlurAdjuster, { type PhotoBgBlurAnchorRect } from './PhotoBgBlurAdjuster.vue'
 
 import { useUiStore } from '@/stores/ui'
 
@@ -46,6 +48,29 @@ const showMusicInBar = computed(
 const localeBtnTitle = computed(() =>
   locale.value === 'zh' ? t('nav.localeTitleEn') : t('nav.localeTitleZh'),
 )
+
+const photoBgTipOn = computed(
+  () => `${t('nav.photoBgOn')} · ${t('nav.photoBgBlurHint')}`,
+)
+const photoBgTipOff = computed(
+  () => `${t('nav.photoBgOff')} · ${t('nav.photoBgBlurHint')}`,
+)
+
+const photoBlurAdjusterOpen = ref(false)
+const photoBlurAnchorRect = ref<PhotoBgBlurAnchorRect | null>(null)
+
+function openPhotoBlurAdjuster(ev: MouseEvent) {
+  ev.preventDefault()
+  ev.stopPropagation()
+  const el = ev.currentTarget
+  if (!(el instanceof HTMLElement)) return
+  photoBlurAnchorRect.value = el.getBoundingClientRect()
+  photoBlurAdjusterOpen.value = true
+}
+
+function closePhotoBlurAdjuster() {
+  photoBlurAdjusterOpen.value = false
+}
 
 
 const overflowOpen = ref(false)
@@ -496,11 +521,13 @@ function onRouteEnter(el: Element, done: () => void) {
           <SiteNav />
         </div>
         <div ref="headerRightRef" class="header-right">
-          <div class="header-toolbar-slot" data-toolbar-flip="theme">
-            <ThemeDayNightToggle class="header-theme-toggle" />
-          </div>
-          <!-- 三个圆形工具共用一个 flex 子项，避免各自占位时与 header-right 的 gap 叠成「假空白」 -->
-          <div class="header-toolbar-cluster">
+          <div class="header-toolbar-capsule">
+            <div class="header-toolbar-slot" data-toolbar-flip="theme">
+              <ThemeDayNightToggle class="header-theme-toggle" />
+            </div>
+            <span class="header-toolbar-capsule__divider" aria-hidden="true" />
+            <!-- 三个圆形工具共用一个 flex 子项，避免各自占位时与 header-right 的 gap 叠成「假空白」 -->
+            <div class="header-toolbar-cluster">
             <div class="header-toolbar-slot-contents">
               <Transition
                 name="nav-toolbar-tool"
@@ -519,14 +546,16 @@ function onRouteEnter(el: Element, done: () => void) {
                   }"
                   data-toolbar-flip="photo"
                   aria-pressed="true"
-                  :title="t('nav.photoBgOff')"
+                  :data-nav-tip="photoBgTipOff"
                   :aria-label="t('nav.photoBgOff')"
                   @animationend="onToolbarSlotSpringEnd($event, 'photo')"
+                  @contextmenu="openPhotoBlurAdjuster"
                   @click="ui.togglePhotoBackground()"
                 >
                   <span class="photo-bg-nav-btn-icon" aria-hidden="true">
                     <PhotoBgNavIcon />
                   </span>
+                  <span class="nav-pill-grow-line" aria-hidden="true" />
                 </button>
               </Transition>
             </div>
@@ -548,7 +577,7 @@ function onRouteEnter(el: Element, done: () => void) {
                   }"
                   data-toolbar-flip="trail"
                   aria-pressed="true"
-                  :title="t('nav.trailOff')"
+                  :data-nav-tip="t('nav.trailOff')"
                   :aria-label="t('nav.trailOff')"
                   @animationend="onToolbarSlotSpringEnd($event, 'trail')"
                   @click="toggleCursorTrail"
@@ -556,6 +585,7 @@ function onRouteEnter(el: Element, done: () => void) {
                   <span class="trail-toggle-icon" aria-hidden="true">
                     <TrailNavIcon />
                   </span>
+                  <span class="nav-pill-grow-line" aria-hidden="true" />
                 </button>
               </Transition>
             </div>
@@ -580,7 +610,7 @@ function onRouteEnter(el: Element, done: () => void) {
                   }"
                   data-toolbar-flip="music"
                   :aria-expanded="musicPlayerMinimized ? 'false' : 'true'"
-                  :title="musicPlayerMinimized ? t('nav.musicExpand') : t('nav.musicCollapse')"
+                  :data-nav-tip="musicPlayerMinimized ? t('nav.musicExpand') : t('nav.musicCollapse')"
                   :aria-label="musicPlayerMinimized ? t('nav.musicExpand') : t('nav.musicCollapse')"
                   @animationend="onToolbarSlotSpringEnd($event, 'music')"
                   @click="onMusicNavClick"
@@ -588,20 +618,24 @@ function onRouteEnter(el: Element, done: () => void) {
                   <span class="music-nav-btn-icon" aria-hidden="true">
                     <MusicNavIcon />
                   </span>
+                  <span class="nav-pill-grow-line" aria-hidden="true" />
                 </button>
               </Transition>
             </div>
-          </div>
-          <div class="header-toolbar-slot" data-toolbar-flip="locale">
-            <button
-              type="button"
-              class="locale-nav-btn"
-              :title="localeBtnTitle"
-              :aria-label="t('ui.locale')"
-              @click="toggleLocale"
-            >
-              <span class="locale-nav-btn-label" aria-hidden="true">{{ locale === 'zh' ? 'EN' : '中' }}</span>
-            </button>
+            </div>
+            <span class="header-toolbar-capsule__divider" aria-hidden="true" />
+            <div class="header-toolbar-slot" data-toolbar-flip="locale">
+              <button
+                type="button"
+                class="locale-nav-btn"
+                :data-nav-tip="localeBtnTitle"
+                :aria-label="t('ui.locale')"
+                @click="toggleLocale"
+              >
+                <span class="locale-nav-btn-label" aria-hidden="true">{{ locale === 'zh' ? 'EN' : '中' }}</span>
+                <span class="nav-pill-grow-line" aria-hidden="true" />
+              </button>
+            </div>
           </div>
           <div ref="overflowWrapRef" class="nav-overflow-wrap header-toolbar-slot" data-toolbar-flip="overflow">
             <button
@@ -614,7 +648,7 @@ function onRouteEnter(el: Element, done: () => void) {
               }"
               :aria-expanded="overflowOpen ? 'true' : 'false'"
               aria-controls="nav-overflow-panel"
-              :title="overflowOpen ? t('nav.overflowHide') : t('nav.overflowShow')"
+              :data-nav-tip="overflowOpen ? t('nav.overflowHide') : t('nav.overflowShow')"
               :aria-label="t('nav.overflowLabel')"
               @animationend="onOverflowCuePopAnimationEnd"
               @click="toggleNavOverflow"
@@ -622,12 +656,13 @@ function onRouteEnter(el: Element, done: () => void) {
               <span class="nav-overflow-trigger-icon" aria-hidden="true">
                 <ChevronUpNavIcon :open="overflowOpen" />
               </span>
+              <span class="nav-pill-grow-line" aria-hidden="true" />
             </button>
             <Transition name="nav-overflow-panel">
               <div
                 v-show="overflowOpen"
                 id="nav-overflow-panel"
-                class="nav-overflow-panel card"
+                class="nav-overflow-panel card card-overflow-visible"
                 role="region"
                 :aria-label="t('nav.overflowRegion')"
               >
@@ -642,13 +677,15 @@ function onRouteEnter(el: Element, done: () => void) {
                     type="button"
                     class="photo-bg-nav-btn"
                     aria-pressed="false"
-                    :title="t('nav.photoBgOn')"
+                    :data-nav-tip="photoBgTipOn"
                     :aria-label="t('nav.photoBgOn')"
+                    @contextmenu="openPhotoBlurAdjuster"
                     @click="startPhotoFromPanel"
                   >
                     <span class="photo-bg-nav-btn-icon" aria-hidden="true">
                       <PhotoBgNavIcon />
                     </span>
+                    <span class="nav-pill-grow-line" aria-hidden="true" />
                   </button>
                 </Transition>
                 <Transition
@@ -661,13 +698,14 @@ function onRouteEnter(el: Element, done: () => void) {
                     type="button"
                     class="trail-toggle"
                     aria-pressed="false"
-                    :title="t('nav.trailOn')"
+                    :data-nav-tip="t('nav.trailOn')"
                     :aria-label="t('nav.trailOn')"
                     @click="startTrailFromPanel"
                   >
                     <span class="trail-toggle-icon" aria-hidden="true">
                       <TrailNavIcon />
                     </span>
+                    <span class="nav-pill-grow-line" aria-hidden="true" />
                   </button>
                 </Transition>
                 <Transition
@@ -680,31 +718,33 @@ function onRouteEnter(el: Element, done: () => void) {
                     type="button"
                     class="music-nav-btn music-nav-btn--idle"
                     aria-expanded="false"
-                    :title="t('nav.musicExpand')"
+                    :data-nav-tip="t('nav.musicExpand')"
                     :aria-label="t('nav.musicExpand')"
                     @click="startMusicFromPanel"
                   >
                     <span class="music-nav-btn-icon" aria-hidden="true">
                       <MusicNavIcon />
                     </span>
+                    <span class="nav-pill-grow-line" aria-hidden="true" />
                   </button>
                 </Transition>
                 <button
                   type="button"
                   class="splash-nav-btn"
-                  :title="t('splash.replayTitle')"
+                  :data-nav-tip="t('splash.replayTitle')"
                   :aria-label="t('splash.replayLabel')"
                   @click="closeNavOverflow(); onSplashNavClick()"
                 >
                   <span class="splash-nav-btn-icon" aria-hidden="true">
                     <SnailNavIcon />
                   </span>
+                  <span class="nav-pill-grow-line" aria-hidden="true" />
                 </button>
                 </div>
               </div>
             </Transition>
           </div>
-          <span v-if="ui.prefersReducedMotion" class="hint">{{ t('ui.cursorTrail') }} — 系统减少动效</span>
+          <span v-if="ui.prefersReducedMotion" class="hint">{{ t('ui.cursorTrailReduced') }}</span>
         </div>
       </div>
       </div>
@@ -721,6 +761,11 @@ function onRouteEnter(el: Element, done: () => void) {
 
     <CursorTrail />
     <BackToTop />
+    <PhotoBgBlurAdjuster
+      :open="photoBlurAdjusterOpen"
+      :anchor-rect="photoBlurAnchorRect"
+      @close="closePhotoBlurAdjuster"
+    />
   </div>
 </template>
 
@@ -731,14 +776,14 @@ function onRouteEnter(el: Element, done: () => void) {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.65rem 1rem;
+  gap: 0.45rem 0.75rem;
 }
 
 .header-left {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.65rem 1.25rem;
+  gap: 0.45rem 0.85rem;
   min-width: 0;
   flex: 1;
 }
@@ -868,7 +913,7 @@ function onRouteEnter(el: Element, done: () => void) {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.5rem 0.85rem;
+  gap: 0.4rem 0.5rem;
   margin-left: auto;
   flex-shrink: 0;
 }
@@ -932,7 +977,7 @@ function onRouteEnter(el: Element, done: () => void) {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.04rem;
   min-width: 0;
 }
 
@@ -944,7 +989,7 @@ function onRouteEnter(el: Element, done: () => void) {
 .header-toolbar-cluster .toolbar-shift-ghost {
   flex-shrink: 0;
   width: 2rem;
-  height: 2rem;
+  height: 1.72rem;
   visibility: hidden;
   pointer-events: none;
 }
@@ -968,58 +1013,19 @@ function onRouteEnter(el: Element, done: () => void) {
 .nav-overflow-wrap {
   position: relative;
   flex-shrink: 0;
+  overflow: visible;
 }
 
-.nav-overflow-trigger {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid var(--glass-nav-border);
-  background: color-mix(in srgb, var(--glass-nav-bg) 76%, #8a8a8a);
-  color: #8d9298;
-  border-radius: 50%;
-  padding: 0;
-  cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
-}
-
-.nav-overflow-trigger:hover {
-  color: var(--color-text-muted);
-  border-color: color-mix(in srgb, var(--color-accent) 42%, var(--glass-nav-border));
-  background: color-mix(in srgb, var(--glass-nav-bg) 88%, transparent);
-}
-
-.nav-overflow-trigger.is-open {
-  color: var(--color-text-muted);
-  border-color: color-mix(in srgb, var(--color-accent) 38%, var(--glass-nav-border));
-  background: color-mix(in srgb, var(--glass-nav-bg) 82%, transparent);
-}
-
-/* 提示阶段：接近 music-open 但更柔和，径向渐变 + 低调光圈；弹跳略慢于顶栏工具 */
 .nav-overflow-trigger.nav-overflow-trigger--cue-music-open {
-  color: var(--color-text-muted);
-  border-color: color-mix(in srgb, var(--color-accent) 26%, var(--glass-nav-border));
-  background:
-    radial-gradient(
-      120% 120% at 30% 22%,
-      color-mix(in srgb, var(--glass-nav-bg) 72%, color-mix(in srgb, var(--color-accent) 12%, transparent)) 0%,
-      color-mix(in srgb, var(--glass-nav-bg) 84%, transparent) 52%,
-      color-mix(in srgb, var(--glass-nav-bg) 78%, color-mix(in srgb, var(--color-accent) 6%, transparent)) 100%
-    );
+  color: #6fad87;
+  border-color: rgb(180 210 192 / 55%);
+  background-color: rgb(204 229 213 / 42%);
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--color-accent) 12%, transparent),
-    0 0 10px color-mix(in srgb, var(--color-accent) 8%, transparent);
+    inset 0 1px 0 rgb(255 255 255 / 75%),
+    0 4px 14px rgb(170 205 185 / 15%);
   transition:
     border-color 0.34s ease,
-    background 0.34s ease,
+    background-color 0.34s ease,
     color 0.34s ease,
     box-shadow 0.34s ease;
 }
@@ -1033,23 +1039,14 @@ function onRouteEnter(el: Element, done: () => void) {
   0% {
     transform: scale(0);
     opacity: 0.9;
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--color-accent) 8%, transparent),
-      0 0 6px color-mix(in srgb, var(--color-accent) 5%, transparent);
   }
   58% {
-    transform: scale(1.16);
+    transform: scale(1.12);
     opacity: 1;
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--color-accent) 14%, transparent),
-      0 0 14px color-mix(in srgb, var(--color-accent) 10%, transparent);
   }
   100% {
     transform: scale(1);
     opacity: 1;
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--color-accent) 11%, transparent),
-      0 0 10px color-mix(in srgb, var(--color-accent) 7%, transparent);
   }
 }
 
@@ -1074,6 +1071,12 @@ function onRouteEnter(el: Element, done: () => void) {
   min-width: 9rem;
   padding: 0.65rem 0.7rem;
   pointer-events: auto;
+  overflow: visible;
+}
+
+.nav-overflow-panel-tools [data-nav-tip]:hover,
+.nav-overflow-panel-tools [data-nav-tip]:focus-visible {
+  z-index: 2;
 }
 
 .nav-overflow-panel-tools {
@@ -1189,7 +1192,7 @@ function onRouteEnter(el: Element, done: () => void) {
 
 .brand {
   font-weight: 700;
-  font-size: 1.2rem;
+  font-size: 1.08rem;
   color: var(--color-text);
   text-decoration: none;
   flex-shrink: 0;
@@ -1202,275 +1205,7 @@ function onRouteEnter(el: Element, done: () => void) {
 }
 
 .glass-nav-sticky-wrap[data-nav-compact='true'] .brand {
-  font-size: 1.05rem;
-}
-
-.trail-toggle {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid var(--glass-nav-border);
-  background: color-mix(in srgb, var(--glass-nav-bg) 76%, #8a8a8a);
-  color: #8d9298;
-  border-radius: 50%;
-  padding: 0;
-  cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
-}
-
-.trail-toggle:hover {
-  color: var(--color-text-muted);
-  border-color: color-mix(in srgb, var(--color-accent) 42%, var(--glass-nav-border));
-  background: color-mix(in srgb, var(--glass-nav-bg) 88%, transparent);
-}
-
-.trail-toggle-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 0;
-  transition: filter 0.2s ease, transform 0.2s ease;
-}
-
-.trail-toggle:hover .trail-toggle-icon {
-  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--color-accent) 55%, transparent));
-  transform: scale(1.03);
-}
-
-.trail-toggle.is-active {
-  color: #fff6cf;
-  border-color: color-mix(in srgb, var(--color-accent) 55%, var(--glass-nav-border));
-  background: linear-gradient(135deg, #8f7cff 0%, #4fc3ff 46%, #7fffd0 100%);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--color-accent) 35%, transparent),
-    0 0 14px color-mix(in srgb, var(--color-accent) 45%, transparent);
-}
-
-.trail-toggle.is-active .trail-toggle-icon {
-  filter:
-    drop-shadow(0 0 6px color-mix(in srgb, var(--color-accent) 80%, white))
-    drop-shadow(0 0 14px color-mix(in srgb, var(--color-accent) 58%, transparent));
-}
-
-.photo-bg-nav-btn {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid var(--glass-nav-border);
-  background: color-mix(in srgb, var(--glass-nav-bg) 76%, #8a8a8a);
-  color: #8d9298;
-  border-radius: 50%;
-  padding: 0;
-  cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
-}
-
-.photo-bg-nav-btn:hover {
-  color: var(--color-text-muted);
-  border-color: color-mix(in srgb, var(--color-accent) 42%, var(--glass-nav-border));
-  background: color-mix(in srgb, var(--glass-nav-bg) 88%, transparent);
-}
-
-.photo-bg-nav-btn-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 0;
-  transition: filter 0.2s ease, transform 0.2s ease;
-}
-
-.photo-bg-nav-btn:hover .photo-bg-nav-btn-icon {
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-accent) 50%, transparent));
-}
-
-.photo-bg-nav-btn.is-active {
-  color: #fff6cf;
-  border-color: color-mix(in srgb, var(--color-accent) 55%, var(--glass-nav-border));
-  background: linear-gradient(135deg, #8f7cff 0%, #4fc3ff 46%, #7fffd0 100%);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--color-accent) 35%, transparent),
-    0 0 14px color-mix(in srgb, var(--color-accent) 45%, transparent);
-}
-
-.photo-bg-nav-btn.is-active .photo-bg-nav-btn-icon {
-  filter:
-    drop-shadow(0 0 6px color-mix(in srgb, var(--color-accent) 80%, white))
-    drop-shadow(0 0 14px color-mix(in srgb, var(--color-accent) 58%, transparent));
-}
-
-.music-nav-btn,
-.splash-nav-btn {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid var(--glass-nav-border);
-  background: color-mix(in srgb, var(--glass-nav-bg) 76%, #8a8a8a);
-  color: #8d9298;
-  border-radius: 50%;
-  padding: 0;
-  cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
-}
-
-.music-nav-btn:hover,
-.splash-nav-btn:hover {
-  color: var(--color-text-muted);
-  border-color: color-mix(in srgb, var(--color-accent) 42%, var(--glass-nav-border));
-  background: color-mix(in srgb, var(--glass-nav-bg) 88%, transparent);
-}
-
-.splash-nav-btn-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 0;
-  transition: filter 0.2s ease, transform 0.2s ease;
-}
-
-.splash-nav-btn:hover .splash-nav-btn-icon {
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-accent) 50%, transparent));
-  transform: scale(1.06);
-}
-
-.music-nav-btn-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 0;
-  transition: filter 0.2s ease, transform 0.2s ease;
-}
-
-.music-nav-btn:hover .music-nav-btn-icon {
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-accent) 50%, transparent));
-}
-
-.music-nav-btn--idle {
-  color: #7a7f85;
-  opacity: 0.82;
-}
-
-.music-nav-btn--open {
-  color: var(--color-text-muted);
-  border-color: color-mix(in srgb, var(--color-accent) 28%, var(--glass-nav-border));
-  background: color-mix(in srgb, var(--glass-nav-bg) 82%, transparent);
-}
-
-.music-nav-btn--playing {
-  color: #fff6cf;
-  border-color: color-mix(in srgb, var(--color-accent) 55%, var(--glass-nav-border));
-  background: linear-gradient(135deg, #8f7cff 0%, #4fc3ff 46%, #7fffd0 100%);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--color-accent) 35%, transparent),
-    0 0 14px color-mix(in srgb, var(--color-accent) 45%, transparent);
-  animation: music-nav-breathe 1.15s ease-in-out infinite;
-}
-
-.music-nav-btn--playing .music-nav-btn-icon {
-  animation: music-nav-icon-pulse 1.15s ease-in-out infinite;
-}
-
-@keyframes music-nav-icon-pulse {
-  0%,
-  100% {
-    transform: translateY(0);
-    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--color-accent) 65%, white));
-  }
-  50% {
-    transform: translateY(-1px);
-    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-accent) 70%, transparent));
-  }
-}
-
-@keyframes music-nav-breathe {
-  0%,
-  100% {
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--color-accent) 32%, transparent),
-      0 0 12px color-mix(in srgb, var(--color-accent) 38%, transparent);
-  }
-  50% {
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--color-accent) 46%, transparent),
-      0 0 20px color-mix(in srgb, var(--color-accent) 55%, transparent);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .music-nav-btn--playing {
-    animation: none;
-  }
-
-  .music-nav-btn--playing .music-nav-btn-icon {
-    animation: none;
-  }
-
-  .music-nav-btn:hover,
-  .splash-nav-btn:hover,
-  .photo-bg-nav-btn:hover,
-  .nav-overflow-trigger:hover,
-  .locale-nav-btn:hover {
-    transform: none;
-  }
-}
-
-.locale-nav-btn {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid color-mix(in srgb, var(--color-accent) 28%, var(--glass-nav-border));
-  background: color-mix(in srgb, var(--glass-nav-bg) 82%, transparent);
-  color: var(--color-text-muted);
-  border-radius: 50%;
-  padding: 0;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
-}
-
-.locale-nav-btn:hover {
-  border-color: color-mix(in srgb, var(--color-accent) 42%, var(--glass-nav-border));
-  background: color-mix(in srgb, var(--glass-nav-bg) 88%, transparent);
-  color: var(--color-text-muted);
-}
-
-.locale-nav-btn-label {
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  line-height: 1;
-  user-select: none;
+  font-size: 1rem;
 }
 
 .hint {
@@ -1485,9 +1220,9 @@ function onRouteEnter(el: Element, done: () => void) {
 </style>
 
 <style>
-/* 顶栏内主题按钮：紧凑态略缩小（class 会合并到 ThemeDayNightToggle 根 button） */
+/* 顶栏内主题按钮：紧凑态略缩小 */
 .glass-nav-sticky-wrap[data-nav-compact='true'] .header-theme-toggle.theme-nav-btn {
-  transform: scale(0.92);
-  transform-origin: center center;
+  padding: 0.32rem 0.46rem;
+  min-height: 1.62rem;
 }
 </style>
