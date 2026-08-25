@@ -11,6 +11,7 @@ import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
 import { ensureProjectsLoaded, listProjectsPublic } from '@/services/contentRepository'
 import '@/styles/page-enter-home.css'
+import '@/styles/page-toc-row.css'
 import { useUiStore } from '@/stores/ui'
 import type { Post, Project } from '@/types/content'
 import { readSessionJson, writeSessionJson } from '@/utils/sessionJsonCache'
@@ -632,92 +633,6 @@ onMounted(() => {
 
 .toc-side .toc-head {
   padding: 0 0 0.6rem;
-}
-
-.toc-row {
-  display: block;
-  padding: 0.8rem 1.65rem;
-  border-radius: var(--radius-sm);
-  text-decoration: none;
-  color: inherit;
-  transition: background 0.2s ease;
-}
-
-.toc-row + .toc-row {
-  border-top: 1px solid var(--color-border);
-}
-
-.toc-row:hover {
-  background: color-mix(in srgb, var(--color-bg-elevated) 52%, transparent);
-  text-decoration: none;
-}
-
-.toc-row:hover .toc-title {
-  color: var(--color-accent);
-}
-
-.toc-row:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: -2px;
-}
-
-.toc-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.05em;
-  color: var(--color-text-muted);
-}
-
-.toc-status {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-
-.toc-status--on {
-  background: var(--color-accent);
-}
-
-.toc-status--off {
-  background: var(--color-border);
-}
-
-.toc-year {
-  margin-left: auto;
-  color: var(--color-text-muted);
-  opacity: 0.8;
-}
-
-.toc-title {
-  margin: 0.25rem 0 0;
-  font-family: var(--font-serif);
-  font-size: 1.1rem;
-  font-weight: 600;
-  line-height: 1.42;
-  color: var(--color-text);
-  transition: color 0.2s ease;
-}
-
-.toc-summary {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  margin: 0.28rem 0 0;
-  font-size: 0.9rem;
-  line-height: 1.65;
-  color: var(--color-text-muted);
-}
-
-.toc-empty {
-  margin: 0;
-  padding: 1.4rem 1.65rem;
-  color: var(--color-text-muted);
-  font-size: 0.88rem;
 }
 
 /* —— 站长自述：目录卡右列的纯内容 —— */

@@ -87,8 +87,10 @@ useSeoMeta(() => {
       <RouterLink :to="`/projects/${project.slug}`">← {{ project.title }}</RouterLink>
     </p>
     <h1 class="h">{{ t('projects.notes') }}</h1>
-    <PostCard v-for="p in posts" :key="p.id" :post="p" />
-    <p v-if="!posts.length" class="empty">暂无笔记。</p>
+    <section class="notes-toc" :aria-label="t('projects.notes')">
+      <PostCard v-for="p in posts" :key="p.id" :post="p" />
+      <p v-if="!posts.length" class="toc-empty">{{ t('projects.notesEmpty') }}</p>
+    </section>
   </div>
   <p v-else class="empty">{{ t('common.notFound') }}</p>
 </template>
@@ -100,6 +102,11 @@ useSeoMeta(() => {
 .h {
   margin: 0 0 1rem;
 }
+
+.notes-toc {
+  border-top: 1px solid var(--color-border);
+}
+
 .empty {
   color: var(--color-text-muted);
 }
