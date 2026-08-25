@@ -63,8 +63,8 @@ layout:
   - type: gallery
     title: 界面截图
     images:
-      - /api/media/files/film/projects/hltv-news-title-crawler\exp.1.png
-      - /api/media/files/film/projects/hltv-news-title-crawler\exp.2.3.png
+      - /api/media/files/film/projects/hltv-news-title-crawler/exp.1.png
+      - /api/media/files/film/projects/hltv-news-title-crawler/exp.2.3.png
   - type: markdown
     title: 开发回顾
     body: |

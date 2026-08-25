@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ProjectLayoutBlock } from '@/types/content'
 
-import AppImage from '@/components/ui/AppImage.vue'
+import GalleryImagePreview from '@/components/project/GalleryImagePreview.vue'
 
 defineProps<{ block: ProjectLayoutBlock }>()
 </script>
@@ -11,9 +11,12 @@ defineProps<{ block: ProjectLayoutBlock }>()
   <section class="block card">
     <h2 v-if="block.title" class="title">{{ block.title }}</h2>
     <div v-if="block.images?.length" class="grid">
-      <figure v-for="(src, i) in block.images" :key="i" class="fig">
-        <AppImage :src="src" :alt="`${block.title ?? 'gallery'} ${i + 1}`" ratio="16/10" />
-      </figure>
+      <GalleryImagePreview
+        v-for="(src, i) in block.images"
+        :key="`${src}-${i}`"
+        :src="src"
+        :alt="`${block.title ?? 'gallery'} ${i + 1}`"
+      />
     </div>
   </section>
 </template>
@@ -33,17 +36,6 @@ defineProps<{ block: ProjectLayoutBlock }>()
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
   gap: 0.75rem;
-}
-.fig {
-  margin: 0;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-}
-img {
-  display: block;
-  width: 100%;
-  height: auto;
 }
 
 @media (max-width: 900px) {
