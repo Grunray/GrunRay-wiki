@@ -1,0 +1,103 @@
+/* 首页目录行、项目笔记列表等共用：hairline + 轻底色 hover（DESIGN.md §9，不套方案 G） */
+
+.toc-row {
+  display: block;
+  padding: 0.8rem 1.65rem;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.2s ease;
+}
+
+.toc-row + .toc-row {
+  border-top: 1px solid var(--color-border);
+}
+
+.toc-row:hover {
+  background: color-mix(in srgb, var(--color-bg-elevated) 52%, transparent);
+  text-decoration: none;
+}
+
+.toc-row:hover .toc-title {
+  color: var(--color-accent);
+}
+
+.toc-row:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.toc-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.toc-status {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.toc-status--on {
+  background: var(--color-accent);
+}
+
+.toc-status--off {
+  background: var(--color-border);
+}
+
+.toc-year {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  opacity: 0.8;
+}
+
+.toc-title {
+  margin: 0.25rem 0 0;
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.42;
+  color: var(--color-text);
+  transition: color 0.2s ease;
+}
+
+.toc-summary {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0.28rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--color-text-muted);
+}
+
+.toc-note {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+
+.toc-tags {
+  margin: 0.45rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.toc-empty {
+  margin: 0;
+  padding: 1.4rem 1.65rem;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
