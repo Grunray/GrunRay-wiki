@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>112 · 顶栏密度 · 工具全展开防换行</title>
+    <link rel="stylesheet" href="shared.css" />
+  </head>
+  <body>
+    <nav class="preview-switcher" aria-label="方案跳转">
+      <span class="brand">NAV DENSITY</span>
+      <a href="#baseline">参照·现状</a>
+      <a href="#scheme-a">A 缩小按钮</a>
+      <a href="#scheme-b">B 拉宽间距</a>
+      <span class="hint">上下滚动预览 · 宽度 1140px · 工具全在顶栏</span>
+    </nav>
+
+    <!-- 参照：生产方案 G 当前尺寸（易换行） -->
+    <section class="preview-block" id="baseline">
+      <div class="block-head">
+        <h2>
+          参照 · 生产现状（方案 G 当前尺寸）
+          <span class="tag">易换行</span>
+        </h2>
+        <p>
+          药丸 padding / 字号与合入 G 后一致；在约 1140px 宽、右侧主题·照片·拖尾·音乐·语言·溢出全部可见时，左侧导航常被挤成两行。用作对比基线。
+        </p>
+      </div>
+      <p class="frame-label">预览框 1140px · sticky 顶栏随区块滚动</p>
+      <div class="preview-frame">
+        <div id="mount-baseline"></div>
+      </div>
+    </section>
+
+    <!-- 方案 A -->
+    <section class="preview-block" id="scheme-a">
+      <div class="block-head">
+        <h2>
+          方案 A · 缩小药丸与胶囊
+          <span class="tag">改动集中 CSS</span>
+        </h2>
+        <p>
+          整体收紧：药丸 padding 约 −25%、字号 0.78–0.8rem、图标 0.88rem、胶囊内边距与品牌字号同步缩小。左右间距保持紧凑，靠「变瘦」换一行容量。
+        </p>
+      </div>
+      <p class="frame-label">预览框 1140px</p>
+      <div class="preview-frame">
+        <div id="mount-a"></div>
+      </div>
+    </section>
+
+    <!-- 方案 B -->
+    <section class="preview-block" id="scheme-b">
+      <div class="block-head">
+        <h2>
+          方案 B · 拉宽左右间距 + 加宽胶囊
+          <span class="tag">布局弹性</span>
+        </h2>
+        <p>
+          保持 A 参照的字号体感；在 header-inner 加入弹性中部间距（约 2–5.5rem），左右簇不再硬挤。同时加宽两段胶囊的水平 padding，药丸横向 padding 略增，让分段框更「撑开」。
+        </p>
+      </div>
+      <p class="frame-label">预览框 1140px</p>
+      <div class="preview-frame">
+        <div id="mount-b"></div>
+      </div>
+    </section>
+
+    <script src="shared.js"></script>
+  </body>
+</html>

@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN" data-preview-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>111 · 顶栏工具按钮 · 方案对比</title>
+    <link rel="stylesheet" href="shared.css" />
+  </head>
+  <body>
+    <div class="preview-switcher">
+      <span class="brand">NAV TOOLS</span>
+      <button type="button" class="scheme-btn on" data-scheme="a">A 纸面圆钮</button>
+      <button type="button" class="scheme-btn" data-scheme="b">B 墨线胶囊</button>
+      <button type="button" class="scheme-btn" data-scheme="c">C 发丝下划线</button>
+      <button type="button" class="scheme-btn" data-scheme="d">D 圆钮+胶囊</button>
+      <button type="button" class="scheme-btn" data-scheme="e">E 全栏·右侧</button>
+      <button type="button" class="scheme-btn" data-scheme="f">F 全栏·左侧</button>
+      <button type="button" class="scheme-btn" data-scheme="g">G 分段+F</button>
+      <span class="sep">|</span>
+      <button type="button" class="theme-btn on" data-theme="light">浅色</button>
+      <button type="button" class="theme-btn" data-theme="dark">深色</button>
+      <button type="button" class="theme-btn" data-theme="abstract">抽象</button>
+      <span class="hint">A–D 仅工具区 · E–G 整栏统一 · 悬停看状态</span>
+    </div>
+
+    <!-- 方案 A -->
+    <section class="variant scheme-a on" id="variant-a">
+      <p class="meta-note">
+        <b>方案 A · 纸面圆钮</b> 推荐默认。保留圆形布局，去掉彩虹渐变与发光；开启态用 accent 浅填色，与导航 link hover 同纪律。
+        <span class="tag">改动最小</span>
+      </p>
+      <div class="mock-page">
+        <header class="mock-nav">
+          <span class="mock-nav-brand">GrunRay</span>
+          <nav class="mock-nav-links" aria-hidden="true">
+            <span>博客</span>
+            <span class="on">项目</span>
+            <span>关于</span>
+          </nav>
+          <div class="mock-toolbar" id="toolbar-a"></div>
+        </header>
+        <div class="demo-panel">
+          <h2>状态对照</h2>
+          <p>从左到右：默认 · 悬停（把鼠标移上去）· 开启 · 音乐播放中 · 主题当前档 · 语言</p>
+          <div class="state-grid" id="states-a"></div>
+          <div class="compare-old">
+            <h3>现状（生产环境，供对比）</h3>
+            <div class="state-row">
+              <button type="button" class="btn-legacy" aria-label="默认"><span class="ico" data-icon="music"></span></button>
+              <button type="button" class="btn-legacy is-on" aria-label="彩虹开启"><span class="ico" data-icon="trail"></span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 方案 B -->
+    <section class="variant scheme-b" id="variant-b">
+      <p class="meta-note">
+        <b>方案 B · 墨线胶囊</b> 工具收进一条 hairline 胶囊，更像「编辑器工具条」；适合顶栏较挤时。
+        <span class="tag">更紧凑</span>
+      </p>
+      <div class="mock-page">
+        <header class="mock-nav">
+          <span class="mock-nav-brand">GrunRay</span>
+          <nav class="mock-nav-links" aria-hidden="true">
+            <span>博客</span>
+            <span>项目</span>
+            <span>关于</span>
+          </nav>
+          <div class="mock-toolbar" id="toolbar-b"></div>
+        </header>
+        <div class="demo-panel">
+          <h2>状态对照</h2>
+          <p>胶囊内分隔线区分主题区与工具区；抽象档主题钮保留直角黄边。</p>
+          <div class="state-grid" id="states-b"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 方案 C -->
+    <section class="variant scheme-c" id="variant-c">
+      <p class="meta-note">
+        <b>方案 C · 发丝下划线</b> 与主导航 hover 生长线一致；默认几乎无边框，开启态靠底部 accent 线标识。
+        <span class="tag">最克制</span>
+      </p>
+      <div class="mock-page">
+        <header class="mock-nav">
+          <span class="mock-nav-brand">GrunRay</span>
+          <nav class="mock-nav-links" aria-hidden="true">
+            <span>博客</span>
+            <span>项目</span>
+            <span>关于</span>
+          </nav>
+          <div class="mock-toolbar" id="toolbar-c"></div>
+        </header>
+        <div class="demo-panel">
+          <h2>状态对照</h2>
+          <p>无圆形描边墙感；音乐播放用浅底色而非脉冲光晕（动效可在合入时保留现有 breathe，仅改颜色）。</p>
+          <div class="state-grid" id="states-c"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 方案 D -->
+    <section class="variant scheme-d" id="variant-d">
+      <p class="meta-note">
+        <b>方案 D · 圆钮 + 胶囊分组</b> A 的纸面圆形按钮样式，收进 B 的 hairline 胶囊条；主题单独一段，照片/拖尾/音乐一组，语言一组。
+        <span class="tag">A+B 合订</span><span class="tag">推荐</span>
+      </p>
+      <div class="mock-page">
+        <header class="mock-nav">
+          <span class="mock-nav-brand">GrunRay</span>
+          <nav class="mock-nav-links" aria-hidden="true">
+            <span>博客</span>
+            <span>项目</span>
+            <span>关于</span>
+          </nav>
+          <div class="mock-toolbar" id="toolbar-d"></div>
+        </header>
+        <div class="demo-panel">
+          <h2>状态对照</h2>
+          <p>胶囊提供视觉分组，圆钮保留独立描边与 accent 开启态；比纯 A 更整齐，比纯 B 层次更清晰。</p>
+          <div class="state-grid" id="states-d"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 方案 E：整栏统一为右侧圆钮 + 胶囊 -->
+    <section class="variant scheme-e" id="variant-e">
+      <p class="meta-note">
+        <b>方案 E · 全栏统一（右侧风格）</b> 左侧「首页 / 创作 / 社区 / 栖息」也收成 D 同款纸面圆钮，分段胶囊与工具区对齐；图标 + tooltip，当前页 accent 浅填。
+        <span class="tag">消除左右割裂</span>
+      </p>
+      <div class="mock-page">
+        <header class="mock-nav mock-nav--unify">
+          <span class="mock-nav-brand">GrunRay</span>
+          <div class="mock-nav-cluster" id="nav-e"></div>
+          <div class="mock-nav-end">
+            <div class="mock-toolbar mock-toolbar-capsule" id="toolbar-e"></div>
+            <button type="button" class="tool-btn tool-btn--overflow" title="更多" aria-label="更多">
+              <span class="ico" data-icon="overflow"></span>
+            </button>
+          </div>
+        </header>
+        <div class="demo-panel">
+          <h2>整栏预览</h2>
+          <p>主导航与工具区共用圆钮描边、胶囊分组与 accent 开启态；窄屏时两段胶囊可各自换行。</p>
+          <div class="state-grid" id="states-e"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 方案 F：整栏统一为左侧药丸 link -->
+    <section class="variant scheme-f" id="variant-f">
+      <p class="meta-note">
+        <b>方案 F · 全栏统一（左侧风格）</b> 右侧主题 / 工具 / 语言改为 SiteNav 同款药丸 link：透明底、hover 生长线、开启态浅绿填；去掉圆形描边墙感。
+        <span class="tag">最一致</span>
+      </p>
+      <div class="mock-page">
+        <header class="mock-nav mock-nav--unify">
+          <span class="mock-nav-brand">GrunRay</span>
+          <nav class="mock-shell-nav" id="nav-f" aria-label="主导航"></nav>
+          <div class="mock-nav-end">
+            <div class="mock-toolbar mock-toolbar--shell" id="toolbar-f"></div>
+            <button type="button" class="shell-pill shell-pill--tool shell-pill--overflow" title="更多" aria-label="更多">
+              <span class="ico" data-icon="overflow"></span>
+              <span class="grow-line" aria-hidden="true"></span>
+            </button>
+          </div>
+        </header>
+        <div class="demo-panel">
+          <h2>整栏预览</h2>
+          <p>工具钮与「首页」同 padding / 圆角 / 生长线；音乐播放用浅绿底呼吸，语言保留 EN 字标。</p>
+          <div class="state-grid" id="states-f"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 方案 G：分段胶囊 + 左侧药丸风格 -->
+    <section class="variant scheme-g" id="variant-g">
+      <p class="meta-note">
+        <b>方案 G · 分段胶囊 + 左侧统一</b> F 的药丸 link 视觉，加上 E 的分段结构：主导航「首页 | 创作·社区·栖息」一条胶囊，工具区「主题 | 照片·拖尾·音乐 | 语言」另一条；段间 hairline 分隔。
+        <span class="tag">F+E</span><span class="tag">推荐对比</span>
+      </p>
+      <div class="mock-page">
+        <header class="mock-nav mock-nav--unify">
+          <span class="mock-nav-brand">GrunRay</span>
+          <div class="mock-nav-cluster" id="nav-g"></div>
+          <div class="mock-nav-end">
+            <div id="toolbar-g"></div>
+            <button type="button" class="shell-pill shell-pill--tool shell-pill--overflow" title="更多" aria-label="更多">
+              <span class="ico" data-icon="overflow"></span>
+              <span class="grow-line" aria-hidden="true"></span>
+            </button>
+          </div>
+        </header>
+        <div class="demo-panel">
+          <h2>整栏预览</h2>
+          <p>分段只提供分组框，按钮仍是 F 的透明药丸 + 生长线；当前页 / 开启态在胶囊内同样用浅绿填。</p>
+          <div class="state-grid" id="states-g"></div>
+        </div>
+      </div>
+    </section>
+
+    <script src="shared.js"></script>
+  </body>
+</html>

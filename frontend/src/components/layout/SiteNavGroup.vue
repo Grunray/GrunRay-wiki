@@ -182,7 +182,7 @@ watch(
   border-color: rgb(180 210 192 / 55%);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 75%),
-    0 4px 14px rgb(170 205 185 / 15%);
+    0 3px 10px rgb(170 205 185 / 12%);
   animation: shell-nav-group-breath 4s ease-in-out infinite;
 }
 
@@ -197,7 +197,7 @@ watch(
   border-color: color-mix(in srgb, var(--color-accent) 28%, transparent);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 8%),
-    0 4px 14px rgb(0 0 0 / 18%);
+    0 3px 10px rgb(0 0 0 / 14%);
 }
 
 .grow-line {
@@ -223,6 +223,10 @@ watch(
   left: 15%;
 }
 
+.group-trigger.active .grow-line {
+  width: 0;
+}
+
 .leaf-glow {
   position: absolute;
   width: 8px;
@@ -244,10 +248,10 @@ watch(
 @keyframes shell-nav-group-breath {
   0%,
   100% {
-    transform: translateY(-2px) scale(1.015);
+    transform: scale(1);
   }
   50% {
-    transform: translateY(-2px) scale(1.035);
+    transform: scale(1.012);
   }
 }
 

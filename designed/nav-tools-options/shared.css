@@ -1,0 +1,867 @@
+/* 111 顶栏工具按钮 · 纸面预览共用令牌 */
+
+:root {
+  --paper: #f4f1e8;
+  --surface: #faf8f1;
+  --elev: #ece7d8;
+  --ink: #2b2823;
+  --muted: #6e675b;
+  --faint: #a39a88;
+  --border: #ddd5c2;
+  --accent: #2e6b4f;
+  --accent-muted: #9dbba9;
+  --glass-nav-bg: rgb(250 248 241 / 0.88);
+  --glass-nav-border: #d8cfba;
+  --glass-nav-blur: 10px;
+  --mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+  --sans: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --btn-size: 2rem;
+}
+
+[data-preview-theme='dark'] {
+  --paper: #0d1210;
+  --surface: #141a17;
+  --elev: #1c2420;
+  --ink: #e8ede9;
+  --muted: #8a9a92;
+  --faint: #5c6b64;
+  --border: #2b3833;
+  --accent: #8fd6ae;
+  --accent-muted: #4e8a6b;
+  --glass-nav-bg: rgb(13 18 16 / 0.88);
+  --glass-nav-border: #2b3833;
+}
+
+[data-preview-theme='abstract'] {
+  --paper: #0a2330;
+  --surface: #123848;
+  --elev: #167095;
+  --ink: #e8f4f8;
+  --muted: #9db4c0;
+  --faint: #6a8a98;
+  --border: rgb(255 219 0 / 0.32);
+  --accent: #ffdb00;
+  --accent-muted: #d4bc00;
+  --glass-nav-bg: rgb(10 35 48 / 0.78);
+  --glass-nav-border: rgb(255 219 0 / 0.32);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background: #23261f;
+}
+
+body {
+  font-family: var(--sans);
+  color: var(--ink);
+  line-height: 1.6;
+  font-size: 17px;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.preview-switcher {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 99;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 46px;
+  padding: 8px 14px;
+  background: #1d201a;
+  border-bottom: 1px solid #343829;
+  font-family: var(--mono);
+}
+
+.preview-switcher .brand {
+  color: #8a9077;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  margin-right: 8px;
+}
+
+.preview-switcher button,
+.preview-switcher .sep {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.preview-switcher button {
+  color: #b9bfa8;
+  background: transparent;
+  border: 1px solid #3c4130;
+  border-radius: 999px;
+  padding: 4px 13px;
+}
+
+.preview-switcher button:hover {
+  border-color: #8a9077;
+  color: #e6e9d6;
+}
+
+.preview-switcher button.on {
+  background: #d8dcc4;
+  border-color: #d8dcc4;
+  color: #23261f;
+  font-weight: 500;
+}
+
+.preview-switcher .sep {
+  color: #4a4f3d;
+  padding: 0 4px;
+}
+
+.preview-switcher .hint {
+  margin-left: auto;
+  color: #6c7159;
+  font-size: 11px;
+}
+
+.variant {
+  display: none;
+  padding-top: 46px;
+}
+
+.variant.on {
+  display: block;
+}
+
+.meta-note {
+  padding: 12px clamp(16px, 4vw, 44px);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  background: var(--paper);
+  border-bottom: 1px dashed var(--border);
+}
+
+.meta-note b {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.meta-note .tag {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-radius: 4px;
+  color: var(--accent);
+  font-size: 10px;
+}
+
+.mock-page {
+  min-height: 100vh;
+  background: var(--paper);
+}
+
+.mock-nav {
+  position: sticky;
+  top: 46px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem clamp(16px, 4vw, 44px);
+  background: var(--glass-nav-bg);
+  border-bottom: 1px solid var(--glass-nav-border);
+  backdrop-filter: blur(var(--glass-nav-blur)) saturate(110%);
+}
+
+.mock-nav-brand {
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+
+.mock-nav-links {
+  display: flex;
+  gap: 1.1rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.mock-nav-links span.on {
+  color: var(--accent);
+}
+
+.mock-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.mock-toolbar-cluster {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.ico {
+  display: inline-flex;
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.ico svg {
+  width: 100%;
+  height: 100%;
+}
+
+.demo-panel {
+  padding: 1.5rem clamp(16px, 4vw, 44px) 3rem;
+}
+
+.demo-panel h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.demo-panel p {
+  margin: 0 0 1rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+  max-width: 42rem;
+}
+
+.state-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.state-card {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.state-card h3 {
+  margin: 0 0 0.65rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.state-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.compare-old {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.compare-old h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.btn-legacy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--btn-size);
+  height: var(--btn-size);
+  border: 1px solid var(--glass-nav-border);
+  background: color-mix(in srgb, var(--glass-nav-bg) 76%, #8a8a8a);
+  color: #8d9298;
+  border-radius: 50%;
+}
+
+.btn-legacy.is-on {
+  color: #fff6cf;
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--glass-nav-border));
+  background: linear-gradient(135deg, #8f7cff 0%, #4fc3ff 46%, #7fffd0 100%);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent),
+    0 0 14px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.scheme-a .tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--btn-size);
+  height: var(--btn-size);
+  border: 1px solid var(--glass-nav-border);
+  background: color-mix(in srgb, var(--surface) 92%, var(--glass-nav-bg));
+  color: var(--muted);
+  border-radius: 50%;
+  transition:
+    border-color 0.2s var(--ease),
+    background 0.2s var(--ease),
+    color 0.2s var(--ease);
+}
+
+.scheme-a .tool-btn:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--glass-nav-border));
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+
+.scheme-a .tool-btn.is-on {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--glass-nav-border));
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+}
+
+.scheme-a .tool-btn.is-playing {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--glass-nav-border));
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.scheme-a .tool-btn--theme-light.is-on {
+  color: #c9a227;
+  border-color: color-mix(in srgb, #c9a227 45%, var(--glass-nav-border));
+  background: color-mix(in srgb, #c9a227 12%, var(--surface));
+}
+
+.scheme-a .tool-btn--theme-dark.is-on {
+  color: #94a3b8;
+  border-color: color-mix(in srgb, #94a3b8 45%, var(--glass-nav-border));
+  background: color-mix(in srgb, #1e293b 35%, var(--surface));
+}
+
+.scheme-a .tool-btn--theme-abstract.is-on {
+  color: var(--accent);
+  border-color: var(--accent);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--elev) 88%, var(--surface));
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--accent) 75%, transparent);
+}
+
+.scheme-a .tool-btn--locale {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.scheme-b .mock-toolbar {
+  padding: 0.2rem 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 90%, var(--paper));
+}
+
+.scheme-b .tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 50%;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+}
+
+.scheme-b .tool-btn:hover {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.scheme-b .tool-btn.is-on {
+  color: var(--ink);
+  background: var(--elev);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.scheme-b .tool-btn.is-playing {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--elev));
+}
+
+.scheme-b .tool-btn--locale {
+  width: auto;
+  min-width: 1.85rem;
+  padding: 0 0.35rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.scheme-b .tool-btn--theme-abstract.is-on {
+  border-radius: 0;
+  box-shadow:
+    inset 0 0 0 1px var(--accent),
+    2px 2px 0 color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+.scheme-b .capsule-divider {
+  width: 1px;
+  height: 1.1rem;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.scheme-c .mock-toolbar-cluster {
+  gap: 0.15rem;
+}
+
+.scheme-c .tool-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 6px;
+  transition: color 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.scheme-c .tool-btn::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0.2rem;
+  width: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--accent);
+  transform: translateX(-50%);
+  transition: width 0.22s var(--ease);
+}
+
+.scheme-c .tool-btn:hover {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+.scheme-c .tool-btn:hover::after {
+  width: 1.1rem;
+}
+
+.scheme-c .tool-btn.is-on {
+  color: var(--accent);
+}
+
+.scheme-c .tool-btn.is-on::after {
+  width: 1.25rem;
+}
+
+.scheme-c .tool-btn.is-playing {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.scheme-c .tool-btn--locale {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+[data-preview-theme='abstract'] .scheme-c .tool-btn {
+  border-radius: 0;
+}
+
+/* —— 方案 D：A 圆钮 + B 胶囊分组 —— */
+
+.scheme-d .mock-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.22rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 90%, var(--paper));
+}
+
+.scheme-d .tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--btn-size);
+  height: var(--btn-size);
+  border: 1px solid var(--glass-nav-border);
+  background: color-mix(in srgb, var(--surface) 92%, var(--glass-nav-bg));
+  color: var(--muted);
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition:
+    border-color 0.2s var(--ease),
+    background 0.2s var(--ease),
+    color 0.2s var(--ease);
+}
+
+.scheme-d .tool-btn:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--glass-nav-border));
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+
+.scheme-d .tool-btn.is-on {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--glass-nav-border));
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+}
+
+.scheme-d .tool-btn.is-playing {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--glass-nav-border));
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.scheme-d .tool-btn--theme-light.is-on {
+  color: #c9a227;
+  border-color: color-mix(in srgb, #c9a227 45%, var(--glass-nav-border));
+  background: color-mix(in srgb, #c9a227 12%, var(--surface));
+}
+
+.scheme-d .tool-btn--theme-dark.is-on {
+  color: #94a3b8;
+  border-color: color-mix(in srgb, #94a3b8 45%, var(--glass-nav-border));
+  background: color-mix(in srgb, #1e293b 35%, var(--surface));
+}
+
+.scheme-d .tool-btn--theme-abstract.is-on {
+  color: var(--accent);
+  border-color: var(--accent);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--elev) 88%, var(--surface));
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--accent) 75%, transparent);
+}
+
+.scheme-d .tool-btn--locale {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.scheme-d .capsule-divider {
+  width: 1px;
+  height: 1.25rem;
+  background: var(--border);
+  flex-shrink: 0;
+  margin: 0 0.05rem;
+}
+
+/* —— 整栏统一布局（E / F）—— */
+
+.mock-nav--unify {
+  flex-wrap: wrap;
+  row-gap: 0.45rem;
+}
+
+.mock-nav-cluster {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+  margin-left: clamp(0.5rem, 2vw, 1.25rem);
+}
+
+.mock-nav-end {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: auto;
+}
+
+.mock-shell-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  flex: 1;
+  min-width: 0;
+  margin-left: clamp(0.5rem, 2vw, 1.25rem);
+}
+
+/* —— 方案 E：全栏右侧圆钮 + 胶囊 —— */
+
+.scheme-e .mock-nav-capsule,
+.scheme-e .mock-toolbar-capsule {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.22rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 90%, var(--paper));
+}
+
+.scheme-e .tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--btn-size);
+  height: var(--btn-size);
+  border: 1px solid var(--glass-nav-border);
+  background: color-mix(in srgb, var(--surface) 92%, var(--glass-nav-bg));
+  color: var(--muted);
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition:
+    border-color 0.2s var(--ease),
+    background 0.2s var(--ease),
+    color 0.2s var(--ease);
+}
+
+.scheme-e .tool-btn:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--glass-nav-border));
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+
+.scheme-e .tool-btn.is-on,
+.scheme-e .tool-btn.is-active {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--glass-nav-border));
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+}
+
+.scheme-e .tool-btn.is-playing {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--glass-nav-border));
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.scheme-e .tool-btn--theme-light.is-on {
+  color: #c9a227;
+  border-color: color-mix(in srgb, #c9a227 45%, var(--glass-nav-border));
+  background: color-mix(in srgb, #c9a227 12%, var(--surface));
+}
+
+.scheme-e .tool-btn--theme-dark.is-on {
+  color: #94a3b8;
+  border-color: color-mix(in srgb, #94a3b8 45%, var(--glass-nav-border));
+  background: color-mix(in srgb, #1e293b 35%, var(--surface));
+}
+
+.scheme-e .tool-btn--theme-abstract.is-on {
+  color: var(--accent);
+  border-color: var(--accent);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--elev) 88%, var(--surface));
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--accent) 75%, transparent);
+}
+
+.scheme-e .tool-btn--locale {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.scheme-e .tool-btn--overflow {
+  flex-shrink: 0;
+}
+
+.scheme-e .capsule-divider {
+  width: 1px;
+  height: 1.25rem;
+  background: var(--border);
+  flex-shrink: 0;
+  margin: 0 0.05rem;
+}
+
+/* —— 方案 F：全栏左侧药丸 link —— */
+
+.scheme-f .mock-toolbar--shell {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+}
+
+.shell-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.05rem;
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition:
+    color 0.35s ease,
+    background-color 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.shell-pill:hover {
+  color: var(--ink);
+}
+
+.shell-pill.is-active,
+.shell-pill.is-on,
+.shell-pill.is-playing {
+  color: #6fad87;
+  background-color: rgb(204 229 213 / 42%);
+  border-color: rgb(180 210 192 / 55%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 75%),
+    0 4px 14px rgb(170 205 185 / 15%);
+}
+
+[data-preview-theme='dark'] .shell-pill.is-active,
+[data-preview-theme='dark'] .shell-pill.is-on,
+[data-preview-theme='dark'] .shell-pill.is-playing {
+  color: color-mix(in srgb, var(--accent) 88%, #b8e6c8);
+  background-color: color-mix(in srgb, var(--accent) 14%, rgb(30 44 46 / 55%));
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 8%),
+    0 4px 14px rgb(0 0 0 / 18%);
+}
+
+.shell-pill--tool {
+  padding: 0.55rem 0.75rem;
+  font-size: 0.88rem;
+}
+
+.shell-pill--tool.shell-pill--text {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  min-width: 2.4rem;
+}
+
+.shell-pill--overflow {
+  padding: 0.55rem 0.65rem;
+}
+
+.shell-pill-chevron {
+  display: inline-flex;
+  margin-left: -0.15rem;
+  opacity: 0.72;
+}
+
+.shell-pill-chevron .ico {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.shell-pill .grow-line {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  border-radius: 10px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--accent) 70%, transparent),
+    transparent
+  );
+  transition: width 0.5s ease, left 0.5s ease, opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.shell-pill:hover .grow-line {
+  width: 70%;
+  left: 15%;
+}
+
+.shell-pill.is-active .grow-line,
+.shell-pill.is-on .grow-line,
+.shell-pill.is-playing .grow-line {
+  width: 0;
+}
+
+.shell-pill--tool.shell-pill--theme-light.is-on {
+  color: #c9a227;
+  background-color: color-mix(in srgb, #c9a227 10%, transparent);
+  border-color: color-mix(in srgb, #c9a227 22%, transparent);
+}
+
+.shell-pill--tool.shell-pill--theme-dark.is-on {
+  color: #94a3b8;
+  background-color: color-mix(in srgb, #1e293b 28%, transparent);
+  border-color: color-mix(in srgb, #94a3b8 22%, transparent);
+}
+
+.shell-pill--tool.shell-pill--theme-abstract.is-on {
+  color: var(--accent);
+  border-color: var(--accent);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--elev) 70%, transparent);
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--accent) 65%, transparent);
+}
+
+.scheme-f .tool-cluster-gap {
+  width: 0.35rem;
+  flex-shrink: 0;
+}
+
+/* —— 方案 G：分段胶囊 + F 药丸 —— */
+
+.scheme-g .shell-capsule {
+  display: flex;
+  align-items: center;
+  gap: 0.12rem;
+  padding: 0.18rem 0.38rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 90%, var(--paper));
+}
+
+.scheme-g .shell-capsule--nav .shell-pill:not(.shell-pill--tool) {
+  padding: 0.58rem 0.9rem;
+  font-size: 0.9rem;
+}
+
+.scheme-g .shell-capsule .shell-pill--tool {
+  padding: 0.5rem 0.68rem;
+}
+
+.scheme-g .shell-capsule .capsule-divider {
+  width: 1px;
+  height: 1.35rem;
+  background: var(--border);
+  flex-shrink: 0;
+  margin: 0 0.06rem;
+}
+
+.scheme-g .mock-nav-cluster {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

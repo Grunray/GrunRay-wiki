@@ -12,7 +12,7 @@
       'theme-nav-btn--abstract': ui.theme === 'abstract',
     }"
     :aria-label="themeHoverTitle"
-    :title="themeHoverTitle"
+    :data-nav-tip="themeHoverTitle"
     @click="toggle($event)"
     @keydown.enter.prevent="toggle()"
     @keydown.space.prevent="toggle()"
@@ -20,6 +20,7 @@
     <span class="theme-nav-btn-icon" aria-hidden="true">
       <ThemeNavIcon :theme="ui.theme" />
     </span>
+    <span class="nav-pill-grow-line" aria-hidden="true" />
   </button>
 
   <Teleport to="body">
@@ -111,148 +112,6 @@ function toggle(ev?: MouseEvent) {
   playRippleFromAnchor(ev instanceof MouseEvent ? ev : undefined)
 }
 </script>
-
-<style scoped>
-.theme-nav-btn {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid var(--glass-nav-border);
-  background: color-mix(in srgb, var(--glass-nav-bg) 76%, #8a8a8a);
-  color: #8d9298;
-  border-radius: 50%;
-  padding: 0;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
-}
-
-.theme-nav-btn:hover {
-  color: var(--color-text-muted);
-  border-color: color-mix(in srgb, var(--color-accent) 42%, var(--glass-nav-border));
-  background: color-mix(in srgb, var(--glass-nav-bg) 88%, transparent);
-}
-
-.theme-nav-btn-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 0;
-  transition: filter 0.2s ease, transform 0.2s ease;
-}
-
-/* 浅色当前主题：与拖尾开启态一致的渐变高亮，太阳图标发光 */
-.theme-nav-btn--light {
-  color: #fff6cf;
-  border-color: color-mix(in srgb, var(--color-accent) 55%, var(--glass-nav-border));
-  background: linear-gradient(135deg, #8f7cff 0%, #4fc3ff 46%, #7fffd0 100%);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--color-accent) 35%, transparent),
-    0 0 14px color-mix(in srgb, var(--color-accent) 45%, transparent);
-}
-
-.theme-nav-btn--light .theme-nav-btn-icon {
-  filter:
-    drop-shadow(0 0 6px color-mix(in srgb, var(--color-accent) 80%, white))
-    drop-shadow(0 0 14px color-mix(in srgb, var(--color-accent) 58%, transparent));
-}
-
-.theme-nav-btn--light:hover {
-  color: #fff6cf;
-  border-color: color-mix(in srgb, var(--color-accent) 62%, var(--glass-nav-border));
-  background: linear-gradient(135deg, #8f7cff 0%, #4fc3ff 46%, #7fffd0 100%);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--color-accent) 42%, transparent),
-    0 0 18px color-mix(in srgb, var(--color-accent) 52%, transparent);
-}
-
-.theme-nav-btn--light:hover .theme-nav-btn-icon {
-  filter:
-    drop-shadow(0 0 6px color-mix(in srgb, var(--color-accent) 80%, white))
-    drop-shadow(0 0 14px color-mix(in srgb, var(--color-accent) 58%, transparent));
-}
-
-/* 深色当前主题：冷色底 + 月亮发白光 */
-.theme-nav-btn--dark {
-  color: #f1f5f9;
-  border-color: color-mix(in srgb, #94a3b8 48%, var(--glass-nav-border));
-  background: linear-gradient(145deg, #1e293b 0%, #334155 52%, #475569 100%);
-  box-shadow:
-    0 0 0 1px rgb(255 255 255 / 14%),
-    0 0 18px rgb(148 163 184 / 38%);
-}
-
-.theme-nav-btn--dark .theme-nav-btn-icon {
-  filter:
-    drop-shadow(0 0 8px rgb(255 255 255 / 0.9))
-    drop-shadow(0 0 16px rgb(226 232 240 / 0.5));
-}
-
-.theme-nav-btn--dark:hover {
-  color: #f1f5f9;
-  border-color: color-mix(in srgb, #cbd5e1 55%, var(--glass-nav-border));
-  background: linear-gradient(145deg, #1e293b 0%, #334155 52%, #475569 100%);
-  box-shadow:
-    0 0 0 1px rgb(255 255 255 / 18%),
-    0 0 22px rgb(203 213 225 / 42%);
-}
-
-.theme-nav-btn--dark:hover .theme-nav-btn-icon {
-  filter:
-    drop-shadow(0 0 8px rgb(255 255 255 / 0.9))
-    drop-shadow(0 0 16px rgb(226 232 240 / 0.5));
-}
-
-/* 隐藏配色（abstract）：青蓝底 + 亮黄描边 */
-.theme-nav-btn--abstract {
-  color: #ffdb00;
-  border-color: #ffdb00;
-  background: linear-gradient(145deg, #0a2330 0%, #123848 52%, #167095 100%);
-  box-shadow:
-    0 0 0 1px rgb(255 219 0 / 35%),
-    3px 3px 0 rgb(255 219 0 / 85%);
-  border-radius: 0;
-}
-
-.theme-nav-btn--abstract .theme-nav-btn-icon {
-  filter:
-    drop-shadow(0 0 6px rgb(255 219 0 / 0.85))
-    drop-shadow(0 0 12px rgb(22 112 149 / 0.65));
-}
-
-.theme-nav-btn--abstract:hover {
-  color: #ffdb00;
-  border-color: #ffdb00;
-  background: linear-gradient(145deg, #0a2330 0%, #123848 52%, #167095 100%);
-  box-shadow:
-    0 0 0 1px rgb(255 219 0 / 45%),
-    4px 4px 0 rgb(255 219 0 / 0.95);
-}
-
-.theme-nav-btn--abstract:hover .theme-nav-btn-icon {
-  filter:
-    drop-shadow(0 0 8px rgb(255 219 0 / 0.95))
-    drop-shadow(0 0 14px rgb(22 112 149 / 0.75));
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .theme-nav-btn {
-    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .theme-nav-btn:hover {
-    transform: none;
-  }
-}
-</style>
 
 <!--
   扩散层在 #app 之下（z-index:0），透过透明 #app 与留白区可见，卡片/正文始终在上层。
