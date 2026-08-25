@@ -69,44 +69,50 @@ const xiqiGroup = computed(() => ({
 
 <template>
   <nav class="nav nav--shell" aria-label="Main">
-    <RouterLink
-      to="/"
-      class="link"
-      :class="{ active: isActive('/') }"
-      :aria-current="isActive('/') ? 'page' : undefined"
-    >
-      <span class="link-icon" aria-hidden="true">
-        <HomeNavIcon />
-      </span>
-      <span class="link-label">{{ t('nav.home') }}</span>
-      <span class="leaf-glow" aria-hidden="true" />
-      <span class="grow-line" aria-hidden="true" />
-    </RouterLink>
+    <div class="nav-shell-capsule">
+      <RouterLink
+        to="/"
+        class="link nav-shell-pill"
+        :class="{ active: isActive('/') }"
+        :aria-current="isActive('/') ? 'page' : undefined"
+      >
+        <span class="link-icon" aria-hidden="true">
+          <HomeNavIcon />
+        </span>
+        <span class="link-label">{{ t('nav.home') }}</span>
+        <span class="leaf-glow" aria-hidden="true" />
+        <span class="grow-line" aria-hidden="true" />
+      </RouterLink>
 
-    <SiteNavGroup
-      :label="createGroup.label"
-      :icon="createGroup.icon"
-      :items="createGroup.items"
-      :menu-id="createGroup.menuId"
-    />
-    <SiteNavGroup
-      :label="communityGroup.label"
-      :icon="communityGroup.icon"
-      :items="communityGroup.items"
-      :menu-id="communityGroup.menuId"
-    />
-    <SiteNavGroup
-      :label="xiqiGroup.label"
-      :icon="xiqiGroup.icon"
-      :items="xiqiGroup.items"
-      :menu-id="xiqiGroup.menuId"
-    />
+      <span class="nav-shell-capsule__divider" aria-hidden="true" />
+
+      <div class="nav-shell-capsule__groups">
+        <SiteNavGroup
+          :label="createGroup.label"
+          :icon="createGroup.icon"
+          :items="createGroup.items"
+          :menu-id="createGroup.menuId"
+        />
+        <SiteNavGroup
+          :label="communityGroup.label"
+          :icon="communityGroup.icon"
+          :items="communityGroup.items"
+          :menu-id="communityGroup.menuId"
+        />
+        <SiteNavGroup
+          :label="xiqiGroup.label"
+          :icon="xiqiGroup.icon"
+          :items="xiqiGroup.items"
+          :menu-id="xiqiGroup.menuId"
+        />
+      </div>
+    </div>
   </nav>
 </template>
 
 <style scoped>
 /*
- * 主导航 · v4 分组（首页 + 创作 / 社区 / 栖息）
+ * 主导航 · 方案 G + A 紧凑分段胶囊
  */
 .nav {
   position: relative;
@@ -114,7 +120,35 @@ const xiqiGroup = computed(() => ({
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.45rem 0.55rem;
+  min-width: 0;
+}
+
+.nav-shell-capsule {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.08rem;
+  padding: 0.18rem 0.36rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-bg-surface) 90%, var(--color-bg-base));
+  flex-wrap: nowrap;
+  max-width: 100%;
+}
+
+.nav-shell-capsule__divider {
+  width: 1px;
+  height: 1.22rem;
+  background: var(--color-border);
+  flex-shrink: 0;
+  margin: 0 0.04rem;
+}
+
+.nav-shell-capsule__groups {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.04rem;
+  min-width: 0;
 }
 
 .link {
@@ -122,15 +156,15 @@ const xiqiGroup = computed(() => ({
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.38rem;
   color: var(--color-text-muted);
   font-weight: 500;
-  font-size: 0.92rem;
+  font-size: 0.8rem;
   line-height: 1.2;
   letter-spacing: 0.02em;
   text-decoration: none;
   white-space: nowrap;
-  padding: 0.7rem 1.05rem;
+  padding: 0.42rem 0.62rem;
   border-radius: 999px;
   border: 1px solid transparent;
   background-color: transparent;
@@ -149,6 +183,12 @@ const xiqiGroup = computed(() => ({
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+.link :deep(.shell-nav-icon),
+.nav-shell-capsule__groups :deep(.shell-nav-icon) {
+  width: 0.88rem;
+  height: 0.88rem;
+}
+
 /* hover 只提升文字色；着色交给下方生长线（accent 唯一交互点，DESIGN.md §7） */
 .link:hover {
   color: var(--color-text);
@@ -161,8 +201,8 @@ const xiqiGroup = computed(() => ({
   border-color: rgb(180 210 192 / 55%);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 75%),
-    0 4px 14px rgb(170 205 185 / 15%);
-  animation: shell-nav-breath 4s ease-in-out infinite;
+    0 3px 10px rgb(170 205 185 / 12%);
+  animation: shell-nav-breath-capsule 4s ease-in-out infinite;
 }
 
 :global([data-theme='dark']) .link.active {
@@ -171,7 +211,7 @@ const xiqiGroup = computed(() => ({
   border-color: color-mix(in srgb, var(--color-accent) 28%, transparent);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 8%),
-    0 4px 14px rgb(0 0 0 / 18%);
+    0 3px 10px rgb(0 0 0 / 14%);
 }
 
 .leaf-glow {
@@ -214,30 +254,53 @@ const xiqiGroup = computed(() => ({
   left: 15%;
 }
 
-@keyframes shell-nav-breath {
+.link.active .grow-line {
+  width: 0;
+}
+
+.nav-shell-capsule__groups :deep(.group-trigger) {
+  padding: 0.42rem 0.62rem;
+  font-size: 0.8rem;
+  gap: 0.38rem;
+}
+
+@keyframes shell-nav-breath-capsule {
   0%,
   100% {
     transform: scale(1);
   }
   50% {
-    transform: scale(1.03);
+    transform: scale(1.012);
   }
 }
 
 @media (max-width: 768px) {
+  .nav-shell-capsule {
+    padding: 0.14rem 0.28rem;
+    gap: 0.06rem;
+    flex-wrap: wrap;
+  }
+
+  .nav-shell-capsule__groups {
+    flex-wrap: wrap;
+  }
+
   .link {
-    padding: 0.5rem 0.56rem;
-    font-size: 0.85rem;
-    gap: 0.32rem;
+    padding: 0.44rem 0.5rem;
+    font-size: 0.78rem;
+    gap: 0.28rem;
   }
 
-  .nav {
-    gap: 0.2rem 0.2rem;
+  .nav-shell-capsule__groups :deep(.group-trigger) {
+    padding: 0.44rem 0.5rem;
+    font-size: 0.78rem;
+    gap: 0.28rem;
   }
 
-  .link :deep(.shell-nav-icon) {
-    width: 0.92rem;
-    height: 0.92rem;
+  .link :deep(.shell-nav-icon),
+  .nav-shell-capsule__groups :deep(.shell-nav-icon) {
+    width: 0.84rem;
+    height: 0.84rem;
   }
 }
 
