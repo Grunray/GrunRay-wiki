@@ -14,6 +14,7 @@ import { preloadCurrentPhotoBg } from '@/theme/pagePhotoBackgrounds'
 const STORAGE_THEME = 'ui.theme'
 const STORAGE_THEME_ABSTRACT_UNLOCKED = 'ui.themeAbstractUnlocked'
 const STORAGE_CURSOR = 'ui.cursorTrail'
+const STORAGE_FPS_METER = 'ui.fpsMeter'
 /** 音乐面板是否收起：'1' 收起（关闭 UI），'0' 展开；无键时默认展开（UI 卡片可见） */
 const STORAGE_MUSIC_MINIMIZED = 'ui.musicPlayerMinimized'
 
@@ -71,6 +72,8 @@ function applyThemeToDocument(theme: ThemeId) {
 export const useUiStore = defineStore('ui', () => {
   const theme = ref<ThemeId>(readTheme())
   const cursorTrailEnabled = ref(localStorage.getItem(STORAGE_CURSOR) !== '0')
+  /** 帧率监视浮层；无键默认关，仅 `ui.fpsMeter=1` 才开 */
+  const fpsMeterEnabled = ref(localStorage.getItem(STORAGE_FPS_METER) === '1')
   const prefersReducedMotion = ref(false)
   /** 音乐播放器是否收起（仅隐藏 UI，不卸载音频）；持久化，刷新后保持上次开/关 */
   const musicPlayerMinimized = ref(readMusicPlayerMinimized())
@@ -98,6 +101,10 @@ export const useUiStore = defineStore('ui', () => {
 
   watch(cursorTrailEnabled, (v) => {
     localStorage.setItem(STORAGE_CURSOR, v ? '1' : '0')
+  })
+
+  watch(fpsMeterEnabled, (v) => {
+    localStorage.setItem(STORAGE_FPS_METER, v ? '1' : '0')
   })
 
   watch(musicPlayerMinimized, (m) => {
@@ -192,6 +199,7 @@ export const useUiStore = defineStore('ui', () => {
   return {
     theme,
     cursorTrailEnabled,
+    fpsMeterEnabled,
     prefersReducedMotion,
     cursorTrailActive,
     musicPlayerMinimized,
