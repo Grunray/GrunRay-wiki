@@ -1,0 +1,595 @@
+/* 页脚胶囊外链四钮 · 纸面预览共用令牌 */
+
+:root {
+  --paper: #f4f1e8;
+  --surface: #faf8f1;
+  --elev: #ece7d8;
+  --ink: #2b2823;
+  --muted: #6e675b;
+  --faint: #a39a88;
+  --border: #ddd5c2;
+  --accent: #2e6b4f;
+  --glass-nav-bg: rgb(250 248 241 / 0.88);
+  --glass-nav-border: #d8cfba;
+  --glass-nav-blur: 10px;
+  --glass-card-bg: rgb(250 248 241 / 0.92);
+  --glass-card-border: #ddd5c2;
+  --glass-blur: 10px;
+  --shadow-card: 0 1px 2px rgb(43 40 35 / 5%);
+  --mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+  --sans: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --meta-height: 48px;
+}
+
+[data-preview-theme='dark'] {
+  --paper: #0d1210;
+  --surface: #141a17;
+  --elev: #1c2420;
+  --ink: #e8ede9;
+  --muted: #8a9a92;
+  --faint: #5c6b64;
+  --border: #2b3833;
+  --accent: #8fd6ae;
+  --glass-nav-bg: rgb(13 18 16 / 0.88);
+  --glass-nav-border: #2b3833;
+  --glass-card-bg: rgb(20 26 23 / 0.92);
+  --glass-card-border: #2b3833;
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 0.35);
+}
+
+[data-preview-theme='abstract'] {
+  --paper: #0a2330;
+  --surface: #123848;
+  --elev: #167095;
+  --ink: #e8f4f8;
+  --muted: #9db4c0;
+  --faint: #6a8a98;
+  --border: rgb(255 219 0 / 0.32);
+  --accent: #ffdb00;
+  --glass-nav-bg: rgb(10 35 48 / 0.78);
+  --glass-nav-border: rgb(255 219 0 / 0.32);
+  --glass-card-bg: rgb(10 35 48 / 0.92);
+  --glass-card-border: rgb(255 219 0 / 0.32);
+  --shadow-card: 4px 4px 0 #ffdb00;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background: #23261f;
+}
+
+body {
+  font-family: var(--sans);
+  color: var(--ink);
+  line-height: 1.6;
+  font-size: 17px;
+  padding-top: 52px;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.preview-switcher {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 99;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 46px;
+  padding: 8px 14px;
+  background: #1d201a;
+  border-bottom: 1px solid #343829;
+  font-family: var(--mono);
+}
+
+.preview-switcher .brand {
+  color: #8a9077;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  margin-right: 8px;
+}
+
+.preview-switcher button {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: #b9bfa8;
+  background: transparent;
+  border: 1px solid #3c4130;
+  border-radius: 999px;
+  padding: 4px 13px;
+}
+
+.preview-switcher button:hover {
+  border-color: #8a9077;
+  color: #e6e9d6;
+}
+
+.preview-switcher button.on {
+  background: #d8dcc4;
+  border-color: #d8dcc4;
+  color: #23261f;
+  font-weight: 500;
+}
+
+.preview-switcher .sep {
+  color: #5a6050;
+  margin: 0 2px;
+}
+
+.preview-switcher .hint {
+  color: #6d7462;
+  font-size: 11px;
+  margin-left: 4px;
+}
+
+.variant {
+  display: none;
+  padding: 1.5rem 1.25rem 3rem;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.variant.on {
+  display: block;
+}
+
+.meta-note {
+  margin-bottom: 1.25rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid #3c4130;
+  background: #1d201a;
+  color: #c8cec0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.meta-note b {
+  color: #e6e9d6;
+}
+
+.meta-note .tag {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid #4a5040;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: #9aa38d;
+}
+
+.mock-stage {
+  padding: 2rem 1rem 2.5rem;
+  border-radius: 16px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+}
+
+.mock-stage h2 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.mock-stage p {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 1.25rem;
+}
+
+/* —— 模拟页脚胶囊（与生产 meta-bar 同结构） —— */
+.mock-meta-bar {
+  display: flex;
+  justify-content: center;
+}
+
+.mock-meta-shell {
+  width: min(920px, 100%);
+  border-radius: 999px;
+  border: 1px solid var(--glass-nav-border);
+  background: color-mix(in srgb, var(--glass-nav-bg) 88%, var(--elev));
+  backdrop-filter: blur(var(--glass-nav-blur)) saturate(125%);
+  box-shadow:
+    0 4px 24px -8px rgb(0 0 0 / 0.12),
+    0 16px 48px -28px rgb(0 0 0 / 0.22);
+}
+
+.mock-meta-inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  column-gap: 0.85rem;
+  min-height: var(--meta-height);
+  padding: 0.55rem 1.15rem;
+}
+
+.mock-meta-start {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem 0.65rem;
+  min-width: 0;
+}
+
+.mock-meta-divider {
+  width: 1px;
+  height: 1.35rem;
+  background: color-mix(in srgb, var(--glass-nav-border) 72%, transparent);
+}
+
+.mock-meta-text {
+  font-size: 0.82rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.mock-meta-end {
+  justify-self: end;
+  font-size: 0.82rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.icon-row {
+  display: flex;
+  flex-direction: row-reverse;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* —— 现状：生产玻璃圆球（FooterExternalLinks） —— */
+.scheme-legacy .ext-btn {
+  --brand: var(--accent);
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  color: color-mix(in srgb, var(--brand) 76%, white);
+  text-decoration: none;
+  transition: transform 0.25s ease, color 0.25s ease;
+}
+
+.scheme-legacy .ext-btn__glass {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--glass-card-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%) brightness(1.02);
+  box-shadow:
+    inset 0 3px 8px rgb(255 255 255 / 0.38),
+    inset 0 -5px 10px rgb(0 0 0 / 0.18),
+    var(--shadow-card);
+}
+
+.scheme-legacy .ext-btn__glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(120deg, rgb(255 255 255 / 0.56), transparent 42%);
+  opacity: 0.65;
+}
+
+.scheme-legacy .ext-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--brand) 36%, white);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.scheme-legacy .ext-btn svg {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 55%;
+  height: 55%;
+}
+
+.scheme-legacy .ext-btn svg path {
+  fill: currentColor;
+}
+
+.scheme-legacy .ext-btn:hover {
+  color: var(--brand);
+  transform: scale(1.08);
+}
+
+.scheme-legacy .ext-btn:hover::after {
+  border-color: var(--brand);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--brand) 70%, white);
+}
+
+/* —— 方案 A：纸面描边圆钮（对齐 DESIGN 胶囊描边） —— */
+.scheme-a .ext-btn {
+  --brand: var(--accent);
+  position: relative;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--ink) 14%, var(--border));
+  background: transparent;
+  color: color-mix(in srgb, var(--brand) 72%, var(--ink));
+  text-decoration: none;
+  transition:
+    border-color 0.2s var(--ease),
+    background 0.2s var(--ease),
+    color 0.2s var(--ease),
+    transform 0.2s var(--ease);
+}
+
+.scheme-a .ext-btn svg {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 52%;
+  height: 52%;
+}
+
+.scheme-a .ext-btn svg path {
+  fill: currentColor;
+}
+
+.scheme-a .ext-btn:hover {
+  border-color: color-mix(in srgb, var(--brand) 55%, var(--border));
+  background: color-mix(in srgb, var(--brand) 10%, transparent);
+  color: var(--brand);
+  transform: translateY(-1px);
+}
+
+.scheme-a .ext-btn:active {
+  transform: translateY(0);
+}
+
+/* —— 方案 B：扁平方角 chip（与胶囊内文字链接同级） —— */
+.scheme-b .icon-row {
+  gap: 0.35rem;
+}
+
+.scheme-b .ext-btn {
+  --brand: var(--accent);
+  position: relative;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: color-mix(in srgb, var(--brand) 80%, var(--ink));
+  text-decoration: none;
+  box-shadow: var(--shadow-card);
+  transition:
+    border-color 0.2s var(--ease),
+    background 0.2s var(--ease),
+    color 0.2s var(--ease);
+}
+
+.scheme-b .ext-btn svg {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 50%;
+  height: 50%;
+}
+
+.scheme-b .ext-btn svg path {
+  fill: currentColor;
+}
+
+.scheme-b .ext-btn:hover {
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--border));
+  background: color-mix(in srgb, var(--brand) 8%, var(--surface));
+  color: var(--brand);
+}
+
+/* —— 方案 C：品牌色浅填圆（无玻璃高光） —— */
+.scheme-c .ext-btn {
+  --brand: var(--accent);
+  position: relative;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--brand) 22%, var(--border));
+  background: color-mix(in srgb, var(--brand) 11%, var(--surface));
+  color: var(--brand);
+  text-decoration: none;
+  transition:
+    border-color 0.2s var(--ease),
+    background 0.2s var(--ease),
+    transform 0.2s var(--ease);
+}
+
+.scheme-c .ext-btn svg {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 52%;
+  height: 52%;
+}
+
+.scheme-c .ext-btn svg path {
+  fill: currentColor;
+}
+
+.scheme-c .ext-btn:hover {
+  border-color: color-mix(in srgb, var(--brand) 55%, var(--border));
+  background: color-mix(in srgb, var(--brand) 18%, var(--surface));
+  transform: scale(1.05);
+}
+
+/* —— 方案 D：DESIGN.md 纸面分段条（btn-accent 纪律 + 单一 accent） —— */
+.scheme-d .icon-row {
+  gap: 0;
+}
+
+.scheme-d .ext-toolbar {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 84%, transparent);
+  box-shadow: var(--shadow-card);
+}
+
+[data-preview-theme='abstract'] .scheme-d .ext-toolbar {
+  border-radius: 0;
+}
+
+.scheme-d .ext-btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  text-decoration: none;
+  transition:
+    color 0.2s var(--ease),
+    background 0.2s var(--ease),
+    transform 0.2s var(--ease);
+}
+
+[data-preview-theme='abstract'] .scheme-d .ext-btn {
+  border-radius: 0;
+  font-family: var(--mono);
+}
+
+.scheme-d .ext-btn:not(:first-child) {
+  border-inline-end: 1px solid var(--border);
+}
+
+.scheme-d .ext-btn svg {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 50%;
+  height: 50%;
+}
+
+.scheme-d .ext-btn svg path {
+  fill: currentColor;
+}
+
+/* 对齐 .btn-accent：16% accent 底 + 边向 accent；无发光 / scale */
+.scheme-d .ext-btn:hover {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  transform: translateY(-1px);
+}
+
+.scheme-d .ext-btn:active {
+  transform: translateY(0);
+}
+
+.scheme-d .ext-btn:focus-visible {
+  outline: none;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.scheme-d .ext-btn__label {
+  position: absolute;
+  bottom: calc(100% + 0.38rem);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  opacity: 0;
+  visibility: hidden;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  pointer-events: none;
+  transition: all 0.2s var(--ease);
+}
+
+[data-preview-theme='abstract'] .scheme-d .ext-btn__label {
+  border-radius: 0;
+}
+
+.scheme-d .ext-btn:hover .ext-btn__label,
+.scheme-d .ext-btn:focus-visible .ext-btn__label {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.compare-panel {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px dashed color-mix(in srgb, var(--border) 80%, var(--muted));
+}
+
+.compare-panel h3 {
+  font-size: 0.82rem;
+  font-family: var(--mono);
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+
+.state-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.state-label {
+  font-size: 0.78rem;
+  color: var(--faint);
+  font-family: var(--mono);
+  min-width: 4.5rem;
+}
+
+@media (max-width: 640px) {
+  .mock-meta-inner {
+    grid-template-columns: 1fr;
+    row-gap: 0.5rem;
+    text-align: center;
+    padding: 0.65rem 0.95rem;
+  }
+
+  .mock-meta-start {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .mock-meta-end {
+    justify-self: center;
+  }
+
+  .icon-row {
+    flex-direction: row;
+    justify-content: center;
+  }
+}

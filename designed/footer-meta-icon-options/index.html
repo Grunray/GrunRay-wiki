@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN" data-preview-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>页脚胶囊 · 外链四钮 · 方案对比</title>
+    <link rel="stylesheet" href="shared.css" />
+  </head>
+  <body>
+    <div class="preview-switcher">
+      <span class="brand">FOOTER META</span>
+      <button type="button" class="scheme-btn on" data-scheme="legacy">现状</button>
+      <button type="button" class="scheme-btn" data-scheme="a">A 描边圆</button>
+      <button type="button" class="scheme-btn" data-scheme="b">B 方角 chip</button>
+      <button type="button" class="scheme-btn" data-scheme="c">C 浅填圆</button>
+      <button type="button" class="scheme-btn" data-scheme="d">D DESIGN</button>
+      <span class="sep">|</span>
+      <button type="button" class="theme-btn on" data-theme="light">浅色</button>
+      <button type="button" class="theme-btn" data-theme="dark">深色</button>
+      <button type="button" class="theme-btn" data-theme="abstract">抽象</button>
+      <span class="hint">悬停看交互 · 对应 FooterExternalLinks.vue</span>
+    </div>
+
+  <!-- 现状 -->
+  <section class="variant scheme-legacy on" id="variant-legacy">
+    <p class="meta-note">
+      <b>现状 · 玻璃圆球</b> 生产环境当前样式：独立玻璃高光 + 彩色描边 + scale 发光 hover（源自 <code>designed/link_icon</code>）。
+      在已具玻璃质感的胶囊条上略显「双层玻璃」，视觉偏重。
+      <span class="tag">当前生产</span>
+    </p>
+    <div class="mock-stage">
+      <h2>页脚 ICP 胶囊（左侧四钮）</h2>
+      <p>Email · GitHub · Bilibili · 网易云 — 与 RSS / 法律声明同排。</p>
+      <div id="meta-legacy"></div>
+    </div>
+  </section>
+
+  <!-- 方案 A -->
+  <section class="variant scheme-a" id="variant-a">
+    <p class="meta-note">
+      <b>方案 A · 纸面描边圆钮</b> 推荐默认。去掉玻璃内阴影与发光；34px 圆 + hairline 边，hover 轻抬 + accent 浅底。
+      对齐 <code>DESIGN.md</code> 胶囊描边纪律，与 meta 胶囊不打架。
+      <span class="tag">改动小</span>
+    </p>
+    <div class="mock-stage">
+      <h2>页脚 ICP 胶囊（左侧四钮）</h2>
+      <p>品牌色保留在图标上，容器不再抢戏。</p>
+      <div id="meta-a"></div>
+      <div class="compare-panel">
+        <h3>与现状差异</h3>
+        <div class="state-row">
+          <span class="state-label">尺寸</span>
+          <span>40px 玻璃球 → 34px 描边圆</span>
+        </div>
+        <div class="state-row">
+          <span class="state-label">hover</span>
+          <span>scale + 外发光 → translateY + 浅底</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 方案 B -->
+  <section class="variant scheme-b" id="variant-b">
+    <p class="meta-note">
+      <b>方案 B · 扁平方角 chip</b> 32px 圆角方块 + 纸面底，更像编辑器工具格；与 RSS 文字链接的「扁平方块感」更统一。
+      <span class="tag">更扁平</span>
+    </p>
+    <div class="mock-stage">
+      <h2>页脚 ICP 胶囊（左侧四钮）</h2>
+      <p>间距略收紧，适合胶囊内横向空间紧时。</p>
+      <div id="meta-b"></div>
+    </div>
+  </section>
+
+  <!-- 方案 C -->
+  <section class="variant scheme-c" id="variant-c">
+    <p class="meta-note">
+      <b>方案 C · 品牌色浅填圆</b> 无玻璃高光，用各平台色 11% 浅填 + 色边；比 A 更有「彩色触点」，仍比现状克制。
+      <span class="tag">保留色块感</span>
+    </p>
+    <div class="mock-stage">
+      <h2>页脚 ICP 胶囊（左侧四钮）</h2>
+      <p>图标默认即为品牌色；hover 加深填充。</p>
+      <div id="meta-c"></div>
+    </div>
+  </section>
+
+  <!-- 方案 D -->
+  <section class="variant scheme-d" id="variant-d">
+    <p class="meta-note">
+      <b>方案 D · DESIGN.md 纸面分段条</b> 严格对齐设计系统：表面是纸（surface + hairline），非玻璃；四钮收进一条分段胶囊；
+      图标默认 <code>text-muted</code>，交互只用全站 <code>accent</code>（弃平台彩虹色）；
+      hover 复用 <code>.btn-accent</code> 纪律（16% accent 底、轻抬、无发光）；标签为 mono 大写 kicker。
+      抽象档直角 + 硬阴影。见 <code>DESIGN.md</code> §2 强调色 · §4 按钮 · §9 导航 hover。
+      <span class="tag">设计系统</span>
+      <span class="tag">推荐合入</span>
+    </p>
+    <div class="mock-stage">
+      <h2>页脚 ICP 胶囊（左侧四钮）</h2>
+      <p>悬停看 mono 标签与 focus 环；切换「抽象」档看直角黄边分段条。</p>
+      <div id="meta-d"></div>
+      <div class="compare-panel">
+        <h3>DESIGN.md 对照</h3>
+        <div class="state-row">
+          <span class="state-label">表面</span>
+          <span>纸面 surface，无 backdrop 玻璃球</span>
+        </div>
+        <div class="state-row">
+          <span class="state-label">强调色</span>
+          <span>仅 accent 墨绿/翠绿/黄，不用平台品牌色铺底</span>
+        </div>
+        <div class="state-row">
+          <span class="state-label">hover</span>
+          <span>16% accent 底 + translateY(-1px)，无 scale / 外发光</span>
+        </div>
+        <div class="state-row">
+          <span class="state-label">标签</span>
+          <span>mono · 0.68rem · uppercase · letter-spacing</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+    <script src="shared.js"></script>
+  </body>
+</html>
