@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>首页 Hero 重排 · 预览 · GrunRay wiki</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700;900&display=block"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body data-preview-theme="light" data-photo-bg="true" class="fonts-pending">
+  <!-- 预览切换条（非站点内容） -->
+  <div class="preview-switcher" aria-label="预览控制">
+    <span class="brand">HOME HERO · RELAYOUT</span>
+    <button type="button" id="btn-scroll-top">首屏</button>
+    <button type="button" id="btn-scroll-sheet">滚到纸面</button>
+    <button type="button" id="btn-scroll-film">滚到胶片</button>
+    <button type="button" data-theme-btn="light" class="is-on">浅色</button>
+    <button type="button" data-theme-btn="dark">深色</button>
+    <button type="button" id="btn-photo-bg" class="is-on" aria-pressed="true">背景开</button>
+    <span class="hint">关背景时右侧线稿 SVG · 开背景则隐藏</span>
+  </div>
+
+  <!-- 模拟顶栏 -->
+  <header class="mock-nav" aria-label="导航栏占位">
+    <span class="mock-nav__logo">GrunRay</span>
+    <nav class="mock-nav__links" aria-hidden="true">
+      <span>首页</span>
+      <span>创作</span>
+      <span>社区</span>
+      <span>栖息</span>
+    </nav>
+  </header>
+
+  <!-- 模拟站点照片背景（导航栏照片 + 可调 blur；无额外下滑蒙层） -->
+  <div class="photo-bg-preview" aria-hidden="true"></div>
+
+  <main class="home-prototype">
+    <!-- ① 首屏舞台：刊号顶 · 中间留空 · 底部介绍 + 封面故事 -->
+    <section class="home-stage" aria-label="首屏">
+      <!-- 关照片背景时右侧装饰；开背景时隐藏，避免与照片抢视觉 -->
+      <figure class="home-stage__art" aria-hidden="true">
+        <img
+          id="home-stage-art-img"
+          src="polonia_sandoren.svg"
+          data-art-light="polonia_sandoren.svg"
+          data-art-dark="polonia_sandoren-dark.svg"
+          alt=""
+          width="1536"
+          height="1024"
+          decoding="async"
+        />
+      </figure>
+
+      <div class="home-wrap home-stage__inner">
+        <header class="home-mast">
+          <p class="home-mast__vol">
+            <strong>GrunRay</strong> · VOL.2026 · NO.35 · 2026/08/27
+          </p>
+          <div class="home-mast__avatar">
+            <img
+              src="/api/media/files/film/homeView/center/avatar/avatar.png"
+              alt="头像"
+              width="64"
+              height="64"
+              onerror="this.style.display='none'"
+            />
+          </div>
+        </header>
+
+        <!-- 中间留空：展示通透背景（类似 hslzz 首页首屏） -->
+        <div class="home-stage__void" aria-hidden="true"></div>
+
+        <!-- 底栏：仅介绍语（封面故事在下方滚动层，与纸面一起上移） -->
+        <div class="home-stage__dock">
+          <div class="home-intro">
+            <h1 class="home-intro__greeting">你好，我是<span class="home-intro__brand">GrunRay</span></h1>
+            <p class="home-intro__note">找不到实习捏——代码不跑我跑！</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 上滑层：peek 卡片（高层级）+ 全宽滚动纸面（低层级） -->
+    <div class="home-rising">
+      <div class="home-wrap home-peek-wrap">
+        <article class="cover-story__peek" aria-label="封面故事">
+          <p class="cover-story__kicker">COVER STORY · 封面故事</p>
+        </article>
+      </div>
+
+      <div class="home-scroll-layer" aria-label="滚动纸面">
+        <div class="home-scroll-layer__paper">
+          <div class="home-wrap">
+            <div class="cover-story__detail">
+              <h2 class="cover-story__title">示例文章标题：从胶片到纸面的编辑式首页</h2>
+              <p class="cover-story__lede">
+                最新一篇博客摘要做主角；Hero 胶片带移到整页最下方，首屏中间留给照片背景。
+              </p>
+              <p class="cover-story__meta">
+                <time datetime="2026-08-27">2026/08/27</time>
+                <span>design</span>
+                <span>home</span>
+                <a class="cover-story__read" href="#">开始阅读 →</a>
+              </p>
+            </div>
+          </div>
+
+          <section class="home-sheet" aria-label="目录与后续内容">
+            <div class="home-sheet__body">
+              <div class="home-wrap">
+                <section class="home-now" aria-label="此刻">
+                  <p class="home-now__kicker">NOW</p>
+                  <ul class="home-now__list">
+                    <li>· 打磨首页 Hero 重排原型</li>
+                    <li>· 读一篇关于前端纸面设计的笔记</li>
+                  </ul>
+                </section>
+
+                <header class="home-toc-head">
+                  <span>LATEST · 最新文章</span>
+                  <span>全部 →</span>
+                </header>
+                <a class="toc-row" href="#">
+                  <time>2026/08/20</time>
+                  <h3>第二篇示例：ScrollTrigger 与纸面入场</h3>
+                  <p>目录行 hairline 分隔，整行可点；上滑后出现在毛玻璃纸面之上。</p>
+                </a>
+                <a class="toc-row" href="#">
+                  <time>2026/08/15</time>
+                  <h3>第三篇示例：友链与留言的 OAuth 过渡</h3>
+                  <p>mock 文案，仅演示首屏以下内容的排版密度。</p>
+                </a>
+
+                <header class="home-toc-head">
+                  <span>PROJECTS · 项目</span>
+                  <span>全部 →</span>
+                </header>
+                <a class="toc-row" href="#">
+                  <time>2026</time>
+                  <h3>GrunRay wiki</h3>
+                  <p>个人站点 monorepo：Vue 前端 + Flask 后端 + import 流水线。</p>
+                </a>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+    <!-- ③ FilmFeed 移到整页最下方 -->
+    <section class="home-film" aria-label="胶片 Hero（页底）">
+      <span class="home-film__label">FilmFeed · 原 Hero 下移</span>
+      <div class="filmstrip">
+        <div class="holes" aria-hidden="true"></div>
+        <div class="lane">
+          <div class="track">
+            <img src="https://picsum.photos/seed/gr1/280/350" alt="" width="140" height="175" loading="lazy" />
+            <img src="https://picsum.photos/seed/gr2/280/350" alt="" width="140" height="175" loading="lazy" />
+            <img src="https://picsum.photos/seed/gr3/280/350" alt="" width="140" height="175" loading="lazy" />
+            <img src="https://picsum.photos/seed/gr4/280/350" alt="" width="140" height="175" loading="lazy" />
+            <img src="https://picsum.photos/seed/gr5/280/350" alt="" width="140" height="175" loading="lazy" />
+            <img src="https://picsum.photos/seed/gr6/280/350" alt="" width="140" height="175" loading="lazy" />
+            <!-- duplicate for loop -->
+            <img src="https://picsum.photos/seed/gr1/280/350" alt="" width="140" height="175" loading="lazy" />
+            <img src="https://picsum.photos/seed/gr2/280/350" alt="" width="140" height="175" loading="lazy" />
+            <img src="https://picsum.photos/seed/gr3/280/350" alt="" width="140" height="175" loading="lazy" />
+            <img src="https://picsum.photos/seed/gr4/280/350" alt="" width="140" height="175" loading="lazy" />
+            <img src="https://picsum.photos/seed/gr5/280/350" alt="" width="140" height="175" loading="lazy" />
+            <img src="https://picsum.photos/seed/gr6/280/350" alt="" width="140" height="175" loading="lazy" />
+          </div>
+        </div>
+        <div class="holes" aria-hidden="true"></div>
+      </div>
+    </section>
+    </div>
+  </main>
+
+  <p id="scroll-note" class="preview-note" role="status">
+    首屏：底部只露 COVER STORY 顶栏；背景为导航栏照片 + blur 可调（原型模拟 0→6px）。
+  </p>
+
+  <script src="shared.js"></script>
+</body>
+</html>
