@@ -19,9 +19,11 @@ import MusicNavIcon from '@/components/icons/MusicNavIcon.vue'
 import PhotoBgNavIcon from '@/components/icons/PhotoBgNavIcon.vue'
 import SnailNavIcon from '@/components/icons/SnailNavIcon.vue'
 import TrailNavIcon from '@/components/icons/TrailNavIcon.vue'
+import FpsNavIcon from '@/components/icons/FpsNavIcon.vue'
 
 import BackToTop from './BackToTop.vue'
 import CursorTrail from './CursorTrail.vue'
+import FpsMeter from './FpsMeter.vue'
 import FooterGrunRayPanel from './FooterGrunRayPanel.vue'
 import ScrollProgress from './ScrollProgress.vue'
 import SiteNav from './SiteNav.vue'
@@ -256,6 +258,10 @@ function toggleLocale() {
 
 function toggleCursorTrail() {
   ui.cursorTrailEnabled = !ui.cursorTrailEnabled
+}
+
+function toggleFpsMeter() {
+  ui.fpsMeterEnabled = !ui.fpsMeterEnabled
 }
 
 /** 面板内按钮先播「消失」再改状态，顶栏再「出现」；回退到仅面板时重置为可再次挂载 */
@@ -730,6 +736,20 @@ function onRouteEnter(el: Element, done: () => void) {
                 </Transition>
                 <button
                   type="button"
+                  class="fps-nav-btn"
+                  :class="{ 'is-active': ui.fpsMeterEnabled }"
+                  :aria-pressed="ui.fpsMeterEnabled ? 'true' : 'false'"
+                  :data-nav-tip="ui.fpsMeterEnabled ? t('nav.fpsOff') : t('nav.fpsOn')"
+                  :aria-label="ui.fpsMeterEnabled ? t('nav.fpsOff') : t('nav.fpsOn')"
+                  @click="toggleFpsMeter"
+                >
+                  <span class="fps-nav-btn-icon" aria-hidden="true">
+                    <FpsNavIcon />
+                  </span>
+                  <span class="nav-pill-grow-line" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
                   class="splash-nav-btn"
                   :data-nav-tip="t('splash.replayTitle')"
                   :aria-label="t('splash.replayLabel')"
@@ -761,6 +781,7 @@ function onRouteEnter(el: Element, done: () => void) {
 
     <CursorTrail />
     <BackToTop />
+    <FpsMeter v-if="ui.fpsMeterEnabled" />
     <PhotoBgBlurAdjuster
       :open="photoBlurAdjusterOpen"
       :anchor-rect="photoBlurAnchorRect"

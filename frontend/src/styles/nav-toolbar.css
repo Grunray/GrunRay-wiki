@@ -30,6 +30,7 @@
 .trail-toggle,
 .music-nav-btn,
 .splash-nav-btn,
+.fps-nav-btn,
 .locale-nav-btn,
 .nav-overflow-trigger,
 .theme-nav-btn {
@@ -59,6 +60,7 @@
 .trail-toggle:hover,
 .music-nav-btn:hover,
 .splash-nav-btn:hover,
+.fps-nav-btn:hover,
 .locale-nav-btn:hover,
 .nav-overflow-trigger:hover,
 .theme-nav-btn:hover {
@@ -86,6 +88,7 @@
 .trail-toggle:hover .nav-pill-grow-line,
 .music-nav-btn:hover .nav-pill-grow-line,
 .splash-nav-btn:hover .nav-pill-grow-line,
+.fps-nav-btn:hover .nav-pill-grow-line,
 .locale-nav-btn:hover .nav-pill-grow-line,
 .nav-overflow-trigger:hover .nav-pill-grow-line,
 .theme-nav-btn:hover .nav-pill-grow-line {
@@ -97,6 +100,7 @@
 .trail-toggle-icon,
 .music-nav-btn-icon,
 .splash-nav-btn-icon,
+.fps-nav-btn-icon,
 .nav-overflow-trigger-icon,
 .theme-nav-btn-icon {
   display: inline-flex;
@@ -109,6 +113,7 @@
 .trail-toggle-icon :deep(svg),
 .music-nav-btn-icon :deep(svg),
 .splash-nav-btn-icon :deep(svg),
+.fps-nav-btn-icon :deep(svg),
 .nav-overflow-trigger-icon :deep(svg),
 .theme-nav-btn-icon :deep(svg) {
   width: 0.88rem;
@@ -119,6 +124,7 @@
 
 .photo-bg-nav-btn.is-active,
 .trail-toggle.is-active,
+.fps-nav-btn.is-active,
 .music-nav-btn--open,
 .music-nav-btn--playing,
 .nav-overflow-trigger.is-open {
@@ -132,6 +138,7 @@
 
 :global([data-theme='dark']) .photo-bg-nav-btn.is-active,
 :global([data-theme='dark']) .trail-toggle.is-active,
+:global([data-theme='dark']) .fps-nav-btn.is-active,
 :global([data-theme='dark']) .music-nav-btn--open,
 :global([data-theme='dark']) .music-nav-btn--playing,
 :global([data-theme='dark']) .nav-overflow-trigger.is-open {
@@ -145,6 +152,7 @@
 
 .photo-bg-nav-btn.is-active .nav-pill-grow-line,
 .trail-toggle.is-active .nav-pill-grow-line,
+.fps-nav-btn.is-active .nav-pill-grow-line,
 .music-nav-btn--open .nav-pill-grow-line,
 .music-nav-btn--playing .nav-pill-grow-line,
 .nav-overflow-trigger.is-open .nav-pill-grow-line {
