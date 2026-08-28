@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
 import CardCornerVineLazy from '@/components/hover/CardCornerVineLazy.vue'
-import FilmFeed from '@/components/media/FilmFeed.vue'
 import AvatarCircleSkeleton from '@/components/ui/AvatarCircleSkeleton.vue'
+import { useHomeHeroRelayout } from '@/composables/useHomeHeroRelayout'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
 import { ensureProjectsLoaded, listProjectsPublic } from '@/services/contentRepository'
 import '@/styles/page-enter-home.css'
+import '@/styles/page-home-hero.css'
 import '@/styles/page-toc-row.css'
 import { useUiStore } from '@/stores/ui'
 import type { Post, Project } from '@/types/content'
@@ -19,6 +21,7 @@ import { readSessionJson, writeSessionJson } from '@/utils/sessionJsonCache'
 const { t } = useI18n()
 const route = useRoute()
 const ui = useUiStore()
+const { photoBackgroundEnabled, theme } = storeToRefs(ui)
 
 useSeoMeta(() => ({
   title: `${t('nav.home')} | ${SITE_NAME}`,
@@ -28,6 +31,8 @@ useSeoMeta(() => ({
 }))
 
 const homeRoot = ref<HTMLElement | null>(null)
+const peekRef = ref<HTMLElement | null>(null)
+const scrollLayerRef = ref<HTMLElement | null>(null)
 const avatarUrl = ref('')
 const latestUpdatedPosts = ref<Post[]>([])
 const randomRecommendedPost = ref<Post | null>(null)
@@ -36,9 +41,23 @@ const CACHE_HOME_AVATAR = 'grunray.home.avatarUrl.v1'
 const CACHE_HOME_LATEST = 'grunray.home.latestPosts.v1'
 const CACHE_HOME_RANDOM = 'grunray.home.randomPost.v1'
 
+const { measureCoverPeek } = useHomeHeroRelayout({ peekRef, scrollLayerRef })
+
+/**
+ * 勿在 homeRoot 上再用 :class 绑 is-photo-bg：Vue 会重写 class，冲掉
+ * classList 写入的 page-enter--play / home-fonts-ready。左右位移走 html[data-photo-bg]。
+ * 模板必须保持单根，否则 AppShell 的 out-in Transition 会卡死成空白页。
+ */
+
 /** 封面故事 = 最新一篇；其余进「最新文章」栏 */
 const coverStory = computed(() => latestUpdatedPosts.value[0] ?? null)
 const latestList = computed(() => latestUpdatedPosts.value.slice(1, 5))
+
+const stageArtSrc = computed(() => {
+  if (theme.value === 'light') return '/art/polonia_sandoren.webp'
+  if (theme.value === 'abstract') return '/art/polonia_sandoren-abstract.webp'
+  return '/art/polonia_sandoren-dark.webp'
+})
 
 /** 刊号：VOL.年 · NO.年内周数 · 今天日期 */
 const issue = computed(() => {
@@ -136,64 +155,135 @@ function projectYear(p: Project): string {
   return p.start_date ? String(new Date(p.start_date).getFullYear()) : ''
 }
 
+async function waitGreetingFonts() {
+  const fonts = document.fonts
+  if (!fonts?.load) return
+  try {
+    await Promise.race([
+      fonts.load('400 4rem "Great Vibes"'),
+      new Promise<void>((resolve) => {
+        window.setTimeout(resolve, 1200)
+      }),
+    ])
+  } catch {
+    // 字体失败仍显示问候语
+  }
+}
+
 onMounted(() => {
   loadAvatar()
   loadLatestUpdatedPost()
   loadRandomRecommendedPost()
   void loadHomeProjects()
-  void playPageEnter(homeRoot.value)
+  void (async () => {
+    await waitGreetingFonts()
+    homeRoot.value?.classList.add('home-fonts-ready')
+    await nextTick()
+    measureCoverPeek()
+    void playPageEnter(homeRoot.value)
+  })()
+  const peek = peekRef.value
+  peek?.addEventListener(
+    'mouseenter',
+    () => {
+      homeRoot.value
+        ?.querySelector('.cover-story-detail')
+        ?.dispatchEvent(new Event('mouseenter'))
+    },
+    { once: true },
+  )
+})
+
+watch(coverStory, async () => {
+  await nextTick()
+  measureCoverPeek()
 })
 </script>
 
 <template>
   <section ref="homeRoot" class="home-layout">
-    <!-- 刊号 + 胶片横幅：收束为单层 Hero，避免双抬头 -->
-    <div class="home-hero-stack">
-      <header class="home-mast" aria-label="刊号">
-        <p class="mast-vol">
-          <strong>{{ SITE_NAME }}</strong> · VOL.{{ issue.year }} · NO.{{ issue.no }} · {{ issue.date }}
-        </p>
-        <div class="avatar">
-          <img
-            v-if="avatarUrl"
-            data-splash-avatar-target
-            :class="{ 'home-avatar--splash-fly': ui.splashAvatarHandoff }"
-            :src="avatarUrl"
-            alt="头像"
-          />
-          <AvatarCircleSkeleton v-else />
-        </div>
-      </header>
+    <section class="home-stage" aria-label="首屏">
+      <figure v-if="!photoBackgroundEnabled" class="home-stage-art" aria-hidden="true">
+        <img
+          :src="stageArtSrc"
+          alt=""
+          width="1536"
+          height="1024"
+          decoding="async"
+          fetchpriority="low"
+        />
+      </figure>
 
-      <section class="home-band" aria-label="封面横幅">
-        <FilmFeed horizontal class="home-band-film" />
-        <div class="home-band-scrim" aria-hidden="true"></div>
-        <div class="home-band-copy">
-          <h1 class="cover-greeting">{{ t('home.greeting') }}</h1>
-          <p class="cover-note">{{ t('home.internshipNote') }}</p>
-        </div>
-      </section>
-    </div>
+      <div class="home-wrap home-stage-inner">
+        <header class="home-mast" aria-label="刊号">
+          <p class="mast-vol card">
+            <strong>{{ SITE_NAME }}</strong> · VOL.{{ issue.year }} · NO.{{ issue.no }} · {{ issue.date }}
+          </p>
+          <div class="home-mast-avatar card">
+            <img
+              v-if="avatarUrl"
+              data-splash-avatar-target
+              :class="{ 'home-avatar--splash-fly': ui.splashAvatarHandoff }"
+              :src="avatarUrl"
+              alt="头像"
+            />
+            <AvatarCircleSkeleton v-else />
+          </div>
+        </header>
 
-    <!-- 封面故事：最新一篇文章当本期主角 -->
-    <section v-if="coverStory" class="cover-story card-hover-g" aria-label="封面故事">
-      <p class="cover-story-kicker">{{ t('home.coverStoryKicker') }}</p>
-      <h2 class="cover-story-title">
-        <RouterLink :to="`/blog/${coverStory.slug}`">{{ coverStory.title }}</RouterLink>
-      </h2>
-      <p v-if="coverStory.summary" class="cover-story-lede">{{ coverStory.summary }}</p>
-      <p class="cover-story-meta">
-        <time>{{ formatDateYmd(coverStory.updated_at) || '----/--/--' }}</time>
-        <span v-for="tag in coverStory.tags" :key="tag" class="tag">{{ tag }}</span>
-        <RouterLink class="cover-story-read" :to="`/blog/${coverStory.slug}`">
-          {{ t('home.readStory') }} →
-        </RouterLink>
-      </p>
-      <CardCornerVineLazy />
+        <div class="home-stage-void" aria-hidden="true"></div>
+
+        <div class="home-stage-dock">
+          <div class="home-intro-track">
+            <div class="home-intro-stack">
+              <h1 class="home-intro-greeting card">
+                {{ t('home.greeting') }}<span class="home-intro-brand">{{ t('home.greetingBrand') }}</span>
+              </h1>
+              <p class="home-intro-note card">{{ t('home.internshipNote') }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <!-- NOW：此刻在做什么 -->
-    <section class="home-now" aria-label="此刻">
+    <div class="home-rising">
+      <div class="home-peek-wrap">
+        <article
+          ref="peekRef"
+          class="cover-story-peek"
+          data-cursor-hover="project"
+          aria-label="封面故事"
+        >
+          <p class="cover-story-kicker">{{ t('home.coverStoryKicker') }}</p>
+        </article>
+      </div>
+
+      <div ref="scrollLayerRef" class="home-scroll-layer" aria-label="滚动纸面">
+        <div class="home-scroll-layer-paper">
+          <div v-if="coverStory" class="home-wrap">
+            <div
+              class="cover-story cover-story-detail card card-hover-g"
+              data-cursor-hover="project"
+            >
+              <h2 class="cover-story-title">
+                <RouterLink :to="`/blog/${coverStory.slug}`">{{ coverStory.title }}</RouterLink>
+              </h2>
+              <p v-if="coverStory.summary" class="cover-story-lede">{{ coverStory.summary }}</p>
+              <p class="cover-story-meta">
+                <time>{{ formatDateYmd(coverStory.updated_at) || '----/--/--' }}</time>
+                <span v-for="tag in coverStory.tags" :key="tag" class="tag">{{ tag }}</span>
+                <RouterLink class="cover-story-read" :to="`/blog/${coverStory.slug}`">
+                  {{ t('home.readStory') }} →
+                </RouterLink>
+              </p>
+              <CardCornerVineLazy />
+            </div>
+          </div>
+
+          <section class="home-sheet" aria-label="目录与后续内容">
+            <div class="home-sheet-body">
+              <div class="home-wrap">
+                <section class="home-now" aria-label="此刻">
       <p class="now-kicker">{{ t('home.nowKicker') }}</p>
       <ul class="now-list">
         <li>{{ t('home.nowDoing') }}</li>
@@ -308,37 +398,33 @@ onMounted(() => {
         </section>
       </aside>
     </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
   </section>
 </template>
 
 <style scoped>
-/* 首页 = Hero 栈（刊号 + 胶片） → 封面故事 → NOW → 三栏目录 */
-.home-layout {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(1.6rem, 3.2vw, 2.4rem);
-}
-
-.home-hero-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  border-top: 2px solid color-mix(in srgb, var(--color-text) 82%, transparent);
-  padding-top: 0.65rem;
-}
-
-/* —— 刊号行（叠在 Hero 栈顶，不与横幅分两层抬头） —— */
 .home-mast {
+  flex: 0 0 auto;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin: 0;
-  padding: 0 0.05rem;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: flex-start;
+  gap: 0.95rem;
+  width: max-content;
+  max-width: min(100%, 36rem);
+  margin: 0.55rem 0 0;
 }
 
 .mast-vol {
   margin: 0;
+  padding: 0.7rem 1rem;
+  width: max-content;
+  max-width: 100%;
   font-family: var(--font-mono);
   font-size: 0.74rem;
   letter-spacing: 0.14em;
@@ -351,15 +437,13 @@ onMounted(() => {
   color: var(--color-text);
 }
 
-.avatar {
+.home-mast-avatar {
   flex: 0 0 auto;
-  width: 2.65rem;
+  width: 2.85rem;
   aspect-ratio: 1 / 1;
+  padding: 0;
   border-radius: 50%;
   overflow: hidden;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-surface);
-  box-shadow: var(--shadow-card);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -367,7 +451,7 @@ onMounted(() => {
   font-size: 1.1rem;
 }
 
-.avatar img {
+.home-mast-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -375,76 +459,16 @@ onMounted(() => {
   transition: opacity 0.28s ease;
 }
 
+.home-mast-avatar :deep(.avatar-circle-skeleton) {
+  min-height: 0;
+}
+
 .home-avatar--splash-fly {
   opacity: 0;
   pointer-events: none;
 }
 
-/* —— 电影感横幅：FilmFeed 铺满变矮后的容器（不裁切上沿） —— */
-.home-band {
-  position: relative;
-  height: clamp(13rem, 32vh, 20rem);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.home-band-film {
-  position: absolute;
-  inset: 0;
-}
-
-.home-band-scrim {
-  position: absolute;
-  inset: 0;
-  z-index: 20;
-  /* 底缘托住刊名；顶缘保持通透，避免盖住胶片右上角滚轮提示 */
-  background: linear-gradient(
-    to top,
-    rgb(12 16 13 / 82%) 0%,
-    rgb(12 16 13 / 52%) 36%,
-    rgb(12 16 13 / 18%) 58%,
-    transparent 76%
-  );
-  pointer-events: none;
-}
-
-.home-band-copy {
-  position: absolute;
-  inset: auto 0 0 0;
-  z-index: 30;
-  padding: 1.3rem clamp(1.2rem, 3vw, 2.2rem);
-  pointer-events: none;
-}
-
-/* 横幅永远是深色胶片底，文案固定浅色系，不随主题令牌变化 */
-.cover-greeting {
-  margin: 0;
-  font-family: var(--font-serif);
-  font-size: clamp(2rem, 4.8vw, 3.35rem);
-  font-weight: 600;
-  font-style: italic;
-  line-height: 1.22;
-  letter-spacing: 0.01em;
-  color: #f4f1e8;
-}
-
-.cover-note {
-  margin: 0.65rem 0 0;
-  font-size: 0.92rem;
-  line-height: 1.65;
-  color: rgb(244 241 232 / 72%);
-  max-width: 34rem;
-}
-
-/* —— 封面故事：全页唯一强强调块，卡片包裹 + accent 左边条 —— */
-.cover-story {
-  padding: clamp(1.15rem, 2.4vw, 1.7rem) clamp(1.15rem, 2.6vw, 1.8rem);
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-  border-left: 3px solid var(--color-accent);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
-}
+/* —— 封面故事正文（kicker 在 peek；花藤仍挂在 detail） —— */
 
 .cover-story-kicker {
   margin: 0;
@@ -517,7 +541,6 @@ onMounted(() => {
   gap: 1.1rem;
   align-items: start;
   padding: 0.95rem 0;
-  border-top: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -606,7 +629,7 @@ onMounted(() => {
   border-bottom: 1px solid var(--color-border);
   font-family: var(--font-mono);
   font-size: 0.74rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: color-mix(in srgb, var(--color-text) 84%, transparent);
@@ -707,29 +730,12 @@ onMounted(() => {
 }
 
 @media (max-width: 640px) {
-  .home-hero-stack {
-    padding-top: 0.55rem;
-    gap: 0.28rem;
-  }
-
   .home-mast {
-    padding-top: 0;
+    margin-top: 0.35rem;
   }
 
-  .avatar {
-    width: 2.4rem;
-  }
-
-  .cover-greeting {
-    font-size: clamp(1.75rem, 7.2vw, 2.35rem);
-  }
-
-  .cover-note {
-    font-size: 0.88rem;
-  }
-
-  .home-band {
-    height: clamp(10rem, 26vh, 16rem);
+  .home-mast-avatar {
+    width: 2.55rem;
   }
 
   .cover-story-read {
