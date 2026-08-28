@@ -104,6 +104,14 @@
   font-display: swap;
   src: url(/fonts/noto-serif-sc-chinese-simplified-600-normal.woff2) format('woff2');
 }
+/* 700 请求复用 600 面，避免问候/标题因缺字重落到系统宋体 */
+@font-face {
+  font-family: 'Noto Serif SC';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/fonts/noto-serif-sc-chinese-simplified-600-normal.woff2) format('woff2');
+}
 
 /* Great Vibes — 首页问候语品牌花体（OFL；仅 latin，自托管勿外链 Google Fonts） */
 @font-face {

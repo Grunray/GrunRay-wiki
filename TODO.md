@@ -248,6 +248,46 @@ cd frontend; npm run dev;
 
 ## 已完成
 
+## 120 · 2026-08-28 首页问候字体 · 月相拖尾微调
+
+**状态**：已完成（2026-08-28；本地目视）
+
+**方向**：修复部署后首页问候语中文掉系统宋体、品牌名花体下伸被裁；月相拖尾月亮缩小、Columbina 相对 Damselette 拉开、拖尾月亮不透明度 40%。
+
+**背景 / 现状**
+
+- 问候语曾用 `font-weight:700` + `font-style:italic`，自托管 Noto Serif SC 只有 500/600 **normal**，部署后匹配失败落到 Songti/SimSun；`.card { overflow:hidden }` 裁掉 Great Vibes 的 `y` 下伸。
+- 月相拖尾月亮偏大、Columbina 贴 Damselette 过近；拖尾月亮虽有 alpha 但偏实。
+
+**P0 — 问候字体**
+
+- [x] 120-1 `.home-intro-greeting`：中文改为 Noto Serif SC **600 normal**；问候卡 `overflow: visible` + 略增 padding，避免裁花体下伸
+- [x] 120-2 `fonts.css`：Noto Serif SC 700 请求复用 600 面；入场等字体同时 load Noto + Great Vibes
+- [x] 120-3 DESIGN.md §3 问候层级说明与自托管字重对齐
+
+**P0 — 月相拖尾**
+
+- [x] 120-4 拖尾月亮 `moonRadiusBase` 减 1/5（`4 → 3.2`）
+- [x] 120-5 Columbina 相对 Damselette 偏移 `8,7 → 14,12`
+- [x] 120-6 拖尾月亮（含头月）基准不透明度 `trailMoonOpacity: 0.4`；原型 `designed/moonlit-cursor-options` 同步
+
+**⚠️ 回归 / 风险**
+
+- 现象：问候中文仍像宋体 → 查 `/fonts/noto-serif-sc-*-600-normal.woff2` 是否 404
+- 现象：品牌名仍缺下伸 → 确认未再给问候卡加 `overflow:hidden`
+- 验收：浅/深主题问候可读；开拖尾月亮更透、更小；线稿不压尖端
+
+**涉及文件**
+
+`page-home-hero.css`、`HomeView.vue`、`fonts.css`、`DESIGN.md`、`moonlitCursorEngine.ts`、`designed/moonlit-cursor-options/shared.js`、`TODO.md`
+
+**验收**
+
+- [x] 问候「你好，我是」为 Noto 衬线；「GrunRay」花体完整（含 y）
+- [x] 拖尾月亮约 40% 不透明、尺寸缩小；Columbina 更靠右下
+
+---
+
 ## 119 · 2026-08-28 全站 FPS / 1%L 监视浮层
 
 **状态**：已完成（2026-08-28；首页+博客目视，开关可用）

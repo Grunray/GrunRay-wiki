@@ -160,7 +160,10 @@ async function waitGreetingFonts() {
   if (!fonts?.load) return
   try {
     await Promise.race([
-      fonts.load('400 4rem "Great Vibes"'),
+      Promise.all([
+        fonts.load('600 4rem "Noto Serif SC"'),
+        fonts.load('400 4rem "Great Vibes"'),
+      ]),
       new Promise<void>((resolve) => {
         window.setTimeout(resolve, 1200)
       }),
