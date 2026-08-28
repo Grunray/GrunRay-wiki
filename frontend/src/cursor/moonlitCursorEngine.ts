@@ -36,15 +36,18 @@ const SCHEMES = {
     trailSmooth: 0.52,
     pathSampleMin: 3,
     pathSampleMax: 56,
-    moonRadiusBase: 4,
+    /** 拖尾月半径基准；相对初值 4 再减 1/5 */
+    moonRadiusBase: 3.2,
+    /** 拖尾月亮不透明度（含头月）；life / 出生淡入仍可再乘 */
+    trailMoonOpacity: 0.4,
     trailAlpha: 0.88,
     spriteMaxPx: 48,
     /** 点击热点（0–1）：Damselette 尖端对齐 mx/my */
     spriteHotX: 0.08,
     spriteHotY: 0.08,
-    /** Columbina 线稿相对热点的偏移（避免与 Damselette 重叠） */
-    spriteOffsetX: 8,
-    spriteOffsetY: 7,
+    /** Columbina 线稿相对 Damselette 热点的偏移（再拉开一点，少叠在尖端上） */
+    spriteOffsetX: 14,
+    spriteOffsetY: 12,
     anchorMaxPx: 20,
     anchorHotX: 0.06,
     anchorHotY: 0.06,
@@ -1515,8 +1518,8 @@ export class MoonlitCursorEngine {
   /** 方案 D · Columbina 线稿绘制原点（相对热点右下偏移，避免压住 Damselette） */
   getConstellationSpriteDrawPoint(cfg, x, y) {
     return {
-      x: x + (cfg.spriteOffsetX ?? 8),
-      y: y + (cfg.spriteOffsetY ?? 7),
+      x: x + (cfg.spriteOffsetX ?? 14),
+      y: y + (cfg.spriteOffsetY ?? 12),
     }
   }
 
@@ -2030,8 +2033,8 @@ export class MoonlitCursorEngine {
       }
       const t = (i + 1) / Math.max(nodes.length + (moving ? 1 : 0), 1)
       const r = moonBase + n.phase * 1.5 + t * 0.35
-      let moonAlpha = n.life * vis * (0.55 + t * 0.4)
-      moonAlpha *= this.moonSpawnEase(cfg, n.t, spawnNow)
+      const moonOpacity = cfg.trailMoonOpacity ?? 0.4
+      let moonAlpha = moonOpacity * n.life * this.moonSpawnEase(cfg, n.t, spawnNow)
       if (isTailZ && this.constellationTailRetract) {
         moonAlpha *= Math.max(0, 1 - this.constellationTailRetract.progress)
       }
@@ -2043,7 +2046,8 @@ export class MoonlitCursorEngine {
       const headPhase = this.constellationHeadPhase()
       const headR = moonBase + headPhase * 1.5 + 0.35
       const headBorn = this.trailEmergenceT || spawnNow
-      const headAlpha = vis * 0.82 * this.moonSpawnEase(cfg, headBorn, spawnNow)
+      const moonOpacity = cfg.trailMoonOpacity ?? 0.4
+      const headAlpha = moonOpacity * this.moonSpawnEase(cfg, headBorn, spawnNow)
       if (headAlpha > 0.02) {
         this.drawMoonPhaseNode(ctx, trailAt.x, trailAt.y, headR, headPhase, pal, headAlpha, tuning, this.headMoonRot)
       }

@@ -257,17 +257,24 @@ html[data-home-hero-page='true'][data-photo-bg='true'] .home-intro-stack {
 
 .home-intro-greeting {
   margin: 0;
-  padding: 0.85rem 1.85rem 0.95rem;
+  /* 上下略留空：Great Vibes 下伸笔画不被 .card overflow:hidden 裁掉 */
+  padding: 0.95rem 1.85rem 1.15rem;
   width: max-content;
   max-width: 100%;
   font-family: var(--font-serif);
   font-size: clamp(2.55rem, 6.9vw, 4.125rem);
-  font-weight: 700;
-  font-style: italic;
-  line-height: 1.12;
+  /* 自托管 Noto Serif SC 只有 500/600 normal；700 italic 会跳过 webfont 掉到系统宋体 */
+  font-weight: 600;
+  font-style: normal;
+  line-height: 1.22;
   letter-spacing: 0.01em;
   color: var(--color-text);
   white-space: nowrap;
+}
+
+/* 压过 .card { overflow: hidden }，否则品牌名 y/g 下伸被裁成 GrunRa */
+.home-intro-greeting.card {
+  overflow: visible;
 }
 
 .home-intro-brand {
@@ -278,8 +285,10 @@ html[data-home-hero-page='true'][data-photo-bg='true'] .home-intro-stack {
   font-size: 1.28em;
   letter-spacing: 0.04em;
   margin-left: 0.18em;
-  line-height: 1;
-  vertical-align: -0.18em;
+  line-height: 1.05;
+  /* 花体基线略下沉，勿用过大负值以免顶边再被裁 */
+  vertical-align: -0.06em;
+  padding-bottom: 0.12em;
   color: var(--color-text);
 }
 

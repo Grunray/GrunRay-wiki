@@ -74,7 +74,7 @@
 
 | 层级 | 字族 | 字号 | 字重 | 说明 |
 |---|---|---|---|---|
-| 站点问候/封面 | Serif + Script | clamp(2.55–4.125rem) | 700 italic（品牌名 Script 400） | 仅首页；等字体就绪再显 |
+| 站点问候/封面 | Serif + Script | clamp(2.55–4.125rem) | 中文 Noto Serif SC **600 normal**（自托管无 700 italic 面）；品牌名 Great Vibes 400 | 仅首页；等 Noto + Great Vibes 就绪再显；问候卡 `overflow: visible` 以免裁掉花体下伸 |
 | 页面标题 H1 | Serif | clamp(1.5–2rem) | 600 | 文章标题、分区标题 |
 | 节标题 H2/H3 | Serif 或 Sans | 1.1–1.35rem | 600 | |
 | 正文 | Sans | 1.02–1.06rem | 400 | 行高 1.75–1.85（中文要松） |
