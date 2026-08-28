@@ -10,13 +10,14 @@ from app.friend_link_repo import (
     insert_application,
     list_admin,
     list_published,
+    update_friend_fields,
 )
 from app.friend_moderation import FriendModerationError
 from app.friend_rate_limit import FriendRateLimitError, check_application_rate_limit, record_application
 from app.friend_serialize import application_result, row_to_admin_friend, row_to_friend
 from app.friend_special import load_special_links
 from app.friend_status import STATUS_PENDING, STATUS_PUBLISHED
-from app.friend_validate import FriendValidationError, validate_application
+from app.friend_validate import FriendValidationError, validate_application, validate_admin_update
 from app.site_owner import is_site_owner
 
 bp = Blueprint("friends_api", __name__, url_prefix="/api/friends")
@@ -152,7 +153,11 @@ def list_friends_admin():
         "hidden": 2,
         "rejected": 3,
     }
-    status = status_map.get(status_raw, STATUS_PENDING)
+    status: int | None
+    if status_raw == "all":
+        status = None
+    else:
+        status = status_map.get(status_raw, STATUS_PENDING)
 
     sort = (request.args.get("sort") or "newest").strip().lower()
     if sort not in ("newest", "oldest"):
@@ -184,15 +189,26 @@ def moderate_friend(public_id: str):
 
     body = request.get_json(silent=True) or {}
     action = body.get("action")
-    if not action or not isinstance(action, str):
-        return _error("请指定审核动作 action")
+    pid = public_id.strip()
+
+    update_keys = ("name", "url", "description", "avatarUrl", "contactEmail", "sortOrder")
+    has_update = any(k in body for k in update_keys)
 
     try:
         with cursor() as cur:
-            row = apply_moderation_action(cur, public_id.strip(), action)
+            row = None
+            if has_update:
+                fields = validate_admin_update(body)
+                row = update_friend_fields(cur, pid, fields)
+            if action and isinstance(action, str):
+                row = apply_moderation_action(cur, pid, action)
+            if row is None:
+                return _error("请指定审核动作 action 或要更新的字段")
+    except FriendValidationError as e:
+        return _error(str(e))
     except FriendModerationError as e:
         return _error(str(e))
     except Exception:
-        return _error("审核操作失败", status=500)
+        return _error("操作失败", status=500)
 
     return _ok(row_to_admin_friend(row), message="操作成功")

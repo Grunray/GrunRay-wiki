@@ -5,9 +5,11 @@ import { RouterLink, useRoute } from 'vue-router'
 
 import type { FriendLink, SpecialLink } from '@/content/data/mockFriends'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
+import { useSiteLeaveRedirect } from '@/composables/useSiteLeaveRedirect'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
-import { fetchFriendLinks, fetchSpecialLinks } from '@/services/friendsApi'
+import { fetchFriendLinks, fetchSpecialLinks, fetchAdminFriends } from '@/services/friendsApi'
+import { fetchMessageAuthUser } from '@/services/messageAuth'
 import SpecialLinkAvatar from '@/components/friends/SpecialLinkAvatar.vue'
 import { resolveFriendAvatar, resolveFriendCover } from '@/utils/siteFavicon'
 import '@/styles/page-enter-friends.css'
@@ -15,6 +17,7 @@ import '@/styles/page-friends.css'
 
 const { t } = useI18n()
 const route = useRoute()
+const { startExternalLeave } = useSiteLeaveRedirect()
 
 useSeoMeta(() => ({
   title: `${t('friends.title')} | ${SITE_NAME}`,
@@ -27,6 +30,8 @@ const pageRoot = ref<HTMLElement | null>(null)
 const friends = ref<FriendLink[]>([])
 const specialLinks = ref<SpecialLink[]>([])
 const loading = ref(true)
+const isSiteOwner = ref(false)
+const pendingAdminCount = ref(0)
 
 const friendCount = computed(() => friends.value.length)
 
@@ -61,12 +66,30 @@ function specialCardClass(item: SpecialLink) {
   }
 }
 
+function onExternalLinkClick(url: string, event: MouseEvent) {
+  event.preventDefault()
+  void startExternalLeave(url, route.fullPath)
+}
+
 onMounted(async () => {
   loading.value = true
   try {
-    const [linkList, specialList] = await Promise.all([fetchFriendLinks(), fetchSpecialLinks()])
+    const [linkList, specialList, authUser] = await Promise.all([
+      fetchFriendLinks(),
+      fetchSpecialLinks(),
+      fetchMessageAuthUser().catch(() => null),
+    ])
     friends.value = linkList
     specialLinks.value = specialList
+    isSiteOwner.value = Boolean(authUser?.isSiteOwner)
+    if (isSiteOwner.value) {
+      try {
+        const pending = await fetchAdminFriends({ status: 'pending', page: 1, size: 1 })
+        pendingAdminCount.value = pending.total
+      } catch {
+        pendingAdminCount.value = 0
+      }
+    }
   } finally {
     loading.value = false
   }
@@ -87,6 +110,7 @@ onMounted(async () => {
         <p class="message-welcome-line">{{ t('friends.welcomeText') }}</p>
       </blockquote>
 
+      <div class="friends-welcome-actions">
       <RouterLink to="/friends/apply" class="friends-apply-entry card">
         <p class="friends-apply-entry-title">{{ t('friends.applyEntryTitle') }}</p>
         <span class="friends-apply-entry-icon" aria-hidden="true">
@@ -95,6 +119,21 @@ onMounted(async () => {
           </svg>
         </span>
       </RouterLink>
+
+      <RouterLink
+        v-if="isSiteOwner"
+        to="/friends/admin"
+        class="friends-admin-entry card"
+      >
+        <p class="friends-admin-entry-title">{{ t('friends.adminEntryTitle') }}</p>
+        <span v-if="pendingAdminCount > 0" class="friends-admin-entry-badge">{{ pendingAdminCount }}</span>
+        <span class="friends-apply-entry-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </span>
+      </RouterLink>
+      </div>
     </div>
 
     <section class="friends-section" aria-labelledby="friends-list-heading">
@@ -111,6 +150,7 @@ onMounted(async () => {
               target="_blank"
               rel="noopener noreferrer"
               :style="{ ...friendCardStyle(friend), '--enter-i': String(index) }"
+              @click="onExternalLinkClick(friend.url, $event)"
             >
               <div class="friend-card-body">
                 <img
@@ -145,6 +185,7 @@ onMounted(async () => {
             target="_blank"
             rel="noopener noreferrer"
             :style="{ ...specialCardStyle(item), '--enter-i': String(index) }"
+            @click="onExternalLinkClick(item.url, $event)"
           >
             <div class="friends-special-card-body">
               <SpecialLinkAvatar :item="item" />

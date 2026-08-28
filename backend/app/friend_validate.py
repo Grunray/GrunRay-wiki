@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from typing import Any
 from urllib.parse import urlparse
 
 from app.config import config
@@ -113,3 +114,73 @@ def validate_application(
         "avatar_url": avatar,
         "cover_url": avatar,
     }
+
+
+def validate_admin_update(body: dict[str, Any]) -> dict[str, Any]:
+    """站长 PATCH 部分字段更新；仅校验出现的键。"""
+    updates: dict[str, Any] = {}
+
+    if "name" in body:
+        raw = body.get("name")
+        if not raw or not str(raw).strip():
+            raise FriendValidationError("请填写站点名称")
+        try:
+            name = strip_html_and_validate(str(raw))
+        except ValidationError as e:
+            raise FriendValidationError(str(e)) from e
+        if len(name) > _NAME_MAX:
+            raise FriendValidationError(f"站点名称不能超过 {_NAME_MAX} 个字符")
+        _check_sensitive(name)
+        updates["name"] = name
+
+    if "url" in body:
+        raw = body.get("url")
+        if not raw or not str(raw).strip():
+            raise FriendValidationError("请填写站点地址")
+        url_raw = str(raw).strip()
+        if len(url_raw) > _URL_MAX:
+            raise FriendValidationError("站点地址过长")
+        updates["url"] = url_raw
+        updates["url_normalized"] = normalize_friend_url(url_raw)
+
+    if "description" in body:
+        raw = body.get("description")
+        if not raw or not str(raw).strip():
+            raise FriendValidationError("请填写站点简介")
+        try:
+            desc = strip_html_and_validate(str(raw))
+        except ValidationError as e:
+            raise FriendValidationError(str(e)) from e
+        if len(desc) > _DESC_MAX:
+            raise FriendValidationError(f"简介不能超过 {_DESC_MAX} 个字符")
+        _check_sensitive(desc)
+        updates["description"] = desc
+
+    if "avatarUrl" in body:
+        avatar = validate_http_url(
+            body.get("avatarUrl"),
+            field="头像地址",
+            max_len=_AVATAR_MAX,
+            optional=True,
+        )
+        updates["avatar_url"] = avatar
+
+    if "contactEmail" in body:
+        raw = body.get("contactEmail")
+        if raw is None or str(raw).strip() == "":
+            updates["contact_email"] = None
+        else:
+            email = str(raw).strip()
+            if len(email) > _EMAIL_MAX:
+                raise FriendValidationError("邮箱过长")
+            if not re.match(r"^[^\s@]+@[^\s@]+\.[^\s@]+$", email):
+                raise FriendValidationError("邮箱格式不正确")
+            updates["contact_email"] = email
+
+    if "sortOrder" in body:
+        try:
+            updates["sort_order"] = int(body.get("sortOrder"))
+        except (TypeError, ValueError) as e:
+            raise FriendValidationError("排序值无效") from e
+
+    return updates

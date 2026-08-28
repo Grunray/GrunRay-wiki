@@ -126,7 +126,7 @@ class Config:
     FRIENDS_SITE_LOGO_URL = os.getenv("FRIENDS_SITE_LOGO_URL", "").strip()
     FRIENDS_SITE_DESCRIPTION = os.getenv(
         "FRIENDS_SITE_DESCRIPTION",
-        "个人成果与笔记：项目、开发记录与算法心得。",
+        "找不到实习捏——代码不跑我跑！",
     ).strip()
 
     def friends_site_logo_absolute(self) -> str:

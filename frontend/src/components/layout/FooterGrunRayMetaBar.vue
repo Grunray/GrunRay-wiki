@@ -1,9 +1,14 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+import { RouterLink } from 'vue-router'
+
 import FooterExternalLinks from './FooterExternalLinks.vue'
 
 defineProps<{
   metaVisible: boolean
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -25,11 +30,20 @@ defineProps<{
               aria-hidden="true"
             />
             <a
-              class="footer-grunray-rss-link"
+              class="footer-grunray-meta-link"
               href="/rss.xml"
               type="application/rss+xml"
-              title="RSS 订阅本站博客更新"
-            >RSS订阅</a>
+              :title="t('footer.rssTitle')"
+            >{{ t('footer.rssLabel') }}</a>
+            <span
+              class="footer-grunray-meta-divider footer-grunray-meta-divider--inline"
+              aria-hidden="true"
+            />
+            <RouterLink
+              class="footer-grunray-meta-link"
+              to="/legal"
+              :title="t('footer.legalTitle')"
+            >{{ t('footer.legalLabel') }}</RouterLink>
           </div>
           <span class="footer-grunray-meta-divider" aria-hidden="true" />
           <div class="footer-grunray-meta-col footer-grunray-meta-col--end">

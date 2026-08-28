@@ -432,11 +432,21 @@
   margin: 0;
 }
 
-.friends-apply-entry.card {
+.friends-welcome-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
   flex: 0 0 auto;
-  width: auto;
   min-width: 11rem;
   max-width: 22rem;
+}
+
+.friends-apply-entry.card,
+.friends-admin-entry.card {
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
   align-self: stretch;
 }
 
@@ -458,6 +468,49 @@
   text-decoration: none;
   transform: translateY(-1px);
   border-left-color: var(--color-accent);
+}
+
+.friends-admin-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.4rem;
+  text-decoration: none;
+  color: inherit;
+  border-left: 3px solid color-mix(in srgb, var(--color-text-muted) 45%, transparent);
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.friends-admin-entry:hover {
+  text-decoration: none;
+  transform: translateY(-1px);
+  border-left-color: color-mix(in srgb, var(--color-accent) 70%, var(--color-text-muted));
+}
+
+.friends-admin-entry-title {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.friends-admin-entry-badge {
+  flex-shrink: 0;
+  min-width: 1.35rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--color-accent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 40%, var(--color-border));
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
 }
 
 .friends-apply-entry-title {
@@ -497,6 +550,11 @@
   }
 
   .friends-apply-entry.card {
+    width: 100%;
+    max-width: none;
+  }
+
+  .friends-welcome-actions {
     width: 100%;
     max-width: none;
   }

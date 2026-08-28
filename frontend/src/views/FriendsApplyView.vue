@@ -50,8 +50,8 @@ const description = ref('')
 const contactEmail = ref('')
 
 const submitting = ref(false)
-const submitSuccess = ref(false)
-const submitSuccessMessage = ref('')
+const submitToast = ref<string | null>(null)
+let submitToastTimer: ReturnType<typeof window.setTimeout> | null = null
 const formError = ref<string | null>(null)
 
 const captchaId = ref('')
@@ -102,6 +102,15 @@ function validate(): string | null {
   return null
 }
 
+function showSubmitToast(text: string) {
+  submitToast.value = text
+  if (submitToastTimer !== null) window.clearTimeout(submitToastTimer)
+  submitToastTimer = window.setTimeout(() => {
+    submitToast.value = null
+    submitToastTimer = null
+  }, 4500)
+}
+
 async function refreshCaptcha() {
   captchaLoading.value = true
   try {
@@ -120,15 +129,16 @@ async function refreshCaptcha() {
 
 async function onSubmit() {
   formError.value = null
-  submitSuccess.value = false
-  submitSuccessMessage.value = ''
   const err = validate()
   if (err) {
     formError.value = err
+    showSubmitToast(err)
     return
   }
   if (!captchaId.value || !captchaAnswer.value.trim()) {
-    formError.value = t('messages.captchaRequired')
+    const captchaErr = t('messages.captchaRequired')
+    formError.value = captchaErr
+    showSubmitToast(captchaErr)
     return
   }
 
@@ -143,16 +153,18 @@ async function onSubmit() {
       captchaId: captchaId.value,
       captchaAnswer: captchaAnswer.value.trim(),
     })
-    submitSuccess.value = true
-    submitSuccessMessage.value = message || t('friends.applySuccess')
     siteName.value = ''
     siteUrl.value = ''
     avatarUrl.value = ''
     description.value = ''
     contactEmail.value = ''
+    showSubmitToast(message || t('friends.applySuccess'))
     await refreshCaptcha()
   } catch (e) {
-    formError.value = e instanceof Error ? e.message : t('friends.applySubmitFailed')
+    const msg = e instanceof Error ? e.message : t('friends.applySubmitFailed')
+    const limited = (e as Error & { status?: number }).status === 429
+    formError.value = msg
+    showSubmitToast(limited ? t('friends.applyRateLimited') : msg)
     await refreshCaptcha()
   } finally {
     submitting.value = false
@@ -162,12 +174,9 @@ async function onSubmit() {
 onMounted(async () => {
   try {
     const profile = await fetchFriendsSiteProfile()
-    siteProfile.value = {
-      ...profile,
-      description: profile.description || t('friends.applyNoticeBio'),
-    }
+    siteProfile.value = profile
   } catch {
-    siteProfile.value.description = t('friends.applyNoticeBio')
+    /* keep local title/url/logo */
   }
   await refreshCaptcha()
   await playPageEnter(pageRoot.value)
@@ -230,14 +239,18 @@ onMounted(async () => {
         <li class="friends-apply-notice-item">
           <p class="friends-apply-notice-label">{{ t('friends.applyNoticeLabelDesc') }}</p>
           <div class="friends-apply-notice-value-row">
-            <p class="friends-apply-notice-value">{{ siteProfile.description }}</p>
-            <CopyTextButton :text="siteProfile.description" />
+            <p class="friends-apply-notice-value">{{ t('friends.applyNoticeBio') }}</p>
+            <CopyTextButton :text="t('friends.applyNoticeBio')" />
           </div>
         </li>
       </ul>
     </section>
 
+    <section class="friends-apply-compose-wrap" aria-labelledby="friends-apply-form-heading">
+      <h2 id="friends-apply-form-heading" class="visually-hidden">{{ t('friends.applyFormTitle') }}</h2>
+
     <form class="friends-apply-form card" @submit.prevent="onSubmit">
+      <p class="friends-apply-form-hint">{{ t('friends.applyFormHint') }}</p>
       <div v-if="previewAvatar" class="friends-apply-preview">
         <img
           class="friends-apply-preview-avatar"
@@ -338,17 +351,23 @@ onMounted(async () => {
         </button>
       </div>
 
-      <p v-if="submitSuccess" class="friends-apply-success" role="status">
-        {{ submitSuccessMessage || t('friends.applySuccess') }}
-      </p>
-
       <div class="friends-apply-actions">
-        <button type="submit" class="btn-accent" :disabled="submitting || captchaLoading">
+        <button
+          type="submit"
+          class="btn-accent"
+          :disabled="submitting || captchaLoading"
+          :aria-busy="submitting"
+        >
           {{ submitting ? t('friends.applySubmitting') : t('friends.applySubmit') }}
         </button>
         <p class="friends-apply-policy">{{ t('friends.applyPolicy') }}</p>
       </div>
     </form>
+
+      <Transition name="friends-toast-fade">
+        <p v-if="submitToast" class="friends-apply-submit-toast" role="status">{{ submitToast }}</p>
+      </Transition>
+    </section>
   </section>
 </template>
 
@@ -425,6 +444,55 @@ onMounted(async () => {
   padding: 1.35rem 1.5rem;
 }
 
+.friends-apply-compose-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.friends-apply-form-hint {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+.friends-apply-submit-toast {
+  margin: 0;
+  padding: 0.55rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg-surface));
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-align: center;
+}
+
+.friends-toast-fade-enter-active,
+.friends-toast-fade-leave-active {
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+.friends-toast-fade-enter-from,
+.friends-toast-fade-leave-to {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .friends-apply-preview {
   display: flex;
   align-items: center;
@@ -491,12 +559,6 @@ onMounted(async () => {
   margin: 0;
   font-size: 0.86rem;
   color: #e85d5d;
-}
-
-.friends-apply-success {
-  margin: 0;
-  font-size: 0.86rem;
-  color: color-mix(in srgb, var(--color-accent) 85%, var(--color-text));
 }
 
 .friends-apply-actions {

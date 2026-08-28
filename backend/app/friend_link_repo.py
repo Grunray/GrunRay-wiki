@@ -48,7 +48,7 @@ def list_published(
 def list_admin(
     cur,
     *,
-    status: int,
+    status: int | None,
     sort: str = "newest",
     page: int = 1,
     size: int = 30,
@@ -57,6 +57,19 @@ def list_admin(
     size = min(max(1, size), 50)
     offset = (page - 1) * size
     order = "DESC" if sort != "oldest" else "ASC"
+
+    if status is None:
+        cur.execute("SELECT COUNT(*) AS cnt FROM friend_link")
+        total = int((cur.fetchone() or {"cnt": 0})["cnt"])
+        cur.execute(
+            f"""
+            {_ROW_SELECT}
+            ORDER BY status ASC, created_at {order}, id {order}
+            LIMIT %s OFFSET %s
+            """,
+            (size, offset),
+        )
+        return cur.fetchall() or [], total
 
     cur.execute(
         "SELECT COUNT(*) AS cnt FROM friend_link WHERE status = %s",
@@ -170,4 +183,60 @@ def apply_moderation_action(cur, public_id: str, action: str) -> dict[str, Any]:
     updated = get_by_public_id(cur, public_id)
     if not updated:
         raise RuntimeError("apply_moderation_action failed")
+    return updated
+
+
+def update_friend_fields(cur, public_id: str, fields: dict[str, Any]) -> dict[str, Any]:
+    row = get_by_public_id(cur, public_id)
+    if not row:
+        raise FriendModerationError("友链不存在")
+
+    sets: list[str] = []
+    params: list[Any] = []
+
+    if "name" in fields:
+        sets.append("name = %s")
+        params.append(fields["name"])
+    if "url" in fields:
+        sets.append("url = %s")
+        params.append(fields["url"])
+    if "url_normalized" in fields:
+        sets.append("url_normalized = %s")
+        params.append(fields["url_normalized"])
+    if "description" in fields:
+        sets.append("description = %s")
+        params.append(fields["description"])
+    if "avatar_url" in fields:
+        avatar = fields["avatar_url"]
+        sets.append("avatar_url = %s")
+        params.append(avatar)
+        sets.append("cover_url = %s")
+        params.append(avatar)
+    if "contact_email" in fields:
+        sets.append("contact_email = %s")
+        params.append(fields["contact_email"])
+    if "sort_order" in fields:
+        sets.append("sort_order = %s")
+        params.append(fields["sort_order"])
+
+    if not sets:
+        raise FriendModerationError("没有可更新的字段")
+
+    if int(row.get("status") or 0) == STATUS_PUBLISHED and "url_normalized" in fields:
+        conflict = count_published_by_url_normalized(
+            cur,
+            fields["url_normalized"],
+            exclude_public_id=public_id,
+        )
+        if conflict > 0:
+            raise FriendModerationError("该站点 URL 已有已发布友链")
+
+    params.append(public_id)
+    cur.execute(
+        f"UPDATE friend_link SET {', '.join(sets)} WHERE public_id = %s",
+        tuple(params),
+    )
+    updated = get_by_public_id(cur, public_id)
+    if not updated:
+        raise RuntimeError("update_friend_fields failed")
     return updated
