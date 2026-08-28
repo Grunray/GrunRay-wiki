@@ -31,6 +31,20 @@ export interface FriendApplicationPayload {
   captchaAnswer: string
 }
 
+export type FriendLinkStatus = 0 | 1 | 2 | 3
+
+export type FriendModerationAction = 'approve' | 'reject' | 'hide' | 'restore'
+
+export type FriendAdminStatusFilter = 'all' | 'pending' | 'published' | 'hidden' | 'rejected'
+
+export interface AdminFriendLink extends FriendLink {
+  status: FriendLinkStatus
+  contactEmail?: string
+  sortOrder?: number
+  createdAt: string
+  updatedAt: string
+}
+
 interface ApiEnvelope<T> {
   code: number
   data: T
@@ -131,4 +145,49 @@ export async function submitFriendApplication(
     },
   )
   return message
+}
+
+export async function fetchAdminFriends(params: {
+  status?: FriendAdminStatusFilter
+  sort?: 'newest' | 'oldest'
+  page?: number
+  size?: number
+}): Promise<{ items: AdminFriendLink[]; total: number; page: number; size: number }> {
+  const q = new URLSearchParams()
+  if (params.status) q.set('status', params.status)
+  if (params.sort) q.set('sort', params.sort)
+  if (params.page) q.set('page', String(params.page))
+  if (params.size) q.set('size', String(params.size))
+  const qs = q.toString()
+  return friendsFetch(`/api/friends/admin${qs ? `?${qs}` : ''}`)
+}
+
+export async function patchAdminFriend(
+  publicId: string,
+  payload: {
+    action?: FriendModerationAction
+    name?: string
+    url?: string
+    description?: string
+    avatarUrl?: string
+    contactEmail?: string
+    sortOrder?: number
+  },
+): Promise<{ item: AdminFriendLink; message: string }> {
+  const res = await fetch(apiUrl(`/api/friends/admin/${encodeURIComponent(publicId)}`), {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+  const body = (await res.json()) as ApiEnvelope<AdminFriendLink>
+  if (!res.ok || body.code !== 0) {
+    const err = new Error(body.message || `API ${res.status}`) as Error & { status?: number }
+    err.status = res.status
+    throw err
+  }
+  return { item: body.data, message: body.message ?? '' }
 }

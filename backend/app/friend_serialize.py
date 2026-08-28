@@ -49,6 +49,7 @@ def row_to_friend(row: dict[str, Any]) -> dict[str, Any]:
 def row_to_admin_friend(row: dict[str, Any]) -> dict[str, Any]:
     item = row_to_friend(row)
     item["status"] = int(row.get("status", 0))
+    item["sortOrder"] = int(row.get("sort_order") or 0)
     if row.get("contact_email"):
         item["contactEmail"] = row["contact_email"]
     item["createdAt"] = _iso_dt(row.get("created_at"))

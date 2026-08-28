@@ -297,7 +297,7 @@ html[data-theme='light'] .footer-grunray-brand-reveal {
 
 .footer-grunray-copyright,
 .footer-grunray-icp-link,
-.footer-grunray-rss-link {
+.footer-grunray-meta-link {
   font-size: 0.82rem;
   color: var(--footer-grunray-text-muted);
   line-height: 1.35;
@@ -305,18 +305,18 @@ html[data-theme='light'] .footer-grunray-brand-reveal {
 }
 
 .footer-grunray-icp-link,
-.footer-grunray-rss-link {
+.footer-grunray-meta-link {
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 .footer-grunray-icp-link:hover,
-.footer-grunray-rss-link:hover {
+.footer-grunray-meta-link:hover {
   color: var(--color-accent);
   text-decoration: underline;
 }
 
-.footer-grunray-meta-bar .footer-icon-btn__label {
+.footer-grunray-meta-bar .footer-ext-btn__label {
   z-index: calc(var(--z-footer-meta-bar, 180) + 2);
 }
 
@@ -367,7 +367,7 @@ html[data-theme='light'] .footer-grunray-brand-reveal {
 
   .footer-grunray-copyright,
   .footer-grunray-icp-link,
-  .footer-grunray-rss-link {
+  .footer-grunray-meta-link {
     white-space: normal;
   }
 }

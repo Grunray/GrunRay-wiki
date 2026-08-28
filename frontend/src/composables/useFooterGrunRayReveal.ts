@@ -91,9 +91,13 @@ export function useFooterGrunRayReveal(
       revealSuppressedUntilLayoutSettled = false
       routeLayoutObserver?.disconnect()
       routeLayoutObserver = null
-      const { remaining, progress } = getScrollMetrics()
+      const { remaining, progress, hasRevealRoom } = getScrollMetrics()
+      if (!hasRevealRoom) {
+        forceFooterHidden()
+        return
+      }
       smoothedProgress = progress
-      applyRevealState(smoothedProgress, false, remaining)
+      applyRevealState(smoothedProgress, false, remaining, true)
       requestScrollUpdate()
     }, ROUTE_LAYOUT_SETTLE_MS)
   }
@@ -120,13 +124,18 @@ export function useFooterGrunRayReveal(
     })
   }
 
-  const applyRevealState = (progress: number, ready: boolean, remaining: number) => {
+  const applyRevealState = (
+    progress: number,
+    ready: boolean,
+    remaining: number,
+    hasRevealRoom = true,
+  ) => {
     if (Math.abs(progress - lastWrittenProgress) > 0.0001) {
       document.documentElement.style.setProperty('--reveal-progress', String(progress))
       lastWrittenProgress = progress
     }
 
-    const nextMetaVisible = remaining <= footerRevealThreshold()
+    const nextMetaVisible = hasRevealRoom && remaining <= footerRevealThreshold()
     if (metaBarVisible.value !== nextMetaVisible) metaBarVisible.value = nextMetaVisible
 
     if (isInteractive.value !== ready) isInteractive.value = ready
@@ -202,18 +211,24 @@ export function useFooterGrunRayReveal(
 
   const getScrollMetrics = () => {
     const threshold = footerRevealThreshold()
-    const remaining =
-      document.documentElement.scrollHeight - window.innerHeight - window.scrollY
-    const progress = clamp01(1 - remaining / threshold)
-    const atBottom = remaining <= 12
-    return { threshold, remaining, progress, atBottom }
+    const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
+    const remaining = maxScroll - window.scrollY
+    /* 可滚距离不够一个揭示阈值时，顶部也会 remaining≈0，不能当成「已滚到底」 */
+    const hasRevealRoom = maxScroll >= threshold
+    const progress = hasRevealRoom ? clamp01(1 - remaining / threshold) : 0
+    const atBottom = hasRevealRoom && remaining <= 12
+    return { threshold, remaining, progress, atBottom, hasRevealRoom }
   }
 
   const finalizeFooterAtBottom = () => {
     if (isXiqiSplitFooterLocked()) return
+    const { remaining, hasRevealRoom } = getScrollMetrics()
+    if (!hasRevealRoom) {
+      forceFooterHidden()
+      return
+    }
     smoothedProgress = 1
-    const { remaining } = getScrollMetrics()
-    applyRevealState(1, true, remaining)
+    applyRevealState(1, true, remaining, true)
     syncBrandLayout()
   }
 
@@ -231,7 +246,12 @@ export function useFooterGrunRayReveal(
     }
 
     const reducedMotion = ui.prefersReducedMotion
-    const { remaining, progress, atBottom } = getScrollMetrics()
+    const { remaining, progress, atBottom, hasRevealRoom } = getScrollMetrics()
+
+    if (!hasRevealRoom) {
+      forceFooterHidden()
+      return { progress: 0, remaining: REVEAL_SPACE_PX + 999 }
+    }
 
     if (reducedMotion || atBottom || progress >= 0.998) {
       smoothedProgress = 1
@@ -249,7 +269,7 @@ export function useFooterGrunRayReveal(
       remaining <= footerRevealThreshold() &&
       (atBottom || progress >= 0.97 || smoothedProgress >= 0.985)
 
-    applyRevealState(smoothedProgress, ready, remaining)
+    applyRevealState(smoothedProgress, ready, remaining, true)
 
     if (ready) syncBrandLayout()
 
@@ -279,7 +299,11 @@ export function useFooterGrunRayReveal(
 
   const onScrollIdle = () => {
     if (isXiqiSplitFooterLocked()) return
-    const { remaining } = getScrollMetrics()
+    const { remaining, hasRevealRoom } = getScrollMetrics()
+    if (!hasRevealRoom) {
+      forceFooterHidden()
+      return
+    }
     if (remaining <= 64) finalizeFooterAtBottom()
   }
 

@@ -1,3 +1,8 @@
+import {
+  buildOAuthApiStartUrl,
+  type OAuthProvider,
+} from '@/config/oauthRedirect'
+
 export interface MessageAuthUser {
   guest_user_id?: number
   provider: 'github' | 'google'
@@ -52,9 +57,8 @@ export async function fetchMessageAuthUser(): Promise<MessageAuthUser | null> {
   return data ?? null
 }
 
-export function startMessageOAuth(provider: 'github' | 'google', returnTo = '/messages'): void {
-  const q = new URLSearchParams({ return_to: returnTo })
-  window.location.href = apiUrl(`/api/auth/${provider}?${q.toString()}`)
+export function startMessageOAuth(provider: OAuthProvider, returnTo = '/messages'): void {
+  window.location.href = buildOAuthApiStartUrl(provider, returnTo)
 }
 
 export async function logoutMessageAuth(): Promise<void> {

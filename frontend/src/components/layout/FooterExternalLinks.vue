@@ -7,22 +7,21 @@ const { copyToastVisible, copyToastColor, handleExternalLinkClick } = useExterna
 
 <template>
   <div class="footer-external-links">
-    <nav class="footer-external-links-row" aria-label="External links">
+    <nav class="footer-external-links-toolbar" aria-label="External links">
       <a
         v-for="item in EXTERNAL_LINKS"
         :key="item.href + item.label"
-        class="footer-icon-btn"
+        class="footer-ext-btn"
         :style="{ '--icon-color': item.color }"
         :href="item.href"
         target="_blank"
         rel="noopener noreferrer"
         @click="handleExternalLinkClick(item, $event)"
       >
-        <span class="footer-icon-btn__glass" />
-        <svg :viewBox="item.viewBox" class="footer-icon-btn__icon" aria-hidden="true">
+        <svg :viewBox="item.viewBox" class="footer-ext-btn__icon" aria-hidden="true">
           <path :d="item.path" />
         </svg>
-        <span class="footer-icon-btn__label">{{ item.label }}</span>
+        <span class="footer-ext-btn__label">{{ item.label }}</span>
       </a>
     </nav>
     <transition name="footer-copy-toast-fade">
@@ -44,112 +43,96 @@ const { copyToastVisible, copyToastColor, handleExternalLinkClick } = useExterna
   align-items: center;
 }
 
-.footer-external-links-row {
+/* 方案 D：纸面分段条（DESIGN.md · btn-accent 纪律） */
+.footer-external-links-toolbar {
   display: flex;
   flex-direction: row-reverse;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 0.65rem;
+  flex-shrink: 0;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-bg-surface) 84%, transparent);
+  box-shadow: var(--shadow-card);
 }
 
-.footer-icon-btn {
+.footer-ext-btn {
   --icon-color: var(--color-accent);
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
-  cursor: pointer;
-  color: color-mix(in srgb, var(--icon-color) 76%, white);
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: color-mix(in srgb, var(--icon-color) 82%, var(--color-text-muted));
   text-decoration: none;
-  transition: transform 0.25s ease, color 0.25s ease;
+  cursor: pointer;
+  transition:
+    color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.footer-icon-btn__glass {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: var(--glass-card-bg);
-  backdrop-filter: blur(var(--glass-blur)) saturate(140%) brightness(1.02);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%) brightness(1.02);
-  box-shadow:
-    inset 0 3px 8px rgb(255 255 255 / 0.38),
-    inset 0 -5px 10px rgb(0 0 0 / 0.18),
-    var(--shadow-card);
+.footer-ext-btn:not(:first-child) {
+  border-inline-end: 1px solid var(--color-border);
 }
 
-.footer-icon-btn__glass::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: linear-gradient(120deg, rgb(255 255 255 / 0.56), transparent 42%);
-  opacity: 0.65;
-}
-
-.footer-icon-btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 1.5px solid color-mix(in srgb, var(--icon-color) 36%, white);
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-.footer-icon-btn__icon {
+.footer-ext-btn__icon {
   position: absolute;
   inset: 0;
   margin: auto;
-  width: 55%;
-  height: 55%;
+  width: 50%;
+  height: 50%;
 }
 
-.footer-icon-btn__icon path {
+.footer-ext-btn__icon path {
   fill: currentColor;
-  transition: filter 0.25s ease;
 }
 
-.footer-icon-btn:hover {
+.footer-ext-btn:hover {
   color: var(--icon-color);
-  transform: scale(1.08);
+  background: color-mix(in srgb, var(--icon-color) 16%, transparent);
+  transform: translateY(-1px);
 }
 
-.footer-icon-btn:hover::after {
-  border-color: var(--icon-color);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--icon-color) 70%, white);
+.footer-ext-btn:active {
+  transform: translateY(0);
 }
 
-.footer-icon-btn:hover .footer-icon-btn__icon {
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--icon-color) 78%, white));
+.footer-ext-btn:focus-visible {
+  outline: none;
+  color: var(--icon-color);
+  background: color-mix(in srgb, var(--icon-color) 12%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--icon-color) 18%, transparent);
 }
 
-.footer-icon-btn:active {
-  transform: scale(0.95);
-}
-
-.footer-icon-btn__label {
+.footer-ext-btn__label {
   position: absolute;
   bottom: calc(100% + 0.38rem);
   left: 50%;
-  transform: translateX(-50%) translateY(6px);
+  transform: translateX(-50%) translateY(4px);
   opacity: 0;
   visibility: hidden;
-  padding: 0.3rem 0.65rem;
+  padding: 0.22rem 0.55rem;
   border-radius: 999px;
   white-space: nowrap;
-  font-size: 0.74rem;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--icon-color);
-  border: 1px solid color-mix(in srgb, var(--icon-color) 30%, var(--glass-card-border));
-  background: var(--glass-card-bg);
-  backdrop-filter: blur(var(--glass-blur)) saturate(140%) brightness(1.02);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%) brightness(1.02);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
   box-shadow: var(--shadow-card);
-  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  z-index: 20;
   pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 20;
 }
 
-.footer-icon-btn:hover .footer-icon-btn__label {
+.footer-ext-btn:hover .footer-ext-btn__label,
+.footer-ext-btn:focus-visible .footer-ext-btn__label {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0);
@@ -167,10 +150,8 @@ const { copyToastVisible, copyToastColor, handleExternalLinkClick } = useExterna
   font-size: 0.76rem;
   font-weight: 600;
   color: var(--toast-color);
-  border: 1px solid color-mix(in srgb, var(--toast-color) 36%, var(--glass-card-border));
-  background: var(--glass-card-bg);
-  backdrop-filter: blur(var(--glass-blur)) saturate(140%) brightness(1.02);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%) brightness(1.02);
+  border: 1px solid color-mix(in srgb, var(--toast-color) 36%, var(--color-border));
+  background: var(--color-bg-surface);
   box-shadow: var(--shadow-card);
   white-space: nowrap;
   z-index: 30;
@@ -187,19 +168,37 @@ const { copyToastVisible, copyToastColor, handleExternalLinkClick } = useExterna
   transform: translateX(-50%) translateY(4px);
 }
 
+[data-theme='abstract'] .footer-external-links-toolbar {
+  border-radius: 0;
+}
+
+[data-theme='abstract'] .footer-ext-btn {
+  border-radius: 0;
+  font-family: var(--font-mono);
+}
+
+[data-theme='abstract'] .footer-ext-btn__label {
+  border-radius: 0;
+}
+
 @media (max-width: 768px) {
   .footer-external-links {
     width: 100%;
     justify-content: center;
   }
 
-  .footer-external-links-row {
-    display: flex;
+  .footer-external-links-toolbar {
     flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: center;
-    justify-content: center;
-    gap: 0.65rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-ext-btn:hover {
+    transform: none;
+  }
+
+  .footer-ext-btn:active {
+    transform: none;
   }
 }
 </style>
