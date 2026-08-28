@@ -24,6 +24,7 @@
   --font-serif:
     'Playfair Display', 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', serif;
   --font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, 'Courier New', monospace;
+  --font-script: 'Great Vibes', 'Segoe Script', 'Apple Chancery', cursive;
   /* 终端微透 */
   --glass-blur: 8px;
   --glass-nav-blur: 10px;

@@ -59,7 +59,7 @@
 
 ## 3. Typography Rules
 
-三套字族令牌（`--font-sans / --font-serif / --font-mono`），全部自托管或系统字（国内可访问，无 Google Fonts 外链）。
+三套字族令牌（`--font-sans / --font-serif / --font-mono`），另加首页用 `--font-script`；全部自托管或系统字（国内可访问，无 Google Fonts 外链）。
 
 **基准字号：`html { font-size: 106.25% }`（= 17px）**。Windows 中文 ClearType 在 <13px 明显发虚，2026-08 从 16px 上调；所有 rem 随之等比放大。新增样式时不要把元数据/kicker 压到 0.76rem（≈13px）以下。
 
@@ -67,13 +67,14 @@
 |---|---|---|
 | Sans | system-ui → PingFang SC → Hiragino Sans GB → Microsoft YaHei → Noto Sans CJK SC | 正文、UI |
 | Serif | Playfair Display → Noto Serif SC → Source Han Serif SC → Songti SC → SimSun | **展示标题**：站点问候、页面大标题、文章 H1、年份数字 |
+| Script | Great Vibes（自托管 woff2）→ Segoe Script → Apple Chancery | **仅**首页问候语里的品牌名（`--font-script`） |
 | Mono | JetBrains Mono → Cascadia Code → Consolas | **kicker**（小标签/日期/编号）、代码、元数据 |
 
 ### 层级（桌面基准）
 
 | 层级 | 字族 | 字号 | 字重 | 说明 |
 |---|---|---|---|---|
-| 站点问候/封面 | Serif | clamp(1.8–3rem) | 600 italic 可选 | 仅首页与 hero |
+| 站点问候/封面 | Serif + Script | clamp(2.55–4.125rem) | 700 italic（品牌名 Script 400） | 仅首页；等字体就绪再显 |
 | 页面标题 H1 | Serif | clamp(1.5–2rem) | 600 | 文章标题、分区标题 |
 | 节标题 H2/H3 | Serif 或 Sans | 1.1–1.35rem | 600 | |
 | 正文 | Sans | 1.02–1.06rem | 400 | 行高 1.75–1.85（中文要松） |
@@ -108,11 +109,12 @@
 
 - 内容列宽：`--content-width: 68rem`（页面）；**阅读栏 `38rem`（≈36 字/行中文最佳区间）**。
 - 间距刻度：4 的倍数（0.25rem 步进），区块间 1.25–2rem。
-- 首页是**封面**：媒体带 + 一句定位 + 文章目录，禁止三栏等宽仪表盘。
+- 首页是**封面**：通透首屏（照片背景或右侧线稿）+ 刊号/问候卡 + 纸面从下挤入；禁止三栏等宽仪表盘。**不**在首页挂 FilmFeed（组件保留，挂别的页）。
 - 列表优先用「目录式」（日期 + 标题 + 摘要 + hairline 分隔）而非卡片墙。
 - 文章/项目详情的**正文与文字块平铺**：不加框、不套卡，仅靠 hairline 与字号/行距分层。
 - 文章/项目详情滚动侧栏（方案 D）：视口 `position:fixed` 悬浮卡，挂在 `app-page-cover` 外；题录滚出视口后再淡入。不改 `app-main` 宽度，不给正文加 `margin`。
 - 关于页/事实网格用「hairline 分格」（grid 边框共享，gap:0），不用独立卡片。
+- 首页首屏契约详见 **§12**。
 
 ## 6. Depth & Elevation
 
@@ -140,7 +142,7 @@
 
 - 断点：768px（平板/手机）、480px（小手机）；页面自有断点在各自样式内补。
 - 移动端触控目标 ≥44px；表格/代码块横向滚动不撑破视口。
-- 首页窄屏：封面 → 目录 → 胶片带 纵向堆叠。
+- 首页窄屏：首屏（刊号/问候）→ COVER STORY → 目录纵向堆叠；问候语允许换行。
 
 ## 9. Motion
 
@@ -153,7 +155,7 @@
 - **导航链接/分组按钮**：hover 只提文字色 + 底部生长线（accent 渐变线是唯一着色）；展开/当前页态才给轻染色底。不做位移弹跳、不做图标旋转。
 - **下拉菜单项**：hover 用色阶表面（`bg-elevated`），当前页项才用 accent 14% 染色。
 - **卡片无全局 hover**：纸面/终端面不浮起、不扫光、无发光阴影。
-- **可点击卡**（`timeline-card--clickable`、`.cover-story`）：方案 G —— 轻浮 `translateY(-2px)` + 右下 24px 纸张翻角 + 标题/日期左右错位、标签提亮 + 右下花藤沿骨架生长。类名 `.card-hover-g`。`prefers-reduced-motion` 时去掉翻角/花藤/位移，只留着色。
+- **可点击卡**（`timeline-card--clickable`、首页 COVER STORY）：方案 G —— 轻浮 `translateY(-2px)` + 右下 24px 纸张翻角 + 标题/日期左右错位、标签提亮 + 右下花藤沿骨架生长。类名 `.card-hover-g`。首页封面拆成 peek + detail 后，悬停任一块须 `:has()` 同步整套动效（见 §12）。`prefers-reduced-motion` 时去掉翻角/花藤/位移，只留着色。
 - **首页目录行**（`.toc-row`）：hairline 分隔 + 轻底色 hover + 标题提 accent；**不套**方案 G（无翻角/花藤/位移），与 timeline-card 边界分明。
 - **友链申请入口**（`friends-apply-entry`）：hover = 左边条加深 + `translateY(-1px)`（不套方案 G）。
 
@@ -165,6 +167,7 @@
 3. 标题 serif、正文 sans、元数据 mono。
 4. 列表像目录，不像仪表盘。
 5. 抽象档不动。
+6. 动首页首屏先读 §12（通透背景、单根 Transition、勿 `:class` 冲入场类）。
 
 ## 11. Pointer & Cursor Trail（星座月相）
 
@@ -186,3 +189,66 @@
 - 输入框 / `contenteditable` / `cursor: text`：恢复系统光标，不画自定义指针。
 - Canvas `pointer-events: none`，不挡 hit-test；坐标不进 Vue 响应式。
 - 静止无动画时 rAF 休眠，`pointermove` 唤醒。
+
+## 12. Home Hero（通透首屏 · 纸面挤入）
+
+已选定并合入生产（批次 117）。原型：`designed/home-hero-relayout/`；运行时：`HomeView.vue` + `useHomeHeroRelayout.ts` + `page-home-hero.css`。
+
+### 结构契约
+
+```
+.home-layout                    ← 单根（禁止 fragment；见下方「路由转场」）
+  .home-stage                   ← sticky 首屏；高度 = 100dvh − --home-nav-offset
+    .home-stage-art             ← 仅关照片背景时挂载；右侧线稿
+    .home-mast                  ← 刊号矩形卡 + 独立圆形头像卡
+    .home-stage-dock
+      .home-intro-track / .home-intro-stack
+        .home-intro-greeting.card / .home-intro-note.card
+  .home-rising
+    .home-peek-wrap > .cover-story-peek     ← sticky kicker；层级高于纸面
+    .home-scroll-layer > …paper
+      .cover-story-detail.card.card-hover-g  ← 正文 + CardCornerVineLazy
+      .home-sheet                           ← NOW + TOC（无 FilmFeed）
+```
+
+路由 meta：`appMainLayout: 'full-viewport'`。离页时 composable 清除 `data-home-hero-page` 与相关 CSS 变量。
+
+### 视觉 / 背景
+
+- **通透首屏**：开照片背景时整页去掉纸面蒙层与 `html::before` 灰罩；中间留空看 `body::before` 照片。**禁止**再叠独立 `backdrop-filter` / `__veil`。
+- **滚动 blur**：仅写 `--page-photo-bg-blur`，从 0 插值到用户设定值（默认 6px）；跟手、无 0.85s filter 过渡。离页恢复用户值。写入前量化到 0.5px，同值不刷变量；progress 用缓存的纸面文档偏移 + `scrollY`，不要每帧 `getBoundingClientRect`。
+- **关照片背景**：生产用 WebP 线稿（`/art/polonia_sandoren.webp` | `-dark.webp` | `-abstract.webp`）。高度：导航下缘 → COVER STORY 上缘，贴右可向左延伸。abstract 墨色 `#FFDB00`、纸面 `#0A2330`。矢量源与主题 SVG 留在 `designed/home-hero-relayout/`（只改 fill/stroke，勿当生产热路径）。
+- **盖住后跳过绘制**：纸面顶缘落到导航下后给 `html` 打 `data-home-stage-covered`，`.home-stage` 用 `content-visibility: hidden`（自身 height 仍撑 sticky 占位）。回顶在露出前一截就去掉该标记，避免闪空白。
+- **纸面挤入**：`.home-rising` 负 margin 叠在首屏上；peek 只露 kicker；卡片上下同色 `--cover-story-bg`，无接缝细线。底部与 footer 揭示区用盖板纸色接上（`app-page-cover::after`），勿留空缝。
+
+### 刊号 / 问候
+
+- 刊号与头像分卡：上方矩形 `.mast-vol.card`，下方圆形 `.home-mast-avatar.card`，中间留间距。
+- 问候语与介绍语分卡；问候略加宽。默认靠左下；**开照片背景**时整组 `transform` 滑到右侧（`.home-intro-track` 容器查询），关掉滑回。位移跟 `html[data-photo-bg]`，**不要**在 `.home-layout` 上绑 `is-photo-bg` 的 Vue `:class`。
+- 问候入场只淡入，不动 `transform`（避免冲掉左下/右下偏移）。只等 Great Vibes（短超时），**不要** `fonts.load` 不存在的 Noto 700 italic，也不要等整页 `fonts.ready`。就绪后加 `home-fonts-ready`。
+
+### COVER STORY 悬停
+
+与项目卡同一套方案 G；peek 与 detail 拆开后，`.home-rising:has(.peek:hover, .detail:hover)` 同步上浮、折角、花藤、标题、kicker、tag。勿把 `transform` 加在含 sticky peek 的父级上。
+
+### 导航占位
+
+- 首页用 `--home-nav-offset` 垫 sticky `top` / 首屏高度；只设导航 `min-height`，**不**封 `height`/`max-height`（否则会量到压矮盒子，比其它页矮）。
+- 占位按展开态 `.glass-nav-inner` + padding 锁一次；compact 只收视觉胶囊。快滑回顶：`overscroll-behavior-y: none` + sticky `overflow-anchor: none`。
+
+### 路由转场 / 入场类（硬规则）
+
+- `HomeView` 模板**必须单根**（一个元素）。根外 HTML 注释也会变成 fragment，卡死 `AppShell` 的 `Transition mode="out-in"`，表现为离开首页后主内容空白、刷新才恢复。
+- `page-enter--play` / `home-fonts-ready` 由 `classList` 写入。**禁止**在同一根上再用 Vue `:class` 绑开关态（会冲掉入场类，整页 opacity:0）。照片背景开关用文档根 `data-photo-bg`。
+- 重构结构时同步 `page-enter-home.css` 选择器。
+
+## 13. FPS / 1%L 监视浮层
+
+全站调试用，挂在 `AppShell`（不是某一页）。参考 yumetsuki 的 rAF 计数，并加 1% Low。
+
+- **瞬时 FPS**：近 1 秒 `requestAnimationFrame` 次数。
+- **1%L**：近 3 秒帧时间里最慢的 1%，取其平均再换成 FPS（`1000 / avgMs`）。样本不足时显示 —。
+- **显示**：一行 `FPS 144 95(1%L)`；1%L 数字按分档着色（≤20 卡 / ≤40 尚可 / 其余正常，看 FPS 与 1%L 较差值）。
+- 默认关，顶栏溢出面板开关，点卡片关闭；`localStorage ui.fpsMeter`（`1` 开 / 无键或 `0` 关）。关闭必须停 rAF。
+- 页面 `hidden` 或单帧 >1s（切后台）不计入 1%L。
+- 右下角纸面卡，令牌用 `--glass-nav-*`；左下回到顶部不动。

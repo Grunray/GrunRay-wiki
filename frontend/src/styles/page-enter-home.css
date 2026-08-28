@@ -1,6 +1,6 @@
 /* 首页分区；根节点 .home-layout.page-enter--play
  * 结构契约（与 HomeView.vue 同步）：
- * .home-hero-stack / .cover-story / .home-now / .home-toc */
+ * .home-stage / .cover-story-peek / .home-now / .home-toc */
 
 @keyframes page-enter-home-from-bottom {
   from {
@@ -13,23 +13,42 @@
   }
 }
 
+/* 问候语自己带左下偏移 transform，入场只淡入，避免动画结束冲掉偏移 */
+@keyframes page-enter-home-intro-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
-  .home-layout:not(.page-enter--play) .home-hero-stack,
-  .home-layout:not(.page-enter--play) .cover-story,
+  .home-layout:not(.page-enter--play) .home-mast,
   .home-layout:not(.page-enter--play) .home-now,
   .home-layout:not(.page-enter--play) .home-toc {
     opacity: 0;
     transform: translateY(22px);
   }
+
+  .home-layout:not(.page-enter--play) .cover-story-peek,
+  .home-layout:not(.page-enter--play) .home-intro-stack {
+    opacity: 0;
+  }
 }
 
-.home-layout.page-enter--play .home-hero-stack {
+.home-layout.page-enter--play .home-mast {
   animation: page-enter-home-from-bottom 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: 0.05s;
 }
 
-.home-layout.page-enter--play .cover-story {
-  animation: page-enter-home-from-bottom 0.8s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+.home-layout.home-fonts-ready.page-enter--play .home-intro-stack {
+  animation: page-enter-home-intro-fade 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.12s;
+}
+
+.home-layout.page-enter--play .cover-story-peek {
+  animation: page-enter-home-intro-fade 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: 0.2s;
 }
 
@@ -44,8 +63,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-layout.page-enter--play .home-hero-stack,
-  .home-layout.page-enter--play .cover-story,
+  .home-layout.page-enter--play .home-mast,
+  .home-layout.page-enter--play .home-intro-stack,
+  .home-layout.page-enter--play .cover-story-peek,
   .home-layout.page-enter--play .home-now,
   .home-layout.page-enter--play .home-toc {
     animation: none !important;

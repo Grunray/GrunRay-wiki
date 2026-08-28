@@ -79,6 +79,8 @@ a:hover {
   --z-footer-meta-bar: 180;
   /* 与 footer-grunray.css / useFooterGrunRayReveal 一致：两层蒙层底缘对齐线 */
   --footer-grunray-brand-height: 360px;
+  /* ceil(360 * 1.12)；短页面也要留下可滚揭示区，否则 remaining≈0 会误揭页脚 */
+  --footer-reveal-space: 404px;
 }
 
 .app-root {
@@ -98,7 +100,9 @@ a:hover {
 }
 
 /*
- * 主内容盖板：底缘 clip 与 footer 同步（勿用 fixed 高度遮罩，progress=0 时会盖住半屏）
+ * 主内容盖板：底缘 clip 与 footer 同步（勿用 fixed 高度遮罩，progress=0 时会盖住半屏）。
+ * min-height 含揭示垫高：border-box 下若只 min-height:100% + padding-bottom，
+ * 短页面会把垫高吃进视口，scrollHeight≈innerHeight，页脚永远「已到底」。
  */
 .app-page-cover {
   position: relative;
@@ -106,7 +110,7 @@ a:hover {
   display: flex;
   flex: 1;
   flex-direction: column;
-  min-height: 100%;
+  min-height: calc(100dvh + var(--footer-reveal-space, 0px));
   padding-bottom: var(--footer-reveal-space, 0px);
   background: var(--color-bg-base);
   box-shadow: none;
@@ -384,9 +388,9 @@ html[data-photo-bg='true'] .card.card-glass-dense {
 html[data-photo-bg='true'] {
   background-color: var(--color-bg-base);
   /* 常态 / 加载期模糊（加载完成后 blur-up 过渡到常态值） */
-  --page-photo-bg-blur: 18px;
-  --page-photo-bg-blur-loading: 38px;
-  --page-photo-bg-scale: 1.05;
+  --page-photo-bg-blur: 6px;
+  --page-photo-bg-blur-loading: 21px;
+  --page-photo-bg-scale: 1.02;
 }
 
 /*

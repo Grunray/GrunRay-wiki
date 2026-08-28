@@ -1,0 +1,394 @@
+/* 首页 Hero 重排：sticky 首屏 + 全宽纸面挤入
+ * 结构契约：.home-layout > .home-stage / .home-rising */
+
+.home-layout {
+  --cover-story-bg: var(--color-bg-surface);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  /* 抵消 .app-main 左右/上 padding；底部不吃负 margin，避免纸面与页脚垫高之间空一截 */
+  width: calc(100% + 2rem);
+  margin: -1rem -1rem 0;
+  overflow-anchor: none;
+}
+
+.home-wrap {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0 clamp(1rem, 3vw, 1.5rem);
+}
+
+.home-stage {
+  position: sticky;
+  top: var(--home-nav-offset, 4.5rem);
+  z-index: 2;
+  width: 100%;
+  height: calc(100dvh - var(--home-nav-offset, 4.5rem));
+  overflow: hidden;
+  isolation: isolate;
+  overflow-anchor: none;
+  /* 禁止把 sticky 层合成到会跟手弹性滚动的层上，快滑回顶时就不会往下弹一格 */
+  backface-visibility: hidden;
+}
+
+.home-stage-art {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: var(--cover-peek-height, 2.75rem);
+  left: auto;
+  z-index: 1;
+  width: auto;
+  max-width: min(78vw, 52rem);
+  height: auto;
+  margin: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  overflow: visible;
+  pointer-events: none;
+  opacity: 0.88;
+}
+
+.home-stage-art img {
+  display: block;
+  height: 100%;
+  width: auto;
+  max-width: none;
+  object-fit: contain;
+  object-position: right bottom;
+  filter: none;
+}
+
+.home-stage-inner {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-stage-void {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.home-stage-dock {
+  position: absolute;
+  inset: auto 0 var(--cover-peek-height, 2.75rem);
+}
+
+/* 全宽轨道：用容器查询算左右位移，开/关照片背景时平滑滑过去 */
+.home-intro-track {
+  width: 100%;
+  container-type: inline-size;
+  container-name: home-intro;
+}
+
+.home-rising {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  margin-top: var(--cover-lift, -2.75rem);
+  isolation: isolate;
+}
+
+.home-peek-wrap {
+  position: sticky;
+  bottom: 0;
+  z-index: 40;
+  padding-inline: clamp(1rem, 3vw, 1.5rem);
+  isolation: isolate;
+  pointer-events: none;
+}
+
+.cover-story-peek {
+  position: relative;
+  z-index: 41;
+  pointer-events: auto;
+  padding: clamp(0.6rem, 1.5vw, 0.8rem) clamp(1rem, 2.4vw, 1.4rem);
+  padding-bottom: 0.35rem;
+  background: var(--cover-story-bg);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent);
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  box-shadow: 0 -6px 20px rgb(0 0 0 / 10%);
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.cover-story-peek .cover-story-kicker {
+  margin: 0;
+  transition: letter-spacing 0.3s ease;
+}
+
+.home-scroll-layer {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin-top: -1px;
+  background: var(--color-bg-base);
+}
+
+.home-scroll-layer-paper {
+  position: relative;
+  z-index: 1;
+  background: var(--color-bg-base);
+  box-shadow: none;
+  border-top: none;
+}
+
+.cover-story-detail.card {
+  position: relative;
+  overflow: hidden;
+  padding: 0.3rem clamp(1rem, 2.4vw, 1.4rem) clamp(0.75rem, 2vw, 1rem);
+  margin: 0;
+  border: 1px solid var(--color-border);
+  border-top: none;
+  border-left: 3px solid var(--color-accent);
+  background: var(--cover-story-bg);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+.cover-story-detail .cover-story-title {
+  margin-top: 0;
+}
+
+/* 悬停与项目卡同一套方案 G；peek 与正文一起动，避免从 kicker 撕开 */
+.cover-story-detail.card-hover-g:is(:hover, :focus-visible, :focus-within) {
+  transform: none;
+}
+
+.home-rising:has(.cover-story-peek:is(:hover, :focus-within), .cover-story-detail:is(:hover, :focus-within))
+  .cover-story-peek,
+.home-rising:has(.cover-story-peek:is(:hover, :focus-within), .cover-story-detail:is(:hover, :focus-within))
+  .cover-story-detail.card-hover-g {
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 22px -14px color-mix(in srgb, var(--color-text) 30%, transparent),
+    var(--shadow-card);
+  border-color: color-mix(in srgb, var(--color-accent) 32%, var(--color-border));
+}
+
+.home-rising:has(.cover-story-peek:is(:hover, :focus-within), .cover-story-detail:is(:hover, :focus-within))
+  .cover-story-kicker {
+  letter-spacing: 0.22em;
+}
+
+.home-rising:has(.cover-story-peek:is(:hover, :focus-within), .cover-story-detail:is(:hover, :focus-within))
+  .cover-story-title {
+  transform: translateX(8px);
+}
+
+.home-rising:has(.cover-story-peek:is(:hover, :focus-within), .cover-story-detail:is(:hover, :focus-within))
+  .cover-story-title a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.home-rising:has(.cover-story-peek:is(:hover, :focus-within), .cover-story-detail:is(:hover, :focus-within))
+  .cover-story-detail.card-hover-g::before {
+  width: 24px;
+  height: 24px;
+}
+
+.home-rising:has(.cover-story-peek:is(:hover, :focus-within), .cover-story-detail:is(:hover, :focus-within))
+  .cover-story-detail .card-corner-vine {
+  opacity: 1;
+}
+
+.home-rising:has(.cover-story-peek:is(:hover, :focus-within), .cover-story-detail:is(:hover, :focus-within))
+  .cover-story-detail.card-hover-g--vine-ready
+  .grow {
+  stroke-dashoffset: 0;
+  transition-delay: var(--grow-delay, 0s);
+  transition-duration: 0.48s;
+}
+
+.home-rising:has(.cover-story-peek:is(:hover, :focus-within), .cover-story-detail:is(:hover, :focus-within))
+  .cover-story-detail.card-hover-g--vine-ready
+  .grow-main {
+  transition-duration: 1.05s;
+}
+
+.home-rising:has(.cover-story-peek:is(:hover, :focus-within), .cover-story-detail:is(:hover, :focus-within))
+  .cover-story-detail .tag {
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg-elevated));
+  border-color: color-mix(in srgb, var(--color-accent) 30%, var(--color-border));
+  color: var(--color-text);
+}
+
+.home-sheet {
+  position: relative;
+  z-index: 1;
+  margin-top: 0;
+  padding-top: 0.35rem;
+  background: var(--color-bg-base);
+  border-top: none;
+}
+
+.home-sheet-body {
+  background: var(--color-bg-base);
+  padding: 0 0 2rem;
+}
+
+.home-intro-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+  width: max-content;
+  max-width: min(100%, 48rem);
+  /* 默认靠左；开照片背景时滑到右侧（见下方 html[data-photo-bg]） */
+  transform: translate3d(4.85rem, -4.1rem, 0);
+  opacity: 0;
+  transition: transform 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html[data-home-hero-page='true'][data-photo-bg='true'] .home-intro-stack {
+  align-items: flex-end;
+  transform: translate3d(calc(100cqw - 100% - 4.85rem), -4.1rem, 0);
+}
+
+.home-intro-greeting {
+  margin: 0;
+  padding: 0.85rem 1.85rem 0.95rem;
+  width: max-content;
+  max-width: 100%;
+  font-family: var(--font-serif);
+  font-size: clamp(2.55rem, 6.9vw, 4.125rem);
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1.12;
+  letter-spacing: 0.01em;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.home-intro-brand {
+  display: inline-block;
+  font-family: var(--font-script);
+  font-weight: 400;
+  font-style: normal;
+  font-size: 1.28em;
+  letter-spacing: 0.04em;
+  margin-left: 0.18em;
+  line-height: 1;
+  vertical-align: -0.18em;
+  color: var(--color-text);
+}
+
+.home-intro-note {
+  margin: 0;
+  padding: 0.7rem 1.15rem 0.8rem;
+  width: max-content;
+  max-width: 100%;
+  font-size: clamp(1.09rem, 2.55vw, 1.46rem);
+  font-weight: 700;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--color-text) 78%, var(--color-text-muted));
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .home-intro-stack {
+    max-width: min(100%, calc(100cqw - 0.9rem));
+    transform: translate3d(0.45rem, -1.55rem, 0);
+  }
+
+  html[data-home-hero-page='true'][data-photo-bg='true'] .home-intro-stack {
+    transform: translate3d(calc(100cqw - 100% - 0.45rem), -1.55rem, 0);
+  }
+
+  .home-intro-greeting,
+  .home-intro-note {
+    white-space: normal;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .home-stage-art {
+    max-width: min(88vw, 22rem);
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-intro-stack {
+    transition: none;
+  }
+
+  .home-layout.home-fonts-ready .home-intro-stack {
+    opacity: 1;
+  }
+
+  .home-rising:has(.cover-story-peek:is(:hover, :focus-within), .cover-story-detail:is(:hover, :focus-within))
+    .cover-story-peek,
+  .home-rising:has(.cover-story-peek:is(:hover, :focus-within), .cover-story-detail:is(:hover, :focus-within))
+    .cover-story-detail.card-hover-g,
+  .home-rising:has(.cover-story-peek:is(:hover, :focus-within), .cover-story-detail:is(:hover, :focus-within))
+    .cover-story-title {
+    transform: none;
+  }
+}
+
+/* 快滑回顶时关掉弹性过滚，避免 sticky 首屏被合成层往下拽一格再弹回 */
+html[data-home-hero-page='true'],
+html[data-home-hero-page='true'] body {
+  overscroll-behavior-y: none;
+}
+
+/* 首页开照片背景：上半通透，底部揭示区仍铺纸面，对齐其它页的 cover padding */
+html[data-home-hero-page='true'][data-photo-bg='true'] .app-page-cover {
+  background-color: transparent;
+  background-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(100% - var(--footer-reveal-space, 404px)),
+    var(--color-bg-base) calc(100% - var(--footer-reveal-space, 404px))
+  );
+}
+
+html[data-home-hero-page='true'][data-photo-bg='true']::before {
+  opacity: 0;
+}
+
+/* 滚动层底与页脚之间补回纸面，对齐其它页的 cover padding 揭示 */
+html[data-home-hero-page='true'] .app-page-cover::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--footer-reveal-space, 404px);
+  background: var(--color-bg-base);
+  pointer-events: none;
+  z-index: 0;
+}
+
+html[data-home-hero-page='true'] .app-page-cover > .app-main {
+  position: relative;
+  z-index: 1;
+  padding-bottom: 0;
+}
+
+/* 滚动驱动 blur 必须跟手；scale 也不要 0.85s 过渡，否则回顶会像底层在呼吸 */
+html[data-home-hero-page='true'][data-photo-bg='true'] body::before {
+  transition: none;
+}
+
+/* 只垫高占位、不封顶：避免把展开态量进已压矮的盒子里，首页导航才会和其他页一样高 */
+html[data-home-hero-page='true'] .glass-nav-sticky-wrap {
+  min-height: var(--home-nav-offset);
+  box-sizing: border-box;
+}
+
+/* 纸面盖住 sticky 首屏后跳过子树绘制（占位高度仍由 .home-stage 自己的 height 撑住） */
+html[data-home-hero-page='true'][data-home-stage-covered='true'] .home-stage {
+  content-visibility: hidden;
+}

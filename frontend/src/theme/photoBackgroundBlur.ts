@@ -1,4 +1,4 @@
-export const PHOTO_BG_BLUR_DEFAULT = 18
+export const PHOTO_BG_BLUR_DEFAULT = 6
 export const PHOTO_BG_BLUR_MIN = 0
 export const PHOTO_BG_BLUR_MAX = 48
 export const STORAGE_PHOTO_BG_BLUR = 'ui.photoBackgroundBlurPx'

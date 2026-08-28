@@ -20,6 +20,7 @@
   --font-sans: 'JetBrains Mono', ui-monospace, monospace;
   --font-serif: 'JetBrains Mono', ui-monospace, monospace;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-script: 'Great Vibes', 'Segoe Script', 'Apple Chancery', cursive;
   /* 抽象档扩展：装饰层透明度 */
   --abstract-grid-opacity: 0.12;
   --glass-blur: 18px;
