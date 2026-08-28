@@ -1,6 +1,11 @@
 - 图片
 python scripts/media_tools/import_film_media.py
 
+- 图片（危险：仅当明确要求时）从 import 同步删除已移除的 film 媒体
+  先预览：python scripts/media_tools/sync_film_media_from_import.py --dry-run
+  确认执行：python scripts/media_tools/sync_film_media_from_import.py --confirm
+  详见脚本顶部说明，自动化勿默认调用
+
 - 音乐
 python scripts/music_tools/import_music.py
 
