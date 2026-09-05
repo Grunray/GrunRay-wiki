@@ -59,7 +59,7 @@ const tagFilter = ref('')
 const keyword = ref('')
 const categoryGroupRef = ref<HTMLElement | null>(null)
 const categoryBtnRefs = ref<HTMLElement[]>([])
-const categoryPillStyle = ref<Record<string, string>>({ opacity: '0' })
+const categoryLineStyle = ref<Record<string, string>>({ opacity: '0' })
 const pageRoot = ref<HTMLElement | null>(null)
 const enterPlayed = ref(false)
 
@@ -67,6 +67,7 @@ interface TimelineItem {
   post: Post
   yearLabel: string
   dateLabel: string
+  dateTime?: string
   sortTimestamp: number
 }
 
@@ -92,7 +93,7 @@ function setCategoryBtnRef(el: Element | null, index: number) {
   categoryBtnRefs.value[index] = el as HTMLElement
 }
 
-function updateCategoryPill() {
+function updateCategoryLine() {
   const idx = categoryOptions.value.findIndex((x) => x.id === category.value)
   if (idx < 0) return
   const group = categoryGroupRef.value
@@ -101,11 +102,9 @@ function updateCategoryPill() {
   const groupRect = group.getBoundingClientRect()
   const btnRect = el.getBoundingClientRect()
   const x = btnRect.left - groupRect.left
-  const y = btnRect.top - groupRect.top
-  categoryPillStyle.value = {
+  categoryLineStyle.value = {
     width: `${btnRect.width}px`,
-    height: `${btnRect.height}px`,
-    transform: `translate(${x}px, ${y}px)`,
+    transform: `translateX(${x}px)`,
     opacity: '1',
   }
 }
@@ -163,21 +162,25 @@ watch(allTags, (tags) => {
 })
 
 onMounted(() => {
-  window.addEventListener('resize', updateCategoryPill)
-  void nextTick(updateCategoryPill)
+  window.addEventListener('resize', updateCategoryLine)
+  void nextTick(updateCategoryLine)
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', updateCategoryPill)
+  window.removeEventListener('resize', updateCategoryLine)
 })
 
 watch(category, () => {
-  void nextTick(updateCategoryPill)
+  void nextTick(updateCategoryLine)
 })
 
 watch(categoryOptions, () => {
   categoryBtnRefs.value = []
-  void nextTick(updateCategoryPill)
+  void nextTick(updateCategoryLine)
+})
+
+watch(posts, () => {
+  void nextTick(updateCategoryLine)
 })
 
 function parseDate(value?: string): Date | null {
@@ -192,6 +195,26 @@ function formatMonthDay(value?: string): string {
   const mm = String(d.getMonth() + 1).padStart(2, '0')
   const dd = String(d.getDate()).padStart(2, '0')
   return `${mm}-${dd}`
+}
+
+function formatIsoDate(value?: string): string | undefined {
+  const d = parseDate(value)
+  if (!d) return undefined
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${mm}-${dd}`
+}
+
+function toTimelineItem(post: Post): TimelineItem {
+  const dateSource = post.published_at || post.updated_at
+  const d = parseDate(dateSource)
+  return {
+    post,
+    yearLabel: d ? String(d.getFullYear()) : '----',
+    dateLabel: formatMonthDay(dateSource),
+    dateTime: formatIsoDate(dateSource),
+    sortTimestamp: d ? d.getTime() : 0,
+  }
 }
 
 const visiblePosts = computed(() => {
@@ -234,18 +257,14 @@ function highlightSegments(text: string): { text: string; hit: boolean }[] {
   return parts.length ? parts : [{ text, hit: false }]
 }
 
+const pinnedItems = computed<TimelineItem[]>(() =>
+  visiblePosts.value.filter((post) => post.pinned).map(toTimelineItem),
+)
+
 const timelineItems = computed<TimelineItem[]>(() => {
   return visiblePosts.value
-    .map((post) => {
-      const dateSource = post.published_at || post.updated_at
-      const d = parseDate(dateSource)
-      return {
-        post,
-        yearLabel: d ? String(d.getFullYear()) : '----',
-        dateLabel: formatMonthDay(dateSource),
-        sortTimestamp: d ? d.getTime() : 0,
-      }
-    })
+    .filter((post) => !post.pinned)
+    .map(toTimelineItem)
     .sort((a, b) => {
       if (a.sortTimestamp !== b.sortTimestamp) return b.sortTimestamp - a.sortTimestamp
       return a.post.title.localeCompare(b.post.title)
@@ -279,8 +298,10 @@ const filteredEmpty = computed(
     visiblePosts.value.length === 0,
 )
 
+const hasTimeline = computed(() => pinnedItems.value.length > 0 || timelineGroups.value.length > 0)
+
 function timelineItemEnterIndex(groupIndex: number, itemIndex: number): number {
-  let sum = 0
+  let sum = pinnedItems.value.length
   for (let i = 0; i < groupIndex; i++) {
     sum += timelineGroups.value[i]?.items.length ?? 0
   }
@@ -301,54 +322,122 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
 <template>
   <section ref="pageRoot" class="blog-page">
     <h1 class="h">{{ t('blog.title') }}</h1>
-    <!-- <p class="sub">{{ t('blog.subtitle') }}</p> -->
-    <div class="toolbar card">
-      <div class="row row-top">
-        <span class="lbl lbl-tag">{{ t('blog.tagFilter') }}</span>
-        <div class="tag-select-wrap">
+    <div class="ed-filter" role="search">
+      <div class="ed-filter-row">
+        <div class="ed-filter-col">
+          <p class="ed-kicker">
+            <span class="ed-en">{{ t('blog.kickerFilterEn') }}</span>
+            <span class="ed-mid" aria-hidden="true">·</span>
+            <span class="ed-zh">{{ t('blog.kickerFilterZh') }}</span>
+          </p>
           <AppSelect
             v-model="tagFilter"
+            variant="editorial"
             :options="tagSelectOptions"
             :aria-label="t('blog.tagFilter')"
             min-width="0"
           />
         </div>
-
-        <div ref="categoryGroupRef" class="category-group category-group--toolbar">
-          <span class="category-pill-bg" :style="categoryPillStyle" aria-hidden="true" />
-          <button
-            v-for="(item, i) in categoryOptions"
-            :key="item.id"
-            class="category-btn"
-            :class="{ 'category-btn--active': category === item.id }"
-            type="button"
-            :ref="(el) => setCategoryBtnRef(el as Element | null, i)"
-            @click="category = item.id"
-          >
-            {{ item.label }}
-          </button>
+        <div class="ed-filter-col ed-filter-col--section">
+          <p class="ed-kicker">
+            <span class="ed-en">{{ t('blog.kickerSectionEn') }}</span>
+            <span class="ed-mid" aria-hidden="true">·</span>
+            <span class="ed-zh">{{ t('blog.kickerSectionZh') }}</span>
+          </p>
+          <div ref="categoryGroupRef" class="ed-cats">
+            <span class="ed-cat-line" :style="categoryLineStyle" aria-hidden="true" />
+            <template v-for="(item, i) in categoryOptions" :key="item.id">
+              <span v-if="i > 0" class="ed-cat-mid" aria-hidden="true">·</span>
+              <button
+                type="button"
+                class="ed-cat"
+                :class="{ 'is-on': category === item.id }"
+                :aria-pressed="category === item.id"
+                :ref="(el) => setCategoryBtnRef(el as Element | null, i)"
+                @click="category = item.id"
+              >
+                {{ item.label }}
+              </button>
+            </template>
+          </div>
         </div>
       </div>
-      <div class="row row-search">
-        <div class="search-wrap">
-          <span class="search-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" class="search-icon-svg" focusable="false">
-              <circle cx="11" cy="11" r="6.5" />
-              <line x1="16" y1="16" x2="21" y2="21" />
-            </svg>
-          </span>
-          <input v-model="keyword" class="search-input" type="text" :placeholder="t('blog.searchPlaceholder')" />
+      <div class="ed-filter-row">
+        <div class="ed-filter-col ed-filter-col--search">
+          <p class="ed-kicker">
+            <span class="ed-en">{{ t('blog.kickerSearchEn') }}</span>
+            <span class="ed-mid" aria-hidden="true">·</span>
+            <span class="ed-zh">{{ t('blog.kickerSearchZh') }}</span>
+          </p>
+          <label class="ed-search">
+            <input v-model="keyword" type="search" :placeholder="t('blog.searchPlaceholder')" autocomplete="off" />
+          </label>
         </div>
       </div>
     </div>
     <p v-if="error" class="empty">{{ error }}</p>
-    <TimelinePageSkeleton v-else-if="loading && !posts.length" />
-    <div v-else-if="timelineGroups.length" class="timeline">
+    <TimelinePageSkeleton v-else-if="loading && !posts.length" variant="notes" />
+    <div v-else-if="hasTimeline" class="timeline">
+      <section v-if="pinnedItems.length" class="timeline-pin" :aria-label="t('blog.pinned')" :style="{ '--enter-gi': 0 }">
+        <header class="timeline-pin-head">
+          <p class="ed-kicker">
+            <span class="ed-en">{{ t('blog.kickerPinnedEn') }}</span>
+            <span class="ed-mid" aria-hidden="true">·</span>
+            <span class="ed-zh">{{ t('blog.kickerPinnedZh') }}</span>
+          </p>
+          <p class="timeline-year-count">{{ t('blog.pinnedCount', { count: pinnedItems.length }) }}</p>
+        </header>
+        <div class="timeline-items">
+          <article
+            v-for="(item, ii) in pinnedItems"
+            :key="item.post.id"
+            class="timeline-item"
+            :style="{ '--enter-ti': ii }"
+          >
+            <time class="timeline-date timeline-date--with-year" :datetime="item.dateTime">
+              <span class="timeline-date-year">{{ item.yearLabel }}</span>
+              <span class="timeline-date-md">{{ item.dateLabel }}</span>
+            </time>
+            <span class="timeline-dot" aria-hidden="true" />
+            <div
+              class="timeline-card card timeline-card--clickable card-hover-g"
+              role="link"
+              tabindex="0"
+              @click="onCardClick(item.post.slug)"
+              @keydown="onCardKeydown($event, item.post.slug)"
+            >
+              <div class="timeline-card-head">
+                <h3 class="timeline-title">
+                  <template v-for="(seg, si) in highlightSegments(item.post.title)" :key="`pttl-${item.post.id}-${si}`">
+                    <mark v-if="seg.hit" class="search-hit">{{ seg.text }}</mark>
+                    <template v-else>{{ seg.text }}</template>
+                  </template>
+                </h3>
+              </div>
+              <p class="timeline-summary">
+                <template v-for="(seg, si) in highlightSegments(item.post.summary)" :key="`psum-${item.post.id}-${si}`">
+                  <mark v-if="seg.hit" class="search-hit">{{ seg.text }}</mark>
+                  <template v-else>{{ seg.text }}</template>
+                </template>
+              </p>
+              <div class="timeline-tags">
+                <span v-for="(tag, ti) in item.post.tags" :key="`${item.post.id}-ptag-${ti}`" class="tag">
+                  <template v-for="(seg, si) in highlightSegments(tag)" :key="`ptg-${item.post.id}-${ti}-${si}`">
+                    <mark v-if="seg.hit" class="search-hit">{{ seg.text }}</mark>
+                    <template v-else>{{ seg.text }}</template>
+                  </template>
+                </span>
+              </div>
+              <CardCornerVineLazy />
+            </div>
+          </article>
+        </div>
+      </section>
       <section
         v-for="(group, gi) in timelineGroups"
         :key="group.year"
         class="timeline-year-group"
-        :style="{ '--enter-gi': gi }"
+        :style="{ '--enter-gi': gi + (pinnedItems.length ? 1 : 0) }"
       >
         <header class="timeline-year-head">
           <h2 class="timeline-year">{{ group.year }}</h2>
@@ -361,7 +450,7 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
             class="timeline-item"
             :style="{ '--enter-ti': timelineItemEnterIndex(gi, ii) }"
           >
-            <time class="timeline-date">{{ item.dateLabel }}</time>
+            <time class="timeline-date" :datetime="item.dateTime">{{ item.dateLabel }}</time>
             <span class="timeline-dot" aria-hidden="true" />
             <div
               class="timeline-card card timeline-card--clickable card-hover-g"
@@ -377,7 +466,6 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
                     <template v-else>{{ seg.text }}</template>
                   </template>
                 </h3>
-                <span v-if="item.post.pinned" class="badge">{{ t('blog.pinned') }}</span>
               </div>
               <p class="timeline-summary">
                 <template v-for="(seg, si) in highlightSegments(item.post.summary)" :key="`sum-${item.post.id}-${si}`">
@@ -410,7 +498,7 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
   --timeline-date-col: 5.2rem;
   --timeline-dot-col: 1.25rem;
   --timeline-gap: 0.7rem;
-  --timeline-dot-offset: 1.22rem;
+  --timeline-dot-offset: 1.05rem;
   --timeline-item-gap: 0.85rem;
 }
 
@@ -421,155 +509,8 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
   font-weight: 600;
   letter-spacing: 0.01em;
 }
-.sub {
-  margin: 0 0 1.25rem;
-  color: var(--color-text-muted);
-  font-size: 0.95rem;
-}
-
-.toolbar {
-  position: relative;
-  z-index: 2;
-  margin-bottom: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-  padding: 0.9rem 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-bg-surface) 85%, transparent);
-  overflow: visible;
-}
-
-.row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 2rem;
-}
-
-.lbl {
-  min-width: 6rem;
-  color: var(--color-text-muted);
-  font-size: 0.9rem;
-}
-.lbl-tag {
-  min-width: 0;
-  width: max-content;
-  flex-shrink: 0;
-}
-
-.category-group--toolbar {
-  margin-left: auto;
-}
-
-.row-top {
-  position: relative;
-  z-index: 3;
-  flex-wrap: wrap;
-}
-
-.category-group {
-  position: relative;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  padding: 3px;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--color-bg-surface) 86%, transparent);
-}
-
-.category-pill-bg {
-  position: absolute;
-  left: 0;
-  top: 0;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
-  background: color-mix(in srgb, var(--color-accent) 16%, var(--color-bg-surface));
-  transition:
-    transform 0.35s ease,
-    width 0.35s ease,
-    height 0.35s ease,
-    opacity 0.2s ease;
-  z-index: 0;
-}
-
-.category-btn {
-  position: relative;
-  z-index: 1;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--color-text-muted);
-  padding: 0.32rem 0.7rem;
-  font-size: 0.86rem;
-  line-height: 1.2;
-  cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
-}
-
-.category-btn:hover {
-  color: var(--color-text);
-}
-
-.category-btn--active {
-  color: var(--color-accent);
-}
-
-.tag-select-wrap {
-  position: relative;
-  z-index: 4;
-  display: inline-block;
-  min-width: 280px;
-  max-width: 320px;
-}
-
-.row-search {
-  position: relative;
-  z-index: 1;
-  overflow: visible;
-}
-
-.search-wrap {
-  position: relative;
-  width: min(420px, 100%);
-}
-
-.search-icon {
-  position: absolute;
-  left: 0.6rem;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-}
-
-.search-icon-svg {
-  width: 0.95rem;
-  height: 0.95rem;
-  display: block;
-  stroke: color-mix(in srgb, var(--color-text-muted) 92%, transparent);
-  stroke-width: 1.8;
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.search-input {
-  width: 100%;
-  padding: 0.38rem 0.55rem 0.38rem 2rem;
-  border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background: color-mix(in srgb, var(--color-bg-surface) 88%, transparent);
-  color: var(--color-text);
-}
-
-.search-input::placeholder {
-  color: var(--color-text-muted);
-}
-
 /* 琥珀色「荧光笔」式高亮，浅/深主题下都易辨认 */
+
 .search-hit {
   background: linear-gradient(
     165deg,
@@ -601,28 +542,10 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
 }
 
 @media (max-width: 860px) {
-  .category-group--toolbar {
-    margin-left: 0;
-  }
-
-  .tag-select-wrap {
-    min-width: 0;
-    width: min(320px, 100%);
-  }
-
-  .search-wrap {
-    width: 100%;
-  }
-
   .blog-page {
     --timeline-date-col: 4.3rem;
     --timeline-dot-col: 1.1rem;
     --timeline-gap: 0.55rem;
-  }
-
-  .timeline-item {
-    grid-template-columns: var(--timeline-date-col) var(--timeline-dot-col) minmax(0, 1fr);
-    column-gap: var(--timeline-gap);
   }
 
   .timeline-year {
@@ -636,11 +559,5 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
 
 .empty {
   color: var(--color-text-muted);
-}
-
-@media (max-width: 480px) {
-  .tag-select-wrap {
-    width: 100%;
-  }
 }
 </style>

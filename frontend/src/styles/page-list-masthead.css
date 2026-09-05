@@ -1,0 +1,296 @@
+/* 项目 / 博客列表共用刊头筛选（方案 D）；不是纸面 Filter Bar。下拉仍走 AppSelect。 */
+
+.ed-filter {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.85rem;
+  margin: 0 0 1.35rem;
+  padding: 0.72rem 1.5rem 0.82rem;
+  border-top: 1px solid var(--color-text);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 88%, var(--color-text));
+  background: transparent;
+  overflow: visible;
+}
+
+.ed-filter-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.75rem;
+}
+
+.ed-filter-row + .ed-filter-row {
+  padding-top: 0.78rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.ed-filter-col {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  min-width: 0;
+}
+
+.ed-filter-col--archive,
+.ed-filter-col--section {
+  margin-left: auto;
+  align-items: flex-end;
+}
+
+.ed-filter-col--archive .ed-kicker,
+.ed-filter-col--search .ed-kicker {
+  letter-spacing: 0.12em;
+  font-weight: 400;
+}
+
+.ed-filter-col--archive .ed-en,
+.ed-filter-col--archive .ed-zh,
+.ed-filter-col--search .ed-en,
+.ed-filter-col--search .ed-zh {
+  color: var(--color-text-muted);
+}
+
+.ed-filter-col--search {
+  align-items: flex-start;
+  flex: 0 1 22rem;
+  min-width: 12rem;
+  max-width: 28rem;
+}
+
+.ed-kicker {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  line-height: 1;
+}
+
+.ed-en {
+  color: var(--color-text);
+}
+
+.ed-mid {
+  margin: 0 0.42em;
+  letter-spacing: 0;
+  opacity: 0.45;
+}
+
+.ed-zh {
+  letter-spacing: 0.12em;
+}
+
+.ed-cats {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.ed-cat-line {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 1;
+  height: 1px;
+  width: 0;
+  background: var(--color-accent);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(0);
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.2s ease;
+}
+
+.ed-cat {
+  appearance: none;
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding: 0.06rem 0 0.16rem;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+.ed-cat-mid {
+  margin: 0 0.38rem;
+  color: var(--color-text-muted);
+  opacity: 0.45;
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 400;
+}
+
+.ed-cat:hover,
+.ed-cat:focus-visible {
+  color: var(--color-accent);
+  outline: none;
+}
+
+.ed-cat.is-on {
+  color: var(--color-accent);
+}
+
+.ed-search {
+  display: block;
+  width: 100%;
+}
+
+.ed-search input {
+  width: 100%;
+  margin: 0;
+  padding: 0.08rem 0 0.2rem;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.ed-search input::placeholder {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.ed-search input:hover,
+.ed-search input:focus {
+  border-bottom-color: var(--color-accent);
+  outline: none;
+}
+
+.ed-toggle {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  margin: 0;
+  padding: 0.08rem 0 0.2rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ed-toggle-label {
+  font-family: var(--font-serif);
+  font-size: 0.98rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  transition: color 0.2s ease;
+}
+
+.ed-toggle.is-on .ed-toggle-label {
+  color: var(--color-text);
+}
+
+.ed-toggle:hover .ed-toggle-label,
+.ed-toggle:focus-visible .ed-toggle-label {
+  color: var(--color-accent);
+}
+
+.ed-toggle:focus-visible {
+  outline: none;
+}
+
+.ed-toggle .toggle-visual {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.ed-toggle .toggle-track {
+  inline-size: 2.35rem;
+  block-size: 2px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-accent) 55%, var(--color-border));
+  transition: background 0.2s ease;
+}
+
+.ed-toggle .toggle-end {
+  inline-size: 0.62rem;
+  block-size: 0.62rem;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--color-accent) 55%, var(--color-border));
+  transition: all 0.2s ease;
+}
+
+.ed-toggle .toggle-end--left {
+  background: transparent;
+}
+
+.ed-toggle.is-on .toggle-end--right {
+  background: var(--color-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 14%, transparent);
+}
+
+.ed-toggle:not(.is-on) .toggle-end--left {
+  background: var(--color-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 14%, transparent);
+}
+
+.ed-toggle:not(.is-on) .toggle-end--right {
+  background: transparent;
+  box-shadow: none;
+}
+
+.ed-toggle:not(.is-on) .toggle-track {
+  background: color-mix(in srgb, var(--color-border) 88%, transparent);
+}
+
+.ed-toggle .checkbox {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .ed-filter {
+    padding-inline: 0.85rem;
+  }
+
+  .ed-filter-row {
+    flex-wrap: wrap;
+    gap: 0.95rem 1.2rem;
+  }
+
+  .ed-filter-col--archive,
+  .ed-filter-col--section {
+    margin-left: 0;
+    align-items: flex-start;
+    width: 100%;
+    flex: none;
+    padding-top: 0.15rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .ed-filter-col--search {
+    width: 100%;
+    flex: none;
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ed-cat-line,
+  .ed-toggle-label,
+  .ed-toggle .toggle-track,
+  .ed-toggle .toggle-end {
+    transition: none;
+  }
+}
