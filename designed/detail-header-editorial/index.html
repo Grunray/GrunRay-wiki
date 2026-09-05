@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN" data-preview-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>详情顶栏 · Editorial 预览</title>
+    <link rel="stylesheet" href="shared.css" />
+  </head>
+  <body data-scheme="a" data-page="blog">
+    <div class="preview-switcher">
+      <span class="brand">DETAIL</span>
+      <button type="button" class="scheme-btn" data-scheme="now">现状</button>
+      <button type="button" class="scheme-btn on" data-scheme="a">方案 A</button>
+      <span class="sep">|</span>
+      <button type="button" class="page-jump" data-page="blog">博客详情</button>
+      <button type="button" class="page-jump" data-page="project">项目详情</button>
+      <span class="sep">|</span>
+      <button type="button" class="theme-btn on" data-theme="light">浅色</button>
+      <button type="button" class="theme-btn" data-theme="dark">深色</button>
+      <span class="hint">只演示顶栏；正文省略。方案 A 是唯一合入候选。</span>
+    </div>
+
+    <p class="meta-note scheme-now">
+      <b>现状</b>
+      博客：返回链灰色，标题旁有「置顶」Badge。项目：返回写「返回」，题名 / 项目信息 / 操作是三张纸卡。
+    </p>
+    <p class="meta-note scheme-a">
+      <b>方案 A · Editorial 顶栏</b>
+      博客去掉置顶 Badge，返回链默认墨绿，题名上方加与项目相同的 ink 顶线。项目三张纸卡改成刊头带；题名上方不再放 Title · 题名 / 状态行。适合直接合入现有 <code>PostDetailView</code> / <code>ProjectDetailView</code> 题录区。
+    </p>
+
+    <!-- 现状 · 博客 -->
+    <section class="variant" data-scheme="now" data-page="blog">
+      <article class="post-col">
+        <p class="back back--muted"><a href="#">← 博客</a></p>
+        <div class="post-lead">
+          <header class="head">
+            <h1 class="title">首页：三栏布局与文章预览</h1>
+            <span class="badge">置顶</span>
+          </header>
+          <p class="summary">HomeView 三栏栅格、最新文章与随机推荐接口、胶片墙与 session 缓存说明。</p>
+          <div class="tags">
+            <span class="tag">Vue</span>
+            <span class="tag">首页</span>
+            <span class="tag">API</span>
+          </div>
+        </div>
+        <p class="omit">正文从这里开始（本预览省略）</p>
+      </article>
+    </section>
+
+    <!-- 方案 A · 博客 -->
+    <section class="variant on" data-scheme="a" data-page="blog">
+      <article class="post-col">
+        <p class="back back--accent"><a href="#">← 博客</a></p>
+        <div class="ed-mast">
+          <section class="ed-zone">
+            <h1 class="title">首页：三栏布局与文章预览</h1>
+            <p class="summary">HomeView 三栏栅格、最新文章与随机推荐接口、胶片墙与 session 缓存说明。</p>
+            <div class="tags">
+              <span class="tag">Vue</span>
+              <span class="tag">首页</span>
+              <span class="tag">API</span>
+            </div>
+          </section>
+        </div>
+        <p class="omit">正文从这里开始（本预览省略）</p>
+      </article>
+    </section>
+
+    <!-- 现状 · 项目 -->
+    <section class="variant" data-scheme="now" data-page="project">
+      <article class="proj-col">
+        <p class="back back--muted"><a href="#">← 返回</a></p>
+        <header class="card hero">
+          <div class="head">
+            <h1 class="title title--card">GrunRay Wiki — 个人成果与博客站</h1>
+          </div>
+          <p class="summary">Vue 3 + TypeScript + Vite 前端，Flask + MySQL 后端；Markdown 驱动内容，涵盖项目展示、算法博文、碎念、友链与留言等模块。</p>
+          <div class="tags">
+            <span class="tag">Vue</span>
+            <span class="tag">TypeScript</span>
+            <span class="tag">Flask</span>
+            <span class="tag">MySQL</span>
+            <span class="tag">Vite</span>
+            <span class="tag">Markdown</span>
+          </div>
+        </header>
+        <div class="top-panels">
+          <section class="card facts">
+            <h2 class="card-title">项目信息</h2>
+            <dl class="meta meta--card">
+              <dt>周期</dt>
+              <dd>2024/11/03 - 进行中</dd>
+              <dt>状态</dt>
+              <dd>进行中</dd>
+            </dl>
+          </section>
+          <section class="card actions-card">
+            <h2 class="card-title">操作</h2>
+            <div class="actions">
+              <a class="action-btn" href="#">打开 GitHub</a>
+              <a class="action-btn" href="#">笔记</a>
+            </div>
+          </section>
+        </div>
+        <p class="omit">正文从这里开始（本预览省略）</p>
+      </article>
+    </section>
+
+    <!-- 方案 A · 项目 -->
+    <section class="variant" data-scheme="a" data-page="project">
+      <article class="proj-col">
+        <p class="back back--accent"><a href="#">← 项目</a></p>
+        <div class="ed-mast">
+          <section class="ed-zone">
+            <h1 class="title">GrunRay Wiki — 个人成果与博客站</h1>
+            <p class="summary">Vue 3 + TypeScript + Vite 前端，Flask + MySQL 后端；Markdown 驱动内容，涵盖项目展示、算法博文、碎念、友链与留言等模块。</p>
+            <div class="tags">
+              <span class="tag">Vue</span>
+              <span class="tag">TypeScript</span>
+              <span class="tag">Flask</span>
+              <span class="tag">MySQL</span>
+              <span class="tag">Vite</span>
+              <span class="tag">Markdown</span>
+            </div>
+          </section>
+          <div class="ed-split">
+            <section class="ed-zone ed-zone--facts">
+              <p class="ed-kicker"><span class="ed-en">Facts</span><span class="ed-mid">·</span><span class="ed-zh">项目信息</span></p>
+              <dl class="ed-meta">
+                <dt>周期</dt>
+                <dd>2024/11/03 - 进行中</dd>
+                <dt>状态</dt>
+                <dd><span class="ed-status ed-status--on">进行中</span></dd>
+              </dl>
+            </section>
+            <section class="ed-zone ed-zone--actions">
+              <p class="ed-kicker"><span class="ed-en">Actions</span><span class="ed-mid">·</span><span class="ed-zh">操作</span></p>
+              <div class="ed-actions">
+                <a class="ed-action" href="#">打开 GitHub</a>
+                <a class="ed-action" href="#">笔记</a>
+              </div>
+            </section>
+          </div>
+        </div>
+        <p class="omit">正文从这里开始（本预览省略）</p>
+      </article>
+    </section>
+
+    <script src="shared.js"></script>
+  </body>
+</html>
