@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="zh-CN" data-preview-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>项目列表 × 笔记卡片 · 方案对比</title>
+    <link rel="stylesheet" href="shared.css" />
+  </head>
+  <body data-scheme="d">
+    <div class="preview-switcher">
+      <span class="brand">LIST</span>
+      <button type="button" class="scheme-btn" data-scheme="now">现状</button>
+      <button type="button" class="scheme-btn" data-scheme="a">A 轴+目录行</button>
+      <button type="button" class="scheme-btn on" data-scheme="d">D Editorial 筛选</button>
+      <span class="sep sep-page">|</span>
+      <button type="button" class="page-jump on" data-page-jump="page-projects">项目</button>
+      <button type="button" class="page-jump" data-page-jump="page-blog">博客</button>
+      <span class="sep">|</span>
+      <button type="button" class="theme-btn on" data-theme="light">浅色</button>
+      <button type="button" class="theme-btn" data-theme="dark">深色</button>
+      <span class="hint">D 下分项目 / 博客两整页，共用时间线与刊头</span>
+    </div>
+
+    <svg width="0" height="0" aria-hidden="true">
+      <symbol id="vine" viewBox="0 0 60 60">
+        <path class="grow" pathLength="100" d="M58 58 C40 52 48 28 32 22 C22 18 18 32 28 36 C40 41 36 12 14 8" />
+      </symbol>
+    </svg>
+
+    <!-- 现状 -->
+    <section class="variant scheme-now" data-scheme="now">
+      <p class="meta-note">
+        <b>现状 · 时间线纸卡</b>
+        `/projects` 现用年份轴 + `.timeline-card.card` + 方案 G。对照用，不作为合入目标。
+        <span class="tag">对照</span>
+      </p>
+      <h1 class="h">项目</h1>
+      <div class="toolbar">
+        <span>标签</span>
+        <div class="tool-select" data-tag-select>
+          <button type="button" class="fake-select" aria-expanded="false" aria-haspopup="listbox">
+            <span data-tag-label>全部标签</span>
+            <span class="fake-caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="tool-menu" role="listbox" hidden></div>
+        </div>
+        <span class="row-toggle">
+          显示已归档
+          <span class="toggle-end is-on"></span>
+          <span class="toggle-track"></span>
+          <span class="toggle-end"></span>
+        </span>
+      </div>
+      <section class="timeline-year-group">
+        <header class="timeline-year-head">
+          <h2 class="timeline-year">2026</h2>
+          <p class="timeline-year-count">3 个项目</p>
+        </header>
+        <div class="timeline-items">
+          <article class="timeline-item">
+            <time class="timeline-date">08-28</time>
+            <span class="timeline-dot"></span>
+            <div class="now-card g-card" tabindex="0">
+              <div class="head">
+                <h3>GrunRay Wiki — 个人成果与博客站</h3>
+              </div>
+              <p>Vue 3 + TypeScript + Vite 前端，Flask + MySQL 后端；Markdown 驱动内容。</p>
+              <div><span class="tag">Vue</span><span class="tag">Flask</span></div>
+              <svg class="vine"><use href="#vine" /></svg>
+            </div>
+          </article>
+          <article class="timeline-item">
+            <time class="timeline-date">05-12</time>
+            <span class="timeline-dot"></span>
+            <div class="now-card g-card" tabindex="0">
+              <div class="head">
+                <h3>HLTV 新闻标题爬虫与数据链路</h3>
+                <span class="badge">已归档</span>
+              </div>
+              <p>采集 → PySpark 预处理 → 存储 → 词频与 ItemCF 推荐 → 简易 Web 展示。</p>
+              <div><span class="tag">Spark</span><span class="tag">Python</span></div>
+              <svg class="vine"><use href="#vine" /></svg>
+            </div>
+          </article>
+          <article class="timeline-item">
+            <time class="timeline-date">02-18</time>
+            <span class="timeline-dot"></span>
+            <div class="now-card g-card" tabindex="0">
+              <div class="head">
+                <h3>烟消费记录应用</h3>
+                <span class="badge">已归档</span>
+              </div>
+              <p>Kotlin + Jetpack Compose，记录管理、日期筛选与消费统计。</p>
+              <div><span class="tag">Kotlin</span><span class="tag">Android</span></div>
+              <svg class="vine"><use href="#vine" /></svg>
+            </div>
+          </article>
+        </div>
+      </section>
+    </section>
+
+    <!-- A -->
+    <section class="variant scheme-a" data-scheme="a" id="variant-a">
+      <p class="meta-note">
+        <b>方案 A · 时间线轴 + 笔记目录行</b>
+        保留年份、左列日期、圆点轴线。右侧卡片去掉厚纸边，改成笔记页 `toc-row` 的标题/摘要/标签层级；悬停仍走方案 G（上浮、翻角、花藤、日期错位）。筛选区仍是现状那种纸面工具条。
+        <span class="tag">列表基线</span>
+      </p>
+      <h1 class="h">项目</h1>
+      <div class="toolbar">
+        <span>标签</span>
+        <div class="tool-select" data-tag-select>
+          <button type="button" class="fake-select" aria-expanded="false" aria-haspopup="listbox">
+            <span data-tag-label>全部标签</span>
+            <span class="fake-caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="tool-menu" role="listbox" hidden></div>
+        </div>
+        <span class="row-toggle">
+          显示已归档
+          <span class="toggle-end is-on"></span>
+          <span class="toggle-track"></span>
+          <span class="toggle-end"></span>
+        </span>
+      </div>
+      <section class="timeline-year-group">
+        <header class="timeline-year-head">
+          <h2 class="timeline-year">2026</h2>
+          <p class="timeline-year-count">3 个项目</p>
+        </header>
+        <div class="timeline-items">
+          <article class="timeline-item">
+            <time class="timeline-date">08-28</time>
+            <span class="timeline-dot"></span>
+            <div class="g-card" tabindex="0">
+              <div class="toc-head">
+                <h3 class="toc-title">GrunRay Wiki — 个人成果与博客站</h3>
+                <span class="toc-status toc-status--on">进行中</span>
+              </div>
+              <p class="toc-summary">Vue 3 + TypeScript + Vite 前端，Flask + MySQL 后端；Markdown 驱动内容，涵盖项目展示、算法博文、碎念、友链与留言。</p>
+              <div class="toc-tags"><span class="tag">Vue</span><span class="tag">Flask</span></div>
+              <svg class="vine"><use href="#vine" /></svg>
+            </div>
+          </article>
+          <article class="timeline-item">
+            <time class="timeline-date">05-12</time>
+            <span class="timeline-dot"></span>
+            <div class="g-card" tabindex="0">
+              <div class="toc-head">
+                <h3 class="toc-title">HLTV 新闻标题爬虫与数据链路</h3>
+                <span class="toc-status toc-status--off">已归档</span>
+              </div>
+              <p class="toc-summary">围绕 HLTV 电竞新闻构建采集 → PySpark 预处理 → 存储 → 词频与 ItemCF 推荐 → 简易 Web 展示。</p>
+              <div class="toc-tags"><span class="tag">Spark</span><span class="tag">Python</span></div>
+              <svg class="vine"><use href="#vine" /></svg>
+            </div>
+          </article>
+          <article class="timeline-item">
+            <time class="timeline-date">02-18</time>
+            <span class="timeline-dot"></span>
+            <div class="g-card" tabindex="0">
+              <div class="toc-head">
+                <h3 class="toc-title">烟消费记录应用</h3>
+                <span class="toc-status toc-status--off">已归档</span>
+              </div>
+              <p class="toc-summary">Kotlin + Jetpack Compose 原生应用，支持记录管理、日期筛选与消费统计。</p>
+              <div class="toc-tags"><span class="tag">Kotlin</span><span class="tag">Android</span></div>
+              <svg class="vine"><use href="#vine" /></svg>
+            </div>
+          </article>
+        </div>
+      </section>
+    </section>
+
+    <!--
+      方案 D · 合入时的共用排版约定（对照生产代码后的选择）
+
+      生产现状：
+      - Timeline：BlogView / ProjectsView 共用 frontend/src/styles/page-timeline.css
+        （main.ts 全局引入），DOM 类名相同（.timeline-year-group / .timeline-item /
+        .timeline-date / .timeline-dot …）。日期列宽由两页各自写
+        --timeline-date-col: 5.2rem，配合 formatMonthDay() 的 MM-DD；年份只出现在
+        .timeline-year 组头，所以左列不必给 YYYY。
+      - 下拉列表：两页都用 AppSelect.vue（.select-menu.card + .select-option），
+        FragmentComposeView 也共用，不能为刊头单独再写一套下拉排版。
+
+      置顶带要显示年份：不要新写一份 Timeline 共用文件。
+      新文件会复制三列 grid / 点轴 / 日期列，和 page-timeline.css 双轨漂移，
+      项目页与博客年份组也会被带偏。应在原 page-timeline.css 上补 modifier
+      （例如 .timeline-date--with-year）：置顶条仍用同一套 .timeline-item 格子，
+      只在日期格内把年份叠在 MM-DD 上方，列宽仍 5.2rem，年份组继续单行 MM-DD。
+    -->
+    <section class="variant scheme-d on" data-scheme="d" id="variant-d">
+      <p class="meta-note">
+        <b>方案 D · 项目 / 博客两整页</b>
+        两页共用时间线轴 + 笔记目录行 + 方案 G + 刊头下拉。项目页是 <code>FILTER · 标签</code> / <code>ARCHIVE · 已归档</code>；博客页写入生产里那套控件：标签下拉、分类（全部 / 杂项 / 项目文章 / 算法文章）、搜索框。顶栏「项目 / 博客」可跳到对应整页。
+        <span class="tag">两页对照</span>
+      </p>
+
+      <article class="ed-page" id="page-projects">
+      <h1 class="h">项目</h1>
+      <div class="ed-filter" role="search">
+        <div class="ed-filter-row">
+          <div class="ed-filter-col">
+            <p class="ed-kicker"><span class="ed-en">Filter</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">标签</span></p>
+            <!-- 下拉列表：合入须用共用 AppSelect.vue，此处只是刊头皮肤预览 -->
+            <div class="ed-select-wrap" data-tag-select>
+              <button type="button" class="ed-select" aria-expanded="false" aria-haspopup="listbox">
+                <span class="ed-select-label" data-tag-label>全部</span>
+                <span class="ed-chevron" aria-hidden="true"></span>
+              </button>
+              <div class="ed-menu" role="listbox" hidden></div>
+            </div>
+          </div>
+          <div class="ed-filter-col ed-filter-col--archive">
+            <p class="ed-kicker"><span class="ed-en">Archive</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">已归档</span></p>
+            <button type="button" class="ed-toggle is-on" data-archive-toggle aria-pressed="true">
+              <span class="ed-toggle-label" data-archive-label>显示</span>
+              <span class="toggle-visual" aria-hidden="true">
+                <span class="toggle-end toggle-end--left"></span>
+                <span class="toggle-track"></span>
+                <span class="toggle-end toggle-end--right"></span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Timeline：合入须用共用 page-timeline.css（与博客年份组同一套） -->
+      <section class="timeline-year-group">
+        <header class="timeline-year-head">
+          <h2 class="timeline-year">2026</h2>
+          <p class="timeline-year-count">3 个项目</p>
+        </header>
+        <div class="timeline-items">
+          <article class="timeline-item">
+            <time class="timeline-date">08-28</time>
+            <span class="timeline-dot"></span>
+            <div class="g-card" tabindex="0">
+              <div class="toc-head">
+                <h3 class="toc-title">GrunRay Wiki — 个人成果与博客站</h3>
+                <span class="toc-status toc-status--on">进行中</span>
+              </div>
+              <p class="toc-summary">Vue 3 + TypeScript + Vite 前端，Flask + MySQL 后端；Markdown 驱动内容，涵盖项目展示、算法博文、碎念、友链与留言。</p>
+              <div class="toc-tags"><span class="tag">Vue</span><span class="tag">Flask</span></div>
+              <svg class="vine"><use href="#vine" /></svg>
+            </div>
+          </article>
+          <article class="timeline-item">
+            <time class="timeline-date">05-12</time>
+            <span class="timeline-dot"></span>
+            <div class="g-card" tabindex="0">
+              <div class="toc-head">
+                <h3 class="toc-title">HLTV 新闻标题爬虫与数据链路</h3>
+                <span class="toc-status toc-status--off">已归档</span>
+              </div>
+              <p class="toc-summary">围绕 HLTV 电竞新闻构建采集 → PySpark 预处理 → 存储 → 词频与 ItemCF 推荐 → 简易 Web 展示。</p>
+              <div class="toc-tags"><span class="tag">Spark</span><span class="tag">Python</span></div>
+              <svg class="vine"><use href="#vine" /></svg>
+            </div>
+          </article>
+          <article class="timeline-item">
+            <time class="timeline-date">02-18</time>
+            <span class="timeline-dot"></span>
+            <div class="g-card" tabindex="0">
+              <div class="toc-head">
+                <h3 class="toc-title">烟消费记录应用</h3>
+                <span class="toc-status toc-status--off">已归档</span>
+              </div>
+              <p class="toc-summary">Kotlin + Jetpack Compose 原生应用，支持记录管理、日期筛选与消费统计。</p>
+              <div class="toc-tags"><span class="tag">Kotlin</span><span class="tag">Android</span></div>
+              <svg class="vine"><use href="#vine" /></svg>
+            </div>
+          </article>
+        </div>
+      </section>
+      </article>
+
+      <hr class="ed-page-break" />
+
+      <article class="ed-page" id="page-blog">
+      <h1 class="h">博客</h1>
+      <div class="ed-filter" role="search">
+        <div class="ed-filter-row">
+          <div class="ed-filter-col">
+            <p class="ed-kicker"><span class="ed-en">Filter</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">标签</span></p>
+            <!-- 下拉列表：合入须用共用 AppSelect.vue（与项目页、碎片页同一组件） -->
+            <div class="ed-select-wrap" data-tag-select>
+              <button type="button" class="ed-select" aria-expanded="false" aria-haspopup="listbox">
+                <span class="ed-select-label" data-tag-label>全部</span>
+                <span class="ed-chevron" aria-hidden="true"></span>
+              </button>
+              <div class="ed-menu" role="listbox" hidden></div>
+            </div>
+          </div>
+          <div class="ed-filter-col ed-filter-col--section">
+            <p class="ed-kicker"><span class="ed-en">Section</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">分类</span></p>
+            <div class="ed-cats" data-ed-cats>
+              <span class="ed-cat-line" aria-hidden="true"></span>
+              <button type="button" class="ed-cat is-on" aria-pressed="true">全部</button>
+              <span class="ed-cat-mid" aria-hidden="true">·</span>
+              <button type="button" class="ed-cat" aria-pressed="false">杂项</button>
+              <span class="ed-cat-mid" aria-hidden="true">·</span>
+              <button type="button" class="ed-cat" aria-pressed="false">项目文章</button>
+              <span class="ed-cat-mid" aria-hidden="true">·</span>
+              <button type="button" class="ed-cat" aria-pressed="false">算法文章</button>
+            </div>
+          </div>
+        </div>
+        <div class="ed-filter-row">
+          <div class="ed-filter-col ed-filter-col--search">
+            <p class="ed-kicker"><span class="ed-en">Search</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">检索</span></p>
+            <label class="ed-search">
+              <input type="search" name="q" placeholder="搜索标题、摘要、标签" autocomplete="off" />
+            </label>
+          </div>
+        </div>
+      </div>
+      <!--
+        置顶刊头带：条目仍走共用 Timeline 格子（.timeline-item / .timeline-date / .timeline-dot），
+        不要另开排版文件。年份用 page-timeline.css 的日期 modifier 叠在 MM-DD 上，
+        不拉宽 --timeline-date-col，避免项目页与年份组左列被挤歪。
+      -->
+      <section class="ed-pin" aria-label="置顶">
+        <header class="ed-pin-head">
+          <p class="ed-kicker"><span class="ed-en">Pinned</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">置顶</span></p>
+          <p class="timeline-year-count">1 篇</p>
+        </header>
+        <div class="timeline-items">
+          <article class="timeline-item">
+            <time class="timeline-date timeline-date--with-year" datetime="2026-08-20">
+              <span class="timeline-date-year">2026</span>
+              <span class="timeline-date-md">08-20</span>
+            </time>
+            <span class="timeline-dot"></span>
+            <div class="g-card" tabindex="0">
+              <div class="toc-head">
+                <h3 class="toc-title">从 Markdown 导入到纸面时间线</h3>
+              </div>
+              <p class="toc-summary">项目笔记：front matter、slug 与 layout 块如何落到 `/projects` 与详情页，以及和博客列表共用时间轴的约定。</p>
+              <div class="toc-tags"><span class="tag">Vue</span><span class="tag">笔记</span></div>
+              <svg class="vine"><use href="#vine" /></svg>
+            </div>
+          </article>
+        </div>
+      </section>
+      <!-- Timeline：合入须用共用 page-timeline.css；组头已有年份，日期保持 MM-DD -->
+      <section class="timeline-year-group">
+        <header class="timeline-year-head">
+          <h2 class="timeline-year">2026</h2>
+          <p class="timeline-year-count">2 篇文章</p>
+        </header>
+        <div class="timeline-items">
+          <article class="timeline-item">
+            <time class="timeline-date">07-04</time>
+            <span class="timeline-dot"></span>
+            <div class="g-card" tabindex="0">
+              <div class="toc-head">
+                <h3 class="toc-title">并查集与路径压缩的几种写法</h3>
+              </div>
+              <p class="toc-summary">按秩合并、路径压缩与迭代实现；用一组小测例核对连通分量。</p>
+              <div class="toc-tags"><span class="tag">算法</span><span class="tag">并查集</span></div>
+              <svg class="vine"><use href="#vine" /></svg>
+            </div>
+          </article>
+          <article class="timeline-item">
+            <time class="timeline-date">03-11</time>
+            <span class="timeline-dot"></span>
+            <div class="g-card" tabindex="0">
+              <div class="toc-head">
+                <h3 class="toc-title">个人站信息架构备忘</h3>
+              </div>
+              <p class="toc-summary">首页目录、博客聚合与项目卡的边界：哪些走 toc-row，哪些走 timeline-card。</p>
+              <div class="toc-tags"><span class="tag">杂项</span><span class="tag">架构</span></div>
+              <svg class="vine"><use href="#vine" /></svg>
+            </div>
+          </article>
+        </div>
+      </section>
+      </article>
+    </section>
+
+    <script src="shared.js"></script>
+  </body>
+</html>
