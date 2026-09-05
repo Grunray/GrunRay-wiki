@@ -1,5 +1,5 @@
 <template>
-  <div class="tl-skel" aria-busy="true" aria-label="加载中">
+  <div class="tl-skel" :class="{ 'tl-skel--notes': variant === 'notes' }" aria-busy="true" aria-label="加载中">
     <section v-for="gy in 2" :key="gy" class="tl-year">
       <header class="tl-year-head">
         <div class="ui-skeleton tl-year-pill" />
@@ -28,8 +28,10 @@
 withDefaults(
   defineProps<{
     rowsPerYear?: number
+    /** notes：项目页，骨架对齐 toc-row 而非纸卡 */
+    variant?: 'card' | 'notes'
   }>(),
-  { rowsPerYear: 3 },
+  { rowsPerYear: 3, variant: 'card' },
 )
 </script>
 
@@ -133,5 +135,41 @@ withDefaults(
   width: 2.6rem;
   height: 1.35rem;
   border-radius: 999px;
+}
+
+.tl-skel--notes {
+  --timeline-item-gap: 0;
+  --timeline-dot-offset: 1.05rem;
+}
+
+.tl-skel--notes .tl-date {
+  margin-top: 0.85rem;
+}
+
+.tl-skel--notes .tl-card {
+  padding: 0.8rem 1.65rem 0.95rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  box-shadow: none;
+}
+
+.tl-skel--notes .tl-item + .tl-item .tl-card {
+  border-top-color: var(--color-border);
+}
+
+@media (max-width: 480px) {
+  .tl-item {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0.15rem;
+  }
+
+  .tl-dot {
+    display: none;
+  }
+
+  .tl-date {
+    margin-top: 0;
+  }
 }
 </style>

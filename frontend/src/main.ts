@@ -7,6 +7,7 @@ import { i18n } from './i18n'
 import router from './router'
 import './styles/main.css'
 import './styles/page-timeline.css'
+import './styles/page-list-masthead.css'
 import './styles/markdown-reading.css'
 import './styles/footer-grunray.css'
 

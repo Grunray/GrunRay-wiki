@@ -12,9 +12,12 @@ const props = withDefaults(
     options: AppSelectOption[]
     ariaLabel?: string
     minWidth?: string
+    /** editorial：列表刊头皮肤；默认药丸留给碎念撰写等 */
+    variant?: 'default' | 'editorial'
   }>(),
   {
     minWidth: 'min(240px, 100%)',
+    variant: 'default',
   },
 )
 
@@ -54,7 +57,12 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentPointe
 </script>
 
 <template>
-  <div ref="rootRef" class="select-wrap" :class="{ 'select-wrap--open': open }" :style="{ minWidth: minWidth === '0' ? '0' : minWidth }">
+  <div
+    ref="rootRef"
+    class="select-wrap"
+    :class="{ 'select-wrap--open': open, 'select-wrap--editorial': variant === 'editorial' }"
+    :style="{ minWidth: minWidth === '0' ? '0' : minWidth }"
+  >
     <button
       class="select-btn"
       type="button"
@@ -64,9 +72,10 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentPointe
       @click="toggleMenu"
     >
       <span class="select-btn-label">{{ selectedLabel }}</span>
-      <span class="select-btn-caret" aria-hidden="true">▾</span>
+      <span v-if="variant === 'editorial'" class="select-btn-chevron" aria-hidden="true" />
+      <span v-else class="select-btn-caret" aria-hidden="true">▾</span>
     </button>
-    <div v-if="open" class="select-menu card" role="listbox">
+    <div v-if="open" class="select-menu" :class="{ card: variant !== 'editorial' }" role="listbox">
       <button
         v-for="option in options"
         :key="option.value"
@@ -171,15 +180,110 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentPointe
   color: var(--color-accent);
 }
 
+.select-wrap--editorial {
+  width: auto;
+}
+
+.select-wrap--editorial .select-btn {
+  width: auto;
+  gap: 0.45rem;
+  padding: 0.08rem 0 0.2rem;
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.3;
+  box-shadow: none;
+}
+
+.select-wrap--editorial .select-btn:hover,
+.select-wrap--editorial .select-btn:focus,
+.select-wrap--editorial.select-wrap--open .select-btn {
+  border-color: transparent;
+  border-bottom-color: var(--color-accent);
+  color: var(--color-accent);
+  box-shadow: none;
+  outline: none;
+}
+
+.select-wrap--editorial .select-btn-chevron {
+  display: inline-block;
+  width: 0.38rem;
+  height: 0.38rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-0.12em) rotate(45deg);
+  opacity: 0.55;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.select-wrap--editorial.select-wrap--open .select-btn-chevron {
+  transform: translateY(0.06em) rotate(225deg);
+}
+
+.select-wrap--editorial .select-menu {
+  left: -0.15rem;
+  width: auto;
+  min-width: max(12.5rem, 100%);
+  overflow: visible;
+  padding: 0.28rem;
+  background: var(--color-bg-surface);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.select-wrap--editorial .select-option {
+  width: calc(100% - 6px);
+  padding: 0.3rem 0.55rem;
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.35;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.select-wrap--editorial .select-option:hover,
+.select-wrap--editorial .select-option:focus-visible {
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  color: var(--color-accent);
+  transform: translateX(6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .select-wrap--editorial .select-option,
+  .select-wrap--editorial .select-btn-chevron {
+    transition: none;
+  }
+
+  .select-wrap--editorial .select-option:hover,
+  .select-wrap--editorial .select-option:focus-visible {
+    transform: none;
+  }
+}
+
 @media (max-width: 768px) {
   .select-btn {
     min-height: 2.6rem;
+  }
+
+  .select-wrap--editorial .select-btn {
+    min-height: 0;
   }
 
   .select-option {
     display: flex;
     align-items: center;
     min-height: 2.6rem;
+  }
+
+  .select-wrap--editorial .select-option {
+    min-height: 0;
   }
 }
 </style>

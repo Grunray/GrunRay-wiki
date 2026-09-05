@@ -142,31 +142,48 @@ onMounted(async () => {
 <template>
   <section ref="pageRoot" class="projects-page">
     <h1 class="h">{{ t('projects.title') }}</h1>
-    <div class="toolbar card">
-      <div class="row row-select">
-        <span class="lbl lbl--tag">{{ t('projects.filterTags') }}</span>
-        <div class="tag-select-wrap">
+    <div class="ed-filter" role="search">
+      <div class="ed-filter-row">
+        <div class="ed-filter-col">
+          <p class="ed-kicker">
+            <span class="ed-en">{{ t('projects.kickerFilterEn') }}</span>
+            <span class="ed-mid" aria-hidden="true">·</span>
+            <span class="ed-zh">{{ t('projects.kickerFilterZh') }}</span>
+          </p>
           <AppSelect
             v-model="tagFilter"
+            variant="editorial"
             :options="tagSelectOptions"
             :aria-label="t('projects.filterTags')"
             min-width="0"
           />
         </div>
-        <label class="row-toggle">
-          <input v-model="includeArchived" class="checkbox" type="checkbox" />
-          <span class="row-label">{{ includeArchived ? '显示已归档' : '隐藏已归档' }}</span>
-          <span class="toggle-visual" aria-hidden="true">
-            <span class="toggle-end toggle-end--left" />
-            <span class="toggle-track" />
-            <span class="toggle-end toggle-end--right" />
-          </span>
-        </label>
+        <div class="ed-filter-col ed-filter-col--archive">
+          <p class="ed-kicker">
+            <span class="ed-en">{{ t('projects.kickerArchiveEn') }}</span>
+            <span class="ed-mid" aria-hidden="true">·</span>
+            <span class="ed-zh">{{ t('projects.kickerArchiveZh') }}</span>
+          </p>
+          <button
+            type="button"
+            class="ed-toggle"
+            :class="{ 'is-on': includeArchived }"
+            :aria-pressed="includeArchived"
+            @click="includeArchived = !includeArchived"
+          >
+            <span class="ed-toggle-label">{{ includeArchived ? t('projects.showArchived') : t('projects.hideArchived') }}</span>
+            <span class="toggle-visual" aria-hidden="true">
+              <span class="toggle-end toggle-end--left" />
+              <span class="toggle-track" />
+              <span class="toggle-end toggle-end--right" />
+            </span>
+          </button>
+        </div>
       </div>
     </div>
 
     <p v-if="loadError" class="empty">{{ loadError }}</p>
-    <TimelinePageSkeleton v-else-if="loading" />
+    <TimelinePageSkeleton v-else-if="loading" variant="notes" />
     <div v-else-if="timelineGroups.length" class="timeline">
       <section
         v-for="(group, gi) in timelineGroups"
@@ -197,7 +214,12 @@ onMounted(async () => {
             >
               <div class="timeline-card-head">
                 <h3 class="timeline-title">{{ item.project.title }}</h3>
-                <span v-if="item.project.status === 'archived'" class="badge">{{ t('projects.archived') }}</span>
+                <span
+                  class="timeline-status"
+                  :class="item.project.status === 'published' ? 'timeline-status--on' : undefined"
+                >
+                  {{ item.project.status === 'archived' ? t('projects.archived') : t('projects.active') }}
+                </span>
               </div>
               <p class="timeline-summary">{{ item.project.summary }}</p>
               <div class="timeline-tags">
@@ -219,110 +241,18 @@ onMounted(async () => {
   --timeline-date-col: 5.2rem;
   --timeline-dot-col: 1.25rem;
   --timeline-gap: 0.7rem;
-  --timeline-dot-offset: 1.22rem;
+  --timeline-dot-offset: 1.05rem;
   --timeline-item-gap: 0.85rem;
 }
 
 .h {
-  margin: 0 0 1rem;
+  margin: 0 0 0.35rem;
   font-family: var(--font-serif);
   font-size: clamp(1.6rem, 3.4vw, 2.1rem);
   font-weight: 600;
   letter-spacing: 0.01em;
 }
 
-.toolbar {
-  position: relative;
-  z-index: 2;
-  margin-bottom: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-  padding: 0.9rem 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-bg-surface) 85%, transparent);
-  overflow: visible;
-}
-.row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 2rem;
-  font-size: 0.92rem;
-  color: var(--color-text-muted);
-}
-.row-toggle {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  user-select: none;
-  white-space: nowrap;
-}
-.row-label {
-  color: var(--color-text);
-  font-size: 0.88rem;
-}
-.checkbox {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-.toggle-visual {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-.toggle-track {
-  inline-size: 2.35rem;
-  block-size: 2px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--color-accent) 55%, var(--color-border));
-  transition: background 0.2s ease;
-}
-.toggle-end {
-  inline-size: 0.62rem;
-  block-size: 0.62rem;
-  border-radius: 50%;
-  border: 1.5px solid color-mix(in srgb, var(--color-accent) 55%, var(--color-border));
-  transition: all 0.2s ease;
-}
-.toggle-end--left {
-  background: transparent;
-}
-.toggle-end--right {
-  background: var(--color-accent);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 14%, transparent);
-}
-.checkbox:not(:checked) ~ .toggle-visual .toggle-end--left {
-  background: var(--color-accent);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 14%, transparent);
-}
-.checkbox:not(:checked) ~ .toggle-visual .toggle-end--right {
-  background: transparent;
-  box-shadow: none;
-}
-.checkbox:not(:checked) ~ .toggle-visual .toggle-track {
-  background: color-mix(in srgb, var(--color-border) 88%, transparent);
-}
-.lbl {
-  min-width: 6rem;
-}
-.lbl--tag {
-  min-width: 0;
-  width: max-content;
-  flex-shrink: 0;
-}
-.row-select {
-  align-items: center;
-  overflow: visible;
-}
-.tag-select-wrap {
-  display: inline-block;
-  min-width: 240px;
-}
 .empty {
   color: var(--color-text-muted);
 }
@@ -334,46 +264,12 @@ onMounted(async () => {
     --timeline-gap: 0.55rem;
   }
 
-  .toolbar {
-    padding: 0.8rem 0.85rem;
-  }
-
-  .lbl {
-    min-width: 5.4rem;
-  }
-
-  .tag-select-wrap {
-    min-width: 0;
-    width: min(100%, 260px);
-  }
-
-  .row-select {
-    flex-wrap: wrap;
-  }
-
-  .row-toggle {
-    margin-left: 0;
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  .timeline-item {
-    grid-template-columns: var(--timeline-date-col) var(--timeline-dot-col) minmax(0, 1fr);
-    column-gap: var(--timeline-gap);
-  }
-
   .timeline-year {
     font-size: 1.9rem;
   }
 
   .timeline-date {
     font-size: 0.78rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .tag-select-wrap {
-    width: 100%;
   }
 }
 </style>
