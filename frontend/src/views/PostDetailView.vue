@@ -188,15 +188,14 @@ useMarkdownCodeCopy(bodyMarkdownRef, codeCopyLabels, renderedBodyHtml)
       <p class="back">
         <RouterLink to="/blog">← {{ t('blog.title') }}</RouterLink>
       </p>
-      <div class="post-lead">
-        <header class="head">
+      <div class="ed-mast">
+        <section class="ed-zone">
           <h1 class="title">{{ post.title }}</h1>
-          <span v-if="post.pinned" class="badge">{{ t('blog.pinned') }}</span>
-        </header>
-        <p class="summary">{{ post.summary }}</p>
-        <div v-if="post.tags.length" class="tags">
-          <span v-for="tag in post.tags" :key="tag" class="tag">{{ tag }}</span>
-        </div>
+          <p class="summary">{{ post.summary }}</p>
+          <div v-if="post.tags.length" class="tags">
+            <span v-for="tag in post.tags" :key="tag" class="tag">{{ tag }}</span>
+          </div>
+        </section>
       </div>
 
       <dl v-if="algo" class="meta">
@@ -279,54 +278,6 @@ useMarkdownCodeCopy(bodyMarkdownRef, codeCopyLabels, renderedBodyHtml)
 
 .post-fold {
   position: relative;
-}
-
-.back {
-  margin: 0 0 1.4rem;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
-}
-
-.back a {
-  color: var(--color-text-muted);
-  text-decoration: none;
-}
-
-.back a:hover {
-  color: var(--color-accent);
-  text-decoration: none;
-}
-
-/* 题录：hairline 分隔的编辑式头部，不再是卡片 */
-.post-lead {
-  padding-bottom: 1.4rem;
-  margin-bottom: 1.4rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.post-lead .summary {
-  margin: 0.65rem 0 0;
-}
-
-.post-lead .tags {
-  margin: 0.85rem 0 0;
-}
-
-.head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.5rem;
-}
-
-.title {
-  margin: 0;
-  font-family: var(--font-serif);
-  font-size: clamp(1.65rem, 4vw, 2.15rem);
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: 0.01em;
 }
 
 .summary {
@@ -453,10 +404,6 @@ useMarkdownCodeCopy(bodyMarkdownRef, codeCopyLabels, renderedBodyHtml)
 }
 
 @media (max-width: 480px) {
-  .title {
-    font-size: clamp(1.4rem, 7vw, 1.7rem);
-  }
-
   /* 元信息窄屏改上下堆叠，避免 7rem 固定首列把值列压窄 */
   .meta {
     grid-template-columns: 1fr;
