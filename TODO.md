@@ -62,11 +62,8 @@ cd frontend; npm run dev;
 
 ### 当前提示词（复制给 AI）
 
-现在需要对首页界面布局再做一次大修改： 
-（1）Hero部分（FilmFeed）直接移到首页最下方； 
-（2）原本在Hero部分的介绍文字“你好，我是GrunRay”和“找不到实习捏——代码不跑我跑！”这两句话移到左下方（这里的左下方所指的方位你可以查看我给你的图片）； 
-（3）中间空着的部分就用于展示背景，初始状态是通透的没有模糊层的，但是向上滑动时会有一层模糊层随着界面移动，就像是下方的内容向上挤压（像是“从下一页伸进来的内容”），这里你可以看第一张图和第二张图的区别，是覆盖上去的而不是都随着界面滚动； 
-（4）底部留着“COVER STORY · 封面故事”这部分；
+博客/项目 详情页的左侧展示u基本信息的侧栏，看看是否需要改为 Editorial 风格。
+（一个想法，侧栏的卡片样式的背景改为和界面背景一致，这样似乎像是报纸左侧展示的一小部分）
 
 ### 灵感（未排期）
 
@@ -201,8 +198,6 @@ cd frontend; npm run dev;
 
 ## 进行中
 
-（暂无）
-
 ---
 
 ## 搁置
@@ -247,6 +242,133 @@ cd frontend; npm run dev;
 ---
 
 ## 已完成
+
+## 122 · 2026-09-05 详情顶栏 · Editorial 刊头
+
+**状态**：已完成（2026-09-05；浅/深目视收口）
+
+**方向**：把 `designed/detail-header-editorial/` 已选定的方案 A 合入博客 / 项目详情题录区。只改顶栏，不重排正文与滚动侧栏。
+
+**背景 / 现状**
+
+- 原型：`designed/detail-header-editorial/index.html`（现状 | 方案 A；博客 / 项目两页；浅/深）。
+- 博客详情：`PostDetailView` 题录已是 hairline 编辑头，但返回链默认灰色、标题旁仍有「置顶」Badge，题名上方没有项目刊头那条 ink 顶线。
+- 项目详情：`ProjectDetailView` 题名 / 项目信息 / 操作是三张 `.card` 纸卡；返回文案是 `common.back`「返回」。
+
+**依赖 / 冲突**
+
+- 刊头语言跟 121 列表 `.ed-filter` 同一套 kicker（`.ed-kicker` / `.ed-en`），不要另起一套 SaaS 纸卡。
+- 入场仍走 `page-enter-post.css`（`article > *`）；题录继续包在 `.post-fold` / `.project-fold` 里，不要拆成更多直接子节点冲延迟。
+- 滚动侧栏、算法 spec、项目笔记链、正文阅读栏不动。
+
+**P0 — 博客详情**
+
+- [x] 122-1 去掉标题旁「置顶」Badge
+- [x] 122-2 返回链 `← 博客` 默认 accent 绿（不再灰字 hover 才变绿）
+- [x] 122-3 题名上方加与项目相同的 ink 顶线（`.ed-mast`）
+
+**P0 — 项目详情**
+
+- [x] 122-4 返回文案由「返回」改为「项目」（`projects.title`），颜色同博客 accent
+- [x] 122-5 三张纸卡收成一条 Editorial 刊头：题名区无 Title · 题名 / 状态行；FACTS · 项目信息 + ACTIONS · 操作；状态改 6px 点；操作是下划线字不是药丸；操作两钮在列内竖直居中
+
+**P1 — 契约 / 骨架**
+
+- [x] 122-6 i18n：刊头 Facts / Actions 中英 kicker
+- [x] 122-7 DESIGN.md：详情刊头与列表 `.ed-filter` 的边界
+- [x] 122-8 详情骨架题录对齐刊头（去纸卡）
+
+**⚠️ 回归 / 风险**
+
+- 现象：拆 `article` 直接子节点 → 入场阶梯乱
+- 现象：项目操作钮 `position:absolute` 在窄屏叠到 kicker 上 → 720px 须回到文档流
+- 验收：`/blog/:slug` 无 Badge、返回绿、题名顶线；`/projects/grunray-wiki` 刊头 + `← 项目`；碎念撰写下拉仍是药丸
+
+**方案对照**
+
+| 代号 | 名称 | 结果 |
+| --- | --- | --- |
+| 现状 | 灰返回 / Badge / 三纸卡 | 对照，不合入 |
+| A | Editorial 刊头 | **合入目标** |
+
+**涉及文件**
+
+`page-detail-masthead.css`、`main.ts`、`PostDetailView.vue`、`ProjectDetailView.vue`、`PostDetailPageSkeleton.vue`、`ProjectDetailPageSkeleton.vue`、`i18n/locales/{zh,en}.json`、`DESIGN.md`、`designed/detail-header-editorial/`
+
+**验收**
+
+- [x] `/blog/:slug`：无置顶 Badge；`← 博客` 默认绿；题名上方 ink 顶线
+- [x] `/projects/:slug`：`← 项目`；刊头非纸卡；Facts / Actions；状态点；操作钮列内居中
+- [x] 窄屏操作列不叠字；入场无「先全显再播」
+- [x] 浅/深/abstract 可读
+
+---
+
+## 121 · 2026-09-05 项目 / 博客列表 · 方案 D Editorial 刊头
+
+**状态**：已完成（2026-09-05；浅/深/abstract + 390 窄屏目视收口）
+
+**方向**：把 `designed/project-list-notes-options/` 已选定的方案 D 合入 `/projects` 与 `/blog`。两页继续共用时间线与下拉，不新开一份 Timeline 排版文件。
+
+**背景 / 现状**
+
+- 原型：`designed/project-list-notes-options/index.html`（顶栏 现状 | A | D；D 下分项目 / 博客两整页）。
+- 生产：`BlogView` / `ProjectsView` 共用 `page-timeline.css`（`main.ts` 全局引入），DOM 类名相同；日期列 `--timeline-date-col: 5.2rem` + `formatMonthDay()` 的 MM-DD；年份只在 `.timeline-year` 组头。下拉共用 `AppSelect.vue`（碎片撰写页也用）。
+- 博客置顶在生产是坏的：`sortPosts()` 已按 pinned → `pinned_order` → 日期排，但 `BlogView.timelineItems` 又按日期重排，角标有、条目不在顶上。
+
+**依赖 / 冲突**
+
+- **Timeline**：只在原 `page-timeline.css` 补 modifier / 卡片造型，禁止 `page-timeline-pinned.css` 之类第二套三列 grid。
+- **下拉**：合入必须仍是 `AppSelect.vue`；刊头皮肤用 `variant="editorial"`，默认皮肤留给 `FragmentComposeView`。
+- 首页 `.toc-row` 仍不套方案 G；列表时间线卡是「目录行密度 + 方案 G」，边界写进 DESIGN.md §9。
+- 改列表结构时同步 `page-enter-timeline.css` 选择器（DESIGN.md §9 入场契约）。
+
+**P0 — 共用排版（先做）**
+
+- [x] 121-1 `page-timeline.css`：卡片改为笔记目录行密度（透明底、每张顶 hairline，含组内第一张；hover 须保留顶线）；不拉宽 `--timeline-date-col`
+- [x] 121-2 置顶日期 modifier `.timeline-date--with-year`：年份叠在 MM-DD 上，列宽仍 5.2rem；年份组继续单行 MM-DD
+- [x] 121-3 刊头筛选抽共用 `page-list-masthead.css`（两页同一套 `.ed-filter` / kicker / 开关），不是 SaaS Filter Bar 纸卡
+- [x] 121-4 `AppSelect` 增加 `editorial` 变体（衬线触发条、不透明菜单、选项 hover 右移）；碎片页保持默认药丸下拉
+
+**P0 — 两页合入**
+
+- [x] 121-5 `ProjectsView`：FILTER · 标签 + ARCHIVE · 已归档（显示/隐藏）；状态改首页同款 6px 点（进行中 / 已归档），去掉「已归档」角标
+- [x] 121-6 `BlogView`：FILTER · 标签 | SECTION · 分类（滑动下划线）| SEARCH · 检索；置顶独立刊头带，卡片上去掉「置顶」角标；置顶条目不再混进年份组
+- [x] 121-7 骨架 `TimelinePageSkeleton` `variant="notes"` 两页都用；入场动画覆盖刊头与置顶带
+
+**P1 — 文案 / 契约**
+
+- [x] 121-8 i18n zh/en（刊头中英 kicker、置顶计数、归档显示/隐藏）
+- [x] 121-9 DESIGN.md：列表刊头、置顶带、日期 modifier、timeline-card 与首页 toc-row 的 G 边界
+
+**⚠️ 回归 / 风险**
+
+- 现象：拉宽日期列或另写 Timeline 文件 → 项目页与年份组左列一起歪
+- 现象：改 AppSelect 默认皮肤 → 碎念撰写页下拉变形
+- 现象：置顶仍按日期插进 2026 组 → 未从 `timelineItems` 拆出 pinned
+- 现象：页面 scoped `@media` 再写三列 grid 会盖掉共用 480px 单列；圆点 `display:none` 后卡片掉进点列变成竖条
+- 验收：`/projects` 与 `/blog` 轴线对齐；浅/深/abstract；窄屏；碎片撰写下拉仍是药丸；首页目录行仍无翻角花藤
+
+**方案对照**
+
+| 代号 | 名称 | 结果 |
+| --- | --- | --- |
+| 现状 | 纸卡时间线 | 对照，不合入 |
+| A | 轴 + 目录行 + 纸面工具条 | 列表基线，筛选仍是 Filter Bar |
+| D | A + Editorial 刊头 | **合入目标** |
+
+**涉及文件**
+
+`page-timeline.css`、`page-list-masthead.css`、`page-enter-timeline.css`、`AppSelect.vue`、`BlogView.vue`、`ProjectsView.vue`、`TimelinePageSkeleton.vue`、`page-toc-row.css`（状态点）、`i18n/locales/{zh,en}.json`、`DESIGN.md`、`designed/project-list-notes-options/`
+
+**验收**
+
+- [x] `/projects`：刊头 + 目录行时间线 + 状态点；归档开关有效
+- [x] `/blog`：刊头 + 置顶带（年份叠日期）+ 年份组 MM-DD；分类下划线滑动；搜索高亮仍在
+- [x] 两页共用 Timeline 格子与 AppSelect；碎念撰写页下拉未改
+- [x] 三主题 + 窄屏目视；入场动画无「先全显再播」（390 下轴线隐藏、日期改行、刊头换行；scoped 三列覆盖已去掉）
+
+---
 
 ## 120 · 2026-08-28 首页问候字体 · 月相拖尾微调
 

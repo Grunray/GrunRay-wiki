@@ -7,7 +7,7 @@
 
 ## 1. Visual Theme & Atmosphere
 
-**定位**：编辑式个人 wiki —— 一本「一直在写的个人杂志」，不是 SaaS 产品页，不是开发者仪表盘。
+**定位**：编辑式（英文 “Editorial”）个人 wiki —— 一本「一直在写的个人杂志」，不是 SaaS 产品页，不是开发者仪表盘。
 
 - **气质**：纸面、编辑、安静。内容（文章、项目、胶片）是主角，界面退后。
 - **密度**：中等偏松。留白是排版工具，不是浪费。
@@ -20,32 +20,36 @@
 
 ### 浅色 light —— 纸面
 
-| 角色 | 值 | 用途 |
-|---|---|---|
-| `bg-base` | `#f4f1e8` | 页面纸底（暖纸，非纯白非灰） |
-| `bg-surface` | `#faf8f1` | 卡片/表面：比纸底浅半度 |
-| `bg-elevated` | `#ece7d8` | 标签、代码内联底 |
-| `reading-bg` | `#f8f5ec` | 正文阅读栏 |
-| `text` | `#2b2823` | 墨色正文（暖黑） |
-| `text-muted` | `#6e675b` | 次要文字 |
-| `border` | `#ddd5c2` | 纸边线（hairline） |
-| `accent` | `#2e6b4f` | **墨绿**：链接、选中、CTA。唯一强调色 |
-| `accent-muted` | `#9dbba9` | 装饰性绿色（分隔、图形） |
-| `on-accent` | `#f4f1e8` | 墨绿底上的文字 |
+
+| 角色             | 值         | 用途                     |
+| -------------- | --------- | ---------------------- |
+| `bg-base`      | `#f4f1e8` | 页面纸底（暖纸，非纯白非灰）         |
+| `bg-surface`   | `#faf8f1` | 卡片/表面：比纸底浅半度           |
+| `bg-elevated`  | `#ece7d8` | 标签、代码内联底               |
+| `reading-bg`   | `#f8f5ec` | 正文阅读栏                  |
+| `text`         | `#2b2823` | 墨色正文（暖黑）               |
+| `text-muted`   | `#6e675b` | 次要文字                   |
+| `border`       | `#ddd5c2` | 纸边线（hairline）          |
+| `accent`       | `#2e6b4f` | **墨绿**：链接、选中、CTA。唯一强调色 |
+| `accent-muted` | `#9dbba9` | 装饰性绿色（分隔、图形）           |
+| `on-accent`    | `#f4f1e8` | 墨绿底上的文字                |
+
 
 ### 深色 dark —— 终端
 
-| 角色 | 值 | 用途 |
-|---|---|---|
-| `bg-base` | `#0d1210` | 近黑底（带绿味，非纯黑） |
-| `bg-surface` | `#141a17` | 卡片 |
-| `bg-elevated` | `#1b2320` | 抬升面 |
-| `reading-bg` | `#151c19` | 阅读栏 |
-| `text` | `#d8e2dc` | 正文 |
-| `text-muted` | `#8ba095` | 次要 |
-| `border` | `#2b3833` | 边线 |
-| `accent` | `#8fd6ae` | **翠绿**：比浅色档亮，保证暗底对比 |
-| `on-accent` | `#0d1210` | 绿底上的文字 |
+
+| 角色            | 值         | 用途                  |
+| ------------- | --------- | ------------------- |
+| `bg-base`     | `#0d1210` | 近黑底（带绿味，非纯黑）        |
+| `bg-surface`  | `#141a17` | 卡片                  |
+| `bg-elevated` | `#1b2320` | 抬升面                 |
+| `reading-bg`  | `#151c19` | 阅读栏                 |
+| `text`        | `#d8e2dc` | 正文                  |
+| `text-muted`  | `#8ba095` | 次要                  |
+| `border`      | `#2b3833` | 边线                  |
+| `accent`      | `#8fd6ae` | **翠绿**：比浅色档亮，保证暗底对比 |
+| `on-accent`   | `#0d1210` | 绿底上的文字              |
+
 
 ### 抽象 abstract —— 保留现有体系
 
@@ -63,25 +67,30 @@
 
 **基准字号：`html { font-size: 106.25% }`（= 17px）**。Windows 中文 ClearType 在 <13px 明显发虚，2026-08 从 16px 上调；所有 rem 随之等比放大。新增样式时不要把元数据/kicker 压到 0.76rem（≈13px）以下。
 
-| 字族 | 栈 | 用途 |
-|---|---|---|
-| Sans | system-ui → PingFang SC → Hiragino Sans GB → Microsoft YaHei → Noto Sans CJK SC | 正文、UI |
-| Serif | Playfair Display → Noto Serif SC → Source Han Serif SC → Songti SC → SimSun | **展示标题**：站点问候、页面大标题、文章 H1、年份数字 |
-| Script | Great Vibes（自托管 woff2）→ Segoe Script → Apple Chancery | **仅**首页问候语里的品牌名（`--font-script`） |
-| Mono | JetBrains Mono → Cascadia Code → Consolas | **kicker**（小标签/日期/编号）、代码、元数据 |
+
+| 字族     | 栈                                                                               | 用途                               |
+| ------ | ------------------------------------------------------------------------------- | -------------------------------- |
+| Sans   | system-ui → PingFang SC → Hiragino Sans GB → Microsoft YaHei → Noto Sans CJK SC | 正文、UI                            |
+| Serif  | Playfair Display → Noto Serif SC → Source Han Serif SC → Songti SC → SimSun     | **展示标题**：站点问候、页面大标题、文章 H1、年份数字   |
+| Script | Great Vibes（自托管 woff2）→ Segoe Script → Apple Chancery                           | **仅**首页问候语里的品牌名（`--font-script`） |
+| Mono   | JetBrains Mono → Cascadia Code → Consolas                                       | **kicker**（小标签/日期/编号）、代码、元数据     |
+
 
 ### 层级（桌面基准）
 
-| 层级 | 字族 | 字号 | 字重 | 说明 |
-|---|---|---|---|---|
-| 站点问候/封面 | Serif + Script | clamp(2.55–4.125rem) | 中文 Noto Serif SC **600 normal**（自托管无 700 italic 面）；品牌名 Great Vibes 400 | 仅首页；等 Noto + Great Vibes 就绪再显；问候卡 `overflow: visible` 以免裁掉花体下伸 |
-| 页面标题 H1 | Serif | clamp(1.5–2rem) | 600 | 文章标题、分区标题 |
-| 节标题 H2/H3 | Serif 或 Sans | 1.1–1.35rem | 600 | |
-| 正文 | Sans | 1.02–1.06rem | 400 | 行高 1.75–1.85（中文要松） |
-| Kicker/元数据 | Mono | 0.72–0.8rem | 500，大写，+0.08em 字距 | 日期、标签前缀、分类名 |
-| UI 辅助 | Sans | 0.85–0.95rem | 500 | 按钮、导航 |
+
+| 层级         | 字族             | 字号                   | 字重                                                                     | 说明                                                             |
+| ---------- | -------------- | -------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------- |
+| 站点问候/封面    | Serif + Script | clamp(2.55–4.125rem) | 中文 Noto Serif SC **600 normal**（自托管无 700 italic 面）；品牌名 Great Vibes 400 | 仅首页；等 Noto + Great Vibes 就绪再显；问候卡 `overflow: visible` 以免裁掉花体下伸 |
+| 页面标题 H1    | Serif          | clamp(1.5–2rem)      | 600                                                                    | 文章标题、分区标题                                                      |
+| 节标题 H2/H3  | Serif 或 Sans   | 1.1–1.35rem          | 600                                                                    |                                                                |
+| 正文         | Sans           | 1.02–1.06rem         | 400                                                                    | 行高 1.75–1.85（中文要松）                                             |
+| Kicker/元数据 | Mono           | 0.72–0.8rem          | 500，大写，+0.08em 字距                                                      | 日期、标签前缀、分类名                                                    |
+| UI 辅助      | Sans           | 0.85–0.95rem         | 500                                                                    | 按钮、导航                                                          |
+
 
 规则：
+
 - 英文展示标题用 Playfair（已自托管）；中文自动落宋体系。**不要给中文强行指定英文字体。**
 - 抽象档整档用 Mono（现有行为，保留）。
 - 禁用 Inter/Roboto/Arial 当展示字体；禁用 `background-clip: text` 渐变字（本站 photo-bg 叠层下会不可读，已有教训）。
@@ -89,19 +98,23 @@
 ## 4. Component Stylings
 
 ### 卡片 `.card`
+
 - 浅色/深色档：**近不透明的纸面/暗面 + 1px hairline 边 + 浅阴影**，不再依赖大面积 `backdrop-filter` 模糊（`--glass-blur` 收敛到 10px 以下）。
 - hover：上浮 ≤3px + 边线向 accent 靠 + 阴影加深。可点击卡（`.card-hover-g`）另见 §9：翻角、排版错位、檐角花藤。展示卡仍无全局 hover。
 - 圆角：sm 6 / md 10 / lg 14；抽象档直角 + 硬阴影（保留）。
 - 交互卡片（可点）必须有 `:hover` 与 `:focus-visible` 两种反馈。
 
 ### 按钮 `.btn-accent`
+
 - 胶囊形、描边式（outline）：accent 边 + 透明底 + accent 文字；hover 时 16% accent 底。禁止实心大色块按钮。
 
 ### 标签 `.tag` / `.badge`
+
 - `.tag`：elevated 底 + muted 文字，小圆角。
 - `.badge`：mono 大写字距 + 描边，无底色（编辑式 kicker）。
 
-### 导航 `.glass-nav-*`
+### 导航 `.glass-nav-`*
+
 - 保留 sticky 横条→滚动收缩成胶囊的动画契约（类名与 `data-nav-compact` 不动）。
 - 材质随主题：浅色=纸面微透，深色=近黑微透。模糊量收敛，靠色而不是靠 blur 分层。
 
@@ -125,6 +138,7 @@
 ## 7. Do's and Don'ts
 
 **Do**
+
 - 新页面先复用 `.card` / `.btn-accent` / `.tag` / `markdown-reading`，再考虑新组件。
 - 日期、编号、分类名一律 mono kicker（`--font-mono` 0.76rem / letter-spacing 0.05em）。
 - 标题一律 serif；正文一律 sans。
@@ -132,9 +146,10 @@
 - 三个主题的新键必须三档都补（或注明「仅 abstract」）。
 
 **Don't**
+
 - 不要把表面染成强调色（满屏绿 = 旧版反模式）。
 - 不要紫渐变、不要彩虹多强调色、不要玻璃模糊当主要分层手段。
-- 表单控件不要用 `--glass-card-*` 令牌混色，focus 不要仅靠改 border 颜色（对比不足）。
+- 表单控件不要用 `--glass-card-`* 令牌混色，focus 不要仅靠改 border 颜色（对比不足）。
 - 不要引入 Vercel/Stripe/Cursor 式「开发者产品页」语言（巨大英文标题、渐变网格背景、实心黑 CTA）。
 - 不要在令牌文件里写业务分支；主题差异只通过令牌值表达。
 
@@ -155,13 +170,16 @@
 - **导航链接/分组按钮**：hover 只提文字色 + 底部生长线（accent 渐变线是唯一着色）；展开/当前页态才给轻染色底。不做位移弹跳、不做图标旋转。
 - **下拉菜单项**：hover 用色阶表面（`bg-elevated`），当前页项才用 accent 14% 染色。
 - **卡片无全局 hover**：纸面/终端面不浮起、不扫光、无发光阴影。
-- **可点击卡**（`timeline-card--clickable`、首页 COVER STORY）：方案 G —— 轻浮 `translateY(-2px)` + 右下 24px 纸张翻角 + 标题/日期左右错位、标签提亮 + 右下花藤沿骨架生长。类名 `.card-hover-g`。首页封面拆成 peek + detail 后，悬停任一块须 `:has()` 同步整套动效（见 §12）。`prefers-reduced-motion` 时去掉翻角/花藤/位移，只留着色。
-- **首页目录行**（`.toc-row`）：hairline 分隔 + 轻底色 hover + 标题提 accent；**不套**方案 G（无翻角/花藤/位移），与 timeline-card 边界分明。
+- **可点击卡**（`timeline-card--clickable`、首页 COVER STORY）：方案 G —— 轻浮 `translateY(-2px)` + 右下 24px 纸张翻角 + 标题/日期左右错位、标签提亮 + 右下花藤沿骨架生长。类名 `.card-hover-g`。`/projects` 与 `/blog` 时间线卡用同一套 G，但卡片造型是目录行密度（透明底 + 每张顶 hairline，hover **保留**顶线）。首页封面拆成 peek + detail 后，悬停任一块须 `:has()` 同步整套动效（见 §12）。`prefers-reduced-motion` 时去掉翻角/花藤/位移，只留着色。
+- **首页目录行**（`.toc-row`）：hairline 分隔 + 轻底色 hover + 标题提 accent；**不套**方案 G（无翻角/花藤/位移），与列表时间线卡边界分明。
+- **列表刊头**（`/projects` `/blog` 共用 `.ed-filter`）：编辑式 kicker（FILTER · 标签），不是纸面 Filter Bar。下拉仍是 `AppSelect`（`variant="editorial"`）；碎念撰写页保持默认药丸。博客置顶是独立 `.timeline-pin` 带，日期用 `.timeline-date--with-year` 叠年，**不**拉宽 `--timeline-date-col`，**不**另开 Timeline 排版文件。
+- **详情刊头**（`/blog/:slug` `/projects/:slug` 共用 `.ed-mast`）：题名上方 ink 顶线；返回链默认 accent（博客 `← 博客`，项目 `← 项目`）。项目题名 / 信息 / 操作不再用三张纸卡，信息与操作是刊头下半 FACTS / ACTIONS；状态用 6px 点，不用角标。题名上方**不**放 Title · 题名 / 状态行。kicker 复用 `.ed-kicker`。
 - **友链申请入口**（`friends-apply-entry`）：hover = 左边条加深 + `translateY(-1px)`（不套方案 G）。
 
 ## 10. Agent Prompt Guide
 
 改 UI 时默念：
+
 1. 表面是纸（浅）或终端（深），不是玻璃。
 2. 强调色只有墨绿/翠绿，且只给交互点。
 3. 标题 serif、正文 sans、元数据 mono。
@@ -251,4 +269,5 @@
 - **显示**：一行 `FPS 144 95(1%L)`；1%L 数字按分档着色（≤20 卡 / ≤40 尚可 / 其余正常，看 FPS 与 1%L 较差值）。
 - 默认关，顶栏溢出面板开关，点卡片关闭；`localStorage ui.fpsMeter`（`1` 开 / 无键或 `0` 关）。关闭必须停 rAF。
 - 页面 `hidden` 或单帧 >1s（切后台）不计入 1%L。
-- 右下角纸面卡，令牌用 `--glass-nav-*`；左下回到顶部不动。
+- 右下角纸面卡，令牌用 `--glass-nav-`*；左下回到顶部不动。
+
