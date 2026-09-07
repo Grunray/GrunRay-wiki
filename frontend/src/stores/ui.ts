@@ -15,28 +15,23 @@ const STORAGE_THEME = 'ui.theme'
 const STORAGE_THEME_ABSTRACT_UNLOCKED = 'ui.themeAbstractUnlocked'
 const STORAGE_CURSOR = 'ui.cursorTrail'
 const STORAGE_FPS_METER = 'ui.fpsMeter'
-/** 音乐面板是否收起：'1' 收起（关闭 UI），'0' 展开；无键时默认展开（UI 卡片可见） */
+/** 音乐面板是否收起：'1' 收起（关闭 UI），'0' 展开；无键时默认收起 */
 const STORAGE_MUSIC_MINIMIZED = 'ui.musicPlayerMinimized'
 
 function readMusicPlayerMinimized(): boolean {
   const v = localStorage.getItem(STORAGE_MUSIC_MINIMIZED)
   if (v === '0') return false
   if (v === '1') return true
-  // 无显式偏好：窄屏首次默认收起，避免浮动播放器遮挡手机首屏内容（桌面仍默认展开）
-  if (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches) {
-    return true
-  }
-  return false
+  return true
 }
 
 const STORAGE_PHOTO_BG = 'ui.photoBackground'
 
-/** 无键或非法值时默认开启全屏图片背景；仅显式 '0' 为关 */
+/** 无键或非法值时默认关闭全屏图片背景；仅显式 '1' 为开 */
 function readPhotoBackground(): boolean {
   const v = localStorage.getItem(STORAGE_PHOTO_BG)
-  if (v === '0') return false
   if (v === '1') return true
-  return true
+  return false
 }
 
 function applyPhotoBgToDocument(enabled: boolean) {
