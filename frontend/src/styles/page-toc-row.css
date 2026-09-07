@@ -49,7 +49,7 @@
 }
 
 .toc-status--off {
-  background: var(--color-border);
+  background: var(--color-status-off);
 }
 
 .toc-year {
