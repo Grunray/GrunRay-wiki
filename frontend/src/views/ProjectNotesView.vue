@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
+import EdKicker from '@/components/editorial/EdKicker.vue'
 import PostCard from '@/components/blog/PostCard.vue'
 import NotesListSkeleton from '@/components/ui/NotesListSkeleton.vue'
 import { useSeoMeta } from '@/composables/useSeoMeta'
@@ -82,11 +83,14 @@ useSeoMeta(() => {
 <template>
   <p v-if="loadError" class="empty">加载失败，请确认后端已启动并已导入项目数据。</p>
   <NotesListSkeleton v-else-if="loading" />
-  <div v-else-if="ok && project">
-    <p class="back">
+  <div v-else-if="ok && project" class="notes-page">
+    <p class="notes-back">
       <RouterLink :to="`/projects/${project.slug}`">← {{ project.title }}</RouterLink>
     </p>
     <h1 class="h">{{ t('projects.notes') }}</h1>
+    <div class="ed-filter">
+      <EdKicker :en="t('projects.kickerNotesEn')" :zh="t('projects.kickerNotesZh')" />
+    </div>
     <section class="notes-toc" :aria-label="t('projects.notes')">
       <PostCard v-for="p in posts" :key="p.id" :post="p" />
       <p v-if="!posts.length" class="toc-empty">{{ t('projects.notesEmpty') }}</p>
@@ -96,11 +100,30 @@ useSeoMeta(() => {
 </template>
 
 <style scoped>
-.back {
-  margin: 0 0 1rem;
+.notes-page .h {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.6rem, 3.4vw, 2.1rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
 }
-.h {
-  margin: 0 0 1rem;
+
+.notes-back {
+  margin: 0 0 1.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+}
+
+.notes-back a {
+  color: var(--color-accent);
+  text-decoration: none;
+  border-bottom: none;
+}
+
+.notes-page .ed-filter {
+  margin-bottom: 0;
 }
 
 .notes-toc {

@@ -77,12 +77,9 @@ const railStyle = computed(
   max-height: calc(100vh - 11rem);
   overflow: auto;
   padding: 0.9rem 1rem 1rem;
-  border: 1px solid var(--glass-card-border);
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--glass-card-bg) 94%, var(--color-bg-base));
-  box-shadow:
-    0 14px 40px rgb(43 40 35 / 11%),
-    0 2px 8px rgb(43 40 35 / 6%);
+  border: none;
+  background: transparent;
+  box-shadow: none;
 }
 
 .detail-scroll-rail__card.is-interactive {
@@ -148,8 +145,7 @@ const railStyle = computed(
   margin: 0;
 }
 
-.detail-scroll-rail__body :deep(.note),
-.detail-scroll-rail__body :deep(.actions) {
+.detail-scroll-rail__body :deep(.note) {
   margin: 0.65rem 0 0;
   font-size: 0.82rem;
 }
@@ -157,24 +153,9 @@ const railStyle = computed(
 .detail-scroll-rail__body :deep(.actions) {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
-.detail-scroll-rail__body :deep(.actions a) {
-  display: inline-flex;
   align-items: center;
-  min-height: 1.85rem;
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--color-accent) 36%, var(--color-border));
-  color: var(--color-accent);
-  font-size: 0.8rem;
-  text-decoration: none;
-}
-
-.detail-scroll-rail__body :deep(.actions a:hover) {
-  background: color-mix(in srgb, var(--color-accent) 14%, var(--color-bg-surface));
-  text-decoration: none;
+  gap: 0.35rem 1.35rem;
+  margin: 0.65rem 0 0;
 }
 
 .detail-scroll-rail__body :deep(a) {
@@ -182,7 +163,7 @@ const railStyle = computed(
   text-decoration: none;
 }
 
-.detail-scroll-rail__body :deep(a:hover) {
+.detail-scroll-rail__body :deep(a:hover:not(.ed-action)) {
   text-decoration: underline;
 }
 
