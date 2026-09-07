@@ -4,11 +4,14 @@ import { gsap } from 'gsap'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
-import FragmentMoodBadge from '@/components/xiqi/FragmentMoodBadge.vue'
-import XiqiCard from '@/components/xiqi/XiqiCard.vue'
-import XiqiPageHero from '@/components/xiqi/XiqiPageHero.vue'
+import EdFeedRow from '@/components/editorial/EdFeedRow.vue'
+import EdKicker from '@/components/editorial/EdKicker.vue'
+import EdLedgerHead from '@/components/editorial/EdLedgerHead.vue'
+import EdReadArticle from '@/components/editorial/EdReadArticle.vue'
+import EdSwitchFilter from '@/components/editorial/EdSwitchFilter.vue'
 import XiqiSplitLayout from '@/components/xiqi/XiqiSplitLayout.vue'
 import { type FragmentMood } from '@/content/data/mockFragments'
+import { updateEdCatLines } from '@/composables/useEdCatLine'
 import { playPageEnter, prefersReducedMotionMedia } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
@@ -16,6 +19,8 @@ import { fetchFragmentDetail, fetchFragments, type Fragment, type FragmentDetail
 import { fetchMessageAuthUser } from '@/services/messageAuth'
 import '@/styles/page-enter-xiqi.css'
 import '@/styles/page-xiqi.css'
+import '@/styles/page-ed-ledger.css'
+import { formatEditorialDateTime, formatEditorialListDate } from '@/utils/editorialDate'
 
 type MoodFilter = 'all' | FragmentMood
 type SortOrder = 'newest' | 'oldest'
@@ -32,6 +37,7 @@ useSeoMeta(() => ({
 }))
 
 const pageRoot = ref<InstanceType<typeof XiqiSplitLayout> | null>(null)
+const filterRef = ref<HTMLElement | null>(null)
 const selectedFragmentId = ref<string | null>(null)
 /** 关闭动画期间仍展示详情，避免 slot 清空导致面板塌陷 */
 const detailDisplayId = ref<string | null>(null)
@@ -43,7 +49,7 @@ const listError = ref('')
 const detail = ref<FragmentDetail | null>(null)
 const detailLoading = ref(false)
 const isSiteOwner = ref(false)
-const detailArticleRef = ref<HTMLElement | null>(null)
+const detailArticleRef = ref<InstanceType<typeof EdReadArticle> | null>(null)
 let detailBodyTween: gsap.core.Tween | gsap.core.Timeline | null = null
 
 const moodOptions = computed<Array<{ id: MoodFilter; label: string }>>(() => [
@@ -69,6 +75,10 @@ const detailTitle = computed(() =>
   displayedFragment.value ? moodLabel(displayedFragment.value.mood) : '',
 )
 
+const splitHint = computed(() =>
+  selectedFragmentId.value ? t('xiqi.splitHintOpen') : t('xiqi.splitHintClosed'),
+)
+
 function moodLabel(mood: FragmentMood): string {
   const map: Record<FragmentMood, string> = {
     rant: t('fragments.moodRant'),
@@ -79,21 +89,18 @@ function moodLabel(mood: FragmentMood): string {
   return map[mood]
 }
 
-function formatTime(iso: string): string {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return ''
-  const loc = locale.value === 'zh' ? 'zh-CN' : 'en-US'
-  return d.toLocaleString(loc, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+function detailRootEl(): HTMLElement | null {
+  const inst = detailArticleRef.value
+  if (!inst) return null
+  return inst.$el instanceof HTMLElement ? inst.$el : null
 }
 
 function selectFragment(id: string) {
   selectedFragmentId.value = id
+}
+
+function refreshCatLines() {
+  updateEdCatLines(filterRef.value)
 }
 
 async function loadList() {
@@ -111,6 +118,8 @@ async function loadList() {
     fragments.value = []
   } finally {
     listLoading.value = false
+    await nextTick()
+    refreshCatLines()
   }
 }
 
@@ -133,6 +142,10 @@ watch([moodFilter, sortOrder], () => {
   void loadList()
 })
 
+watch([moodFilter, sortOrder, locale], () => {
+  void nextTick(refreshCatLines)
+})
+
 watch(selectedFragmentId, (id) => {
   if (id) {
     detailDisplayId.value = id
@@ -142,15 +155,15 @@ watch(selectedFragmentId, (id) => {
 })
 
 function playFragmentDetailReveal(opts?: { firstOpen?: boolean }) {
-  const el = detailArticleRef.value
+  const el = detailRootEl()
   if (!el) return
   detailBodyTween?.kill()
-  const parts = el.querySelectorAll('.fragment-detail-head, .fragment-detail-body--excerpt')
+  const parts = el.querySelectorAll('.ed-read-head, .ed-read-body--excerpt')
   if (!parts.length) return
   const firstOpen = opts?.firstOpen ?? true
   if (prefersReducedMotionMedia() || firstOpen) {
     /* 首次打开：正文已在纸面上，由面板 clip 揭开，不再整段淡入以免栏里先空一截 */
-    gsap.set(el.querySelectorAll('.fragment-detail-head, .fragment-detail-body'), { autoAlpha: 1, y: 0 })
+    gsap.set(el.querySelectorAll('.ed-read-head, .ed-read-body'), { autoAlpha: 1, y: 0 })
     return
   }
   detailBodyTween = gsap.fromTo(
@@ -168,7 +181,7 @@ function playFragmentDetailReveal(opts?: { firstOpen?: boolean }) {
 }
 
 function playFragmentHtmlUpgrade() {
-  const htmlBody = detailArticleRef.value?.querySelector('.fragment-detail-body--html')
+  const htmlBody = detailRootEl()?.querySelector('.ed-read-body--html')
   if (!htmlBody) return
   gsap.set(htmlBody, { autoAlpha: 1, y: 0 })
 }
@@ -203,9 +216,12 @@ watch(visibleFragments, (list) => {
 })
 
 onMounted(async () => {
+  window.addEventListener('resize', refreshCatLines)
   const startEnter = async () => {
     const root = pageRoot.value?.$el
     if (root instanceof HTMLElement) await playPageEnter(root)
+    await nextTick()
+    refreshCatLines()
   }
   void startEnter()
   try {
@@ -218,6 +234,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', refreshCatLines)
   detailBodyTween?.kill()
   detailBodyTween = null
 })
@@ -226,123 +243,76 @@ onBeforeUnmount(() => {
 <template>
   <XiqiSplitLayout
     ref="pageRoot"
+    editorial
     v-model:selected-key="selectedFragmentId"
     :detail-title="detailTitle"
     @detail-closed="onDetailPanelClosed"
   >
-    <XiqiPageHero
-      page="fragments"
-      :eyebrow="t('fragments.eyebrow')"
-      :title="t('fragments.title')"
-      :subtitle="t('fragments.subtitle')"
-    />
+    <template #masthead>
+      <h1 class="h">{{ t('fragments.title') }}</h1>
 
-    <blockquote class="xiqi-intro card card-glass-dense">
-      <p class="xiqi-intro-line">{{ t('fragments.intro') }}</p>
-    </blockquote>
-
-    <div class="xiqi-toolbar-row">
-      <div class="xiqi-toolbar card" :aria-label="t('fragments.filterLabel')">
-        <p class="xiqi-toolbar-meta">{{ t('fragments.feedCount', { count: visibleFragments.length }) }}</p>
-        <div class="xiqi-toolbar-actions">
-          <div class="xiqi-chip-group" role="group" :aria-label="t('fragments.filterMood')">
-            <button
-              v-for="option in moodOptions"
-              :key="option.id"
-              type="button"
-              class="xiqi-chip"
-              :class="{ 'is-active': moodFilter === option.id }"
-              @click="moodFilter = option.id"
-            >
-              {{ option.label }}
-            </button>
-          </div>
-          <div class="xiqi-chip-group" role="radiogroup" :aria-label="t('fragments.sortLabel')">
-            <button
-              v-for="option in sortOptions"
-              :key="option.id"
-              type="button"
-              class="xiqi-chip"
-              role="radio"
-              :aria-checked="sortOrder === option.id"
-              :class="{ 'is-active': sortOrder === option.id }"
-              @click="sortOrder = option.id"
-            >
-              {{ option.label }}
-            </button>
-          </div>
-        </div>
+      <div ref="filterRef" class="ed-filter" :aria-label="t('fragments.filterLabel')">
+        <EdKicker :en="t('fragments.kickerNotesEn')" :zh="t('fragments.kickerNotesZh')" />
+        <p class="habitat-hint">{{ t('fragments.intro') }}</p>
+        <EdSwitchFilter
+          v-model:filter="moodFilter"
+          v-model:sort="sortOrder"
+          :filter-aria="t('fragments.filterMood')"
+          :sort-aria="t('fragments.sortLabel')"
+          :filter-options="moodOptions"
+          :sort-options="sortOptions"
+        />
+        <p v-if="isSiteOwner">
+          <button type="button" class="ed-action" @click="goCompose">
+            {{ t('fragments.compose.button') }}
+          </button>
+        </p>
       </div>
+    </template>
 
-      <button
-        v-if="isSiteOwner"
-        type="button"
-        class="xiqi-compose-entry card"
-        @click="goCompose"
-      >
-        <p class="xiqi-compose-entry-title">{{ t('fragments.compose.button') }}</p>
-        <span class="xiqi-compose-entry-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M5 12h12M13 8l4 4-4 4" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </span>
-      </button>
-    </div>
+    <EdLedgerHead :kicker-en="t('xiqi.kickerLedgerEn')" :kicker-zh="t('xiqi.kickerLedgerZh')">
+      {{ t('xiqi.feedCount', { count: visibleFragments.length }) }}
+      · {{ splitHint }}
+    </EdLedgerHead>
 
-    <p v-if="listError" class="fragments-empty">{{ listError }}</p>
-    <p v-else-if="listLoading" class="fragments-empty">{{ t('fragments.loading') }}</p>
+    <p v-if="listError" class="habitat-empty">{{ listError }}</p>
+    <p v-else-if="listLoading" class="habitat-empty">{{ t('xiqi.loading') }}</p>
     <TransitionGroup
       v-else-if="visibleFragments.length"
       name="xiqi-feed-item"
-      tag="ul"
-      class="fragments-feed xiqi-feed"
+      tag="ol"
+      class="ed-feed xiqi-feed"
       aria-live="polite"
     >
       <li v-for="(item, index) in visibleFragments" :key="item.id">
-        <XiqiCard
-          interactive
-          :accent="item.mood"
+        <EdFeedRow
+          :image-url="item.imageUrl"
+          :image-alt="item.imageAlt || ''"
+          :tone="item.mood"
+          :tone-label="moodLabel(item.mood)"
+          :date-label="formatEditorialListDate(item.createdAt, locale)"
+          :body="item.content"
           :selected="detailDisplayId === item.id"
-          :cover-src="item.imageUrl"
-          :cover-alt="item.imageAlt || ''"
+          :expanded="selectedFragmentId === item.id"
           :enter-index="index"
-          :aria-expanded="selectedFragmentId === item.id"
           @click="selectFragment(item.id)"
-        >
-          <template #header>
-            <div class="xiqi-card-head">
-              <FragmentMoodBadge :mood="item.mood" />
-              <time class="xiqi-card-time" :datetime="item.createdAt">{{ formatTime(item.createdAt) }}</time>
-            </div>
-          </template>
-          <p class="xiqi-card-body">{{ item.content }}</p>
-        </XiqiCard>
+        />
       </li>
     </TransitionGroup>
-    <p v-else class="fragments-empty">{{ t('fragments.empty') }}</p>
+    <p v-else class="habitat-empty">{{ t('fragments.empty') }}</p>
 
     <template #detail>
-      <article v-if="displayedFragment" ref="detailArticleRef" class="fragment-detail">
-        <header class="fragment-detail-head">
-          <FragmentMoodBadge :mood="displayedFragment.mood" size="md" />
-          <time class="xiqi-card-time fragment-time" :datetime="displayedFragment.createdAt">
-            {{ formatTime(displayedFragment.createdAt) }}
-          </time>
-        </header>
-        <div
-          v-if="detail?.bodyHtml && !detailLoading"
-          class="fragment-detail-body fragment-detail-body--html prose body-markdown markdown-reading"
-          v-html="detail.bodyHtml"
-        />
-        <p v-else class="fragment-detail-body fragment-detail-body--excerpt">{{ displayedFragment.content }}</p>
-      </article>
+      <EdReadArticle
+        v-if="displayedFragment"
+        ref="detailArticleRef"
+        :tone="displayedFragment.mood"
+        :tone-label="moodLabel(displayedFragment.mood)"
+        :datetime="displayedFragment.createdAt"
+        :time-label="formatEditorialDateTime(displayedFragment.createdAt, locale)"
+        :body-html="detail?.bodyHtml"
+        :excerpt="displayedFragment.content"
+        :loading="detailLoading"
+      />
     </template>
   </XiqiSplitLayout>
 </template>
-
-<style scoped>
-.fragment-detail-body :deep(img) {
-  max-width: 100%;
-  border-radius: var(--radius-sm, 0.35rem);
-}
-</style>

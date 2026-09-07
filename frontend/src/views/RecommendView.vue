@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
-import RecommendCategoryBadge from '@/components/xiqi/RecommendCategoryBadge.vue'
-import RecommendStarRating from '@/components/xiqi/RecommendStarRating.vue'
-import XiqiCard from '@/components/xiqi/XiqiCard.vue'
-import XiqiPageHero from '@/components/xiqi/XiqiPageHero.vue'
+import EdFeedRow from '@/components/editorial/EdFeedRow.vue'
+import EdKicker from '@/components/editorial/EdKicker.vue'
+import EdLedgerHead from '@/components/editorial/EdLedgerHead.vue'
+import EdReadArticle from '@/components/editorial/EdReadArticle.vue'
+import EdSwitchFilter from '@/components/editorial/EdSwitchFilter.vue'
 import XiqiSplitLayout from '@/components/xiqi/XiqiSplitLayout.vue'
+import { updateEdCatLines } from '@/composables/useEdCatLine'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
+import { useSiteLeaveRedirect } from '@/composables/useSiteLeaveRedirect'
 import { SITE_NAME } from '@/config/site'
 import {
   fetchRecommendDetail,
@@ -20,12 +23,15 @@ import {
 } from '@/services/recommendApi'
 import '@/styles/page-enter-xiqi.css'
 import '@/styles/page-xiqi.css'
+import '@/styles/page-ed-ledger.css'
+import { formatEditorialDateTime, formatEditorialListDate } from '@/utils/editorialDate'
 
 type CategoryFilter = 'all' | RecommendCategory
 type SortOrder = 'newest' | 'oldest'
 
 const { t, locale } = useI18n()
 const route = useRoute()
+const { startExternalLeave } = useSiteLeaveRedirect()
 
 useSeoMeta(() => ({
   title: `${t('recommend.title')} | ${SITE_NAME}`,
@@ -35,11 +41,11 @@ useSeoMeta(() => ({
 }))
 
 const pageRoot = ref<InstanceType<typeof XiqiSplitLayout> | null>(null)
+const filterRef = ref<HTMLElement | null>(null)
 const selectedId = ref<string | null>(null)
 const detailDisplayId = ref<string | null>(null)
 const categoryFilter = ref<CategoryFilter>('all')
 const sortOrder = ref<SortOrder>('newest')
-const ratingFilter = ref<number | null>(null)
 const items = ref<RecommendItem[]>([])
 const listLoading = ref(true)
 const listError = ref('')
@@ -66,21 +72,30 @@ const displayedItem = computed(
 
 const detailTitle = computed(() => displayedItem.value?.title ?? '')
 
-function formatTime(iso: string): string {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return ''
-  const loc = locale.value === 'zh' ? 'zh-CN' : 'en-US'
-  return d.toLocaleString(loc, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+const splitHint = computed(() =>
+  selectedId.value ? t('xiqi.splitHintOpen') : t('xiqi.splitHintClosed'),
+)
+
+function categoryLabel(category: RecommendCategory): string {
+  const map: Record<RecommendCategory, string> = {
+    software: t('recommend.categorySoftware'),
+    opensource: t('recommend.categoryOpensource'),
+    anime: t('recommend.categoryAnime'),
+  }
+  return map[category]
 }
 
 function selectItem(id: string) {
   selectedId.value = id
+}
+
+function refreshCatLines() {
+  updateEdCatLines(filterRef.value)
+}
+
+function onVisitLink(url: string, event: MouseEvent) {
+  event.preventDefault()
+  void startExternalLeave(url, route.fullPath)
 }
 
 async function loadList() {
@@ -89,7 +104,6 @@ async function loadList() {
   try {
     const result = await fetchRecommendations({
       category: categoryFilter.value,
-      rating: ratingFilter.value,
       sort: sortOrder.value,
       size: 50,
     })
@@ -99,6 +113,8 @@ async function loadList() {
     items.value = []
   } finally {
     listLoading.value = false
+    await nextTick()
+    refreshCatLines()
   }
 }
 
@@ -113,8 +129,12 @@ async function loadDetail(id: string) {
   }
 }
 
-watch([categoryFilter, sortOrder, ratingFilter], () => {
+watch([categoryFilter, sortOrder], () => {
   void loadList()
+})
+
+watch([categoryFilter, sortOrder, locale], () => {
+  void nextTick(refreshCatLines)
 })
 
 watch(selectedId, (id) => {
@@ -141,161 +161,102 @@ watch(visibleItems, (list) => {
 })
 
 onMounted(async () => {
+  window.addEventListener('resize', refreshCatLines)
   const startEnter = async () => {
     const root = pageRoot.value?.$el
     if (root instanceof HTMLElement) await playPageEnter(root)
+    await nextTick()
+    refreshCatLines()
   }
   void startEnter()
   await loadList()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', refreshCatLines)
 })
 </script>
 
 <template>
   <XiqiSplitLayout
     ref="pageRoot"
+    editorial
     v-model:selected-key="selectedId"
     :detail-title="detailTitle"
     @detail-closed="onDetailPanelClosed"
   >
-    <XiqiPageHero
-      page="recommend"
-      :eyebrow="t('recommend.eyebrow')"
-      :title="t('recommend.title')"
-      :subtitle="t('recommend.subtitle')"
-    />
+    <template #masthead>
+      <h1 class="h">{{ t('recommend.title') }}</h1>
 
-    <blockquote class="xiqi-intro card card-glass-dense">
-      <p class="xiqi-intro-line">{{ t('recommend.intro') }}</p>
-    </blockquote>
-
-    <div class="xiqi-toolbar-row">
-      <div class="xiqi-toolbar card" :aria-label="t('recommend.filterLabel')">
-        <p class="xiqi-toolbar-meta">{{ t('recommend.feedCount', { count: visibleItems.length }) }}</p>
-        <div class="xiqi-toolbar-actions">
-          <div class="xiqi-chip-group" role="group" :aria-label="t('recommend.filterCategory')">
-            <button
-              v-for="option in categoryOptions"
-              :key="option.id"
-              type="button"
-              class="xiqi-chip"
-              :class="{ 'is-active': categoryFilter === option.id }"
-              @click="categoryFilter = option.id"
-            >
-              {{ option.label }}
-            </button>
-          </div>
-          <div class="xiqi-chip-group xiqi-chip-group--stars" role="group" :aria-label="t('recommend.filterRating')">
-            <RecommendStarRating
-              mode="filter"
-              :rating="ratingFilter"
-              @update:rating="ratingFilter = $event"
-            />
-          </div>
-          <div class="xiqi-chip-group" role="radiogroup" :aria-label="t('recommend.sortLabel')">
-            <button
-              v-for="option in sortOptions"
-              :key="option.id"
-              type="button"
-              class="xiqi-chip"
-              role="radio"
-              :aria-checked="sortOrder === option.id"
-              :class="{ 'is-active': sortOrder === option.id }"
-              @click="sortOrder = option.id"
-            >
-              {{ option.label }}
-            </button>
-          </div>
-        </div>
+      <div ref="filterRef" class="ed-filter" :aria-label="t('recommend.filterLabel')">
+        <EdKicker :en="t('recommend.kickerPicksEn')" :zh="t('recommend.kickerPicksZh')" />
+        <p class="habitat-hint">{{ t('recommend.intro') }}</p>
+        <EdSwitchFilter
+          v-model:filter="categoryFilter"
+          v-model:sort="sortOrder"
+          :filter-aria="t('recommend.filterCategory')"
+          :sort-aria="t('recommend.sortLabel')"
+          :filter-options="categoryOptions"
+          :sort-options="sortOptions"
+        />
       </div>
-    </div>
+    </template>
 
-    <p v-if="listError" class="fragments-empty">{{ listError }}</p>
-    <p v-else-if="listLoading" class="fragments-empty">{{ t('fragments.loading') }}</p>
+    <EdLedgerHead :kicker-en="t('xiqi.kickerLedgerEn')" :kicker-zh="t('xiqi.kickerLedgerZh')">
+      {{ t('xiqi.feedCount', { count: visibleItems.length }) }}
+      · {{ splitHint }}
+    </EdLedgerHead>
+
+    <p v-if="listError" class="habitat-empty">{{ listError }}</p>
+    <p v-else-if="listLoading" class="habitat-empty">{{ t('xiqi.loading') }}</p>
     <TransitionGroup
       v-else-if="visibleItems.length"
       name="xiqi-feed-item"
-      tag="ul"
-      class="recommend-feed xiqi-feed"
+      tag="ol"
+      class="ed-feed xiqi-feed"
       aria-live="polite"
     >
       <li v-for="(item, index) in visibleItems" :key="item.id">
-        <XiqiCard
-          interactive
-          :accent="item.category"
+        <EdFeedRow
+          :image-url="item.imageUrl"
+          :image-alt="item.imageAlt || item.title"
+          :tone="item.category"
+          :tone-label="categoryLabel(item.category)"
+          :date-label="formatEditorialListDate(item.createdAt, locale)"
+          :title="item.title"
+          :body="item.summary"
           :selected="detailDisplayId === item.id"
-          :cover-src="item.imageUrl"
-          :cover-alt="item.imageAlt || item.title"
+          :expanded="selectedId === item.id"
           :enter-index="index"
-          :aria-expanded="selectedId === item.id"
           @click="selectItem(item.id)"
-        >
-          <template #header>
-            <div class="xiqi-card-head">
-              <RecommendCategoryBadge :category="item.category" />
-              <time class="xiqi-card-time" :datetime="item.createdAt">{{ formatTime(item.createdAt) }}</time>
-            </div>
-          </template>
-          <h2 class="xiqi-card-title">{{ item.title }}</h2>
-          <p class="xiqi-card-body">{{ item.summary }}</p>
-          <template #footer>
-            <div class="recommend-card-footer">
-              <RecommendStarRating mode="display" :rating="item.rating" />
-            </div>
-          </template>
-        </XiqiCard>
+        />
       </li>
     </TransitionGroup>
-    <p v-else class="fragments-empty">{{ t('recommend.empty') }}</p>
+    <p v-else class="habitat-empty">{{ t('recommend.empty') }}</p>
 
     <template #detail>
-      <article v-if="displayedItem" class="recommend-detail">
-        <header class="recommend-detail-head">
-          <RecommendCategoryBadge :category="displayedItem.category" size="md" />
-          <time class="xiqi-card-time" :datetime="displayedItem.createdAt">
-            {{ formatTime(displayedItem.createdAt) }}
-          </time>
-        </header>
-        <h2 class="recommend-detail-title">{{ displayedItem.title }}</h2>
-        <RecommendStarRating mode="display" :rating="displayedItem.rating" />
-        <p v-if="detailLoading" class="recommend-detail-body">{{ t('fragments.loading') }}</p>
-        <div
-          v-else-if="detail?.bodyHtml"
-          class="recommend-detail-body prose body-markdown markdown-reading"
-          v-html="detail.bodyHtml"
-        />
-        <p v-else class="recommend-detail-body">{{ displayedItem.summary }}</p>
-        <a
-          v-if="displayedItem.url"
-          class="btn-accent recommend-detail-link"
-          :href="displayedItem.url"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {{ t('recommend.visitLink') }}
-        </a>
-      </article>
+      <EdReadArticle
+        v-if="displayedItem"
+        :tone="displayedItem.category"
+        :tone-label="categoryLabel(displayedItem.category)"
+        :datetime="displayedItem.createdAt"
+        :time-label="formatEditorialDateTime(displayedItem.createdAt, locale)"
+        :title="displayedItem.title"
+        :body-html="detail?.bodyHtml"
+        :excerpt="displayedItem.summary"
+        :loading="detailLoading"
+        :loading-label="t('xiqi.loading')"
+      >
+        <template v-if="displayedItem.url" #link>
+          <a
+            class="ed-action"
+            :href="displayedItem.url"
+            @click="onVisitLink(displayedItem.url, $event)"
+          >
+            {{ t('recommend.visitLink') }}
+          </a>
+        </template>
+      </EdReadArticle>
     </template>
   </XiqiSplitLayout>
 </template>
-
-<style scoped>
-.recommend-detail-body :deep(p) {
-  margin: 0 0 0.75rem;
-  line-height: 1.65;
-}
-
-.recommend-detail-body :deep(p:last-child) {
-  margin-bottom: 0;
-}
-
-.recommend-detail-body :deep(img) {
-  max-width: 100%;
-  border-radius: var(--radius-sm, 0.35rem);
-}
-
-.recommend-detail-link {
-  display: inline-flex;
-  margin-top: 0.5rem;
-  text-decoration: none;
-}
-</style>

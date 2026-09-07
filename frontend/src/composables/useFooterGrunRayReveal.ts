@@ -187,8 +187,9 @@ export function useFooterGrunRayReveal(
 
   /** 固定预留滚动区，不在滚动帧里读 getBoundingClientRect，避免 scrollHeight 突变卡顿 */
   const applyFooterMetrics = () => {
-    const revealSpace = isXiqiSplitFooterLocked() ? 0 : REVEAL_SPACE_PX
-    document.documentElement.style.setProperty('--footer-reveal-space', `${revealSpace}px`)
+    if (!isXiqiSplitFooterLocked()) {
+      document.documentElement.style.setProperty('--footer-reveal-space', `${REVEAL_SPACE_PX}px`)
+    }
     document.documentElement.style.setProperty('--footer-grunray-brand-height', `${BRAND_HEIGHT_PX}px`)
     syncBrandLayout()
     metricsApplied = true

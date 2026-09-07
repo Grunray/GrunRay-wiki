@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { gsap } from 'gsap'
 import { useI18n } from 'vue-i18n'
 
+import EdKicker from '@/components/editorial/EdKicker.vue'
 import { prefersReducedMotionMedia } from '@/composables/usePageEnterAnimation'
 import { FOOTER_REFRESH_EVENT, setXiqiSplitFooterLock } from '@/composables/useXiqiSplitFooter'
 
@@ -11,21 +12,43 @@ const emit = defineEmits<{
   detailClosed: []
 }>()
 
-defineProps<{
+const props = defineProps<{
   detailTitle?: string
+  /** 碎念 / 推荐方案 B：刊头关闭钮 + 纸面详情，不用玻璃卡 */
+  editorial?: boolean
 }>()
 
 const { t } = useI18n()
 
 const splitMainRef = ref<HTMLElement | null>(null)
+const mastheadRef = ref<HTMLElement | null>(null)
+const pageRef = ref<HTMLElement | null>(null)
 /** 控制分栏布局（含 footer 锁定）；关闭详情后需等过渡结束再解除 */
 const layoutSplit = ref(false)
 /** 详情 leave 过渡期间保持右侧轨道展开，避免面板被裁切 */
 const detailLeaving = ref(false)
+/** 碎念/推荐：展开后贴在导航下，两栏各自 overflow，不锁 html overflow */
+const editorialDocked = ref(false)
+const habitatSplitTopPx = ref(88)
+const habitatMastClipPx = ref(0)
+const habitatFlowMinPx = ref(0)
 
 const isOpen = computed(() => selectedKey.value !== null)
 /** 详情轨道：打开期间与离场期间都保持展开，避免离场时布局把面板拽成 fixed 浮层 */
-const detailRailOpen = computed(() => isOpen.value || detailLeaving.value)
+const detailRailOpen = computed(() => {
+  if (props.editorial) return isOpen.value
+  return isOpen.value || detailLeaving.value
+})
+const habitatDockStyle = computed(() => {
+  if (!props.editorial) return undefined
+  return {
+    '--habitat-split-top': `${habitatSplitTopPx.value}px`,
+    '--habitat-mast-clip': `${habitatMastClipPx.value}px`,
+    '--habitat-flow-min': `${habitatFlowMinPx.value}px`,
+  }
+})
+let editorialCloseGen = 0
+let editorialPinY = 0
 
 const SPLIT_LAYOUT_MS = 580
 const MAIN_INNER_FLIP_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
@@ -54,6 +77,123 @@ function isMobileSplit() {
   return window.matchMedia('(max-width: 768px)').matches
 }
 
+function measureNavCoverBottom() {
+  const nav = document.querySelector('.glass-nav-sticky-wrap')
+  const inner = nav?.querySelector('.glass-nav-inner')
+  let bottom = 88
+  if (nav instanceof HTMLElement) {
+    bottom = nav.getBoundingClientRect().bottom
+  }
+  if (inner instanceof HTMLElement) {
+    bottom = Math.max(bottom, inner.getBoundingClientRect().bottom)
+  }
+  return Math.max(56, Math.round(bottom))
+}
+
+function measureNavBottom() {
+  /* 胶囊态 inner 铺满 wrap，贴齐 bottom 时 LEDGER 会被玻璃条盖住；留一截空隙 */
+  return measureNavCoverBottom() + 20
+}
+
+function onEditorialPinnedScroll() {
+  if (Math.abs(window.scrollY - editorialPinY) > 0.5) {
+    window.scrollTo({ top: editorialPinY, behavior: 'auto' })
+  }
+}
+
+function isEditorialPanelScrollTarget(target: EventTarget | null) {
+  return target instanceof Element
+    && Boolean(
+      target.closest(
+        '.xiqi-split-main, .xiqi-split-detail, .glass-nav-sticky-wrap, .nav-overflow-panel, .floating-music',
+      ),
+    )
+}
+
+function onEditorialPinnedWheel(event: WheelEvent) {
+  if (isEditorialPanelScrollTarget(event.target)) return
+  event.preventDefault()
+}
+
+function onEditorialPinnedTouch(event: TouchEvent) {
+  if (isEditorialPanelScrollTarget(event.target)) return
+  event.preventDefault()
+}
+
+function unpinEditorialWindow() {
+  window.removeEventListener('scroll', onEditorialPinnedScroll)
+  window.removeEventListener('wheel', onEditorialPinnedWheel)
+  window.removeEventListener('touchmove', onEditorialPinnedTouch)
+  window.removeEventListener('resize', onEditorialDockResize)
+}
+
+function pinEditorialWindow(y: number) {
+  unpinEditorialWindow()
+  editorialPinY = y
+  window.addEventListener('scroll', onEditorialPinnedScroll)
+  window.addEventListener('wheel', onEditorialPinnedWheel, { passive: false })
+  window.addEventListener('touchmove', onEditorialPinnedTouch, { passive: false })
+  window.addEventListener('resize', onEditorialDockResize)
+}
+
+function onEditorialDockResize() {
+  if (!editorialDocked.value) return
+  habitatSplitTopPx.value = measureNavBottom()
+}
+
+async function applyEditorialDock() {
+  if (isMobileSplit()) return
+
+  const pageEl = pageRef.value
+
+  windowScrollBeforeSplit = window.scrollY
+  const navCover = measureNavCoverBottom()
+  const navBottom = measureNavBottom()
+  const mastRect = mastheadRef.value?.getBoundingClientRect()
+  const innerRect = getMainInner()?.getBoundingClientRect()
+  const dockGen = editorialCloseGen
+
+  let visibleMast = 0
+  if (mastRect) {
+    visibleMast = Math.max(
+      0,
+      Math.min(mastRect.bottom, window.innerHeight) - Math.max(mastRect.top, navBottom),
+    )
+    habitatMastClipPx.value = Math.max(0, Math.round(mastRect.height - visibleMast))
+  } else {
+    habitatMastClipPx.value = 0
+  }
+
+  const listOffset = innerRect ? Math.max(0, navCover - innerRect.top) : 0
+  habitatSplitTopPx.value = Math.round(navBottom)
+  const measured = pageEl ? Math.round(pageEl.offsetHeight) : 0
+  habitatFlowMinPx.value = Math.max(
+    measured,
+    Math.round(windowScrollBeforeSplit + window.innerHeight),
+  )
+  if (dockGen !== editorialCloseGen || !isOpen.value) return
+  editorialDocked.value = true
+  pinEditorialWindow(windowScrollBeforeSplit)
+  setXiqiSplitFooterLock(true, { keepRevealSpace: true })
+
+  await nextTick()
+  if (dockGen !== editorialCloseGen || !isOpen.value) return
+  restoreMainPanelScroll(listOffset)
+  await afterSplitLayout()
+  if (dockGen !== editorialCloseGen || !isOpen.value) return
+  restoreMainPanelScroll(listOffset)
+  panelScrollAfterOpen = readPanelScroll()
+}
+
+function releaseEditorialDock(targetY: number) {
+  unpinEditorialWindow()
+  restoreWindowY(targetY)
+  editorialDocked.value = false
+  habitatMastClipPx.value = 0
+  habitatFlowMinPx.value = 0
+  restoreWindowY(targetY)
+}
+
 /** 桌面从分栏折缝向右揭开；窄屏从列表下方向下收起。p=1 全遮，p=0 全开。 */
 function clipAt(progress: number) {
   const v = Math.max(0, Math.min(1, progress)) * 100
@@ -75,6 +215,10 @@ function finishPanelTween(
 }
 
 function onDetailEnter(el: Element, done: () => void) {
+  if (props.editorial) {
+    done()
+    return
+  }
   const panel = el as HTMLElement
   killDetailTween()
   const finished = { v: false }
@@ -125,6 +269,10 @@ function onDetailEnter(el: Element, done: () => void) {
 }
 
 function onDetailLeave(el: Element, done: () => void) {
+  if (props.editorial) {
+    done()
+    return
+  }
   const panel = el as HTMLElement
   killDetailTween()
   const finished = { v: false }
@@ -251,6 +399,18 @@ onMounted(() => {
 watch(
   isOpen,
   async (open) => {
+    if (props.editorial) {
+      editorialCloseGen += 1
+      if (open) {
+        /* 不走 xiqi-page--split：html overflow:hidden 会把 scrollY 钳成 0，刊头钉回顶部。
+         * 展开改为贴在导航下的双栏，名录 / 详情各自滚动，窗口滚动钉在打开时的位置。 */
+        void applyEditorialDock()
+        return
+      }
+      void finishEditorialClose()
+      return
+    }
+
     const main = splitMainRef.value
     const beforeRect = getMainInner()?.getBoundingClientRect() ?? null
 
@@ -283,6 +443,27 @@ watch(
   { flush: 'pre' },
 )
 
+async function finishEditorialClose() {
+  const gen = ++editorialCloseGen
+  const extraPanelScroll = readPanelScroll() - panelScrollAfterOpen
+  const targetY = Math.max(0, windowScrollBeforeSplit + extraPanelScroll)
+  const waitMs = prefersReducedMotionMedia() ? 0 : 680
+  await new Promise<void>((resolve) => {
+    window.setTimeout(resolve, waitMs)
+  })
+  if (gen !== editorialCloseGen || isOpen.value) return
+  releaseEditorialDock(targetY)
+  setXiqiSplitFooterLock(false, { deferRefresh: true })
+  await nextTick()
+  restoreMainPanelScroll(0)
+  restoreWindowY(targetY)
+  requestAnimationFrame(() => {
+    restoreWindowY(targetY)
+    requestAnimationFrame(() => restoreWindowY(targetY))
+  })
+  emit('detailClosed')
+}
+
 async function onDetailAfterLeave() {
   if (isOpen.value) {
     detailLeaving.value = false
@@ -307,7 +488,7 @@ async function onDetailAfterLeave() {
   await nextTick()
   if (isOpen.value) return
   restore()
-  flipMainInnerAfterLayout(beforeRect)
+  if (!props.editorial) flipMainInnerAfterLayout(beforeRect)
   requestAnimationFrame(() => {
     restore()
     requestAnimationFrame(restore)
@@ -322,6 +503,8 @@ onBeforeUnmount(() => {
   killDetailTween()
   const inner = getMainInner()
   if (inner) clearMainInnerFlipStyles(inner)
+  unpinEditorialWindow()
+  editorialDocked.value = false
   layoutSplit.value = false
   detailLeaving.value = false
   windowScrollBeforeSplit = 0
@@ -331,12 +514,25 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="xiqi-page" :class="{ 'xiqi-page--split': layoutSplit }">
+  <section
+    ref="pageRef"
+    class="xiqi-page"
+    :class="{
+      'xiqi-page--split': layoutSplit,
+      'habitat-page': props.editorial,
+      'habitat-split-docked': props.editorial && editorialDocked,
+    }"
+    :style="habitatDockStyle"
+  >
+    <div class="habitat-dock">
+    <div v-if="$slots.masthead" ref="mastheadRef" class="xiqi-split-mast">
+      <slot name="masthead" />
+    </div>
     <div
       class="xiqi-split"
       :class="{
-        'xiqi-split--open': detailRailOpen && layoutSplit,
-        'xiqi-split--detail-leaving': detailLeaving && !layoutSplit,
+        'xiqi-split--open': props.editorial ? isOpen : detailRailOpen && layoutSplit,
+        'xiqi-split--detail-leaving': !props.editorial && detailLeaving && !layoutSplit,
       }"
     >
       <div ref="splitMainRef" class="xiqi-split-main">
@@ -356,21 +552,31 @@ onBeforeUnmount(() => {
           @after-leave="onDetailAfterLeave"
         >
           <aside
-            v-if="isOpen"
-            class="xiqi-split-detail card card-glass-dense"
+            v-if="props.editorial || isOpen"
+            class="xiqi-split-detail"
+            :class="props.editorial ? 'ed-read' : 'card card-glass-dense'"
+            :inert="props.editorial && !isOpen ? true : undefined"
+            :aria-hidden="props.editorial && !isOpen ? true : undefined"
             role="complementary"
             :aria-label="detailTitle || t('xiqi.detailPanel')"
           >
             <span class="xiqi-detail-spine" aria-hidden="true" />
             <header class="xiqi-detail-head">
-              <p v-if="detailTitle" class="xiqi-detail-title">{{ detailTitle }}</p>
+              <EdKicker
+                v-if="props.editorial"
+                :en="t('xiqi.readKickerEn')"
+                :zh="t('xiqi.readKickerZh')"
+              />
+              <p v-else-if="detailTitle" class="xiqi-detail-title">{{ detailTitle }}</p>
               <button
                 type="button"
                 class="xiqi-detail-close"
+                :class="props.editorial ? 'ed-action danger' : undefined"
                 :aria-label="t('xiqi.closeDetail')"
                 @click="closeDetail"
               >
-                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <template v-if="props.editorial">{{ t('xiqi.close') }}</template>
+                <svg v-else viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
                   <path
                     d="M6 6l12 12M18 6L6 18"
                     fill="none"
@@ -387,6 +593,7 @@ onBeforeUnmount(() => {
           </aside>
         </Transition>
       </div>
+    </div>
     </div>
   </section>
 </template>
