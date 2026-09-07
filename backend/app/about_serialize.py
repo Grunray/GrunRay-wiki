@@ -12,38 +12,50 @@ def _iso_dt(value: Any) -> str | None:
     return str(value)
 
 
-def _section_education(raw: dict[str, str]) -> dict[str, str]:
-    return {
+def _section_education(raw: dict[str, str], *, public: bool) -> dict[str, str]:
+    out = {
         "schoolPublic": raw["school_public"],
-        "schoolRaw": raw["school_raw"],
         "degree": raw["degree"],
         "major": raw["major"],
         "period": raw["period"],
-        "rankRaw": raw["rank_raw"],
     }
+    if not public:
+        out["schoolRaw"] = raw["school_raw"]
+        out["rankRaw"] = raw["rank_raw"]
+    return out
 
 
-def _section_internship(raw: dict[str, str]) -> dict[str, str]:
-    return {
+def _section_internship(raw: dict[str, str], *, public: bool) -> dict[str, str]:
+    out = {
         "companyPublic": raw["company_public"],
-        "companyRaw": raw["company_raw"],
         "role": raw["role"],
         "period": raw["period"],
-        "summaryRaw": raw["summary_raw"],
     }
+    if not public:
+        out["companyRaw"] = raw["company_raw"]
+        out["summaryRaw"] = raw["summary_raw"]
+    return out
 
 
-def _section_club(raw: dict[str, str]) -> dict[str, str]:
-    return {
+def _section_club(raw: dict[str, str], *, public: bool) -> dict[str, str]:
+    out = {
         "namePublic": raw["name_public"],
-        "nameRaw": raw["name_raw"],
         "role": raw["role"],
         "period": raw["period"],
-        "summaryRaw": raw["summary_raw"],
     }
+    if not public:
+        out["nameRaw"] = raw["name_raw"]
+        out["summaryRaw"] = raw["summary_raw"]
+    return out
 
 
-def profile_to_api(profile: dict[str, Any], *, updated_at: Any = None) -> dict[str, Any]:
+def profile_to_api(
+    profile: dict[str, Any],
+    *,
+    updated_at: Any = None,
+    public: bool = True,
+) -> dict[str, Any]:
+    """公开 GET 默认不下发 Raw。站长 import 反向仍走 api_to_profile。"""
     awards = profile.get("awards") or []
     return {
         "alias": profile["alias"],
@@ -54,9 +66,9 @@ def profile_to_api(profile: dict[str, Any], *, updated_at: Any = None) -> dict[s
             {"id": a["id"], "label": a["label"], "tier": a["tier"]}
             for a in awards
         ],
-        "education": _section_education(profile["education"]),
-        "internship": _section_internship(profile["internship"]),
-        "club": _section_club(profile["club"]),
+        "education": _section_education(profile["education"], public=public),
+        "internship": _section_internship(profile["internship"], public=public),
+        "club": _section_club(profile["club"], public=public),
         "certificates": list(profile.get("certificates") or []),
         "updatedAt": _iso_dt(updated_at),
     }

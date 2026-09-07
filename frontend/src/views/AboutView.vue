@@ -1,24 +1,25 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 
-import AboutPrivateText from '@/components/xiqi/AboutPrivateText.vue'
+import EdKicker from '@/components/editorial/EdKicker.vue'
 import AppImage from '@/components/ui/AppImage.vue'
-import XiqiPageHero from '@/components/xiqi/XiqiPageHero.vue'
-import { ABOUT_PROFILE, type AboutProfile } from '@/content/data/aboutResume'
+import { ABOUT_PROFILE, type AboutAwardTier, type AboutProfile } from '@/content/data/aboutResume'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
+import { useCopyToClipboard } from '@/composables/useCopyToClipboard'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { fetchAboutProfile } from '@/services/aboutApi'
 import { SITE_AVATAR_FALLBACK_URL, SITE_AVATAR_PHOTO_URL } from '@/config/siteAvatar'
 import { SITE_NAME } from '@/config/site'
 import '@/styles/page-enter-xiqi.css'
 import '@/styles/page-xiqi.css'
+import '@/styles/page-about-resume.css'
 
 const { t } = useI18n()
 const route = useRoute()
 const profile = ref<AboutProfile>(ABOUT_PROFILE)
+const { copied, copyWithFeedback } = useCopyToClipboard()
 
 useSeoMeta(() => ({
   title: `${t('about.title')} | ${SITE_NAME}`,
@@ -30,10 +31,12 @@ useSeoMeta(() => ({
 const pageRoot = ref<HTMLElement | null>(null)
 const avatarSrc = ref(SITE_AVATAR_PHOTO_URL)
 
-// 头像加载失败由 AppImage 的 fallback-src（SITE_AVATAR_FALLBACK_URL）兜底
+function awardTierClass(tier: AboutAwardTier): string {
+  return `about-award-line--${tier}`
+}
 
-function awardTierClass(tier: string): string {
-  return `about-award-chip--${tier}`
+async function copyEmail() {
+  await copyWithFeedback(profile.value.email)
 }
 
 onMounted(async () => {
@@ -48,15 +51,24 @@ onMounted(async () => {
 <template>
   <section ref="pageRoot" class="xiqi-page about-page">
     <div class="about-page-inner">
-      <XiqiPageHero
-        page="about"
-        :eyebrow="t('about.eyebrow')"
-        :title="t('about.title')"
-        :subtitle="t('about.subtitle')"
-      />
+      <h1 class="h">{{ t('about.title') }}</h1>
 
-      <section class="about-profile card card-glass-dense" aria-labelledby="about-profile-heading">
-        <div class="about-profile-head">
+      <div class="ed-filter">
+        <EdKicker :en="t('about.kickerProfileEn')" :zh="t('about.kickerProfileZh')" />
+        <p class="about-hint">{{ profile.intro }}</p>
+        <p class="about-hint">
+          {{ t('about.privacyNotice') }}
+          <button type="button" class="ed-action about-copy-mail" @click="copyEmail">
+            {{ profile.email }}
+          </button>
+          <em class="about-copy-hint" aria-live="polite">
+            {{ copied ? t('about.copyEmailDone') : t('about.copyEmailHint') }}
+          </em>
+        </p>
+      </div>
+
+      <div class="about-split">
+        <aside class="about-split-side" aria-label="身份与竞赛">
           <div class="about-avatar">
             <AppImage
               :src="avatarSrc"
@@ -65,105 +77,114 @@ onMounted(async () => {
               :min-loader-ms="800"
             />
           </div>
-          <div class="about-profile-intro">
-            <h2 id="about-profile-heading" class="about-name">{{ profile.alias }}</h2>
-            <p class="about-meta-line">{{ profile.genderAge }}</p>
-            <a class="about-email" :href="`mailto:${profile.email}`">{{ profile.email }}</a>
+          <h2 class="about-who-name">{{ profile.alias }}</h2>
+          <p class="about-who-meta">{{ profile.genderAge }}</p>
+          <p class="about-who-mail">
+            <button type="button" class="ed-action about-copy-mail" @click="copyEmail">
+              {{ profile.email }}
+            </button>
+          </p>
+
+          <div class="about-side-block">
+            <EdKicker :en="t('about.kickerAwardsEn')" :zh="t('about.kickerAwardsZh')" />
+            <p
+              v-for="award in profile.awards"
+              :key="award.id"
+              class="about-award-line"
+              :class="awardTierClass(award.tier)"
+            >
+              {{ award.label }}
+            </p>
           </div>
+
+          <div class="about-side-block">
+            <EdKicker :en="t('about.kickerPapersEn')" :zh="t('about.kickerPapersZh')" />
+            <ul class="about-cert-list">
+              <li v-for="cert in profile.certificates" :key="cert">{{ cert }}</li>
+            </ul>
+          </div>
+        </aside>
+
+        <div class="about-split-main">
+          <section class="about-sec" aria-labelledby="about-edu-heading">
+            <div class="about-sec-head">
+              <EdKicker
+                id="about-edu-heading"
+                :en="t('about.kickerEducationEn')"
+                :zh="t('about.kickerEducationZh')"
+              />
+            </div>
+            <article class="about-entry">
+              <p class="about-entry-when">{{ profile.education.period }}</p>
+              <div>
+                <h3 class="about-entry-title">
+                  {{ profile.education.degree }} · {{ profile.education.major }}
+                </h3>
+                <p class="about-entry-sub">{{ profile.education.schoolPublic }}</p>
+                <div class="about-priv">
+                  <span class="about-priv-cap">{{ t('about.educationRankHidden') }}</span>
+                  <span class="about-priv-bar" aria-hidden="true" />
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="about-sec" aria-labelledby="about-work-heading">
+            <div class="about-sec-head">
+              <EdKicker
+                id="about-work-heading"
+                :en="t('about.kickerWorkEn')"
+                :zh="t('about.kickerWorkZh')"
+              />
+            </div>
+            <article class="about-entry">
+              <p class="about-entry-when">{{ profile.internship.period }}</p>
+              <div>
+                <h3 class="about-entry-title">{{ profile.internship.role }}</h3>
+                <p class="about-entry-sub">{{ profile.internship.companyPublic }}</p>
+                <div class="about-priv">
+                  <span class="about-priv-cap">{{ t('about.internshipDetailHidden') }}</span>
+                  <span class="about-priv-bar" aria-hidden="true" />
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="about-sec" aria-labelledby="about-club-heading">
+            <div class="about-sec-head">
+              <EdKicker
+                id="about-club-heading"
+                :en="t('about.kickerCommunityEn')"
+                :zh="t('about.kickerCommunityZh')"
+              />
+            </div>
+            <article class="about-entry">
+              <p class="about-entry-when">{{ profile.club.period }}</p>
+              <div>
+                <h3 class="about-entry-title">{{ profile.club.role }}</h3>
+                <p class="about-entry-sub">{{ profile.club.namePublic }}</p>
+                <div class="about-priv">
+                  <span class="about-priv-cap">{{ t('about.clubDetailHidden') }}</span>
+                  <span class="about-priv-bar" aria-hidden="true" />
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="about-sec" aria-labelledby="about-projects-heading">
+            <div class="about-sec-head">
+              <EdKicker
+                id="about-projects-heading"
+                :en="t('about.kickerProjectsEn')"
+                :zh="t('about.kickerProjectsZh')"
+              />
+            </div>
+            <p class="about-hint">{{ t('about.projectsHint') }}</p>
+            <p class="about-projects-go">
+              <RouterLink to="/projects" class="ed-action">{{ t('about.projectsCta') }}</RouterLink>
+            </p>
+          </section>
         </div>
-        <p class="about-intro">{{ profile.intro }}</p>
-      </section>
-
-      <aside class="about-privacy-notice card card-glass-dense" aria-label="隐私提示">
-        <span class="about-privacy-notice-badge">{{ t('about.privacyNoticeBadge') }}</span>
-        <p class="about-privacy-notice-text">
-          {{ t('about.privacyNotice') }}
-          <a class="about-privacy-notice-email" :href="`mailto:${profile.email}`">{{ profile.email }}</a>
-        </p>
-      </aside>
-
-      <section class="about-section" aria-labelledby="about-strengths-heading">
-        <h2 id="about-strengths-heading" class="about-section-title">{{ t('about.strengths') }}</h2>
-        <ul class="about-award-list">
-          <li v-for="award in profile.awards" :key="award.id">
-            <span class="about-award-chip" :class="awardTierClass(award.tier)">{{ award.label }}</span>
-          </li>
-        </ul>
-      </section>
-
-      <div class="about-facts-grid">
-        <section class="about-block" aria-labelledby="about-edu-heading">
-          <h2 id="about-edu-heading" class="about-block-title">{{ t('about.education') }}</h2>
-          <p class="about-block-primary">
-            {{ profile.education.schoolPublic }} · {{ profile.education.degree }}
-          </p>
-          <p class="about-block-secondary">
-            {{ profile.education.major }} · {{ profile.education.period }}
-          </p>
-          <p class="about-block-meta about-block-meta--private">
-            <AboutPrivateText
-              block
-              :label="t('about.educationRankHidden')"
-              :value="profile.education.rankRaw"
-            />
-          </p>
-        </section>
-
-        <section class="about-block" aria-labelledby="about-intern-heading">
-          <h2 id="about-intern-heading" class="about-block-title">{{ t('about.internship') }}</h2>
-          <p class="about-block-primary">{{ profile.internship.companyPublic }}</p>
-          <p class="about-block-secondary">
-            {{ profile.internship.role }} · {{ profile.internship.period }}
-          </p>
-          <p class="about-block-body about-block-body--private">
-            <AboutPrivateText
-              block
-              :label="t('about.internshipDetailHidden')"
-              :value="profile.internship.summaryRaw"
-            />
-          </p>
-        </section>
-      </div>
-
-      <section class="about-section about-projects-cta card card-glass-dense" aria-labelledby="about-projects-heading">
-        <h2 id="about-projects-heading" class="about-section-title">{{ t('about.projects') }}</h2>
-        <p class="about-projects-hint">{{ t('about.projectsHint') }}</p>
-        <RouterLink to="/projects" class="btn-accent about-projects-link">
-          <span class="about-projects-link-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h12M13 8l4 4-4 4" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </span>
-          {{ t('about.projectsCta') }}
-        </RouterLink>
-      </section>
-
-      <div class="about-facts-grid">
-        <section class="about-block" aria-labelledby="about-club-heading">
-          <h2 id="about-club-heading" class="about-block-title">{{ t('about.club') }}</h2>
-          <p class="about-block-primary about-block-primary--private">
-            <AboutPrivateText
-              block
-              :label="profile.club.namePublic"
-              :value="profile.club.nameRaw"
-            />
-          </p>
-          <p class="about-block-secondary">{{ profile.club.role }} · {{ profile.club.period }}</p>
-          <p class="about-block-body about-block-body--private">
-            <AboutPrivateText
-              block
-              :label="t('about.clubDetailHidden')"
-              :value="profile.club.summaryRaw"
-            />
-          </p>
-        </section>
-
-        <section class="about-block" aria-labelledby="about-cert-heading">
-          <h2 id="about-cert-heading" class="about-block-title">{{ t('about.certificates') }}</h2>
-          <ul class="about-cert-list">
-            <li v-for="cert in profile.certificates" :key="cert">{{ cert }}</li>
-          </ul>
-        </section>
       </div>
     </div>
   </section>

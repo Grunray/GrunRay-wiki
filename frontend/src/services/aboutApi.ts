@@ -1,4 +1,4 @@
-import type { AboutProfile } from '@/content/data/aboutResume'
+import { toPublicAboutProfile, type AboutProfile } from '@/content/data/aboutResume'
 
 interface ApiEnvelope<T> {
   code: number
@@ -19,9 +19,9 @@ export async function fetchAboutProfile(): Promise<AboutProfile | null> {
       headers: { Accept: 'application/json' },
     })
     if (!res.ok) return null
-    const json = (await res.json()) as ApiEnvelope<AboutProfile | null>
+    const json = (await res.json()) as ApiEnvelope<unknown>
     if (json.code !== 0 || !json.data) return null
-    return json.data
+    return toPublicAboutProfile(json.data)
   } catch {
     return null
   }

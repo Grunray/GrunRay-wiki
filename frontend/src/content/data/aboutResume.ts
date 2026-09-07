@@ -2,17 +2,9 @@
  * 关于页履历类型与静态 fallback（API `GET /api/xiqi/about` 不可用时使用）。
  * 权威数据源：`backend/import/xiqi/about/resume.md` → import → content + DB。
  *
- * 隐私字段说明（后续由后端 API 脱敏，前端仅作占位与模糊展示）：
- * - education.schoolRaw → 对外仅 schoolPublic（「某大学」）
- * - education.rankRaw → 不对外展示具体名次
- * - internship.companyRaw → 对外仅 companyPublic（「某有限公司」）
- * - internship.summaryRaw → 正文脱敏/不返回详情
- * - club.nameRaw → 对外仅 namePublic（「某大学 ACM 协会」等）
- *
- * 后端 import / API 约定：需隐藏的片段用标签包裹，由前端解析为 AboutPrivateText：
- *   <xiqi-private label="说明">敏感正文</xiqi-private>
- *   或 <div data-xiqi-private data-label="说明">敏感正文</div>
- * 见 AboutPrivateText.vue 顶部注释。
+ * 隐私：学校全称、排名、公司全称、实习/社团细节等 Raw 只存在于 import / 数据库。
+ * 公开 API 与本文件 **不要**带 schoolRaw / rankRaw / companyRaw / summaryRaw / nameRaw。
+ * 页面只渲染公开文案 +「已隐藏」占位。CSS blur 挡不住查看源代码。
  */
 
 export type AboutAwardTier = 'gold' | 'silver' | 'bronze'
@@ -24,37 +16,95 @@ export interface AboutAward {
   tier: AboutAwardTier
 }
 
+export interface AboutEducationPublic {
+  schoolPublic: string
+  degree: string
+  major: string
+  period: string
+}
+
+export interface AboutInternshipPublic {
+  companyPublic: string
+  role: string
+  period: string
+}
+
+export interface AboutClubPublic {
+  namePublic: string
+  role: string
+  period: string
+}
+
 export interface AboutProfile {
   alias: string
   genderAge: string
   email: string
   intro: string
   awards: AboutAward[]
-  education: {
-    /** 后端脱敏后公开字段 */
-    schoolPublic: string
-    /** 仅供前端模糊层渲染，勿直接展示 */
-    schoolRaw: string
-    degree: string
-    major: string
-    period: string
-    rankRaw: string
-  }
-  internship: {
-    companyPublic: string
-    companyRaw: string
-    role: string
-    period: string
-    summaryRaw: string
-  }
-  club: {
-    namePublic: string
-    nameRaw: string
-    role: string
-    period: string
-    summaryRaw: string
-  }
+  education: AboutEducationPublic
+  internship: AboutInternshipPublic
+  club: AboutClubPublic
   certificates: string[]
+}
+
+const AWARD_TIERS = new Set<AboutAwardTier>(['gold', 'silver', 'bronze'])
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' ? (value as Record<string, unknown>) : null
+}
+
+function str(value: unknown): string {
+  return typeof value === 'string' ? value : ''
+}
+
+/** 丢掉 API 可能误带的 Raw，只保留公开字段。 */
+export function toPublicAboutProfile(raw: unknown): AboutProfile | null {
+  const data = asRecord(raw)
+  if (!data) return null
+  const education = asRecord(data.education)
+  const internship = asRecord(data.internship)
+  const club = asRecord(data.club)
+  if (!education || !internship || !club) return null
+
+  const awardsRaw = Array.isArray(data.awards) ? data.awards : []
+  const awards: AboutAward[] = []
+  for (const item of awardsRaw) {
+    const award = asRecord(item)
+    if (!award) continue
+    const tier = str(award.tier).toLowerCase()
+    if (!AWARD_TIERS.has(tier as AboutAwardTier)) continue
+    const id = str(award.id)
+    const label = str(award.label)
+    if (!id || !label) continue
+    awards.push({ id, label, tier: tier as AboutAwardTier })
+  }
+
+  return {
+    alias: str(data.alias),
+    genderAge: str(data.genderAge),
+    email: str(data.email),
+    intro: str(data.intro),
+    awards,
+    education: {
+      schoolPublic: str(education.schoolPublic),
+      degree: str(education.degree),
+      major: str(education.major),
+      period: str(education.period),
+    },
+    internship: {
+      companyPublic: str(internship.companyPublic),
+      role: str(internship.role),
+      period: str(internship.period),
+    },
+    club: {
+      namePublic: str(club.namePublic),
+      role: str(club.role),
+      period: str(club.period),
+    },
+    certificates: Array.isArray(data.certificates)
+      ? data.certificates.map((c) => str(c).trim()).filter(Boolean)
+      : [],
+  }
 }
 
 export const ABOUT_PROFILE: AboutProfile = {
@@ -70,25 +120,19 @@ export const ABOUT_PROFILE: AboutProfile = {
   ],
   education: {
     schoolPublic: '某大学',
-    schoolRaw: '山东科技大学',
     degree: '本科',
     major: '软件工程',
     period: '2023 — 2027',
-    rankRaw: '专业排名前 30%',
   },
   internship: {
     companyPublic: '某有限公司',
-    companyRaw: '泰安市智控信息科技有限公司',
     role: '全栈工程师',
     period: '2025.07 — 2025.09',
-    summaryRaw: '暑假在办公室参与煤矿巷道支护评价系统开发；开学后在校内远程继续迭代与维护。',
   },
   club: {
     namePublic: '某大学 ACM 协会',
-    nameRaw: '山东科技大学 ACM 协会',
     role: '会员',
     period: '2023.10 — 至今',
-    summaryRaw: '参与组织天梯赛训练等活动。',
   },
   certificates: ['大学英语四级'],
 }

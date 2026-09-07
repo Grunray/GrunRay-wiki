@@ -92,7 +92,7 @@ def get_xiqi_about():
     except ValueError:
         return _ok(None)
 
-    data = profile_to_api(validated["profile"], updated_at=row.get("updated_at"))
+    data = profile_to_api(validated["profile"], updated_at=row.get("updated_at"), public=True)
     return _ok(data)
 
 

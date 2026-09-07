@@ -26,13 +26,11 @@ const router = createRouter({
           path: 'auth/redirect',
           name: 'oauth-redirect',
           component: () => import('@/views/OAuthRedirectView.vue'),
-          meta: { appMainLayout: 'full-viewport' },
         },
         {
           path: 'leave/redirect',
           name: 'site-leave-redirect',
           component: () => import('@/views/SiteLeaveRedirectView.vue'),
-          meta: { appMainLayout: 'full-viewport' },
         },
         { path: 'friends', name: 'friends', component: () => import('@/views/FriendsView.vue') },
         { path: 'friends/apply', name: 'friends-apply', component: () => import('@/views/FriendsApplyView.vue') },
@@ -53,7 +51,6 @@ const router = createRouter({
           path: 'about',
           name: 'about',
           component: () => import('@/views/AboutView.vue'),
-          meta: { appMainLayout: 'full-viewport' },
         },
         {
           path: 'legal',
