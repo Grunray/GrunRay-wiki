@@ -73,7 +73,7 @@ export async function createMessage(payload: {
   })
 }
 
-export async function createOwnerReply(
+export async function createReply(
   publicId: string,
   payload: { content: string },
 ): Promise<GuestMessage> {

@@ -8,12 +8,12 @@ from app.guest_message_repo import (
     apply_moderation_action,
     block_author_of_message,
     delete_message_tree,
-    get_owner_reply,
     get_top_by_public_id,
     insert_message,
-    insert_owner_reply,
+    insert_reply,
     list_admin,
     list_published,
+    list_replies_for_parent,
 )
 from app.guest_user_repo import is_guest_user_blocked
 from app.message_captcha import CaptchaError, create_math_captcha, verify_captcha
@@ -173,7 +173,7 @@ def list_messages():
     try:
         with cursor() as cur:
             rows, total = list_published(cur, sort=sort, page=page, size=size)
-            items = [row_to_message(p["row"], p.get("reply")) for p in rows]
+            items = [row_to_message(p["row"], p.get("replies") or []) for p in rows]
     except Exception:
         return _error("留言列表加载失败", status=500)
 
@@ -248,10 +248,10 @@ def create_message():
 
 
 @bp.post("/<public_id>/reply")
-def create_owner_reply(public_id: str):
-    user, err = _require_site_owner()
-    if err:
-        return err
+def create_reply(public_id: str):
+    user = _require_user()
+    if not user:
+        return _error("请先登录后再回复", status=401)
 
     body = request.get_json(silent=True) or {}
     content_raw = body.get("content")
@@ -268,28 +268,30 @@ def create_owner_reply(public_id: str):
     except ValidationError as e:
         return _error(str(e))
 
+    guest_user_id = int(user["guest_user_id"])
     try:
         with cursor() as cur:
+            if is_guest_user_blocked(cur, guest_user_id):
+                return _error("您的账号已被限制留言", status=403)
             parent = get_top_by_public_id(cur, public_id)
             if not parent:
                 return _error("留言不存在", status=404)
             if int(parent["status"]) != STATUS_PUBLISHED:
                 return _error("仅可对已发布的留言回复")
-            existing = get_owner_reply(cur, int(parent["id"]))
-            if existing:
-                return _error("该留言已有站长回复", status=409)
-            reply_row = insert_owner_reply(
+            insert_reply(
                 cur,
                 parent_row=parent,
                 content=content,
-                guest_user_id=int(user["guest_user_id"]) if user.get("guest_user_id") else None,
-                author_name=config.SITE_OWNER_NAME,
-                avatar_url=config.SITE_OWNER_AVATAR_URL,
+                guest_user_id=guest_user_id,
+                author_name=user.get("name") or "User",
+                avatar_url=user.get("avatar_url"),
                 provider=user.get("provider"),
                 profile_url=user.get("profile_url"),
+                is_owner=is_site_owner(user),
             )
+            replies = list_replies_for_parent(cur, int(parent["id"]))
     except Exception:
         return _error("回复保存失败", status=500)
 
     record_owner_reply(request)
-    return _ok(row_to_message(parent, reply_row), message="回复成功")
+    return _ok(row_to_message(parent, replies), message="回复成功")
