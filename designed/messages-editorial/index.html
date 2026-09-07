@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="zh-CN" data-preview-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>留言 · Editorial 方案对比</title>
+    <link rel="stylesheet" href="shared.css" />
+  </head>
+  <body data-scheme="d" data-role="guest">
+    <div class="preview-switcher">
+      <span class="brand">MESSAGES</span>
+      <button type="button" class="scheme-btn" data-scheme="now">现状</button>
+      <button type="button" class="scheme-btn on" data-scheme="a">A 刊头账本</button>
+      <button type="button" class="scheme-btn" data-scheme="b">B 两栏信笺</button>
+      <button type="button" class="scheme-btn" data-scheme="c">C 登记簿</button>
+      <button type="button" class="scheme-btn" data-scheme="d">D 列表刊头</button>
+      <span class="sep">|</span>
+      <button type="button" class="role-btn" data-role="guest">访客</button>
+      <button type="button" class="role-btn" data-role="user">已登录</button>
+      <button type="button" class="role-btn" data-role="owner">站长</button>
+      <span class="sep">|</span>
+      <button type="button" class="theme-btn on" data-theme="light">浅色</button>
+      <button type="button" class="theme-btn" data-theme="dark">深色</button>
+      <span class="hint">与 121/122 刊头同语汇。改动量最小，推荐先看。</span>
+    </div>
+
+    <p class="meta-note scheme-now">
+      <b>现状</b>
+      居中渐变大标题（<code>background-clip: text</code>，DESIGN §3 已禁）、欢迎语玻璃卡、登录/撰写居中纸卡、留言也是左绿条卡片。对照用，不作为合入目标。
+    </p>
+    <p class="meta-note scheme-a">
+      <b>方案 A · 刊头账本</b>
+      复用博客/项目的 ink 顶线、<code>.ed-kicker</code>、目录行。欢迎语改成题名下 dek；登录是下划线字，不再用药丸；列表去卡。适合直接改 <code>MessagesView</code>，改动最小。
+    </p>
+    <p class="meta-note scheme-b">
+      <b>方案 B · 两栏信笺</b>
+      左栏钉住刊头与撰写，右栏是往来信。读的时候始终看得到写。桌面更像杂志沙龙；窄屏叠回单列。要改页面栅格，比 A 多。
+    </p>
+    <p class="meta-note scheme-c">
+      <b>方案 C · 登记簿</b>
+      每条带 № 编号与叠年日期，像旅馆留言簿。头像缩小、登录并进 WRITE 栏。最克制、最印刷；社交登录入口最不显眼，要想一下发现成本。
+    </p>
+    <p class="meta-note scheme-d">
+      <b>方案 D · 列表刊头</b>
+      从 A 抽出，改成一级页：对齐 <code>/projects</code> / <code>/blog</code> 的题名 + ink 筛选带，没有返回链。Write 用欢迎句当说明；列表上沿用 B 的 Inbox 行，去掉 Ledger 侧栏。
+    </p>
+
+    <!-- 现状 -->
+    <section class="variant" data-scheme="now">
+      <div class="now-page">
+        <header class="now-hero">
+          <p class="now-eyebrow">Messages</p>
+          <h1 class="now-title">留言</h1>
+          <p class="now-sub">不妨在这里悄悄留下些什么</p>
+        </header>
+        <blockquote class="now-welcome">GrunRay会认真读完你说的每一句话。</blockquote>
+
+        <div class="when-guest now-card now-auth">
+          <p class="now-auth-title">使用社交账号登录</p>
+          <p class="now-auth-hint">请先使用 GitHub 或 Google 登录后再留言</p>
+          <div class="now-social">
+            <button type="button" class="now-pill">GitHub</button>
+            <button type="button" class="now-pill">Google</button>
+          </div>
+        </div>
+
+        <form class="when-signed now-card now-form" action="#">
+          <div class="now-user">
+            <span class="avatar" data-initial="林">林</span>
+            <b>林深</b>
+            <button type="button" class="now-logout">退出登录</button>
+          </div>
+          <label>
+            <textarea rows="4" maxlength="500" data-count placeholder="想说点什么…"></textarea>
+            <span class="count" data-count-out>0 / 500 字</span>
+          </label>
+          <div class="now-captcha">
+            <span>验证码 3 + 4 =</span>
+            <input type="text" placeholder="请输入计算结果" />
+            <button type="button">换一题</button>
+          </div>
+          <div class="now-actions">
+            <button type="button" class="now-submit">发送留言</button>
+            <p>请勿发送违法违规或敏感内容。</p>
+          </div>
+        </form>
+
+        <div class="now-feed-head">
+          <h2>留言列表 <small>共 128 条</small></h2>
+          <div class="when-owner now-tabs">
+            <button type="button" class="is-on">公开</button>
+            <button type="button">待审 <i>3</i></button>
+          </div>
+          <div class="now-sort">
+            <button type="button" class="is-on">最新</button>
+            <button type="button">最早</button>
+          </div>
+        </div>
+
+        <article class="now-card now-item">
+          <span class="avatar" data-initial="河">河</span>
+          <div>
+            <header><a href="#">河灯</a> <time>2026年9月5日 21:14</time></header>
+            <p>首页刊号和问候卡分开之后，纸面从下面挤上来的感觉对了。封面终于不像仪表盘。</p>
+            <div class="when-owner now-admin">
+              <button type="button">拉黑作者</button>
+              <button type="button">删除</button>
+            </div>
+            <div class="when-owner" data-reply>
+              <button type="button" data-reply-toggle>回复</button>
+              <div class="reply-box">
+                <textarea rows="2" placeholder="以站长身份回复…"></textarea>
+                <button type="button">发送回复</button>
+              </div>
+            </div>
+          </div>
+        </article>
+        <article class="now-card now-item">
+          <span class="avatar owner" data-initial="G">G</span>
+          <div>
+            <header><a href="#">GrunRay</a> <span class="badge">站长</span> <time>2026年9月4日 18:02</time></header>
+            <p>谢谢。侧栏滚过折区再出现，是怕它和刊头抢视线。</p>
+          </div>
+        </article>
+        <article class="now-card now-item">
+          <span class="avatar" data-initial="苔">苔</span>
+          <div>
+            <header><span>苔原</span> <time>2026年9月3日 11:40</time></header>
+            <p>留言板还是卡片墙。如果和博客列表一样收成目录行，这里会安静很多。</p>
+            <blockquote class="now-reply">收到。下一批就做留言的 Editorial。</blockquote>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- 方案 A -->
+    <section class="variant on" data-scheme="a">
+      <div class="a-page">
+        <p class="back"><a href="#">← 社区</a></p>
+        <div class="ed-mast">
+          <section class="ed-zone">
+            <p class="ed-kicker"><span class="ed-en">Messages</span><span class="ed-mid">·</span><span class="ed-zh">留言</span></p>
+            <h1 class="title">留言</h1>
+            <p class="dek">不妨在这里悄悄留下些什么。GrunRay 会认真读完你说的每一句话。</p>
+          </section>
+          <div class="ed-split">
+            <section class="ed-zone">
+              <p class="ed-kicker"><span class="ed-en">Write</span><span class="ed-mid">·</span><span class="ed-zh">写下</span></p>
+              <div class="when-guest">
+                <p class="hint-line">登录后即可留言。不公开邮箱，只记下你愿意留下的名字。</p>
+                <div class="ed-actions">
+                  <a class="ed-action" href="#">GitHub 登录</a>
+                  <a class="ed-action" href="#">Google 登录</a>
+                </div>
+              </div>
+              <form class="when-signed compose" action="#">
+                <div class="who">
+                  <span class="avatar sm" data-initial="林">林</span>
+                  <span>林深</span>
+                  <a class="ed-action ghost" href="#">退出登录</a>
+                </div>
+                <textarea rows="3" maxlength="500" data-count placeholder="想说点什么…"></textarea>
+                <div class="compose-meta">
+                  <label>验证码 3 + 4 <input type="text" placeholder="得数" /></label>
+                  <button type="button" class="text-btn">换一题</button>
+                  <span class="count" data-count-out>0 / 500 字</span>
+                </div>
+                <div class="compose-foot">
+                  <button type="button" class="btn-accent">发送留言</button>
+                  <span class="policy">请勿发送违法违规或敏感内容。</span>
+                </div>
+              </form>
+            </section>
+            <section class="ed-zone ed-zone--aside">
+              <p class="ed-kicker"><span class="ed-en">Ledger</span><span class="ed-mid">·</span><span class="ed-zh">账本</span></p>
+              <dl class="ed-meta">
+                <dt>条数</dt>
+                <dd>128</dd>
+                <dt>排序</dt>
+                <dd>
+                  <button type="button" class="text-btn is-on">最新</button>
+                  <button type="button" class="text-btn">最早</button>
+                </dd>
+                <dt class="when-owner">视图</dt>
+                <dd class="when-owner">
+                  <button type="button" class="text-btn is-on">公开</button>
+                  <button type="button" class="text-btn">待审 3</button>
+                </dd>
+              </dl>
+            </section>
+          </div>
+        </div>
+
+        <ol class="ledger">
+          <li class="toc-row">
+            <time class="date"><span class="y">2026</span>09-05</time>
+            <span class="avatar sm" data-initial="河">河</span>
+            <div class="toc-body">
+              <header><a href="#">河灯</a> <span class="via">GitHub</span></header>
+              <p>首页刊号和问候卡分开之后，纸面从下面挤上来的感觉对了。封面终于不像仪表盘。</p>
+              <div class="when-owner row-actions">
+                <a class="ed-action warn" href="#">拉黑作者</a>
+                <a class="ed-action danger" href="#">删除</a>
+                <span data-reply>
+                  <button type="button" class="text-btn" data-reply-toggle>回复</button>
+                  <div class="reply-box">
+                    <textarea rows="2" placeholder="以站长身份回复…"></textarea>
+                    <button type="button" class="btn-accent">发送回复</button>
+                  </div>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li class="toc-row">
+            <time class="date"><span class="y">2026</span>09-04</time>
+            <span class="avatar sm owner" data-initial="G">G</span>
+            <div class="toc-body">
+              <header><a href="#">GrunRay</a> <span class="via owner">站长</span></header>
+              <p>谢谢。侧栏滚过折区再出现，是怕它和刊头抢视线。</p>
+            </div>
+          </li>
+          <li class="toc-row">
+            <time class="date"><span class="y">2026</span>09-03</time>
+            <span class="avatar sm" data-initial="苔">苔</span>
+            <div class="toc-body">
+              <header><span>苔原</span> <span class="via">Google</span></header>
+              <p>留言板还是卡片墙。如果和博客列表一样收成目录行，这里会安静很多。</p>
+              <blockquote class="pull">收到。下一批就做留言的 Editorial。</blockquote>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 方案 B -->
+    <section class="variant" data-scheme="b">
+      <div class="b-page">
+        <aside class="b-letterhead">
+          <p class="ed-kicker"><span class="ed-en">Correspondence</span><span class="ed-mid">·</span><span class="ed-zh">信笺</span></p>
+          <h1 class="title">留言</h1>
+          <p class="dek">不妨在这里悄悄留下些什么。</p>
+          <p class="letter-note">GrunRay 会认真读完你说的每一句话。写在左边，读在右边——像把信纸压在杂志栏边上。</p>
+
+          <div class="when-guest b-write">
+            <p class="ed-kicker"><span class="ed-en">Sign in</span><span class="ed-mid">·</span><span class="ed-zh">登录</span></p>
+            <p class="hint-line">先签名，再落笔。</p>
+            <div class="ed-actions stack">
+              <a class="ed-action" href="#">GitHub 登录</a>
+              <a class="ed-action" href="#">Google 登录</a>
+            </div>
+          </div>
+
+          <form class="when-signed b-write compose" action="#">
+            <p class="ed-kicker"><span class="ed-en">Write</span><span class="ed-mid">·</span><span class="ed-zh">写下</span></p>
+            <div class="who">
+              <span class="avatar sm" data-initial="林">林</span>
+              <span>林深</span>
+              <a class="ed-action ghost" href="#">退出</a>
+            </div>
+            <textarea rows="6" maxlength="500" data-count placeholder="想说点什么…"></textarea>
+            <div class="compose-meta">
+              <label>3 + 4 <input type="text" placeholder="得数" /></label>
+              <span class="count" data-count-out>0 / 500 字</span>
+            </div>
+            <button type="button" class="btn-accent">发送留言</button>
+            <p class="policy">请勿发送违法违规或敏感内容。</p>
+          </form>
+        </aside>
+
+        <div class="b-letters">
+          <header class="b-letters-head">
+            <p class="ed-kicker"><span class="ed-en">Inbox</span><span class="ed-mid">·</span><span class="ed-zh">来信</span></p>
+            <div class="b-tools">
+              <span>128 封</span>
+              <button type="button" class="text-btn is-on">最新</button>
+              <button type="button" class="text-btn">最早</button>
+              <span class="when-owner">
+                <button type="button" class="text-btn is-on">公开</button>
+                <button type="button" class="text-btn">待审 3</button>
+              </span>
+            </div>
+          </header>
+
+          <article class="letter">
+            <header>
+              <span class="avatar" data-initial="河">河</span>
+              <div>
+                <b><a href="#">河灯</a></b>
+                <time>2026年9月5日 21:14 · GitHub</time>
+              </div>
+            </header>
+            <p>首页刊号和问候卡分开之后，纸面从下面挤上来的感觉对了。封面终于不像仪表盘。</p>
+            <div class="when-owner row-actions">
+              <a class="ed-action warn" href="#">拉黑作者</a>
+              <a class="ed-action danger" href="#">删除</a>
+              <span data-reply>
+                <button type="button" class="text-btn" data-reply-toggle>回复</button>
+                <div class="reply-box">
+                  <textarea rows="2" placeholder="以站长身份回复…"></textarea>
+                  <button type="button" class="btn-accent">发送回复</button>
+                </div>
+              </span>
+            </div>
+          </article>
+          <article class="letter letter--owner">
+            <header>
+              <span class="avatar owner" data-initial="G">G</span>
+              <div>
+                <b><a href="#">GrunRay</a></b>
+                <time>2026年9月4日 18:02 · 站长</time>
+              </div>
+            </header>
+            <p>谢谢。侧栏滚过折区再出现，是怕它和刊头抢视线。</p>
+          </article>
+          <article class="letter">
+            <header>
+              <span class="avatar" data-initial="苔">苔</span>
+              <div>
+                <b>苔原</b>
+                <time>2026年9月3日 11:40 · Google</time>
+              </div>
+            </header>
+            <p>留言板还是卡片墙。如果和博客列表一样收成目录行，这里会安静很多。</p>
+            <blockquote class="pull">收到。下一批就做留言的 Editorial。</blockquote>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 方案 C -->
+    <section class="variant" data-scheme="c">
+      <div class="c-page">
+        <header class="c-mast">
+          <div>
+            <p class="ed-kicker"><span class="ed-en">Guestbook</span><span class="ed-mid">·</span><span class="ed-zh">登记簿</span></p>
+            <h1 class="title">留言</h1>
+          </div>
+          <p class="dek">不妨在这里悄悄留下些什么。GrunRay 会认真读完你说的每一句话。</p>
+        </header>
+
+        <div class="c-rule" aria-hidden="true"></div>
+
+        <ol class="folio">
+          <li>
+            <div class="folio-no"><span>№</span>128</div>
+            <div class="folio-main">
+              <header>
+                <b><a href="#">河灯</a></b>
+                <time>2026 · 09-05 · 21:14</time>
+              </header>
+              <p>首页刊号和问候卡分开之后，纸面从下面挤上来的感觉对了。封面终于不像仪表盘。</p>
+              <div class="when-owner row-actions">
+                <a class="ed-action warn" href="#">拉黑</a>
+                <a class="ed-action danger" href="#">删除</a>
+                <span data-reply>
+                  <button type="button" class="text-btn" data-reply-toggle>回复</button>
+                  <div class="reply-box">
+                    <textarea rows="2" placeholder="以站长身份回复…"></textarea>
+                    <button type="button" class="btn-accent">发送回复</button>
+                  </div>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div class="folio-no"><span>№</span>127</div>
+            <div class="folio-main">
+              <header>
+                <b><a href="#">GrunRay</a></b>
+                <time>2026 · 09-04 · 18:02</time>
+                <i class="host">HOST</i>
+              </header>
+              <p>谢谢。侧栏滚过折区再出现，是怕它和刊头抢视线。</p>
+            </div>
+          </li>
+          <li>
+            <div class="folio-no"><span>№</span>126</div>
+            <div class="folio-main">
+              <header>
+                <b>苔原</b>
+                <time>2026 · 09-03 · 11:40</time>
+              </header>
+              <p>留言板还是卡片墙。如果和博客列表一样收成目录行，这里会安静很多。</p>
+              <blockquote class="pull">№ 127 · 收到。下一批就做留言的 Editorial。</blockquote>
+            </div>
+          </li>
+        </ol>
+
+        <footer class="c-write">
+          <p class="ed-kicker"><span class="ed-en">Leave a line</span><span class="ed-mid">·</span><span class="ed-zh">留下一行</span></p>
+          <div class="when-guest c-sign">
+            <p class="hint-line">先在簿上签名。</p>
+            <div class="ed-actions">
+              <a class="ed-action" href="#">GitHub</a>
+              <a class="ed-action" href="#">Google</a>
+            </div>
+          </div>
+          <form class="when-signed compose" action="#">
+            <div class="who">
+              <span>林深</span>
+              <span class="folio-next">下一号 № 129</span>
+              <a class="ed-action ghost" href="#">退出</a>
+            </div>
+            <textarea rows="3" maxlength="500" data-count placeholder="写在下一空行…"></textarea>
+            <div class="compose-meta">
+              <label>验证码 3 + 4 <input type="text" placeholder="得数" /></label>
+              <button type="button" class="text-btn">换一题</button>
+              <span class="count" data-count-out>0 / 500 字</span>
+              <button type="button" class="btn-accent">登记</button>
+            </div>
+            <p class="policy">请勿发送违法违规或敏感内容。</p>
+          </form>
+          <div class="c-tools">
+            <button type="button" class="text-btn is-on">最新</button>
+            <button type="button" class="text-btn">最早</button>
+            <span class="when-owner">
+              <button type="button" class="text-btn is-on">公开</button>
+              <button type="button" class="text-btn">待审 3</button>
+            </span>
+          </div>
+        </footer>
+      </div>
+    </section>
+
+    <!-- 方案 D -->
+    <section class="variant" data-scheme="d">
+      <div class="d-page">
+        <h1 class="h">留言</h1>
+        <div class="ed-filter">
+          <p class="ed-kicker"><span class="ed-en">Write</span><span class="ed-mid">·</span><span class="ed-zh">写下</span></p>
+          <div class="when-guest">
+            <p class="hint-line">不妨在这里悄悄留下些什么。GrunRay 会认真读完你说的每一句话。</p>
+            <div class="ed-actions">
+              <a class="ed-action" href="#">GitHub 登录</a>
+              <a class="ed-action" href="#">Google 登录</a>
+            </div>
+          </div>
+          <form class="when-signed compose" action="#">
+            <div class="who">
+              <span class="avatar sm" data-initial="林">林</span>
+              <span>林深</span>
+              <a class="ed-action ghost" href="#">退出登录</a>
+            </div>
+            <textarea rows="3" maxlength="500" data-count placeholder="想说点什么…"></textarea>
+            <div class="compose-meta">
+              <label>验证码 3 + 4 <input type="text" placeholder="得数" /></label>
+              <button type="button" class="text-btn">换一题</button>
+              <span class="count" data-count-out>0 / 500 字</span>
+            </div>
+            <div class="compose-foot">
+              <button type="button" class="ed-action">发送留言</button>
+              <span class="policy">请勿发送违法违规或敏感内容。</span>
+            </div>
+          </form>
+        </div>
+
+        <header class="b-letters-head">
+          <p class="ed-kicker"><span class="ed-en">Inbox</span><span class="ed-mid">·</span><span class="ed-zh">来信</span></p>
+          <div class="b-tools">
+            <span>128 封</span>
+            <button type="button" class="text-btn is-on">最新</button>
+            <button type="button" class="text-btn">最早</button>
+            <span class="when-owner">
+              <button type="button" class="text-btn is-on">公开</button>
+              <button type="button" class="text-btn">待审 3</button>
+            </span>
+          </div>
+        </header>
+
+        <!--
+          合入 /messages 时：回复改为楼中楼（多条），不要沿用「每条只一条站长回复」。
+          表 guest_message.parent_id 已够用，合入阶段不必加列。
+          后端待改（先改原型、后改生产）：
+          - POST /api/messages/<public_id>/reply：_require_site_owner → 已登录用户
+          - insert_owner_reply：勿写死 is_owner=1；作者取当前登录用户
+          - list_published：WHERE parent_id IN (…) 去掉 AND is_owner=1；按 created_at 取多行
+          - row_to_message / message_serialize：单个 reply 改为 replies[]
+          - 去掉 409「该留言已有站长回复」；若要「每人每条一条」再加 UNIQUE(parent_id, guest_user_id)
+          前端 MessagesView：v-if="isSiteOwner && !msg.reply" → 已登录即可回；渲染 replies 列表
+        -->
+        <ol class="ledger">
+          <li class="msg-row">
+            <div class="msg-main">
+              <span class="avatar sm" data-initial="河">河</span>
+              <div class="msg-body">
+                <header class="byline">
+                  <a class="byline-name" href="#">河灯</a><span class="byline-rest"> · GitHub · 09-05</span>
+                </header>
+                <p>首页刊号和问候卡分开之后，纸面从下面挤上来的感觉对了。封面终于不像仪表盘。</p>
+                <div class="when-owner row-actions">
+                  <a class="ed-action warn" href="#">拉黑作者</a>
+                  <a class="ed-action danger" href="#">删除</a>
+                </div>
+                <!-- 合入：回复入口给已登录用户。原型先常显，方便看每层按钮。 -->
+                <div class="row-actions">
+                  <span data-reply>
+                    <button type="button" class="text-btn reply-open" data-reply-toggle>回复</button>
+                    <div class="reply-box">
+                      <textarea rows="2" placeholder="写一条回复…"></textarea>
+                      <div class="reply-box-actions">
+                        <button type="button" class="ed-action">发送回复</button>
+                        <button type="button" class="ed-action reply-cancel" data-reply-cancel>取消回复</button>
+                      </div>
+                    </div>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </li>
+          <li class="msg-row">
+            <div class="msg-main">
+              <span class="avatar sm owner" data-initial="G">G</span>
+              <div class="msg-body">
+                <header class="byline">
+                  <a class="byline-name" href="#">GrunRay</a><span class="byline-rest"> · 站长 · 09-04</span>
+                </header>
+                <p>谢谢。侧栏滚过折区再出现，是怕它和刊头抢视线。</p>
+                <div class="row-actions">
+                  <span data-reply>
+                    <button type="button" class="text-btn reply-open" data-reply-toggle>回复</button>
+                    <div class="reply-box">
+                      <textarea rows="2" placeholder="写一条回复…"></textarea>
+                      <div class="reply-box-actions">
+                        <button type="button" class="ed-action">发送回复</button>
+                        <button type="button" class="ed-action reply-cancel" data-reply-cancel>取消回复</button>
+                      </div>
+                    </div>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </li>
+          <li class="msg-row">
+            <div class="msg-main">
+              <span class="avatar sm" data-initial="苔">苔</span>
+              <div class="msg-body">
+                <header class="byline">
+                  <span class="byline-name">苔原</span><span class="byline-rest"> · Google · 09-03</span>
+                </header>
+                <p>留言板还是卡片墙。如果和博客列表一样收成目录行，这里会安静很多。</p>
+                <div class="row-actions">
+                  <span data-reply>
+                    <button type="button" class="text-btn reply-open" data-reply-toggle>回复</button>
+                    <div class="reply-box">
+                      <textarea rows="2" placeholder="写一条回复…"></textarea>
+                      <div class="reply-box-actions">
+                        <button type="button" class="ed-action">发送回复</button>
+                        <button type="button" class="ed-action reply-cancel" data-reply-cancel>取消回复</button>
+                      </div>
+                    </div>
+                  </span>
+                </div>
+                <!--
+                  合入：msg.reply 改为 replies[]。
+                  回楼主：输入框空着。
+                  回楼中楼某条：预填「回复 {名字} · {身份}：」（data-reply-to）。
+                  超过 2 条默认折叠，按钮「另 N 条回复」/「收起回复」（data-thread-fold）。
+                -->
+                <div class="thread-wrap">
+                  <ol class="thread" data-thread-fold="2">
+                    <li>
+                      <span class="avatar xs owner" data-initial="G">G</span>
+                      <div>
+                        <p class="byline">
+                          <span class="byline-name">GrunRay</span><span class="byline-rest"> · 站长 · 09-03</span>
+                        </p>
+                        <blockquote class="pull">收到。下一批就做留言的 Editorial。</blockquote>
+                        <div class="row-actions">
+                          <span data-reply data-reply-to="GrunRay · 站长">
+                            <button type="button" class="text-btn reply-open" data-reply-toggle>回复</button>
+                            <div class="reply-box">
+                              <textarea rows="2" placeholder="写一条回复…"></textarea>
+                              <div class="reply-box-actions">
+                                <button type="button" class="ed-action">发送回复</button>
+                                <button type="button" class="ed-action reply-cancel" data-reply-cancel>取消回复</button>
+                              </div>
+                            </div>
+                          </span>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <span class="avatar xs" data-initial="河">河</span>
+                      <div>
+                        <p class="byline">
+                          <span class="byline-name">河灯</span><span class="byline-rest"> · GitHub · 09-04</span>
+                        </p>
+                        <blockquote class="pull">刊头收成目录行之后，这里安静多了。</blockquote>
+                        <div class="row-actions">
+                          <span data-reply data-reply-to="河灯 · GitHub">
+                            <button type="button" class="text-btn reply-open" data-reply-toggle>回复</button>
+                            <div class="reply-box">
+                              <textarea rows="2" placeholder="写一条回复…"></textarea>
+                              <div class="reply-box-actions">
+                                <button type="button" class="ed-action">发送回复</button>
+                                <button type="button" class="ed-action reply-cancel" data-reply-cancel>取消回复</button>
+                              </div>
+                            </div>
+                          </span>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <span class="avatar xs" data-initial="林">林</span>
+                      <div>
+                        <p class="byline">
+                          <span class="byline-name">林深</span><span class="byline-rest"> · GitHub · 09-04</span>
+                        </p>
+                        <blockquote class="pull">验证码以后要抽成共用组件，现在两套平行实现。</blockquote>
+                        <div class="row-actions">
+                          <span data-reply data-reply-to="林深 · GitHub">
+                            <button type="button" class="text-btn reply-open" data-reply-toggle>回复</button>
+                            <div class="reply-box">
+                              <textarea rows="2" placeholder="写一条回复…"></textarea>
+                              <div class="reply-box-actions">
+                                <button type="button" class="ed-action">发送回复</button>
+                                <button type="button" class="ed-action reply-cancel" data-reply-cancel>取消回复</button>
+                              </div>
+                            </div>
+                          </span>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <span class="avatar xs" data-initial="苔">苔</span>
+                      <div>
+                        <p class="byline">
+                          <span class="byline-name">苔原</span><span class="byline-rest"> · Google · 09-05</span>
+                        </p>
+                        <blockquote class="pull">对，楼中楼默认只露两条，多了再展开。</blockquote>
+                        <div class="row-actions">
+                          <span data-reply data-reply-to="苔原 · Google">
+                            <button type="button" class="text-btn reply-open" data-reply-toggle>回复</button>
+                            <div class="reply-box">
+                              <textarea rows="2" placeholder="写一条回复…"></textarea>
+                              <div class="reply-box-actions">
+                                <button type="button" class="ed-action">发送回复</button>
+                                <button type="button" class="ed-action reply-cancel" data-reply-cancel>取消回复</button>
+                              </div>
+                            </div>
+                          </span>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <span class="avatar xs owner" data-initial="G">G</span>
+                      <div>
+                        <p class="byline">
+                          <span class="byline-name">GrunRay</span><span class="byline-rest"> · 站长 · 09-05</span>
+                        </p>
+                        <blockquote class="pull">折叠用「另 N 条回复」，收起写在展开后的末尾。</blockquote>
+                        <div class="row-actions">
+                          <span data-reply data-reply-to="GrunRay · 站长">
+                            <button type="button" class="text-btn reply-open" data-reply-toggle>回复</button>
+                            <div class="reply-box">
+                              <textarea rows="2" placeholder="写一条回复…"></textarea>
+                              <div class="reply-box-actions">
+                                <button type="button" class="ed-action">发送回复</button>
+                                <button type="button" class="ed-action reply-cancel" data-reply-cancel>取消回复</button>
+                              </div>
+                            </div>
+                          </span>
+                        </div>
+                      </div>
+                    </li>
+                  </ol>
+                  <button type="button" class="thread-fold" hidden>
+                    <span class="thread-fold-label">展开其余回复</span>
+                    <span class="thread-fold-chevron" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <script src="shared.js"></script>
+  </body>
+</html>

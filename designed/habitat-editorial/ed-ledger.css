@@ -1,0 +1,195 @@
+/*
+ * SYNC · Editorial 名录 + 分栏（共用排版）
+ * 碎念 / 推荐同一套：.ed-split / .ed-ledger / .ed-feed-row / .ed-read
+ * 合入时并入 frontend/src/styles/page-ed-ledger.css（或扩 XiqiSplitLayout），
+ * 行内正文仍由各页自己填。不要在 page-xiqi 另写一套分栏。
+ */
+
+@property --split-rail {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --split-gutter {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+.ed-ledger-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.65rem 1.25rem;
+  margin: 0;
+  padding: 0.15rem 0 0.45rem;
+}
+
+.ed-ledger-tools {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.ed-feed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ed-feed-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem 0.95rem;
+  padding: 0.72rem 1.15rem 0.85rem;
+  margin: 0.2rem 0 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  box-shadow: 0 -1px 0 var(--border);
+  color: inherit;
+  text-align: left;
+  width: 100%;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.ed-feed-row.has-cover {
+  grid-template-columns: 16.6rem minmax(0, 1fr);
+  align-items: stretch;
+  min-height: 9.25rem;
+  padding: 0.5rem 1.15rem 0.5rem 0.5rem;
+}
+
+.ed-feed-row.has-cover .thumb {
+  width: 100%;
+  height: 100%;
+  min-height: 7.25rem;
+}
+
+.ed-feed-row.has-cover > span:last-child {
+  align-self: center;
+}
+
+.ed-feed-row:hover,
+.ed-feed-row.is-on {
+  background: color-mix(in srgb, var(--elevated) 52%, transparent);
+  box-shadow: 0 -1px 0 var(--border);
+}
+
+.ed-feed-row:hover .row-name,
+.ed-feed-row.is-on .row-name { color: var(--accent); }
+
+/* 展开后：选中行右侧绿线，与详情折缝成对，缝里不再放箭头 */
+.ed-split.is-open .ed-feed-row.is-on {
+  box-shadow:
+    0 -1px 0 var(--border),
+    inset -2px 0 0 var(--accent);
+}
+
+.ed-split {
+  --split-rail: 0px;
+  --split-gutter: 0px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--split-rail);
+  column-gap: var(--split-gutter);
+  overflow: hidden;
+  transition:
+    --split-rail 0.62s var(--ease),
+    --split-gutter 0.62s var(--ease);
+}
+
+.ed-split > * { min-width: 0; }
+
+.ed-split.is-open {
+  --split-rail: 22rem;
+  --split-gutter: 1.55rem;
+}
+
+.ed-read {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  width: 22rem;
+  min-width: 22rem;
+  justify-self: start;
+  overflow: hidden;
+  padding: 0.85rem 0 0 1.15rem;
+  border-left: 1px solid var(--border);
+  opacity: 0;
+  pointer-events: none;
+  clip-path: inset(0 100% 0 0);
+  transition:
+    clip-path 0.62s var(--ease),
+    opacity 0.4s ease;
+}
+
+.ed-split.is-open .ed-read {
+  opacity: 1;
+  pointer-events: auto;
+  clip-path: inset(0 0 0 0);
+}
+
+.ed-read-spine {
+  position: absolute;
+  left: 0;
+  top: 0.9rem;
+  bottom: 0.9rem;
+  width: 2px;
+  background: var(--accent);
+}
+
+.ed-read-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.ed-read-cover {
+  display: block;
+  width: 100%;
+  max-height: 10rem;
+  margin: 0.7rem 0 0;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.ed-read-cover[hidden] { display: none; }
+
+.ed-read-link { margin: 1rem 0 0; }
+
+@media (max-width: 720px) {
+  .ed-split,
+  .ed-split.is-open {
+    --split-rail: 0px;
+    --split-gutter: 0px;
+    overflow: visible;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ed-read {
+    width: auto;
+    min-width: 0;
+    padding-left: 0;
+    padding-top: 0.95rem;
+    border-left: 0;
+    box-shadow: 0 -1px 0 var(--border);
+    clip-path: inset(100% 0 0 0);
+  }
+
+  .ed-split.is-open .ed-read { clip-path: inset(0 0 0 0); }
+
+  .ed-feed-row:not(.has-cover) { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ed-feed-row,
+  .ed-split,
+  .ed-read { transition: none; }
+}

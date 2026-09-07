@@ -47,8 +47,10 @@
 | `text`        | `#d8e2dc` | 正文                  |
 | `text-muted`  | `#8ba095` | 次要                  |
 | `border`      | `#2b3833` | 边线                  |
-| `accent`      | `#8fd6ae` | **翠绿**：比浅色档亮，保证暗底对比 |
+| `accent`      | `#abde6b` | **黄绿**（Dendro 方案 D）：暗底强调色 |
+| `accent-muted` | `#5aaa64` | 装饰绿                   |
 | `on-accent`   | `#0d1210` | 绿底上的文字              |
+| `status-off`  | `#a99a76` | 已归档 6px 点（灰金）         |
 
 
 ### 抽象 abstract —— 保留现有体系
@@ -126,7 +128,8 @@
 - 列表优先用「目录式」（日期 + 标题 + 摘要 + hairline 分隔）而非卡片墙。
 - 文章/项目详情的**正文与文字块平铺**：不加框、不套卡，仅靠 hairline 与字号/行距分层。
 - 文章/项目详情滚动侧栏（方案 D）：视口 `position:fixed` 悬浮卡，挂在 `app-page-cover` 外；题录滚出视口后再淡入。不改 `app-main` 宽度，不给正文加 `margin`。
-- 关于页/事实网格用「hairline 分格」（grid 边框共享，gap:0），不用独立卡片。
+- 关于页用方案 B 双栏履历（左粘滞身份、右经历），不用玻璃卡、不用事实网格、不用奖项药丸。
+- 法律声明是阅读页：一级刊头 + 节间浅灰 hairline，不用玻璃卡、不用药丸返回。
 - 首页首屏契约详见 **§12**。
 
 ## 6. Depth & Elevation
@@ -173,8 +176,16 @@
 - **可点击卡**（`timeline-card--clickable`、首页 COVER STORY）：方案 G —— 轻浮 `translateY(-2px)` + 右下 24px 纸张翻角 + 标题/日期左右错位、标签提亮 + 右下花藤沿骨架生长。类名 `.card-hover-g`。`/projects` 与 `/blog` 时间线卡用同一套 G，但卡片造型是目录行密度（透明底 + 每张顶 hairline，hover **保留**顶线）。首页封面拆成 peek + detail 后，悬停任一块须 `:has()` 同步整套动效（见 §12）。`prefers-reduced-motion` 时去掉翻角/花藤/位移，只留着色。
 - **首页目录行**（`.toc-row`）：hairline 分隔 + 轻底色 hover + 标题提 accent；**不套**方案 G（无翻角/花藤/位移），与列表时间线卡边界分明。
 - **列表刊头**（`/projects` `/blog` 共用 `.ed-filter`）：编辑式 kicker（FILTER · 标签），不是纸面 Filter Bar。下拉仍是 `AppSelect`（`variant="editorial"`）；碎念撰写页保持默认药丸。博客置顶是独立 `.timeline-pin` 带，日期用 `.timeline-date--with-year` 叠年，**不**拉宽 `--timeline-date-col`，**不**另开 Timeline 排版文件。
+- **留言页**（`/messages` 方案 D）：一级列表刊头，H1「留言」，无返回链。Write 用 `.ed-filter` inset；Inbox 行不 inset。列表是目录行（头像 + 衬线名 + mono 元数据），hover 同首页 `.toc-row`（elevated 洗底 + 名提 accent），**不套**方案 G。楼中楼是 `replies[]`（`parent_id` 挂多行），不是单条站长 `reply`。危险色（琥珀/红）只给站长拉黑、删除与取消回复，不作页面强调色。
+- **友链页**（`/friends` 方案 A）：一级列表刊头，H1「友链」，无返回链。Links · 往来进 `.ed-filter`；申请 / 审核是下划线 `.ed-action`。Directory · 名录是目录行（头像 + 衬线名 + mono 域名），透明底 + 每张顶 hairline，hover 同 `.toc-row`，**不套**方案 G。Extra · 特殊两列并排。申请 / 审核是次级页：`← 友链` + H1「申请」/「审核」。Facts / Apply / Review / Queue 的内收与字段语言见批次 125。**必须保留**站点图标预览（申请 `previewAvatar`、审核 `previewAvatarFor`、Facts 本站 logo）。验证码视觉对齐留言，仍走本页 captcha，不抽共享组件。
+- **栖息碎念 / 推荐**（`/fragments` `/recommend` 方案 B）：两页独立，一级刊头，H1「碎念」/「推荐」，无返回链。说明进 `.ed-filter`；心情/分类在左，最新/最早同行最右。筛选钮滑动下划线对齐博客 Section·分类（`.ed-cats` / `.ed-cat-line`）。名录是目录行（顶 hairline），hover 同 `.toc-row`，**不套**方案 G。有封面行加高、图拉满行高；无封面不留缩略图位。心情/分类只给词上色，不要胶囊徽章、不要每行左边色条。点开仍走 `XiqiSplitLayout`（footer 锁定、滚动还原、clip 揭开），不要另写一套分栏。展开后选中行右侧 2px accent 竖线与详情折缝成对，**不要箭头**。关闭钮 `.ed-action.danger`。推荐星级前端不显示，后端字段不动。撰写页保持药丸 `AppSelect`。两页共用 `components/editorial`（kicker / 筛选切换 / 名录行 / 详情壳），详情 Markdown 仍挂 `.markdown-reading` 并接代码复制；友链名录与博客/项目 Timeline、详情整页 `.ed-mast` **不**并进这套。
+- **关于页**（`/about` 方案 B）：一级刊头，H1「关于」，无返回链、无 `XiqiPageHero`。说明与隐私句进 `.ed-filter`；邮箱点击复制，不要 `mailto:`。刊头邮箱旁斜体「点击复制邮箱」，左栏邮箱无斜体。双栏：左身份/竞赛/证书粘滞对齐首页 `.toc-side`（`align-self:start` + sticky）；右 Education / Work / Community / Projects，节间浅灰 hairline（`--color-border`），不是 ink。奖项只给词上色（铜/银/金），不要胶囊。项目「前往项目页」是 `.ed-action`。公开 API 与前端包不下发 Raw 隐私字段；占位只用「已隐藏」标签 + 空遮挡条。`AboutPrivateText` 本页停用。
+- **出站确认**（`/leave/redirect`）：一级刊头居中，H1「确认离开本站」，无卡片、无药丸按钮。LEAVE · 出站进较窄 `.ed-filter`（ink / hairline 随内容列收短）；域名单独放大，不要写进「即将前往」句。取消 / 继续是下划线 `.ed-action`。
+- **OAuth 过渡**（`/auth/redirect`）：同一套居中刊头。AUTH · 授权；提供方名（GitHub / Google）单独放大，不要写进「即将前往授权」句。取消 / 继续是下划线 `.ed-action`。
+- **法律声明**（`/legal`）：一级刊头，H1「法律声明」，无玻璃卡、无药丸。LEGAL · 声明与 intro 进 `.ed-filter`；返回是下划线 `.ed-action`（`← 首页`）。各节 kicker + 正文，节间浅灰 hairline（`--color-border`），不是 ink。邮箱点击复制，不要 `mailto:`。阅读栏约 `42rem`，不要拉成 `68rem`。
+- **项目笔记**（`/projects/:slug/notes`）：次级页，`← 项目名` + H1「笔记」+ NOTES · 笔记；列表仍是 `.toc-row`（`PostCard`）。
 - **详情刊头**（`/blog/:slug` `/projects/:slug` 共用 `.ed-mast`）：题名上方 ink 顶线；返回链默认 accent（博客 `← 博客`，项目 `← 项目`）。项目题名 / 信息 / 操作不再用三张纸卡，信息与操作是刊头下半 FACTS / ACTIONS；状态用 6px 点，不用角标。题名上方**不**放 Title · 题名 / 状态行。kicker 复用 `.ed-kicker`。
-- **友链申请入口**（`friends-apply-entry`）：hover = 左边条加深 + `translateY(-1px)`（不套方案 G）。
+- **不改 editorial**：404、首页封面（§12）、碎念撰写页药丸 `AppSelect` / 玻璃头。
 
 ## 10. Agent Prompt Guide
 

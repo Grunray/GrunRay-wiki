@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="zh-CN" data-preview-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>友链 · Editorial 方案对比</title>
+    <link rel="stylesheet" href="shared.css" />
+  </head>
+  <body data-scheme="a" data-role="guest" data-page="list">
+    <div class="preview-switcher">
+      <span class="brand">FRIENDS</span>
+      <button type="button" class="scheme-btn" data-scheme="now">现状</button>
+      <button type="button" class="scheme-btn on" data-scheme="a">A 列表刊头</button>
+      <span class="sep">|</span>
+      <button type="button" class="page-btn on" data-page="list">列表</button>
+      <button type="button" class="page-btn" data-page="apply">申请</button>
+      <button type="button" class="page-btn" data-page="admin">审核</button>
+      <span class="sep">|</span>
+      <button type="button" class="role-btn on" data-role="guest">访客</button>
+      <button type="button" class="role-btn" data-role="owner">站长</button>
+      <span class="sep">|</span>
+      <button type="button" class="theme-btn on" data-theme="light">浅色</button>
+      <button type="button" class="theme-btn" data-theme="dark">深色</button>
+      <span class="hint">列表 / 申请 / 审核。合入时保留站点图标预览。</span>
+    </div>
+
+    <p class="meta-note scheme-now">
+      <b>现状</b>
+      居中渐变大标题、欢迎语纸卡、申请入口也是卡、友链是封面模糊网格。对照用，不作为合入目标。
+    </p>
+    <p class="meta-note scheme-a">
+      <b>方案 A · 列表刊头</b>
+      对齐 <code>/projects</code> / <code>/messages</code>：H1「友链」，无返回链。往来说明进
+      <code>.ed-filter</code>；申请 / 审核是下划线字。名录是目录行。审核页对齐
+      <code>/friends/admin</code>。合入时必须保留申请页与审核页的<strong>站点图标预览</strong>（<code>previewAvatar</code> /
+      <code>previewAvatarFor</code>），勿删。
+    </p>
+
+    <!-- 现状 · 列表 -->
+    <section class="variant" data-scheme="now" data-page="list">
+      <div class="now-page">
+        <header class="now-hero">
+          <p class="now-eyebrow">Friends</p>
+          <h1 class="now-title">友链</h1>
+          <p class="now-sub">这里展示已通过审核的站点，欢迎串门</p>
+        </header>
+        <blockquote class="now-welcome">
+          <p>每一条链接背后，都是一位在认真写博客的朋友。</p>
+        </blockquote>
+        <a class="now-apply" href="#" data-go-page="apply">
+          <b>友链申请</b>
+          <span>→</span>
+        </a>
+        <a class="now-apply when-owner" href="#" data-go-page="admin">
+          <b>审核申请</b>
+          <span>3</span>
+        </a>
+        <div class="now-panel">
+          <h2>友链</h2>
+          <p class="meta">共 4 个站点</p>
+          <ul class="now-grid">
+            <li>
+              <a class="now-card" href="#">
+                <span class="avatar">A</span>
+                <div><b>Apos Blog</b><span>Building at the Edge of Manufacturing.</span></div>
+              </a>
+            </li>
+            <li>
+              <a class="now-card" href="#">
+                <span class="avatar">森</span>
+                <div><b>小森林</b><span>写字、拍照，偶尔把日子记下来。</span></div>
+              </a>
+            </li>
+            <li>
+              <a class="now-card" href="#">
+                <span class="avatar">N</span>
+                <div><b>NightOwl</b><span>图论与算法笔记。</span></div>
+              </a>
+            </li>
+            <li>
+              <a class="now-card" href="#">
+                <span class="avatar">河</span>
+                <div><b>河灯</b><span>纸面比仪表盘安静。</span></div>
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="now-panel">
+          <h2>特殊链接</h2>
+          <div class="now-special">
+            <a class="now-card" href="#"><span class="avatar">异</span><div><b>异次元之旅</b><span>去萌站成员的星球旅行。</span></div></a>
+            <a class="now-card" href="#"><span class="avatar">开</span><div><b>开往</b><span>随机前往开往的成员博客。</span></div></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 现状 · 申请 -->
+    <section class="variant" data-scheme="now" data-page="apply">
+      <div class="now-page">
+        <header class="now-hero">
+          <p class="now-eyebrow">Apply</p>
+          <h1 class="now-title">友链申请</h1>
+          <p class="now-sub">填写你的站点信息，审核通过后会展示在友链列表</p>
+        </header>
+        <p class="hint-line">站点图标可留空，系统会尝试从站点地址自动获取 favicon。</p>
+        <a class="ed-action" href="#" data-go-page="list">返回友链列表</a>
+        <div class="now-panel">
+          <h2>申请须知</h2>
+          <p class="meta">申请前请先添加本站</p>
+          <p>站点名称 GrunRay　站点地址 https://www.grunray.tech/</p>
+        </div>
+        <form class="now-form now-panel" action="#" data-icon-preview>
+          <div class="icon-preview now-icon-preview" hidden>
+            <img data-icon-img alt="站点图标预览" width="48" height="48" />
+            <p>预览：将使用此图标展示在友链卡片上</p>
+          </div>
+          <label><span>站点名称</span><input type="text" placeholder="你的博客或站点名称" /></label>
+          <label><span>站点地址</span><input type="url" data-icon-url placeholder="https://example.com" /></label>
+          <label><span>站点图标</span><input type="url" data-icon-explicit placeholder="留空则自动取 favicon" /></label>
+          <label><span>站点简介</span><textarea rows="3" placeholder="一句话介绍你的站点"></textarea></label>
+          <label><span>联系邮箱</span><input type="email" placeholder="用于审核结果通知" /></label>
+          <label>验证码 3 + 4 <input type="text" placeholder="得数" /></label>
+          <button type="button" class="now-pill">提交申请</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- 现状 · 审核 -->
+    <section class="variant" data-scheme="now" data-page="admin">
+      <div class="now-page">
+        <header class="now-hero">
+          <p class="now-eyebrow">Moderation</p>
+          <h1 class="now-title">友链审核</h1>
+          <p class="now-sub">查看并编辑 friend_link 表中的友链，处理待审核申请</p>
+        </header>
+        <a class="ed-action" href="#" data-go-page="list">返回友链列表</a>
+        <div class="now-panel when-guest">
+          <p>需要站长登录（与留言板相同的 GitHub / Google 登录）才能访问此页。</p>
+          <button type="button" class="now-pill">前往留言板登录</button>
+        </div>
+        <div class="when-owner">
+          <div class="now-admin-tabs" role="tablist">
+            <button type="button" class="now-tab is-on">全部</button>
+            <button type="button" class="now-tab">待审核</button>
+            <button type="button" class="now-tab">已发布</button>
+            <button type="button" class="now-tab">已隐藏</button>
+            <button type="button" class="now-tab">已拒绝</button>
+          </div>
+          <p class="meta">共 3 条</p>
+          <article class="now-panel now-review">
+            <div class="now-review-head">
+              <span class="status-badge is-pending">待审核</span>
+              <time>2026-09-04 21:18</time>
+            </div>
+            <form class="now-form" action="#" data-icon-preview>
+              <label><span>站点名称</span><input type="text" value="河灯" /></label>
+              <label><span>站点地址</span><input type="url" data-icon-url value="https://hedeng.example" /></label>
+              <label><span>站点图标</span><input type="url" data-icon-explicit placeholder="留空则自动取 favicon" /></label>
+              <div class="icon-preview now-icon-preview" hidden>
+                <img data-icon-img alt="站点图标预览" width="48" height="48" />
+                <p>预览：将使用此图标展示在友链卡片上</p>
+              </div>
+              <label><span>站点简介</span><textarea rows="2">纸面比仪表盘安静。</textarea></label>
+              <label><span>联系邮箱</span><input type="email" value="lamp@hedeng.example" /></label>
+              <label><span>排序</span><input type="number" value="0" /></label>
+              <div class="now-review-actions">
+                <button type="button" class="now-pill">保存修改</button>
+                <button type="button" class="now-pill">通过</button>
+                <button type="button" class="now-pill now-pill-danger">拒绝</button>
+              </div>
+            </form>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- A · 列表 -->
+    <section class="variant" data-scheme="a" data-page="list">
+      <h1 class="h">友链</h1>
+      <div class="ed-filter">
+        <p class="ed-kicker"><span class="ed-en">Links</span><span class="ed-mid">·</span><span class="ed-zh">往来</span></p>
+        <p class="hint-line">每一条链接背后，都是一位在认真写博客的朋友。这里展示已通过审核的站点，欢迎串门。</p>
+        <div class="ed-actions">
+          <a class="ed-action" href="#" data-go-page="apply">申请互换</a>
+          <a class="ed-action when-owner" href="#" data-go-page="admin">审核申请</a>
+        </div>
+      </div>
+
+      <header class="section-head">
+        <p class="ed-kicker"><span class="ed-en">Directory</span><span class="ed-mid">·</span><span class="ed-zh">名录</span></p>
+        <span class="section-tools">4 站</span>
+      </header>
+      <ol class="ledger">
+        <li>
+          <a class="friend-row" href="#">
+            <span class="avatar">A</span>
+            <div>
+              <p class="byline"><span class="byline-name">Apos Blog</span><span class="byline-rest"> · apos-dt.github.io</span></p>
+              <p class="friend-desc">Building at the Edge of Manufacturing.</p>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a class="friend-row" href="#">
+            <span class="avatar">森</span>
+            <div>
+              <p class="byline"><span class="byline-name">小森林</span><span class="byline-rest"> · innei.in</span></p>
+              <p class="friend-desc">写字、拍照，偶尔把日子记下来。</p>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a class="friend-row" href="#">
+            <span class="avatar">N</span>
+            <div>
+              <p class="byline"><span class="byline-name">NightOwl</span><span class="byline-rest"> · github.com</span></p>
+              <p class="friend-desc">图论与算法笔记，尤其是最短路那几篇。</p>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a class="friend-row" href="#">
+            <span class="avatar">河</span>
+            <div>
+              <p class="byline"><span class="byline-name">河灯</span><span class="byline-rest"> · hedeng.example</span></p>
+              <p class="friend-desc">纸面比仪表盘安静。封面终于不像控制台。</p>
+            </div>
+          </a>
+        </li>
+      </ol>
+
+      <header class="section-head special-gap">
+        <p class="ed-kicker"><span class="ed-en">Extra</span><span class="ed-mid">·</span><span class="ed-zh">特殊</span></p>
+        <span class="section-tools">2 处</span>
+      </header>
+      <ol class="ledger ledger--pair">
+        <li>
+          <a class="friend-row" href="#">
+            <span class="avatar">异</span>
+            <div>
+              <p class="byline"><span class="byline-name">异次元之旅</span><span class="byline-rest"> · travel.moe</span></p>
+              <p class="friend-desc">我们一起去萌站成员的星球旅行吧。</p>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a class="friend-row" href="#">
+            <span class="avatar">开</span>
+            <div>
+              <p class="byline"><span class="byline-name">开往</span><span class="byline-rest"> · travellings.cn</span></p>
+              <p class="friend-desc">随机前往开往的成员博客。</p>
+            </div>
+          </a>
+        </li>
+      </ol>
+    </section>
+
+    <!--
+      A · 申请
+      合入 FriendsApplyView 时必须保留：
+      - previewAvatar：显式站点图标 URL，否则用站点地址解析 favicon
+      - Facts 本站「站点图标」旁的 logo 预览
+      勿只改刊头把预览删掉。
+    -->
+    <section class="variant" data-scheme="a" data-page="apply">
+      <a class="a-back" href="#" data-go-page="list">← 友链</a>
+      <h1 class="h">申请</h1>
+      <div class="ed-filter">
+        <p class="ed-kicker"><span class="ed-en">Facts</span><span class="ed-mid">·</span><span class="ed-zh">本站</span></p>
+        <p class="hint-line">申请前请先添加本站。站点图标可留空，系统会尝试从站点地址取 favicon。</p>
+        <ul class="fact-list">
+          <li>
+            <p class="fact-label">站点名称</p>
+            <p class="fact-value">GrunRay</p>
+            <button type="button" class="ed-action ghost" data-copy="GrunRay">复制</button>
+          </li>
+          <li>
+            <p class="fact-label">站点地址</p>
+            <p class="fact-value">https://www.grunray.tech/</p>
+            <button type="button" class="ed-action ghost" data-copy="https://www.grunray.tech/">复制</button>
+          </li>
+          <li>
+            <p class="fact-label">站点图标</p>
+            <div class="fact-logo">
+              <img class="icon-thumb" src="https://www.grunray.tech/favicon.jpg" alt="GrunRay" width="40" height="40" />
+              <p class="fact-value">https://www.grunray.tech/favicon.jpg</p>
+            </div>
+            <button type="button" class="ed-action ghost" data-copy="https://www.grunray.tech/favicon.jpg">复制</button>
+          </li>
+          <li>
+            <p class="fact-label">站点简介</p>
+            <p class="fact-value">找不到实习捏——代码不跑我跑！</p>
+            <button type="button" class="ed-action ghost" data-copy="找不到实习捏——代码不跑我跑！">复制</button>
+          </li>
+        </ul>
+      </div>
+      <form class="compose" action="#" data-icon-preview>
+        <p class="ed-kicker"><span class="ed-en">Apply</span><span class="ed-mid">·</span><span class="ed-zh">填写</span></p>
+        <label class="ed-search">站点名称 <input type="text" placeholder="你的博客或站点名称" /></label>
+        <label class="ed-search">站点地址 <input type="url" data-icon-url placeholder="https://example.com" /></label>
+        <label class="ed-search">站点图标 <input type="url" data-icon-explicit placeholder="留空则自动取 favicon" /></label>
+        <div class="icon-preview" hidden>
+          <img data-icon-img alt="站点图标预览" width="48" height="48" />
+          <p>预览：将使用此图标展示在友链卡片上</p>
+        </div>
+        <label class="compose-bio">站点简介 <textarea rows="3" placeholder="一句话介绍你的站点"></textarea></label>
+        <label class="ed-search">联系邮箱 <input type="email" placeholder="用于审核结果通知" /></label>
+        <div class="compose-meta">
+          <label class="captcha-field">
+            <span>验证码</span>
+            <span>3 + 4</span>
+            <input class="captcha-input" type="text" inputmode="numeric" placeholder="请输入计算结果" autocomplete="off" />
+          </label>
+          <button type="button" class="text-btn">换一题</button>
+        </div>
+        <div class="compose-foot">
+          <button type="button" class="ed-action">提交申请</button>
+          <span class="policy">提交即表示你同意在友链页展示站点名称、链接与简介。</span>
+        </div>
+      </form>
+    </section>
+
+    <!--
+      A · 审核  /friends/admin
+      合入 FriendsAdminView 时必须保留 previewAvatarFor（draft.url + draft.avatarUrl）。
+      访客看门槛；站长看队列。状态分色与分组分隔沿用现有逻辑。
+    -->
+    <section class="variant" data-scheme="a" data-page="admin">
+      <a class="a-back" href="#" data-go-page="list">← 友链</a>
+      <h1 class="h">审核</h1>
+
+      <div class="compose admin-gate when-guest">
+        <p class="hint-line">需要站长登录（与留言板相同的 GitHub / Google 登录）才能访问此页。</p>
+        <div class="compose-foot">
+          <a class="ed-action" href="#">前往留言板登录</a>
+        </div>
+      </div>
+
+      <div class="when-owner">
+        <div class="ed-filter">
+          <p class="ed-kicker"><span class="ed-en">Review</span><span class="ed-mid">·</span><span class="ed-zh">审核</span></p>
+          <p class="hint-line">查看并编辑友链，处理待审核申请。</p>
+          <div class="admin-tabs" role="tablist" aria-label="友链状态筛选">
+            <button type="button" class="text-btn is-on">全部</button>
+            <button type="button" class="text-btn">待审核</button>
+            <button type="button" class="text-btn">已发布</button>
+            <button type="button" class="text-btn">已隐藏</button>
+            <button type="button" class="text-btn">已拒绝</button>
+          </div>
+        </div>
+
+        <header class="section-head section-head--inset">
+          <p class="ed-kicker"><span class="ed-en">Queue</span><span class="ed-mid">·</span><span class="ed-zh">队列</span></p>
+          <span class="section-tools">3 条</span>
+        </header>
+
+        <article class="review-card" data-icon-preview>
+          <div class="review-head">
+            <span class="status-badge is-pending">待审核</span>
+            <time datetime="2026-09-04T21:18">2026-09-04 21:18</time>
+          </div>
+          <label class="ed-search">站点名称 <input type="text" value="河灯" /></label>
+          <label class="ed-search">站点地址 <input type="url" data-icon-url value="https://hedeng.example" /></label>
+          <label class="ed-search">站点图标 <input type="url" data-icon-explicit placeholder="留空则自动取 favicon" /></label>
+          <div class="icon-preview" hidden>
+            <img data-icon-img alt="站点图标预览" width="48" height="48" />
+            <p>预览：将使用此图标展示在友链卡片上</p>
+          </div>
+          <label class="compose-bio">站点简介 <textarea rows="2">纸面比仪表盘安静。</textarea></label>
+          <div class="review-grid">
+            <label class="ed-search">联系邮箱 <input type="email" value="lamp@hedeng.example" /></label>
+            <label class="ed-search review-sort">排序 <input type="number" value="0" /></label>
+          </div>
+          <div class="review-actions">
+            <button type="button" class="ed-action">保存修改</button>
+            <button type="button" class="ed-action">通过</button>
+            <button type="button" class="ed-action danger">拒绝</button>
+          </div>
+        </article>
+
+        <div class="review-split" aria-hidden="true"></div>
+
+        <article class="review-card" data-icon-preview>
+          <div class="review-head">
+            <span class="status-badge is-published">已发布</span>
+            <time datetime="2026-08-12T10:02">2026-08-12 10:02</time>
+          </div>
+          <label class="ed-search">站点名称 <input type="text" value="小森林" /></label>
+          <label class="ed-search">站点地址 <input type="url" data-icon-url value="https://innei.in" /></label>
+          <label class="ed-search">站点图标 <input type="url" data-icon-explicit placeholder="留空则自动取 favicon" /></label>
+          <div class="icon-preview" hidden>
+            <img data-icon-img alt="站点图标预览" width="48" height="48" />
+            <p>预览：将使用此图标展示在友链卡片上</p>
+          </div>
+          <label class="compose-bio">站点简介 <textarea rows="2">写字、拍照，偶尔把日子记下来。</textarea></label>
+          <div class="review-grid">
+            <label class="ed-search">联系邮箱 <input type="email" value="hi@innei.in" /></label>
+            <label class="ed-search review-sort">排序 <input type="number" value="12" /></label>
+          </div>
+          <div class="review-actions">
+            <button type="button" class="ed-action">保存修改</button>
+            <button type="button" class="ed-action ghost">隐藏</button>
+          </div>
+        </article>
+
+        <div class="review-split" aria-hidden="true"></div>
+
+        <article class="review-card" data-icon-preview>
+          <div class="review-head">
+            <span class="status-badge is-hidden">已隐藏</span>
+            <time datetime="2026-07-02T18:40">2026-07-02 18:40</time>
+          </div>
+          <label class="ed-search">站点名称 <input type="text" value="NightOwl" /></label>
+          <label class="ed-search">站点地址 <input type="url" data-icon-url value="https://github.com" /></label>
+          <label class="ed-search">站点图标 <input type="url" data-icon-explicit placeholder="留空则自动取 favicon" /></label>
+          <div class="icon-preview" hidden>
+            <img data-icon-img alt="站点图标预览" width="48" height="48" />
+            <p>预览：将使用此图标展示在友链卡片上</p>
+          </div>
+          <label class="compose-bio">站点简介 <textarea rows="2">图论与算法笔记。</textarea></label>
+          <div class="review-grid">
+            <label class="ed-search">联系邮箱 <input type="email" /></label>
+            <label class="ed-search review-sort">排序 <input type="number" value="8" /></label>
+          </div>
+          <div class="review-actions">
+            <button type="button" class="ed-action">保存修改</button>
+            <button type="button" class="ed-action">恢复发布</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <script src="shared.js"></script>
+  </body>
+</html>

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>图片主色占比预览</title>
+  <style>
+    :root{
+      --bg:#0f1715;
+      --panel:#16201d;
+      --panel-2:#1b2925;
+      --text:#eef5f1;
+      --muted:#9fb0aa;
+      --line:rgba(255,255,255,.08);
+      --accent:#ABDE6B;
+      --preview:#19413C;
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:
+      Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      "Microsoft YaHei", "PingFang SC", sans-serif;}
+
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(171,222,107,.08), transparent 28%),
+        radial-gradient(circle at 85% 85%, rgba(49,224,176,.08), transparent 30%),
+        var(--bg);
+      padding:28px;
+    }
+
+    .app{
+      max-width:1440px;
+      margin:0 auto;
+    }
+
+    .header{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:24px;
+      margin-bottom:20px;
+    }
+
+    .header h1{
+      margin:0;
+      font-size:28px;
+      letter-spacing:.02em;
+    }
+
+    .header p{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .hint{
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:minmax(660px, 1.25fr) minmax(360px, .75fr);
+      gap:20px;
+      align-items:stretch;
+    }
+
+    .panel{
+      background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.012));
+      border:1px solid var(--line);
+      border-radius:18px;
+      overflow:hidden;
+      box-shadow:0 18px 60px rgba(0,0,0,.16);
+      backdrop-filter:blur(14px);
+    }
+
+    .panel-title{
+      padding:18px 20px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
+
+    .panel-title strong{
+      font-size:15px;
+      letter-spacing:.03em;
+    }
+
+    .panel-title span{
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .table-wrap{
+      overflow:auto;
+      max-height:690px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:650px;
+    }
+
+    thead th{
+      position:sticky;
+      top:0;
+      z-index:2;
+      background:#18231f;
+      text-align:left;
+      color:#b9c7c2;
+      font-weight:600;
+      font-size:12px;
+      letter-spacing:.05em;
+      padding:13px 16px;
+      border-bottom:1px solid var(--line);
+    }
+
+    tbody tr{
+      cursor:pointer;
+      transition:.18s ease;
+      border-bottom:1px solid rgba(255,255,255,.055);
+    }
+
+    tbody tr:hover{
+      background:rgba(255,255,255,.035);
+    }
+
+    tbody tr.active{
+      background:rgba(171,222,107,.08);
+      box-shadow:inset 3px 0 0 var(--row-color);
+    }
+
+    td{
+      padding:13px 16px;
+      font-size:14px;
+      vertical-align:middle;
+    }
+
+    .rank{
+      color:#8fa09a;
+      width:60px;
+    }
+
+    .swatch{
+      width:28px;
+      height:28px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,.16);
+      box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);
+    }
+
+    .hex{
+      font-family:"SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-weight:700;
+      letter-spacing:.03em;
+    }
+
+    .percent{
+      font-variant-numeric:tabular-nums;
+      color:#dce6e2;
+    }
+
+    .desc{
+      color:#aebdb7;
+    }
+
+    .preview-panel{
+      min-height:690px;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .preview{
+      flex:1;
+      min-height:440px;
+      background:var(--preview);
+      transition:background .28s ease;
+      position:relative;
+      display:flex;
+      align-items:flex-end;
+      padding:26px;
+    }
+
+    .preview::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.10), transparent 38%),
+        radial-gradient(circle at 80% 20%, rgba(255,255,255,.18), transparent 0 2px, transparent 3px);
+      pointer-events:none;
+    }
+
+    .preview-card{
+      position:relative;
+      z-index:1;
+      width:min(100%, 430px);
+      background:rgba(12,17,16,.72);
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:16px;
+      padding:20px;
+      backdrop-filter:blur(16px);
+      box-shadow:0 14px 40px rgba(0,0,0,.18);
+    }
+
+    .preview-label{
+      color:#aab8b3;
+      font-size:12px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+
+    .selected-hex{
+      font-size:36px;
+      font-weight:800;
+      margin:6px 0 6px;
+      letter-spacing:.02em;
+      font-family:"SFMono-Regular", Consolas, monospace;
+    }
+
+    .selected-meta{
+      color:#d6dfdc;
+      font-size:14px;
+    }
+
+    .preview-footer{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      padding:16px;
+      border-top:1px solid var(--line);
+      background:rgba(0,0,0,.08);
+    }
+
+    .info-box{
+      background:rgba(255,255,255,.025);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:14px;
+    }
+
+    .info-box .k{
+      color:#91a39c;
+      font-size:11px;
+      margin-bottom:5px;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+
+    .info-box .v{
+      font-size:14px;
+      font-weight:700;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:28px;
+      transform:translate(-50%,20px);
+      opacity:0;
+      background:#101714;
+      color:white;
+      border:1px solid rgba(255,255,255,.1);
+      padding:10px 14px;
+      border-radius:10px;
+      font-size:13px;
+      pointer-events:none;
+      transition:.2s ease;
+      box-shadow:0 10px 28px rgba(0,0,0,.25);
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translate(-50%,0);
+    }
+
+    @media (max-width:1050px){
+      .layout{grid-template-columns:1fr}
+      .preview-panel{min-height:auto}
+      .preview{min-height:420px}
+    }
+
+    @media (max-width:640px){
+      body{padding:14px}
+      .header{align-items:flex-start;flex-direction:column}
+      .hint{white-space:normal}
+      .panel{border-radius:14px}
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="header">
+      <div>
+        <h1>🎨 图片主要颜色占比</h1>
+        <p>点击左侧任意颜色，即可在右侧查看大面积预览与对应信息。</p>
+      </div>
+      <div class="hint">提示：双击色值可复制 HEX</div>
+    </div>
+
+    <section class="layout">
+      <div class="panel">
+        <div class="panel-title">
+          <strong>颜色占比排名</strong>
+          <span>共 15 个代表色</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>排名</th>
+                <th>颜色</th>
+                <th>色值</th>
+                <th>占比</th>
+                <th>颜色特征</th>
+              </tr>
+            </thead>
+            <tbody id="paletteBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel preview-panel">
+        <div class="panel-title">
+          <strong>颜色预览</strong>
+          <span id="previewTitle">当前：#19413C</span>
+        </div>
+
+        <div class="preview" id="preview">
+          <div class="preview-card">
+            <div class="preview-label">Selected Color</div>
+            <div class="selected-hex" id="selectedHex">#19413C</div>
+            <div class="selected-meta" id="selectedMeta">深墨绿 / 深青绿 · 11.47%</div>
+          </div>
+        </div>
+
+        <div class="preview-footer">
+          <div class="info-box">
+            <div class="k">HEX</div>
+            <div class="v" id="hexInfo">#19413C</div>
+          </div>
+          <div class="info-box">
+            <div class="k">占比</div>
+            <div class="v" id="ratioInfo">11.47%</div>
+          </div>
+          <div class="info-box">
+            <div class="k">颜色特征</div>
+            <div class="v" id="descInfo">深墨绿 / 深青绿</div>
+          </div>
+          <div class="info-box">
+            <div class="k">排名</div>
+            <div class="v" id="rankInfo">#1</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast">已复制色值</div>
+
+  <script>
+    const colors = [
+      { rank: 1,  hex: "#19413C", ratio: "11.47%", desc: "深墨绿 / 深青绿" },
+      { rank: 2,  hex: "#18251B", ratio: "9.59%",  desc: "极深绿黑" },
+      { rank: 3,  hex: "#ABDE6B", ratio: "9.43%",  desc: "明亮黄绿色" },
+      { rank: 4,  hex: "#F2EBE4", ratio: "8.94%",  desc: "米白 / 肤色偏白" },
+      { rank: 5,  hex: "#D1F183", ratio: "8.36%",  desc: "浅黄绿色" },
+      { rank: 6,  hex: "#26674F", ratio: "7.93%",  desc: "深绿色" },
+      { rank: 7,  hex: "#5AAA64", ratio: "7.70%",  desc: "中等草绿色" },
+      { rank: 8,  hex: "#3C8960", ratio: "7.14%",  desc: "青绿色" },
+      { rank: 9,  hex: "#7EC473", ratio: "6.85%",  desc: "柔和绿色" },
+      { rank: 10, hex: "#A99A76", ratio: "5.47%",  desc: "灰金 / 卡其色" },
+      { rank: 11, hex: "#4C4029", ratio: "5.16%",  desc: "深棕 / 橄榄黑" },
+      { rank: 12, hex: "#7D6545", ratio: "3.41%",  desc: "棕金色" },
+      { rank: 13, hex: "#3AB390", ratio: "3.32%",  desc: "青绿色 / 松石绿" },
+      { rank: 14, hex: "#D9C1AB", ratio: "3.08%",  desc: "浅粉米色" },
+      { rank: 15, hex: "#31E0B0", ratio: "2.15%",  desc: "高饱和青绿色" }
+    ];
+
+    const body = document.getElementById("paletteBody");
+    const preview = document.getElementById("preview");
+    const selectedHex = document.getElementById("selectedHex");
+    const selectedMeta = document.getElementById("selectedMeta");
+    const previewTitle = document.getElementById("previewTitle");
+    const hexInfo = document.getElementById("hexInfo");
+    const ratioInfo = document.getElementById("ratioInfo");
+    const descInfo = document.getElementById("descInfo");
+    const rankInfo = document.getElementById("rankInfo");
+    const toast = document.getElementById("toast");
+
+    function getReadableText(hex){
+      const value = hex.replace("#","");
+      const r = parseInt(value.slice(0,2),16);
+      const g = parseInt(value.slice(2,4),16);
+      const b = parseInt(value.slice(4,6),16);
+      const luminance = (0.299*r + 0.587*g + 0.114*b);
+      return luminance > 170 ? "#111714" : "#FFFFFF";
+    }
+
+    function selectColor(index){
+      const c = colors[index];
+      document.querySelectorAll("tbody tr").forEach((tr,i)=>{
+        tr.classList.toggle("active", i === index);
+      });
+
+      preview.style.background = c.hex;
+      selectedHex.textContent = c.hex;
+      selectedHex.style.color = getReadableText(c.hex);
+      selectedMeta.textContent = `${c.desc} · ${c.ratio}`;
+      selectedMeta.style.color = getReadableText(c.hex);
+      previewTitle.textContent = `当前：${c.hex}`;
+      hexInfo.textContent = c.hex;
+      ratioInfo.textContent = c.ratio;
+      descInfo.textContent = c.desc;
+      rankInfo.textContent = `#${c.rank}`;
+    }
+
+    function showToast(text){
+      toast.textContent = text;
+      toast.classList.add("show");
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(()=>toast.classList.remove("show"), 1200);
+    }
+
+    colors.forEach((c,index)=>{
+      const tr = document.createElement("tr");
+      tr.style.setProperty("--row-color", c.hex);
+      tr.innerHTML = `
+        <td class="rank">${c.rank}</td>
+        <td><div class="swatch" style="background:${c.hex}"></div></td>
+        <td class="hex" title="双击复制">${c.hex}</td>
+        <td class="percent">${c.ratio}</td>
+        <td class="desc">${c.desc}</td>
+      `;
+
+      tr.addEventListener("click", ()=>selectColor(index));
+      tr.querySelector(".hex").addEventListener("dblclick", async (e)=>{
+        e.stopPropagation();
+        try{
+          await navigator.clipboard.writeText(c.hex);
+          showToast(`已复制 ${c.hex}`);
+        }catch{
+          showToast(`色值：${c.hex}`);
+        }
+      });
+
+      body.appendChild(tr);
+    });
+
+    selectColor(0);
+  </script>
+</body>
+</html>

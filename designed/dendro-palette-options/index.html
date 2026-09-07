@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dendro 深色配色 · 方案对比</title>
+    <link rel="stylesheet" href="shared.css" />
+  </head>
+  <body data-scheme="d">
+    <div class="preview-switcher">
+      <span class="brand">DENDRO</span>
+      <button type="button" class="scheme-btn" data-scheme="a">A 现状终端</button>
+      <button type="button" class="scheme-btn" data-scheme="b">B 深林夜读</button>
+      <button type="button" class="scheme-btn" data-scheme="c">C 青石底</button>
+      <button type="button" class="scheme-btn on" data-scheme="d">D 只换 accent</button>
+      <span class="sep">|</span>
+      <a class="src-link" href="color_palette_preview.html">原色表</a>
+      <span class="hint">已选定 D，合入生产深色档。已归档点为灰金。</span>
+    </div>
+
+    <p class="meta-note scheme-a">
+      <b>方案 A · 现状终端</b>
+      现生产深色令牌（底 <code>#0d1210</code>、正文 <code>#d8e2dc</code>、accent <code>#8fd6ae</code>）。浅色档不在本页讨论，合入时也只动 <code>tokens.dark.css</code>。
+    </p>
+    <p class="meta-note scheme-b">
+      <b>方案 B · 深林夜读</b>
+      底用极深绿黑 <code>#18251B</code>，表面用深青绿 <code>#19413C</code>，accent 用明亮黄绿 <code>#ABDE6B</code>，状态点用松石 <code>#31E0B0</code>。最贴近提取色，也最不像现在的 dark。
+    </p>
+    <p class="meta-note scheme-c">
+      <b>方案 C · 青石底</b>
+      占比第一的 <code>#19413C</code> 当页底，更深的 <code>#18251B</code> 当表面。accent 提到浅黄绿 <code>#D1F183</code>，避免青绿底上黄绿发闷。页底比 B 更「浸在颜色里」。
+    </p>
+    <p class="meta-note scheme-d">
+      <b>方案 D · 只换 accent</b>
+      <b>已选定合入。</b>现 dark 骨架不动，accent 换成 <code>#ABDE6B</code>。进行中圆点跟 accent；已归档圆点用灰金 <code>#A99A76</code>。原令牌备份在同目录 <code>tokens.dark.css</code>。
+    </p>
+
+    <div class="stage">
+      <div class="palette-strip" aria-label="Dendro 提取的 15 色，点击复制">
+        <button type="button" data-hex="#19413C" style="background:#19413C" title="#19413C 深墨绿 11.47%"></button>
+        <button type="button" data-hex="#18251B" style="background:#18251B" title="#18251B 极深绿黑 9.59%"></button>
+        <button type="button" data-hex="#ABDE6B" style="background:#ABDE6B" title="#ABDE6B 明亮黄绿 9.43%"></button>
+        <button type="button" data-hex="#F2EBE4" style="background:#F2EBE4" title="#F2EBE4 米白 8.94%"></button>
+        <button type="button" data-hex="#D1F183" style="background:#D1F183" title="#D1F183 浅黄绿 8.36%"></button>
+        <button type="button" data-hex="#26674F" style="background:#26674F" title="#26674F 深绿 7.93%"></button>
+        <button type="button" data-hex="#5AAA64" style="background:#5AAA64" title="#5AAA64 草绿 7.70%"></button>
+        <button type="button" data-hex="#3C8960" style="background:#3C8960" title="#3C8960 青绿 7.14%"></button>
+        <button type="button" data-hex="#7EC473" style="background:#7EC473" title="#7EC473 柔和绿 6.85%"></button>
+        <button type="button" data-hex="#A99A76" style="background:#A99A76" title="#A99A76 灰金 5.47%"></button>
+        <button type="button" data-hex="#4C4029" style="background:#4C4029" title="#4C4029 深棕 5.16%"></button>
+        <button type="button" data-hex="#7D6545" style="background:#7D6545" title="#7D6545 棕金 3.41%"></button>
+        <button type="button" data-hex="#3AB390" style="background:#3AB390" title="#3AB390 松石 3.32%"></button>
+        <button type="button" data-hex="#D9C1AB" style="background:#D9C1AB" title="#D9C1AB 浅粉米 3.08%"></button>
+        <button type="button" data-hex="#31E0B0" style="background:#31E0B0" title="#31E0B0 高饱和青绿 2.15%"></button>
+      </div>
+
+      <div class="map-grid" aria-label="当前方案令牌映射">
+        <div class="map-chip">
+          <div class="k">bg / paper</div>
+          <span class="sw" style="background:var(--bg)"></span>
+          <div class="v" data-role="bg">base</div>
+        </div>
+        <div class="map-chip">
+          <div class="k">text / ink</div>
+          <span class="sw" style="background:var(--text)"></span>
+          <div class="v">ink</div>
+        </div>
+        <div class="map-chip">
+          <div class="k">accent</div>
+          <span class="sw" style="background:var(--accent)"></span>
+          <div class="v">link / cta</div>
+        </div>
+        <div class="map-chip">
+          <div class="k">glow</div>
+          <span class="sw" style="background:var(--glow)"></span>
+          <div class="v">icon / dot</div>
+        </div>
+      </div>
+
+      <nav class="fake-nav" aria-label="生产导航示意">
+        <span class="nav-brand">GrunRay</span>
+        <a href="#">首页</a>
+        <a href="#">创作</a>
+        <a href="#">社区</a>
+        <a class="now" href="#">栖息</a>
+      </nav>
+
+      <article class="page">
+        <h1 class="h">碎念</h1>
+        <div class="ed-filter">
+          <p class="ed-kicker">
+            <span class="ed-en">Notes</span>
+            <span class="ed-mid" aria-hidden="true">·</span>
+            <span class="ed-zh">碎念</span>
+          </p>
+          <p class="legal-hint">这里放一些来不及写成文章的话——半成品、牢骚、灵光一现，都算数。</p>
+          <p><button type="button" class="ed-action">全部</button> · 吐槽 · 随笔 · 日常</p>
+        </div>
+
+        <div class="split">
+          <aside class="identity">
+            <h2>GrunRay</h2>
+            <p>男 · 21 岁</p>
+            <p class="award">ICPC 西安邀请赛 · <em>铜牌</em></p>
+            <p class="award">完整简历请来信</p>
+            <p style="margin-top: 0.45rem">
+              <button type="button" class="ed-action" data-hex="meachealed@gmail.com">meachealed@gmail.com</button>
+            </p>
+          </aside>
+
+          <div>
+            <a class="toc-row" href="#">
+              <span class="toc-date">5 月 24 日</span>
+              <span>
+                <h2 class="ttl">测试一条碎念</h2>
+                <p class="dek">日常 · 用来看目录行在新纸色上的 hairline 和 hover。</p>
+              </span>
+            </a>
+            <a class="toc-row" href="#">
+              <span class="toc-date">5 月 15 日</span>
+              <span>
+                <h2 class="ttl">雨停之后操场味道很好</h2>
+                <p class="dek">走了一圈，脑子终于从递归里出来了。</p>
+              </span>
+            </a>
+            <a class="toc-row" href="#">
+              <span class="toc-date">4 月 02 日</span>
+              <span>
+                <h2 class="ttl">把草元素图标拆成令牌</h2>
+                <p class="dek">只改深色档。黄绿当 accent 看对比，浅色纸面不动。</p>
+              </span>
+            </a>
+
+            <section class="legal-sec">
+              <p class="ed-kicker">
+                <span class="ed-en">Notice</span>
+                <span class="ed-mid" aria-hidden="true">·</span>
+                <span class="ed-zh">免责</span>
+              </p>
+              <p class="legal-body">
+                本站为个人非商业站点。配色研究只在
+                <code>designed/dendro-palette-options/</code>
+                预览，未选定前不写进 <code>frontend/src</code>。
+              </p>
+              <p class="dot-row">
+                <span><i class="dot"></i>进行中</span>
+                <span><i class="dot dot--off"></i>已归档</span>
+                <span><button type="button" class="ed-action">← 首页</button></span>
+              </p>
+            </section>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div id="toast"></div>
+    <script src="shared.js"></script>
+  </body>
+</html>

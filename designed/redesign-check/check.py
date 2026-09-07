@@ -57,7 +57,7 @@ def check(name, cond, detail=""):
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
     ctx = browser.new_context(viewport={"width": 1440, "height": 900})
-    ctx.add_init_script("try { sessionStorage.setItem('grunray_splash_woniu_v1', '1') } catch (e) {}")
+    ctx.add_init_script("try { localStorage.setItem('grunray_splash_woniu_v1', '1'); sessionStorage.setItem('grunray_splash_woniu_v1', '1') } catch (e) {}")
     page = ctx.new_page()
     mock_api(page)
     errors = []

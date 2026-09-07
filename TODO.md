@@ -62,12 +62,13 @@ cd frontend; npm run dev;
 
 ### 当前提示词（复制给 AI）
 
-博客/项目 详情页的左侧展示u基本信息的侧栏，看看是否需要改为 Editorial 风格。
-（一个想法，侧栏的卡片样式的背景改为和界面背景一致，这样似乎像是报纸左侧展示的一小部分）
+顶部导航栏按钮没有做Editorial化
 
 ### 灵感（未排期）
 
-1. 博客/项目 界面，时间线展示方式 改为 绝区零绳网展示方式
+1. 月相拖尾还需要细调，比如 光标颜色，拖尾月亮 等，悬浮在按钮上方（可点击）时不进入待机状态（月灵推哥伦比娅的状态）
+2. （已并入 129）关于页做成简历。
+3. 碎念/推荐 改为 绝区零绳网展示方式
 
 - 通用：
 （1）顶部为标题，标题下方为图片（如果有），再下方为详情，点击卡片的整个区域都可以跳转；
@@ -80,10 +81,10 @@ cd frontend; npm run dev;
 （1）有没有技术能够把代码给做成预览，就像是项目界面的图片一样，这样比较高级；
 
 1. 内容备份：脚本将数据库导出到本地，并定期推送到 GitHub。
+2. 记录一下之后添加到 推荐 部分，图片转换为SVG线条的方法：
 
-2. 记录一下之后添加到 推荐 部分，图片转换为SVG线条的方法：  
-- 先去https://colorart.ai/image-to-line-art?utm_source=chatgpt.com网页将彩色图转换为黑白线稿
-- 然后去https://pic2vector.com/app/将线稿转换为SVG矢量图
+- 先去[https://colorart.ai/image-to-line-art?utm_source=chatgpt.com网页将彩色图转换为黑白线稿](https://colorart.ai/image-to-line-art?utm_source=chatgpt.com网页将彩色图转换为黑白线稿)
+- 然后去[https://pic2vector.com/app/将线稿转换为SVG矢量图](https://pic2vector.com/app/将线稿转换为SVG矢量图)
 
 ---
 
@@ -243,6 +244,386 @@ cd frontend; npm run dev;
 
 ## 已完成
 
+## 132 · 2026-09-07 剩余页 · Editorial 刊头
+
+**状态**：已完成（2026-09-07）
+
+**方向**：扫公开路由，把还没 editorial 的页收进同一批。404 不动。撰写页药丸按 DESIGN 保留。首页封面（§12）不改成列表刊头。
+
+**背景 / 盘点**
+
+已 editorial、本批不回滚：关于、出站、OAuth、友链/申请/审核、留言、碎念/推荐、博客/项目 Timeline、详情 `.ed-mast`。
+
+| 页面 | 盘点 | 本批 |
+| --- | --- | --- |
+| `/legal` `LegalView.vue` | 玻璃卡 + 药丸「返回首页」+ `mailto:` | 做 |
+| `/projects/:slug/notes` `ProjectNotesView.vue` | 薄页：返回 + H1 + `PostCard` | 轻改刊头 |
+| `/fragments/compose` | 玻璃头 + 药丸 `AppSelect` | **不改**（撰写页保持药丸） |
+| 404 `NotFoundView.vue` | — | **不改** |
+| 首页 `HomeView.vue` | 封面契约 §12 | **不改** |
+| `NavPlaceholderView.vue` | 路由未挂 | 不用 |
+
+**定稿**
+
+- **法律声明**：一级刊头，H1「法律声明」，无玻璃卡、无药丸。`.ed-filter`：`LEGAL · 声明` + intro；返回下划线 `.ed-action`（`← 首页`）。四节 kicker（Notice · 免责 / Rights · 版权 / Privacy · 隐私 / Credits · 致谢）+ 正文；节间浅灰 hairline（`--color-border`），不是 ink。邮箱点击复制，不要 `mailto:`；刊头版权节旁斜体「点击复制邮箱」。阅读栏约 `42rem`，不要拉成 `68rem`。入场仍走 `page-enter-legal.css`（H1 + filter + 四节）。
+- **项目笔记**：次级页，`← 项目名` + H1「笔记」+ `NOTES · 笔记`。列表仍是 `.toc-row`（`PostCard`），不改数据层。
+
+**P0**
+
+- [x] 132-1 `/legal`：H1 + LEGAL · 声明 + 节间浅灰 hairline + `.ed-action`；邮箱点击复制，不要 `mailto:`
+- [x] 132-2 `/projects/:slug/notes`：次级页刊头 NOTES · 笔记；列表仍走 `PostCard`
+- [x] 132-3 `DESIGN.md` §5 / §9 补法律声明、项目笔记与「不改 editorial」口径
+
+**涉及文件**
+
+`LegalView.vue`、`page-legal.css`、`ProjectNotesView.vue`、`zh.json` / `en.json`（`legal.kicker*`、`projects.kickerNotes*`）、`DESIGN.md`
+
+---
+
+## 131 · 2026-09-07 OAuth 过渡 · Editorial 刊头
+
+**状态**：已完成（2026-09-07）
+
+**方向**：`/auth/redirect` 对齐出站确认：居中刊头、无卡片 / 药丸。不改授权跳转逻辑。
+
+**P0**
+
+- [x] 131-1 H1 + AUTH · 授权；GitHub / Google 单独放大；下划线 `.ed-action`；列宽与竖直居中同 `/leave/redirect`
+
+---
+
+## 130 · 2026-09-07 出站确认 · Editorial 刊头
+
+**状态**：已完成（2026-09-07）
+
+**方向**：`/leave/redirect` 去掉卡片 / 药丸，改成一级刊头。不改 OAuth `/auth/redirect`。
+
+**P0**
+
+- [x] 130-1 H1 + `.ed-filter`（LEAVE · 出站）+ 下划线 `.ed-action`；列宽同项目/博客；OAuth 过渡卡不动
+
+---
+
+## 129 · 2026-09-07 关于页 · Editorial 简历排版
+
+**状态**：已完成（2026-09-07）
+
+**方向**：把 `/about` 从 Hero + 玻璃卡改成 editorial 简历。**选定 B · 双栏履历**。不改撰写页药丸、碎念/推荐、友链名录、博客/项目 Timeline、详情 `.ed-mast`。
+
+**背景 / 现状**
+
+- 生产：`XiqiPageHero` + 玻璃简介卡 + 药丸奖项 + 事实网格 + 项目药丸按钮。隐私字段走 `AboutPrivateText` 把 Raw 模糊进 DOM。
+- 原型：`designed/about-resume-options/`（http://127.0.0.1:8771/）。灵感：工作提示词「关于做成简历」。
+- CSS blur 挡不住查看源代码。公开 API / 前端包 **不要**下发 Raw。
+
+**选定 B 定稿**
+
+- **刊头**：H1「关于」，无返回链、无 `XiqiPageHero`。`.ed-filter`：`PROFILE · 履历` + intro +「部分信息已做隐私处理。完整简历请来信：」+ 邮箱。邮箱**点击复制**，不要 `mailto:`。刊头邮箱旁斜体「点击复制邮箱」，成功短暂「已复制」。
+- **左栏**：头像、`GrunRay`、性别年龄、邮箱（同样复制，**不要**斜体说明）。Awards 只给**词**上色，不要胶囊（铜 `award-line--bronze` / 银 `--silver` / 金档已备）。Papers 证书列表。不要左栏隐私句。粘滞对齐首页 `.toc-side`：`align-self: start; position: sticky; top: 5.5rem; overflow-anchor: none;`。grid 父级不要把 aside 拉满高。
+- **右栏**：Education / Work / Community / Projects。左日期 mono、右职务衬线。节间浅灰 hairline（`--color-border`），不是 ink。项目 `.ed-action`「前往项目页」→ `/projects`，不要药丸按钮。
+- **隐私**：公开 `GET /api/xiqi/about` 与前端 DOM / fallback **不要**写 `schoolRaw` / `rankRaw` / `companyRaw` / `summaryRaw` / `nameRaw`。只渲染公开文案 +「已隐藏」标签 + 空遮挡条。`AboutPrivateText` 本页停用，组件可留。`api_to_profile`（站长 import）仍可保留 Raw。
+
+**P0 — 原型**
+
+- [x] 129-1 `designed/about-resume-options/`：现状 / A 单栏 / B 双栏 / C 名录；浅/深；真实履历 mock
+
+**P1 — 合入**
+
+- [x] 129-2 合入 `AboutView` 方案 B（刊头复制邮箱、左栏无斜体、sticky 同 toc-side、右栏浅灰 hairline）
+- [x] 129-3 公开 API / `aboutResume.ts` 不下发 Raw；去掉 Hero / 玻璃卡 / 奖项药丸 / `mailto:`
+- [x] 129-4 DESIGN.md §5 / §9 改为方案 B；`XiqiPageHero` 可留着别删
+
+**方案对照**
+
+| 代号 | 名称 | 说明 |
+| --- | --- | --- |
+| 现状 | Hero + 玻璃卡 | 对照，不合入 |
+| A | 单栏履历 | 刊头 + 时间一列 |
+| **B** | **双栏履历** | **选定。左身份/竞赛/证书，右经历** |
+| C | 名录履历 | 经历做成目录行 |
+
+**涉及文件**
+
+`designed/about-resume-options/`、`AboutView.vue`、`page-about-resume.css`、`aboutResume.ts`、`about_serialize.py`、`fragments_api.py`、`DESIGN.md`、i18n
+
+**⚠️ 回归 / 风险**
+
+- 现象：sticky 失效、奖项又做成胶囊、节间 ink 线、源码/Network 泄漏学校或公司全称、撰写下拉被改
+- 验收：`/about` 无 Hero/玻璃/药丸；刊头复制有斜体、左栏邮箱无斜体；滚右栏左栏钉住；铜/银色词；节间浅灰线；项目下划线进 `/projects`；页面源码与 `/api/xiqi/about` 无学校全称、排名、公司全称、实习/社团细节；浅/深；窄屏叠回；`/fragments` `/friends` 撰写下拉未改
+
+---
+
+## 128 · 2026-09-07 栖息 · 碎念 / 推荐共用 editorial 排版
+
+**状态**：已完成（2026-09-07）
+
+**方向**：把碎念 / 推荐接到同一套 editorial 语言上。抽共用 Vue 组件与日期格式，详情 Markdown 接博客同款代码复制。不为抽公共改撰写页药丸、关于 Hero、友链名录行、博客/项目 Timeline 卡、详情整页 `.ed-mast`、验证码。
+
+**背景 / 现状**
+
+- CSS 与分栏壳已在 126 / 127（`.ed-ledger-head` / `.ed-feed-row` / `.ed-cats` / `XiqiSplitLayout` editorial）。两页模板几乎复制，推荐加载误用 `fragments.loading`，详情未接 `useMarkdownCodeCopy`。
+
+**P0**
+
+- [x] 128-1 Ledger·名录：`EdLedgerHead` + `EdFeedRow`（有封面加高 / 无封面不留位）
+- [x] 128-2 Read·详情壳：`EdReadArticle`（tone + 时间 + Markdown 槽）；栏头仍 `EdKicker` READ·详情
+- [x] 128-3 详情 Markdown 接 `useMarkdownCodeCopy`；复制钮样式收到 `markdown-reading.css`；窄栏图/引用/代码间距
+- [x] 128-4 筛选行：`EdSwitchFilter` + `EdCatGroup`（左分类/心情、右最新/最早）
+- [x] 128-5 `.ed-tone` 小组件；hint / 计数 / 加载收到 `xiqi.*`
+- [x] 128-6 推荐「访问链接」仍走 `startExternalLeave`，不要 `target=_blank`
+
+**⚠️ 回归 / 风险**
+
+- 现象：抽组件后筛选下划线不跟、有封面行塌掉、推荐出站变成新标签、撰写/About/友链/Timeline 被误改
+- 验收：`/fragments` `/recommend` 筛选、有图/无图、无箭头、推荐无星、访问链接出站确认、详情代码块可复制；浅/深；`/about` Hero 与撰写页药丸未改
+
+**涉及文件**
+
+`frontend/src/components/editorial/*`、`FragmentsView.vue`、`RecommendView.vue`、`XiqiSplitLayout.vue`、`page-ed-ledger.css`、`markdown-reading.css`、`PostDetailView.vue`、`editorialDate.ts`、`zh.json` / `en.json`、`TODO.md`、`DESIGN.md`
+
+---
+
+## 127 · 2026-09-07 栖息分栏 · 双栏独立滚动与阅读态留白
+
+**状态**：已完成（2026-09-07）
+
+**方向**：碎念 / 推荐展开详情后，名录与详情各自滚动，刊头保持滚走后的位置；阅读态加宽并留出上下空隙。不锁 `html overflow`（会把 `scrollY` 钳成 0，H1/筛选钉回顶部）。不改撰写页、关于页、后端。
+
+**背景 / 现状**
+
+- 126 合入后详情跟文档一起滚，滚到文章末尾右侧详情会消失。
+- 曾用 `xiqi-page--split` 锁视口：刊头不在左栏里，展开后 H1/筛选跳回顶，关掉闪一下。
+- 纯 sticky（首页 ABOUT）不够：详情比视口高时不能自己滚，名录也会跟整页走。
+
+**选定**
+
+- 展开：`.habitat-split-docked` 贴在导航下，左 `.xiqi-split-main` / 右 `.xiqi-detail-body` 各自 `overflow-y: auto`。外层 `min-height` 撑住原文档高度。
+- 刊头仍通栏在 masthead 槽；已滚走的部分用 `--habitat-mast-clip` 裁掉，左栏 `scrollTop` 只补「已被导航盖住」的那截。
+- 导航下留约 20px，避免 `glass-nav-inner` 盖住 LEDGER；关掉时先还原 `scrollY` 再卸 dock，避免名录闪回顶。
+- 展开时 `setXiqiSplitFooterLock(true, { keepRevealSpace: true })`：收页脚揭示、去掉 `data-footer-over-cover`，**不**清 `--footer-reveal-space`（否则短页 `scrollY` 被钳回 0）。`html[data-xiqi-split-open]:has(.xiqi-page--split)` 才把 cover `padding-bottom` 置 0。
+- **阅读态 1+2**（2026-09-07）：关着仍 960px；展开 `max-width: min(72rem, 100%)`。底边 `--habitat-dock-bottom-gap: 1.25rem`，导航下空隙 20px。`--habitat-read` 仍 25rem，先不动。
+
+**P0**
+
+- [x] 127-1 editorial 展开改为 dock + 双栏独立滚动，不设 `xiqi-page--split`
+- [x] 127-2 导航空隙 + 关闭滚动还原，避免刊头/名录被玻璃条盖住或闪现
+- [x] 127-3 展开压页脚、保留揭示垫高
+- [x] 127-4 阅读态加宽 72rem + 上下留白
+
+**⚠️ 回归 / 风险**
+
+- 现象：展开后整页一起滚 / 刊头钉回顶 / 页脚压在两栏上 / 导航盖住 LEDGER
+- 验收：`/fragments` `/recommend` 浅色/深色；顶栏未滚、滚过刊头、滚到页脚后再展开；Esc/关闭后滚动位置稳定；`/about` Hero 与撰写页药丸下拉未改
+
+**涉及文件**
+
+`XiqiSplitLayout.vue`、`page-ed-ledger.css`、`page-xiqi.css`、`useXiqiSplitFooter.ts`、`useFooterGrunRayReveal.ts`
+
+---
+
+## 126 · 2026-09-06 栖息 · 碎念 / 推荐 Editorial 方案 B 合入
+
+**状态**：已完成（2026-09-06）
+
+**方向**：把 `designed/habitat-editorial/` **方案 B** 合入 `/fragments` 与 `/recommend`。刊头语言对齐 121 列表、123 留言、125 友链。现状 / A 不合入。分栏逻辑仍走现有 `XiqiSplitLayout`（footer 锁定、滚动还原、clip 揭开），不要在 `page-xiqi.css` 另写一套分栏。
+
+**背景 / 现状**
+
+- 合入前生产是 `XiqiPageHero` + 玻璃 intro + chip + `XiqiCard` 左色条。Hero 渐变标题不合 DESIGN §3。
+- 推荐星级**只藏前端**（列表 / 筛选 / 详情不显示），后端与 API 字段不动。
+
+**方案对照**
+
+
+| 代号  | 名称      | 说明                  |
+| --- | ------- | ------------------- |
+| 现状  | 对照      | 大图 Hero + 玻璃卡，不合入   |
+| A   | 已废弃     | 列表-only / 另开详情页，不采用 |
+| B   | 刊头 + 分栏 | **已合入**             |
+
+
+**选定视觉（方案 B）**
+
+- 两页独立：碎念 H1「碎念」，推荐 H1「推荐」，无返回链。说明进 `.ed-filter`；心情/分类在左，最新/最早同行最右。
+- 筛选钮滑动下划线对齐博客 Section·分类（`.ed-cats` / `.ed-cat-line`）。筛选行上方 ink 线**位置不变**，样式改为偏灰通栏（不做内收）；刊头顶黑 ink、底灰线保留。
+- 名录是目录行，hover 同 `.toc-row`，**不套**方案 G。有封面行加高（图拉满行高），无封面收掉左侧占位。
+- 心情/分类只给**词**上色（吐槽陶土、随笔苔绿、瞬间灰蓝、日常赭石；软件/开源/番剧同理）。不要胶囊徽章、不要每行左边色条。筛选与选中仍走 accent。
+- 展开：列表与详情之间留缝；选中行右侧 2px 绿线，与详情折缝成对。**不要箭头**。关闭钮 `.ed-action.danger`（serif，危险色下划线）。名录 hint：关着「点一行看详情」，开着「Esc 或右上角关闭」。
+- 合入样式：`page-ed-ledger.css` + 扩 `page-list-masthead.css` 的 `.ed-switch`。留言 Inbox 右侧工具接同一套滑动下划线可另开，不挡本批。
+
+**P0**
+
+- [x] 126-1 `designed/habitat-editorial/`：现状 / B，浅/深，访客/站长；碎念 / 推荐分页
+- [x] 126-2 碎念与推荐各自独立界面：H1 + 刊头 + 分栏
+- [x] 126-2b 筛选钮滑动下划线；刊头 ink 线偏灰通栏、位置在筛选行上方
+- [x] 126-2c 名录 + 有/无封面；选中绿线成对、无箭头；关闭 `.ed-action.danger`；前端不显示推荐星星
+- [x] 126-3 合入 `FragmentsView` / `RecommendView` / `page-ed-ledger.css` / `XiqiSplitLayout` editorial 态
+- [x] 126-4 i18n + `DESIGN.md` + 入场动效 + 浏览器验收
+
+**涉及文件**
+
+`designed/habitat-editorial/`、`FragmentsView.vue`、`RecommendView.vue`、`XiqiSplitLayout.vue`、`page-ed-ledger.css`、`page-list-masthead.css`、`page-enter-xiqi.css`、`zh.json` / `en.json`、`DESIGN.md`
+
+---
+
+## 125 · 2026-09-06 友链页 · Editorial 方案 A 合入
+
+**状态**：已完成（2026-09-06）
+
+**方向**：把 `designed/friends-editorial/` **方案 A** 合入 `/friends`、`/friends/apply`、`/friends/admin`。刊头语言对齐 121 项目列表与 123 留言。B / C 已废弃，不合入。
+
+**选定（2026-09-06）**：方案 A · 列表刊头。原型：`designed/friends-editorial/index.html`（现状对照 | A；列表 / 申请 / 审核；访客 / 站长）。
+
+**背景 / 现状**
+
+- 生产：居中渐变标题（`background-clip`，DESIGN §3 已禁）、欢迎纸卡、申请/审核入口卡、友链封面模糊网格；审核页同样渐变刊头 + 药丸 Tab + 玻璃卡。
+- 原型 A 已迭代：名录行内收 + 每张顶 hairline（同 `/projects` Timeline）；Extra 两列；申请字段中文统一；简介走留言框；验证码走留言样式；填写区内收与 Facts 对齐；审核 Queue 内收与 Facts 对齐。
+
+**依赖 / 冲突**
+
+- 一级列表：H1「友链」，无返回链。申请 / 审核：`← 友链` + H1「申请」/「审核」。
+- 往来说明进 `.ed-filter`（padding `0.72rem 1.5rem 0.82rem`）；申请 / 审核是下划线 `.ed-action`。
+- 名录是目录行（头像 + 衬线名 + mono 域名），hover 同首页 `.toc-row`，**不套**方案 G；顶 hairline hover 保留。
+- Extra · 特殊固定两列并排（窄屏叠回）。
+- 验证码布局对齐留言（`.message-captcha-*` 视觉），仍走本页 `fetchFriendCaptcha`，**不抽**共享组件。
+- **必须保留**站点图标预览：申请 `previewAvatar`、审核 `previewAvatarFor`、Facts 本站 logo 预览。
+- 外链仍走 `startExternalLeave`；站内申请 / 审核入口不走过渡页。
+- 入场仍走 `page-enter-friends.css`；改直接子节点时同步选择器。
+
+**P0 — 列表** `/friends`
+
+- [x] 125-1 去掉渐变标题 / 玻璃欢迎卡 / 申请入口卡 / 封面模糊网格；H1 对齐 `.h`
+- [x] 125-2 Links · 往来：`.ed-filter` + 欢迎句 +「申请互换」；站长另加「审核申请」
+- [x] 125-3 Directory · 名录：计数；每条透明底 + 顶 hairline + 左右内收；点击仍出站确认
+- [x] 125-4 Extra · 特殊：两列；保留 `SpecialLinkAvatar`（开往 / 异次元图标）
+
+**P0 — 申请** `/friends/apply`
+
+- [x] 125-5 ← 友链 + H1「申请」；Facts · 本站进 `.ed-filter`；字段统一「站点名称 / 地址 / 图标 / 简介」；**保留 logo 预览 + 复制**
+- [x] 125-6 Apply · 填写：内收与 Facts 同为 `1.5rem`（窄屏 `0.85rem`）；检索下划线输入；简介用留言框；验证码用留言样式并下移；提交旁提示斜体变浅；**保留 previewAvatar**
+
+**P0 — 审核** `/friends/admin`
+
+- [x] 125-7 ← 友链 + H1「审核」；访客门槛；站长 Review · 审核（文字 Tab）+ Queue · 队列（内收同 Facts）
+- [x] 125-8 队列卡片：状态色、可编辑字段、简介框、**previewAvatarFor**、保存 / 通过 / 拒绝 / 隐藏 / 恢复；分组分隔保留
+
+**P1 — 契约**
+
+- [x] 125-9 i18n：kicker、统一字段名、申请/审核短标题
+- [x] 125-10 DESIGN.md：友链一级刊头、名录行、申请/审核刊头、图标预览不得删
+
+**⚠️ 回归 / 风险**
+
+- 现象：合入时漏掉 `previewAvatar` / `previewAvatarFor` / Facts logo 预览
+- 现象：友链点击改成 `target=_blank` 直开，绕过离开确认
+- 验收：访客浅/深 `/friends` `/friends/apply`；未登录 `/friends/admin` 门槛；站长审核队列与图标预览；验证码可刷新
+
+**涉及文件**
+
+`designed/friends-editorial/`（对照）、`FriendsView.vue`、`FriendsApplyView.vue`、`FriendsAdminView.vue`、`page-friends.css`、`page-enter-friends.css`、`zh.json` / `en.json`、`DESIGN.md`
+
+---
+
+## 124 · 2026-09-06 开屏 · 跨标签 / OAuth 回跳不再重播
+
+**状态**：已完成（2026-09-06）
+
+**方向**：蜗牛开屏只在本机第一次访问播；新标签、留言登录整页回到 `/messages` 不再重播。顶栏 🐌 手动重播不动。
+
+**背景 / 现状**
+
+- `SplashWoniuOverlay` 用 `sessionStorage` 记「已看过」，每个标签一份；OAuth 离开 GitHub/Google 再整页回来时，若中途没 `dismiss`，也会再播。
+- 开屏结束头像飞向首页 `[data-splash-avatar-target]`，落在 `/messages` 上本来就不对。
+
+**P0**
+
+- [x] 124-1 「已看过」改 `localStorage`（`grunray_splash_woniu_v1`）；旧 `sessionStorage` 有值则迁过去
+- [x] 124-2 开始播就写入，不必等播完 / 跳过
+- [x] 124-3 `?auth=success` / `auth_error` 回跳直接跳过并记已看过
+- [x] 124-4 `designed/redesign-check` 截图脚本同步写 localStorage
+
+**涉及文件**
+
+`SplashWoniuOverlay.vue`、`designed/redesign-check/shoot.py`、`designed/redesign-check/check.py`
+
+**验收**
+
+- [x] 新标签打开站点不再自动开屏（本机已看过之后）
+- [x] 留言 OAuth 回到 `/messages` 不播开屏
+- [ ] 顶栏 🐌 仍能手动重播（需点一次确认）
+
+---
+
+## 123 · 2026-09-06 留言页 · 方案 D 刊头 + 楼中楼
+
+**状态**：已完成（2026-09-06；访客浅/深/abstract 目视；友链申请验证码未改）
+
+**方向**：把 `designed/messages-editorial/` 已选定的方案 D 合入 `/messages`。视觉跟 121 列表刊头同一套 kicker；回复从「每条只一条站长回复」改为楼中楼（`replies[]`）。验证码布局本批不动。
+
+**背景 / 现状**
+
+- 原型：`designed/messages-editorial/index.html`（现状 | A | B | C | D；访客 / 已登录 / 站长；浅/深）。**合入目标 = D**。
+- 生产：居中渐变大标题（`background-clip`，DESIGN §3 已禁）、欢迎语玻璃卡、登录/撰写居中纸卡、留言左绿条卡片；回复入口 `v-if="isSiteOwner && !msg.reply"`，接口一次只挂一条 `is_owner=1` 回复，409「该留言已有站长回复」。
+- `guest_message.parent_id` 已够用，**不必加列**。不要加 `UNIQUE(parent_id, guest_user_id)`（「每人每条一条」未要求）。
+
+**依赖 / 冲突**
+
+- Write 带复用 `.ed-filter` 的 inset（`0.72rem 1.5rem 0.82rem`），Inbox 行**不** inset。
+- 一级页：H1「留言」，无返回链，无 `Messages·留言` kicker。
+- 验证码仍走现有 `message_captcha` + `.message-captcha-*`；与友链申请共用布局另开批次，本批不抽。
+- 入场仍走 `page-enter-message.css`；改直接子节点时同步选择器。
+
+**P0 — 视觉（方案 D）**
+
+- [x] 123-1 去掉渐变标题 / 玻璃欢迎卡 / 居中撰写纸卡；H1 对齐 `/blog` `/projects` 的 `.h`
+- [x] 123-2 Write：`.ed-filter` + `Write · 写下`；访客欢迎句在带内；已登录头像+名字，**退出登录靠该行最右**
+- [x] 123-3 Inbox：kicker + 计数/最新最早/公开·待审；列表去卡，头像+衬线名+ mono 元数据（`河灯 · GitHub · 09-05`）
+- [x] 123-4 列表 hover 用目录行语言（elevated 52% 洗 + 名提 accent）；悬停楼中楼**不**给楼主行上色
+- [x] 123-5 「回复」钉在该条右上角；楼中楼区右端内收，使楼主/楼中楼按钮错位；取消回复红色；站长「拉黑作者」琥珀黄、「删除」红
+
+**P0 — 楼中楼（注释契约）**
+
+- [x] 123-6 `list_published`：`parent_id IN (…)` 去掉 `AND is_owner=1`，按 `created_at` 取多行
+- [x] 123-7 `POST /api/messages/<id>/reply`：已登录即可（非仅站长）；作者取当前用户；`is_owner` 按是否站长写，勿写死 `1`
+- [x] 123-8 序列化 `reply` → `replies[]`；去掉 409
+- [x] 123-9 前端：已登录可回；回楼主输入框空着；回楼中楼预填 `回复 {名字} · {身份}：`；超过 2 条默认折叠（展开其余回复 / 收起其余回复）
+
+**P1 — 契约**
+
+- [x] 123-10 i18n：Write / Inbox kicker、回复/折叠、拉黑作者
+- [x] 123-11 DESIGN.md：留言一级刊头、楼中楼、危险色仅用于站长删除/取消
+
+**⚠️ 回归 / 风险**
+
+- 现象：沿用 `msg.reply` 单对象 → 楼中楼只显示第一条
+- 现象：回复仍 `_require_site_owner` → 普通登录用户看不到入口
+- 验收：访客只见登录；已登录可回楼主与楼中楼；站长见拉黑/删除配色；待审列表仍仅站长；验证码只在新留言
+
+**方案对照**
+
+
+| 代号  | 名称         | 结果                   |
+| --- | ---------- | -------------------- |
+| 现状  | 渐变标题 + 玻璃卡 | 对照，不合入               |
+| A   | 刊头账本       | 有返回链 / Ledger 侧栏，不采用 |
+| B   | 两栏信笺       | 改栅格过多                |
+| C   | 登记簿        | 编号行，不采用              |
+| D   | 列表刊头       | **合入目标**             |
+
+
+**涉及文件**
+
+`MessagesView.vue`、`page-messages.css`、`messageApi.ts`、`mockMessages.ts`、`MessageAvatarWithProvider.vue`、`page-enter-message.css`、`messages_api.py`、`guest_message_repo.py`、`message_serialize.py`、`i18n/locales/{zh,en}.json`、`DESIGN.md`、`designed/messages-editorial/`
+
+**验收**
+
+- [x] `/messages` 浅/深/abstract：无渐变标题、无玻璃卡
+- [x] 访客目视（登录钮、无回复入口）；已登录 / 站长需本地登录确认回复钮、预填、拉黑/删除配色
+- [x] 列表已按 `replies[]` 渲染既有楼中楼；折叠/预填/发送逻辑已合入
+- [x] 验证码仍只出现在新留言；友链申请页未改
+
+---
+
 ## 122 · 2026-09-05 详情顶栏 · Editorial 刊头
 
 **状态**：已完成（2026-09-05；浅/深目视收口）
@@ -286,10 +667,12 @@ cd frontend; npm run dev;
 
 **方案对照**
 
-| 代号 | 名称 | 结果 |
-| --- | --- | --- |
-| 现状 | 灰返回 / Badge / 三纸卡 | 对照，不合入 |
-| A | Editorial 刊头 | **合入目标** |
+
+| 代号  | 名称                | 结果       |
+| --- | ----------------- | -------- |
+| 现状  | 灰返回 / Badge / 三纸卡 | 对照，不合入   |
+| A   | Editorial 刊头      | **合入目标** |
+
 
 **涉及文件**
 
@@ -351,11 +734,13 @@ cd frontend; npm run dev;
 
 **方案对照**
 
-| 代号 | 名称 | 结果 |
-| --- | --- | --- |
-| 现状 | 纸卡时间线 | 对照，不合入 |
-| A | 轴 + 目录行 + 纸面工具条 | 列表基线，筛选仍是 Filter Bar |
-| D | A + Editorial 刊头 | **合入目标** |
+
+| 代号  | 名称               | 结果                   |
+| --- | ---------------- | -------------------- |
+| 现状  | 纸卡时间线            | 对照，不合入               |
+| A   | 轴 + 目录行 + 纸面工具条  | 列表基线，筛选仍是 Filter Bar |
+| D   | A + Editorial 刊头 | **合入目标**             |
+
 
 **涉及文件**
 
@@ -414,7 +799,7 @@ cd frontend; npm run dev;
 
 **状态**：已完成（2026-08-28；首页+博客目视，开关可用）
 
-**方向**：全站右下角纸面卡片显示瞬时 FPS 与 1% Low（1%L），方便目视流畅度。可开关、持久化；**不是**首页专属。不另加 backdrop-filter 假毛玻璃层（用现有 `--glass-nav-*`）。
+**方向**：全站右下角纸面卡片显示瞬时 FPS 与 1% Low（1%L），方便目视流畅度。可开关、持久化；**不是**首页专属。不另加 backdrop-filter 假毛玻璃层（用现有 `--glass-nav-`*）。
 
 **背景 / 现状**
 
@@ -537,7 +922,7 @@ cd frontend; npm run dev;
 - 合入时复用 `data-photo-bg` / `applyPhotoBackgroundBlur`，不要新建全局 blur 层。
 - 勿把 `designed/` 线稿生成脚本（`_make_line_svg.py` 等）当生产管线；生产只收主题 SVG。
 - **HomeView 模板必须单根**：`AppShell` 路由 `Transition mode="out-in"` 遇 fragment 会卡死成空白页（见 117-19）。
-- **勿在 `homeRoot` 上用 Vue `:class` 绑动态态**：会冲掉 `classList` 写入的 `page-enter--play` / `home-fonts-ready`（见 117-18）；开/关照片背景左右位移走 `html[data-photo-bg]`。
+- **勿在** `homeRoot` **上用 Vue** `:class` **绑动态态**：会冲掉 `classList` 写入的 `page-enter--play` / `home-fonts-ready`（见 117-18）；开/关照片背景左右位移走 `html[data-photo-bg]`。
 
 **P0 — HTML 原型（已完成）**
 
@@ -793,7 +1178,7 @@ cd frontend; npm run dev;
 | 稳定性 | 指针取消 `moveAngle` 旋转 + 平滑坐标，减轻移动抽搐                                                              |
 
 
-**P0 — 原型性能优化（`designed/moonlit-cursor-options/shared.js`）**
+**P0 — 原型性能优化（**`designed/moonlit-cursor-options/shared.js`**）**
 
 - [x] 113-p1 **空闲休眠 rAF**：无移动/收回/悬停动画/点击衰减时 `cancelAnimationFrame`，`pointermove` 唤醒
 - [x] 113-p2 **轨道渐变预烘焙**：三月轨道 conic 渐变烘成离屏 Canvas，`drawImage` + 旋转，去掉每帧 `createConicGradient` / `shadowBlur`

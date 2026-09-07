@@ -1,0 +1,36 @@
+/**
+ * 备份（合入 Dendro 方案 D 前）。生产现文件：frontend/src/styles/themes/tokens.dark.css
+ * 深色主题 — 终端（DESIGN.md §2）：近黑绿底 #0d1210，翠绿点缀 #8fd6ae。
+ * 去大面积模糊，靠色阶分层；材质微透即可。
+ * 改底色时同步 src/theme/pageBackgrounds.ts。
+ */
+[data-theme='dark'] {
+  --color-bg-base: #0d1210;
+  --color-bg-surface: #141a17;
+  --color-bg-elevated: #1b2320;
+  --color-reading-bg: #151c19;
+  --color-text: #d8e2dc;
+  --color-text-muted: #8ba095;
+  --color-border: #2b3833;
+  --color-accent: #8fd6ae;
+  --color-accent-muted: #4e8a6b;
+  --color-on-accent: #0d1210;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 35%);
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+  --font-serif:
+    'Playfair Display', 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, 'Courier New', monospace;
+  --font-script: 'Great Vibes', 'Segoe Script', 'Apple Chancery', cursive;
+  /* 终端微透 */
+  --glass-blur: 8px;
+  --glass-nav-blur: 10px;
+  --glass-card-bg: rgb(20 26 23 / 0.85);
+  --glass-card-border: #2b3833;
+  --glass-nav-bg: rgb(13 18 16 / 0.88);
+  --glass-nav-border: #2b3833;
+}
