@@ -62,6 +62,14 @@
   margin: 0.28em 0;
 }
 
+.markdown-reading :where(img) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0.85em 0;
+  border-radius: var(--radius-sm, 0.35rem);
+}
+
 .markdown-reading :where(blockquote) {
   margin: 0.85em 0;
   padding: 0.4rem 0 0.4rem 0.95rem;
@@ -217,6 +225,88 @@
   color: #6a9955;
 }
 
+.markdown-reading .md-code-block--copyable {
+  position: relative;
+}
+
+.markdown-reading .md-code-copy-btn {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 2rem;
+  height: 1.75rem;
+  padding: 0 0.45rem;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: var(--radius-sm);
+  background: rgb(30 30 30 / 88%);
+  color: #c8c8c8;
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.markdown-reading .md-code-copy-btn:hover {
+  color: #fff;
+  border-color: rgb(255 255 255 / 28%);
+  background: rgb(45 45 45 / 92%);
+}
+
+.markdown-reading .md-code-copy-btn__icon {
+  display: inline-flex;
+}
+
+.markdown-reading .md-code-copy-btn__check,
+.markdown-reading .md-code-copy-btn__label {
+  display: none;
+}
+
+.markdown-reading .md-code-copy-btn--done {
+  color: #b5cea8;
+  border-color: color-mix(in srgb, #b5cea8 45%, rgb(255 255 255 / 14%));
+}
+
+.markdown-reading .md-code-copy-btn--done .md-code-copy-btn__icon {
+  display: none;
+}
+
+.markdown-reading .md-code-copy-btn--done .md-code-copy-btn__check {
+  display: inline;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.markdown-reading .md-code-copy-btn--done .md-code-copy-btn__label {
+  display: inline;
+}
+
+/* 栖息窄栏：字号略收，图/引用/代码不撑破 25rem */
+.ed-read .markdown-reading {
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.ed-read .markdown-reading :where(blockquote) {
+  margin: 0.75em 0;
+}
+
+.ed-read .markdown-reading :where(img) {
+  margin: 0.7em 0;
+}
+
+.ed-read .markdown-reading :where(.codehilite),
+.ed-read .markdown-reading :where(pre) {
+  max-width: 100%;
+}
+
 /* —— 移动端正文 —— */
 @media (max-width: 768px) {
   /*
@@ -250,5 +340,10 @@
 
   .markdown-reading :where(h2) {
     font-size: 1.14rem;
+  }
+
+  .markdown-reading .md-code-copy-btn {
+    height: 2rem;
+    min-width: 2.25rem;
   }
 }
