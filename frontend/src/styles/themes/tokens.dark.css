@@ -1,7 +1,8 @@
 /**
- * 深色主题 — 终端（DESIGN.md §2）：近黑绿底 #0d1210，翠绿点缀 #8fd6ae。
+ * 深色主题 — 终端（DESIGN.md §2）：近黑绿底 #0d1210，黄绿点缀 #abde6b（Dendro 方案 D）。
  * 去大面积模糊，靠色阶分层；材质微透即可。
  * 改底色时同步 src/theme/pageBackgrounds.ts。
+ * 合入前备份：designed/dendro-palette-options/tokens.dark.css
  */
 [data-theme='dark'] {
   --color-bg-base: #0d1210;
@@ -11,9 +12,10 @@
   --color-text: #d8e2dc;
   --color-text-muted: #8ba095;
   --color-border: #2b3833;
-  --color-accent: #8fd6ae;
-  --color-accent-muted: #4e8a6b;
+  --color-accent: #abde6b;
+  --color-accent-muted: #5aaa64;
   --color-on-accent: #0d1210;
+  --color-status-off: #a99a76;
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
