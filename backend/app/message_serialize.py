@@ -14,21 +14,8 @@ def _iso_dt(value: Any) -> str:
     return str(value)
 
 
-def _row_reply_to_dict(row: dict[str, Any] | None) -> dict[str, Any] | None:
-    if not row:
-        return None
+def _row_reply_to_dict(row: dict[str, Any]) -> dict[str, Any]:
     return {
-        "author": row["author_name"],
-        "avatarUrl": row.get("avatar_url"),
-        "provider": row.get("provider"),
-        "isOwner": message_row_is_owner(row),
-        "content": row["content"],
-        "createdAt": _iso_dt(row.get("created_at")),
-    }
-
-
-def row_to_message(row: dict[str, Any], reply_row: dict[str, Any] | None = None) -> dict[str, Any]:
-    item: dict[str, Any] = {
         "id": row["public_id"],
         "author": row["author_name"],
         "avatarUrl": row.get("avatar_url"),
@@ -38,10 +25,23 @@ def row_to_message(row: dict[str, Any], reply_row: dict[str, Any] | None = None)
         "content": row["content"],
         "createdAt": _iso_dt(row.get("created_at")),
     }
-    reply = _row_reply_to_dict(reply_row)
-    if reply:
-        item["reply"] = reply
-    return item
+
+
+def row_to_message(
+    row: dict[str, Any],
+    reply_rows: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    return {
+        "id": row["public_id"],
+        "author": row["author_name"],
+        "avatarUrl": row.get("avatar_url"),
+        "provider": row.get("provider"),
+        "profileUrl": row.get("profile_url"),
+        "isOwner": message_row_is_owner(row),
+        "content": row["content"],
+        "createdAt": _iso_dt(row.get("created_at")),
+        "replies": [_row_reply_to_dict(r) for r in (reply_rows or [])],
+    }
 
 
 def row_to_admin_message(row: dict[str, Any]) -> dict[str, Any]:

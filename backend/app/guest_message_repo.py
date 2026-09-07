@@ -60,16 +60,21 @@ def list_published(
     cur.execute(
         f"""
         {_ROW_SELECT}
-        WHERE parent_id IN ({placeholders}) AND is_owner = 1 AND status = %s
+        WHERE parent_id IN ({placeholders}) AND status = %s
+        ORDER BY created_at ASC, id ASC
         """,
         (*ids, STATUS_PUBLISHED),
     )
     replies = cur.fetchall() or []
-    reply_by_parent = {int(r["parent_id"]): r for r in replies}
+    replies_by_parent: dict[int, list[dict[str, Any]]] = {int(r["id"]): [] for r in tops}
+    for r in replies:
+        parent_id = int(r["parent_id"])
+        if parent_id in replies_by_parent:
+            replies_by_parent[parent_id].append(r)
 
     out: list[dict[str, Any]] = []
     for row in tops:
-        out.append({"row": row, "reply": reply_by_parent.get(int(row["id"]))})
+        out.append({"row": row, "replies": replies_by_parent.get(int(row["id"]), [])})
     return out, total
 
 
@@ -127,16 +132,16 @@ def get_by_public_id(cur, public_id: str) -> dict[str, Any] | None:
     return cur.fetchone()
 
 
-def get_owner_reply(cur, parent_id: int) -> dict[str, Any] | None:
+def list_replies_for_parent(cur, parent_id: int) -> list[dict[str, Any]]:
     cur.execute(
         f"""
         {_ROW_SELECT}
-        WHERE parent_id = %s AND is_owner = 1
-        LIMIT 1
+        WHERE parent_id = %s AND status = %s
+        ORDER BY created_at ASC, id ASC
         """,
-        (parent_id,),
+        (parent_id, STATUS_PUBLISHED),
     )
-    return cur.fetchone()
+    return cur.fetchall() or []
 
 
 def insert_message(
@@ -177,7 +182,7 @@ def insert_message(
     return row
 
 
-def insert_owner_reply(
+def insert_reply(
     cur,
     *,
     parent_row: dict[str, Any],
@@ -187,6 +192,7 @@ def insert_owner_reply(
     avatar_url: str | None,
     provider: str | None,
     profile_url: str | None,
+    is_owner: bool = False,
 ) -> dict[str, Any]:
     public_id = str(uuid.uuid4())
     parent_id = int(parent_row["id"])
@@ -195,7 +201,7 @@ def insert_owner_reply(
         INSERT INTO guest_message (
             public_id, parent_id, guest_user_id, author_name, avatar_url,
             provider, profile_url, content, status, is_owner
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 1)
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """,
         (
             public_id,
@@ -207,11 +213,12 @@ def insert_owner_reply(
             profile_url,
             content,
             STATUS_PUBLISHED,
+            1 if is_owner else 0,
         ),
     )
     row = get_by_public_id(cur, public_id)
     if not row:
-        raise RuntimeError("insert_owner_reply failed")
+        raise RuntimeError("insert_reply failed")
     return row
 
 

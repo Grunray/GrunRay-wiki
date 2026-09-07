@@ -10,7 +10,7 @@ const props = withDefaults(
     alt: string
     fallbackLetter: string
     provider?: MessageProvider | null
-    size?: 'md' | 'sm'
+    size?: 'md' | 'sm' | 'xs'
     fallbackHue?: number
   }>(),
   {
@@ -21,7 +21,11 @@ const props = withDefaults(
 
 const { t } = useI18n()
 
-const sizePx = computed(() => (props.size === 'sm' ? 28 : 32))
+const sizePx = computed(() => {
+  if (props.size === 'xs') return 23
+  if (props.size === 'sm') return 28
+  return 32
+})
 
 const providerTitle = computed(() => {
   if (props.provider === 'github') return t('messages.providerGithub')
@@ -129,6 +133,21 @@ function fallbackStyle() {
 
 .msg-avatar--sm .msg-avatar-img--fallback {
   font-size: 0.75rem;
+}
+
+.msg-avatar--xs .msg-avatar-img {
+  width: 1.45rem;
+  height: 1.45rem;
+}
+
+.msg-avatar--xs .msg-avatar-img--fallback {
+  font-size: 0.68rem;
+}
+
+.msg-avatar--xs .msg-avatar-provider {
+  width: 0.72rem;
+  height: 0.72rem;
+  right: -0.28rem;
 }
 
 /* 参考 innei：头像右下角登录来源角标 */
