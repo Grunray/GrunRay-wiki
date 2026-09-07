@@ -1,0 +1,42 @@
+/* 出站 / OAuth 确认页；根节点 .leave-page / .oauth-page + .page-enter--play */
+
+@keyframes page-enter-leave-block {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.leave-page.page-enter--play > *,
+.oauth-page.page-enter--play > * {
+  animation: page-enter-leave-block 0.68s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.leave-page.page-enter--play > *:nth-child(1),
+.oauth-page.page-enter--play > *:nth-child(1) {
+  animation-delay: 0.04s;
+}
+
+.leave-page.page-enter--play > *:nth-child(2),
+.oauth-page.page-enter--play > *:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leave-page.page-enter--play > *,
+  .oauth-page.page-enter--play > * {
+    animation: none;
+  }
+
+  .leave-page .h,
+  .leave-page .ed-filter,
+  .oauth-page .h,
+  .oauth-page .ed-filter {
+    opacity: 1;
+    transform: none;
+  }
+}

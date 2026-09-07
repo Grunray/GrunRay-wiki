@@ -2,6 +2,7 @@
 /**
  * 蜗牛开屏：动画逻辑在 `public/splash-woniu/index.html`（独立静态页 + iframe）。
  * path_walk 结束后 iframe 发 `grunray-splash-avatar-start`，本组件在螺旋壳屏幕坐标处放大头像并飞入首页 `[data-splash-avatar-target]`。
+ * 「已看过」记在 localStorage（跨标签、OAuth 整页回跳仍跳过）；顶栏 🐌 走 replay tick，不读这个 key。
  */
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -34,6 +35,33 @@ const iframeSrc = computed(() => {
   return `/splash-woniu/index.html?theme=${theme}`
 })
 
+function markSeen() {
+  try {
+    localStorage.setItem(STORAGE_KEY, '1')
+  } catch {
+    /* ignore */
+  }
+}
+
+function hasSeen(): boolean {
+  try {
+    if (localStorage.getItem(STORAGE_KEY)) return true
+    if (sessionStorage.getItem(STORAGE_KEY)) {
+      localStorage.setItem(STORAGE_KEY, '1')
+      return true
+    }
+  } catch {
+    /* ignore */
+  }
+  return false
+}
+
+function isOAuthReturn(): boolean {
+  if (route.query.auth === 'success') return true
+  const err = route.query.auth_error
+  return typeof err === 'string' && err.length > 0
+}
+
 function prefersReducedMotion(): boolean {
   try {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -56,11 +84,7 @@ function dismiss() {
   revealBeneath.value = false
   ui.setSplashAvatarHandoff(false)
   visible.value = false
-  try {
-    sessionStorage.setItem(STORAGE_KEY, '1')
-  } catch {
-    /* ignore */
-  }
+  markSeen()
 }
 
 function clearIrisVeilStyles() {
@@ -329,11 +353,12 @@ onMounted(() => {
     /* ignore */
   }
   if (reduced) return
-  try {
-    if (sessionStorage.getItem(STORAGE_KEY)) return
-  } catch {
-    /* ignore */
+  if (hasSeen()) return
+  if (isOAuthReturn()) {
+    markSeen()
+    return
   }
+  markSeen()
   visible.value = true
 })
 
