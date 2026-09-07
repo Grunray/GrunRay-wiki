@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
+import EdKicker from '@/components/editorial/EdKicker.vue'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import {
@@ -13,7 +14,8 @@ import {
   type OAuthProvider,
 } from '@/config/oauthRedirect'
 import { SITE_NAME } from '@/config/site'
-import '@/styles/page-oauth-redirect.css'
+import '@/styles/page-enter-leave.css'
+import '@/styles/page-leave-redirect.css'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -36,9 +38,8 @@ const providerLabel = computed(() => {
 
 const leadText = computed(() => {
   if (invalid.value) return t('oauth.redirectInvalid')
-  if (provider.value === 'github') return t('oauth.redirectGithub')
-  if (provider.value === 'google') return t('oauth.redirectGoogle')
-  return ''
+  if (!providerLabel.value) return ''
+  return t('oauth.redirectLead')
 })
 
 const statusText = computed(() => {
@@ -87,36 +88,30 @@ onUnmounted(() => {
 <template>
   <section
     ref="pageRoot"
-    class="oauth-redirect-page"
-    :class="{ 'oauth-redirect-error': invalid, 'oauth-redirect--busy': redirecting }"
+    class="oauth-page"
+    :class="{ 'oauth-page--error': invalid, 'oauth-page--busy': redirecting }"
     aria-live="polite"
   >
-    <div class="oauth-redirect-card card">
-      <p v-if="providerLabel && !invalid" class="oauth-redirect-kicker">
-        {{ providerLabel }} · {{ t('oauth.redirectKicker') }}
-      </p>
-      <h1 class="oauth-redirect-title">{{ pageTitle }}</h1>
-      <p class="oauth-redirect-lead">{{ leadText }}</p>
+    <h1 class="h">{{ pageTitle }}</h1>
+
+    <div class="ed-filter">
+      <EdKicker :en="t('oauth.kickerAuthEn')" :zh="t('oauth.kickerAuthZh')" />
+      <p class="leave-hint">{{ leadText }}</p>
+      <p v-if="providerLabel && !invalid" class="leave-host">{{ providerLabel }}</p>
 
       <template v-if="!invalid">
-        <div v-if="redirecting" class="oauth-redirect-spinner-wrap" aria-hidden="true">
-          <div class="oauth-redirect-spinner" />
-        </div>
-        <p class="oauth-redirect-hint" role="status">{{ statusText }}</p>
-
-        <div v-if="!redirecting" class="oauth-redirect-actions">
-          <RouterLink class="btn-accent oauth-redirect-action-btn oauth-redirect-cancel" :to="returnTo">
-            {{ t('oauth.redirectCancel') }}
-          </RouterLink>
-          <button type="button" class="btn-accent oauth-redirect-action-btn oauth-redirect-confirm" @click="onConfirm">
-            {{ t('oauth.redirectConfirm', { provider: providerLabel }) }}
+        <p class="leave-hint" role="status">{{ statusText }}</p>
+        <div v-if="!redirecting" class="leave-actions">
+          <RouterLink class="ed-action ghost" :to="returnTo">{{ t('oauth.redirectCancel') }}</RouterLink>
+          <button type="button" class="ed-action" @click="onConfirm">
+            {{ t('oauth.redirectConfirm') }}
           </button>
         </div>
       </template>
 
-      <RouterLink v-else class="oauth-redirect-back oauth-redirect-back--solo" :to="returnTo">
-        {{ t('oauth.redirectBack') }}
-      </RouterLink>
+      <p v-else class="leave-actions">
+        <RouterLink class="ed-action" :to="returnTo">{{ t('oauth.redirectBack') }}</RouterLink>
+      </p>
     </div>
   </section>
 </template>

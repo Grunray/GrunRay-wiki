@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
+import EdKicker from '@/components/editorial/EdKicker.vue'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import {
@@ -12,7 +13,8 @@ import {
   SITE_LEAVE_JUMP_DELAY_MS,
 } from '@/config/siteLeaveRedirect'
 import { SITE_NAME } from '@/config/site'
-import '@/styles/page-oauth-redirect.css'
+import '@/styles/page-enter-leave.css'
+import '@/styles/page-leave-redirect.css'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -32,7 +34,7 @@ const hostLabel = computed(() => targetUrl.value ? externalLeaveHost(targetUrl.v
 const leadText = computed(() => {
   if (invalid.value) return t('leave.redirectInvalid')
   if (!hostLabel.value) return ''
-  return t('leave.redirectLead', { host: hostLabel.value })
+  return t('leave.redirectLead')
 })
 
 const statusText = computed(() => {
@@ -79,36 +81,30 @@ onUnmounted(() => {
 <template>
   <section
     ref="pageRoot"
-    class="oauth-redirect-page"
-    :class="{ 'oauth-redirect-error': invalid, 'oauth-redirect--busy': leaving }"
+    class="leave-page"
+    :class="{ 'leave-page--error': invalid, 'leave-page--busy': leaving }"
     aria-live="polite"
   >
-    <div class="oauth-redirect-card card">
-      <p v-if="hostLabel && !invalid" class="oauth-redirect-kicker">
-        {{ hostLabel }} · {{ t('leave.redirectKicker') }}
-      </p>
-      <h1 class="oauth-redirect-title">{{ pageTitle }}</h1>
-      <p class="oauth-redirect-lead">{{ leadText }}</p>
+    <h1 class="h">{{ pageTitle }}</h1>
+
+    <div class="ed-filter">
+      <EdKicker :en="t('leave.kickerLeaveEn')" :zh="t('leave.kickerLeaveZh')" />
+      <p class="leave-hint">{{ leadText }}</p>
+      <p v-if="hostLabel && !invalid" class="leave-host">{{ hostLabel }}</p>
 
       <template v-if="!invalid">
-        <div v-if="leaving" class="oauth-redirect-spinner-wrap" aria-hidden="true">
-          <div class="oauth-redirect-spinner" />
-        </div>
-        <p class="oauth-redirect-hint" role="status">{{ statusText }}</p>
-
-        <div v-if="!leaving" class="oauth-redirect-actions">
-          <RouterLink class="btn-accent oauth-redirect-action-btn oauth-redirect-cancel" :to="returnTo">
-            {{ t('leave.redirectCancel') }}
-          </RouterLink>
-          <button type="button" class="btn-accent oauth-redirect-action-btn oauth-redirect-confirm" @click="onConfirm">
+        <p class="leave-hint" role="status">{{ statusText }}</p>
+        <div v-if="!leaving" class="leave-actions">
+          <RouterLink class="ed-action ghost" :to="returnTo">{{ t('leave.redirectCancel') }}</RouterLink>
+          <button type="button" class="ed-action" @click="onConfirm">
             {{ t('leave.redirectConfirm') }}
           </button>
         </div>
       </template>
 
-      <RouterLink v-else class="oauth-redirect-back oauth-redirect-back--solo" :to="returnTo">
-        {{ t('leave.redirectBack') }}
-      </RouterLink>
+      <p v-else class="leave-actions">
+        <RouterLink class="ed-action" :to="returnTo">{{ t('leave.redirectBack') }}</RouterLink>
+      </p>
     </div>
   </section>
 </template>

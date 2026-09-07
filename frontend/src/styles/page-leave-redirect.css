@@ -1,0 +1,101 @@
+/* /leave/redirect 与 /auth/redirect：一级刊头确认。kicker / .ed-filter 复用 page-list-masthead.css */
+
+.app-main:has(.leave-page),
+.app-main:has(.oauth-page) {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 5.5rem);
+}
+
+.leave-page,
+.oauth-page {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 28rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.leave-page .h,
+.oauth-page .h {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.6rem, 3.4vw, 2.1rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+}
+
+.leave-page .ed-filter,
+.oauth-page .ed-filter {
+  width: 100%;
+  gap: 0.85rem;
+  align-items: center;
+}
+
+.leave-hint {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--color-text-muted);
+}
+
+.leave-host {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(1.55rem, 3.2vw, 2rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.leave-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem 1.35rem;
+  margin: 0.75rem 0 0;
+}
+
+.leave-page .ed-action,
+.oauth-page .ed-action {
+  appearance: none;
+  display: inline;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  color: var(--color-accent);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.leave-page .ed-action:hover,
+.oauth-page .ed-action:hover {
+  border-bottom-color: var(--color-accent);
+}
+
+.leave-page .ed-action.ghost,
+.oauth-page .ed-action.ghost {
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+  border-bottom-color: var(--color-border);
+}
+
+.leave-page .ed-action.ghost:hover,
+.oauth-page .ed-action.ghost:hover {
+  color: var(--color-text);
+  border-bottom-color: var(--color-text-muted);
+}
