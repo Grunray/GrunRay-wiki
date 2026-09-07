@@ -4,10 +4,10 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
+import { copyTextToClipboard } from '@/composables/useCopyToClipboard'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { getFriendsApplySiteProfile } from '@/config/friendsSiteProfile'
 import { SITE_NAME } from '@/config/site'
-import CopyTextButton from '@/components/ui/CopyTextButton.vue'
 import {
   fetchFriendCaptcha,
   fetchFriendsSiteProfile,
@@ -53,6 +53,8 @@ const submitting = ref(false)
 const submitToast = ref<string | null>(null)
 let submitToastTimer: ReturnType<typeof window.setTimeout> | null = null
 const formError = ref<string | null>(null)
+const copiedKey = ref<string | null>(null)
+let copyTimer: ReturnType<typeof window.setTimeout> | null = null
 
 const captchaId = ref('')
 const captchaQuestion = ref('')
@@ -109,6 +111,21 @@ function showSubmitToast(text: string) {
     submitToast.value = null
     submitToastTimer = null
   }, 4500)
+}
+
+async function copyFact(key: string, text: string) {
+  const ok = await copyTextToClipboard(text)
+  if (!ok) return
+  copiedKey.value = key
+  if (copyTimer !== null) window.clearTimeout(copyTimer)
+  copyTimer = window.setTimeout(() => {
+    copiedKey.value = null
+    copyTimer = null
+  }, 1600)
+}
+
+function copyLabel(key: string): string {
+  return copiedKey.value === key ? t('friends.copyDone') : t('friends.copy')
 }
 
 async function refreshCaptcha() {
@@ -185,157 +202,153 @@ onMounted(async () => {
 
 <template>
   <section ref="pageRoot" class="friends-apply-page">
-    <header class="message-hero">
-      <p class="message-hero-eyebrow">{{ t('friends.applyEyebrow') }}</p>
-      <h1 class="message-hero-title">{{ t('friends.applyTitle') }}</h1>
-      <p class="message-hero-sub">{{ t('friends.applySubtitle') }}</p>
-    </header>
-
-    <blockquote class="message-welcome card">
-      <p class="message-welcome-line">{{ t('friends.applyIntro') }}</p>
-    </blockquote>
-
-    <p class="friends-apply-back">
-      <RouterLink to="/friends" class="friends-apply-back-link">{{ t('friends.backToList') }}</RouterLink>
+    <p class="friends-back">
+      <RouterLink to="/friends">← {{ t('friends.title') }}</RouterLink>
     </p>
+    <h1 class="h">{{ t('friends.applyTitle') }}</h1>
 
-    <section class="friends-apply-notice card" aria-labelledby="friends-apply-notice-heading">
-      <h2 id="friends-apply-notice-heading" class="friends-apply-notice-title">
-        {{ t('friends.applyNoticeTitle') }}
-      </h2>
-      <p class="friends-apply-notice-lead">{{ t('friends.applyNoticeLead') }}</p>
-      <ul class="friends-apply-notice-list">
-        <li class="friends-apply-notice-item">
-          <p class="friends-apply-notice-label">{{ t('friends.applyNoticeLabelTitle') }}</p>
-          <div class="friends-apply-notice-value-row">
-            <p class="friends-apply-notice-value">{{ siteProfile.title }}</p>
-            <CopyTextButton :text="siteProfile.title" />
-          </div>
+    <div class="ed-filter">
+      <p class="ed-kicker">
+        <span class="ed-en">{{ t('friends.kickerFactsEn') }}</span>
+        <span class="ed-mid" aria-hidden="true">·</span>
+        <span class="ed-zh">{{ t('friends.kickerFactsZh') }}</span>
+      </p>
+      <p class="friends-hint">{{ t('friends.applyIntro') }}</p>
+      <ul class="friends-fact-list">
+        <li>
+          <p class="friends-fact-label">{{ t('friends.applyFieldName') }}</p>
+          <p class="friends-fact-value">{{ siteProfile.title }}</p>
+          <button type="button" class="ed-action ghost" @click="copyFact('title', siteProfile.title)">
+            {{ copyLabel('title') }}
+          </button>
         </li>
-        <li class="friends-apply-notice-item">
-          <p class="friends-apply-notice-label">{{ t('friends.applyNoticeLabelUrl') }}</p>
-          <div class="friends-apply-notice-value-row">
-            <p class="friends-apply-notice-value friends-apply-notice-value--url">{{ siteProfile.url }}</p>
-            <CopyTextButton :text="siteProfile.url" />
-          </div>
+        <li>
+          <p class="friends-fact-label">{{ t('friends.applyFieldUrl') }}</p>
+          <p class="friends-fact-value">{{ siteProfile.url }}</p>
+          <button type="button" class="ed-action ghost" @click="copyFact('url', siteProfile.url)">
+            {{ copyLabel('url') }}
+          </button>
         </li>
-        <li class="friends-apply-notice-item">
-          <p class="friends-apply-notice-label">{{ t('friends.applyNoticeLabelLogo') }}</p>
-          <div class="friends-apply-notice-logo-row">
+        <li>
+          <p class="friends-fact-label">{{ t('friends.applyFieldAvatar') }}</p>
+          <div class="friends-fact-logo">
             <img
-              class="friends-apply-notice-logo-preview"
+              class="friends-icon-thumb"
               :src="siteProfile.logo"
               :alt="siteProfile.title"
               width="40"
               height="40"
               loading="lazy"
             />
-            <div class="friends-apply-notice-value-row friends-apply-notice-value-row--grow">
-              <p class="friends-apply-notice-value friends-apply-notice-value--url">{{ siteProfile.logo }}</p>
-              <CopyTextButton :text="siteProfile.logo" />
-            </div>
+            <p class="friends-fact-value">{{ siteProfile.logo }}</p>
           </div>
+          <button type="button" class="ed-action ghost" @click="copyFact('logo', siteProfile.logo)">
+            {{ copyLabel('logo') }}
+          </button>
         </li>
-        <li class="friends-apply-notice-item">
-          <p class="friends-apply-notice-label">{{ t('friends.applyNoticeLabelDesc') }}</p>
-          <div class="friends-apply-notice-value-row">
-            <p class="friends-apply-notice-value">{{ t('friends.applyNoticeBio') }}</p>
-            <CopyTextButton :text="t('friends.applyNoticeBio')" />
-          </div>
+        <li>
+          <p class="friends-fact-label">{{ t('friends.applyFieldDesc') }}</p>
+          <p class="friends-fact-value">{{ t('friends.applyNoticeBio') }}</p>
+          <button
+            type="button"
+            class="ed-action ghost"
+            @click="copyFact('bio', t('friends.applyNoticeBio'))"
+          >
+            {{ copyLabel('bio') }}
+          </button>
         </li>
       </ul>
-    </section>
+    </div>
 
-    <section class="friends-apply-compose-wrap" aria-labelledby="friends-apply-form-heading">
-      <h2 id="friends-apply-form-heading" class="visually-hidden">{{ t('friends.applyFormTitle') }}</h2>
+    <form class="friends-compose" @submit.prevent="onSubmit">
+      <p class="ed-kicker">
+        <span class="ed-en">{{ t('friends.kickerApplyEn') }}</span>
+        <span class="ed-mid" aria-hidden="true">·</span>
+        <span class="ed-zh">{{ t('friends.kickerApplyZh') }}</span>
+      </p>
+      <h2 id="friends-apply-form-heading" class="friends-visually-hidden">{{ t('friends.applyFormTitle') }}</h2>
 
-    <form class="friends-apply-form card" @submit.prevent="onSubmit">
-      <p class="friends-apply-form-hint">{{ t('friends.applyFormHint') }}</p>
-      <div v-if="previewAvatar" class="friends-apply-preview">
-        <img
-          class="friends-apply-preview-avatar"
-          :src="previewAvatar"
-          :alt="siteName || t('friends.applyPreviewAlt')"
-          width="48"
-          height="48"
-          loading="lazy"
-        />
-        <p class="friends-apply-preview-hint">{{ t('friends.applyAvatarHint') }}</p>
-      </div>
-
-      <label class="friends-apply-field">
-        <span class="friends-apply-label">{{ t('friends.applyFieldName') }}</span>
+      <label class="ed-search">
+        {{ t('friends.applyFieldName') }}
         <input
           v-model="siteName"
           type="text"
           name="siteName"
-          class="friends-apply-input"
           :maxlength="NAME_MAX"
           :placeholder="t('friends.applyFieldNamePh')"
           autocomplete="organization"
         />
       </label>
 
-      <label class="friends-apply-field">
-        <span class="friends-apply-label">{{ t('friends.applyFieldUrl') }}</span>
+      <label class="ed-search">
+        {{ t('friends.applyFieldUrl') }}
         <input
           v-model="siteUrl"
           type="url"
           name="siteUrl"
-          class="friends-apply-input"
           :maxlength="SITE_URL_MAX"
           :placeholder="t('friends.applyFieldUrlPh')"
           autocomplete="url"
         />
       </label>
 
-      <label class="friends-apply-field">
-        <span class="friends-apply-label">{{ t('friends.applyFieldAvatar') }}</span>
+      <label class="ed-search">
+        {{ t('friends.applyFieldAvatar') }}
         <input
           v-model="avatarUrl"
           type="url"
           name="avatarUrl"
-          class="friends-apply-input"
           :maxlength="AVATAR_MAX"
           :placeholder="t('friends.applyFieldAvatarPh')"
         />
       </label>
 
-      <label class="friends-apply-field">
-        <span class="friends-apply-label">{{ t('friends.applyFieldDesc') }}</span>
+      <div v-if="previewAvatar" class="friends-icon-preview">
+        <img
+          :src="previewAvatar"
+          :alt="siteName || t('friends.applyPreviewAlt')"
+          width="48"
+          height="48"
+          loading="lazy"
+        />
+        <p>{{ t('friends.applyAvatarHint') }}</p>
+      </div>
+
+      <label class="friends-bio-field">
+        {{ t('friends.applyFieldDesc') }}
         <textarea
           v-model="description"
           name="description"
-          class="friends-apply-textarea"
+          class="friends-bio"
           rows="3"
           :maxlength="DESC_MAX"
           :placeholder="t('friends.applyFieldDescPh')"
         />
       </label>
 
-      <label class="friends-apply-field">
-        <span class="friends-apply-label">{{ t('friends.applyFieldEmail') }}</span>
+      <label class="ed-search">
+        {{ t('friends.applyFieldEmail') }}
         <input
           v-model="contactEmail"
           type="email"
           name="contactEmail"
-          class="friends-apply-input"
           :maxlength="EMAIL_MAX"
           :placeholder="t('friends.applyFieldEmailPh')"
           autocomplete="email"
         />
       </label>
 
-      <p v-if="formError" class="friends-apply-error" role="alert">{{ formError }}</p>
-      <div class="friends-apply-captcha-row">
-        <label class="friends-apply-captcha-field">
-          <span class="friends-apply-captcha-label">{{ t('messages.captchaLabel') }}</span>
-          <span class="friends-apply-captcha-question">{{ captchaQuestion || '…' }}</span>
+      <p v-if="formError" class="friends-error" role="alert">{{ formError }}</p>
+
+      <div class="friends-compose-meta">
+        <label class="friends-captcha-field">
+          <span>{{ t('messages.captchaLabel') }}</span>
+          <span>{{ captchaQuestion || '…' }}</span>
           <input
             v-model="captchaAnswer"
             type="text"
             inputmode="numeric"
-            class="friends-apply-captcha-input"
+            class="friends-captcha-input"
             :placeholder="t('messages.captchaPlaceholder')"
             :disabled="captchaLoading || submitting"
             autocomplete="off"
@@ -343,7 +356,7 @@ onMounted(async () => {
         </label>
         <button
           type="button"
-          class="friends-apply-captcha-refresh"
+          class="friends-text-btn"
           :disabled="captchaLoading || submitting"
           @click="refreshCaptcha"
         >
@@ -351,305 +364,16 @@ onMounted(async () => {
         </button>
       </div>
 
-      <div class="friends-apply-actions">
-        <button
-          type="submit"
-          class="btn-accent"
-          :disabled="submitting || captchaLoading"
-          :aria-busy="submitting"
-        >
+      <div class="friends-compose-foot">
+        <button type="submit" class="ed-action" :disabled="submitting || captchaLoading">
           {{ submitting ? t('friends.applySubmitting') : t('friends.applySubmit') }}
         </button>
-        <p class="friends-apply-policy">{{ t('friends.applyPolicy') }}</p>
+        <p class="friends-policy">{{ t('friends.applyPolicy') }}</p>
       </div>
-    </form>
 
       <Transition name="friends-toast-fade">
-        <p v-if="submitToast" class="friends-apply-submit-toast" role="status">{{ submitToast }}</p>
+        <p v-if="submitToast" class="friends-submit-toast" role="status">{{ submitToast }}</p>
       </Transition>
-    </section>
+    </form>
   </section>
 </template>
-
-<style scoped>
-.message-hero {
-  text-align: center;
-  padding: 0.35rem 0 0.15rem;
-}
-
-.message-hero-eyebrow {
-  margin: 0 0 0.35rem;
-  font-size: 0.82rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-}
-
-.message-hero-title {
-  margin: 0;
-  font-size: clamp(1.85rem, 4.5vw, 2.35rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-  background: linear-gradient(
-    120deg,
-    var(--color-text) 0%,
-    color-mix(in srgb, var(--color-accent) 72%, var(--color-text)) 55%,
-    var(--color-accent) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.message-hero-sub {
-  margin: 0.55rem auto 0;
-  max-width: 28rem;
-  font-size: 0.98rem;
-  color: var(--color-text-muted);
-  line-height: 1.55;
-}
-
-.message-welcome {
-  margin: 0;
-  padding: 1.15rem 1.25rem;
-  border-left: 3px solid color-mix(in srgb, var(--color-accent) 55%, transparent);
-}
-
-.message-welcome-line {
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.65;
-  color: var(--color-text);
-}
-
-.friends-apply-back {
-  margin: -0.5rem 0 0;
-}
-
-.friends-apply-back-link {
-  font-size: 0.88rem;
-  color: var(--color-accent);
-  text-decoration: none;
-}
-
-.friends-apply-back-link:hover {
-  text-decoration: underline;
-}
-
-.friends-apply-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1.35rem 1.5rem;
-}
-
-.friends-apply-compose-wrap {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-}
-
-.friends-apply-form-hint {
-  margin: 0;
-  font-size: 0.88rem;
-  line-height: 1.55;
-  color: var(--color-text-muted);
-}
-
-.friends-apply-submit-toast {
-  margin: 0;
-  padding: 0.55rem 0.85rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
-  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg-surface));
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--color-accent);
-  text-align: center;
-}
-
-.friends-toast-fade-enter-active,
-.friends-toast-fade-leave-active {
-  transition: opacity 0.28s ease, transform 0.28s ease;
-}
-
-.friends-toast-fade-enter-from,
-.friends-toast-fade-leave-to {
-  opacity: 0;
-  transform: translateY(6px);
-}
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.friends-apply-preview {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  padding-bottom: 0.25rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--glass-card-border) 80%, transparent);
-}
-
-.friends-apply-preview-avatar {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 999px;
-  object-fit: cover;
-  border: 2px solid var(--glass-card-border);
-}
-
-.friends-apply-preview-hint {
-  margin: 0;
-  font-size: 0.82rem;
-  line-height: 1.5;
-  color: var(--color-text-muted);
-}
-
-.friends-apply-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.friends-apply-label {
-  font-size: 0.86rem;
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.friends-apply-input,
-.friends-apply-textarea {
-  width: 100%;
-  padding: 0.62rem 0.75rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-surface);
-  color: var(--color-text);
-  font-size: 0.92rem;
-  font-family: inherit;
-  line-height: 1.45;
-  transition: border-color 0.2s ease;
-}
-
-/* focus = 2px accent outline（DESIGN.md §7） */
-.friends-apply-input:focus,
-.friends-apply-textarea:focus {
-  outline: 2px solid var(--color-accent);
-  outline-offset: -1px;
-  border-color: transparent;
-}
-
-.friends-apply-textarea {
-  resize: vertical;
-  min-height: 4.5rem;
-}
-
-.friends-apply-error {
-  margin: 0;
-  font-size: 0.86rem;
-  color: #e85d5d;
-}
-
-.friends-apply-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-  padding-top: 0.25rem;
-}
-
-.friends-apply-policy {
-  margin: 0;
-  font-size: 0.78rem;
-  line-height: 1.5;
-  color: var(--color-text-muted);
-}
-
-.friends-apply-captcha-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 0.65rem 0.85rem;
-}
-
-.friends-apply-captcha-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  flex: 1;
-  min-width: 10rem;
-}
-
-.friends-apply-captcha-label {
-  font-size: 0.86rem;
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.friends-apply-captcha-question {
-  font-size: 0.95rem;
-  font-weight: 650;
-  color: var(--color-accent);
-}
-
-.friends-apply-captcha-input {
-  width: 100%;
-  max-width: 8rem;
-  padding: 0.55rem 0.7rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--glass-card-border);
-  background: color-mix(in srgb, var(--color-bg-base) 35%, var(--glass-card-bg));
-  color: var(--color-text);
-  font-size: 0.92rem;
-}
-
-.friends-apply-captcha-refresh {
-  padding: 0.48rem 0.85rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--glass-card-border);
-  background: transparent;
-  color: var(--color-text-muted);
-  font-size: 0.84rem;
-  cursor: pointer;
-}
-
-.friends-apply-captcha-refresh:hover:not(:disabled) {
-  color: var(--color-accent);
-  border-color: color-mix(in srgb, var(--color-accent) 40%, var(--glass-card-border));
-}
-
-.friends-apply-captcha-refresh:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-@media (max-width: 480px) {
-  /* 输入控件 ≥16px 防 iOS 聚焦自动缩放，并增大触控 */
-  .friends-apply-input,
-  .friends-apply-textarea,
-  .friends-apply-captcha-input {
-    font-size: 16px;
-    padding: 0.7rem 0.8rem;
-  }
-
-  .friends-apply-captcha-field {
-    min-width: 0;
-  }
-
-  .friends-apply-captcha-refresh {
-    display: inline-flex;
-    align-items: center;
-    min-height: 2.6rem;
-  }
-}
-</style>
