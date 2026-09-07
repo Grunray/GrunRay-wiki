@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="zh-CN" data-preview-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>关于 · 简历排版方案</title>
+    <link rel="stylesheet" href="shared.css" />
+  </head>
+  <body data-scheme="b">
+    <div class="preview-switcher">
+      <span class="brand">ABOUT</span>
+      <button type="button" class="scheme-btn" data-scheme="now">现状</button>
+      <button type="button" class="scheme-btn" data-scheme="a">A 单栏履历</button>
+      <button type="button" class="scheme-btn on" data-scheme="b">B 双栏履历</button>
+      <button type="button" class="scheme-btn" data-scheme="c">C 名录履历</button>
+      <span class="sep">|</span>
+      <button type="button" class="theme-btn on" data-theme="light">浅色</button>
+      <button type="button" class="theme-btn" data-theme="dark">深色</button>
+      <span class="hint">正在看 B。左栏粘滞对齐首页 toc-side。</span>
+    </div>
+
+    <p class="meta-note scheme-now">
+      <b>现状</b>
+      生产 <code>/about</code>：<code>XiqiPageHero</code> 大图 + 渐变题名（DESIGN §3 已禁）、玻璃简介卡、药丸奖项、事实网格、项目药丸按钮。对照用，不合入。
+    </p>
+    <p class="meta-note scheme-a">
+      <b>方案 A · 单栏履历</b>
+      刊头对齐 <code>/friends</code> / <code>/fragments</code>：H1「关于」，说明进 <code>.ed-filter</code>。身份一条、经历按时间一列（左日期 / 右职务）。最像打印简历。改动量中等：去掉 Hero 与玻璃卡，复用 kicker / ed-action。
+    </p>
+    <p class="meta-note scheme-b">
+      <b>方案 B · 双栏履历</b>
+      刊头写隐私说明；邮箱点击复制、不打开邮件客户端。左栏粘滞对齐首页
+      <code>.toc-side</code>（<code>align-self:start</code> + sticky）。奖项按铜 / 银 / 金给词上色。右栏各节之间是浅灰 hairline。隐私占位不含真实 Raw 值。
+    </p>
+    <p class="meta-note scheme-c">
+      <b>方案 C · 名录履历</b>
+      经历做成 <code>.ed-feed-row</code> 目录行（顶 hairline，hover 同 toc-row，<b>不套</b>方案 G）。语言最靠近碎念 / 友链名录。合入时可复用 <code>EdLedgerHead</code> / <code>EdFeedRow</code>，但行不可点开分栏。
+    </p>
+
+    <!-- 现状 -->
+    <section class="variant" data-scheme="now">
+      <div class="now-page">
+        <header class="now-hero">
+          <div class="now-photo" aria-hidden="true"></div>
+          <div class="now-copy">
+            <p class="now-eyebrow">About</p>
+            <h1 class="now-title">关于</h1>
+            <p class="now-sub">履历 · 介绍 · 联系方式</p>
+          </div>
+        </header>
+
+        <article class="now-card">
+          <div class="now-profile">
+            <div class="now-avatar" aria-hidden="true"></div>
+            <div>
+              <h2 class="now-name">GrunRay</h2>
+              <p class="hint-line">男 · 21 岁</p>
+              <a href="mailto:meachealed@gmail.com">meachealed@gmail.com</a>
+            </div>
+          </div>
+          <p class="hint-line" style="margin-top: 0.75rem">
+            软件工程本科在读，做全栈开发与测试，习惯用 Cursor 等 AI 工具辅助编程。算法与数据结构基础扎实。
+          </p>
+        </article>
+
+        <aside class="now-card">
+          <span class="now-badge">隐私提示</span>
+          <p class="hint-line" style="margin-top: 0.55rem">
+            部分信息已做隐私处理。如需完整简历，请邮件联系站长：
+            <a href="mailto:meachealed@gmail.com">meachealed@gmail.com</a>
+          </p>
+        </aside>
+
+        <section>
+          <h2 class="now-h">竞赛与优势</h2>
+          <ul class="now-awards">
+            <li><span class="now-badge">ICPC 西安邀请赛 · 铜牌</span></li>
+            <li><span class="now-badge">CCPC 郑州邀请赛 · 铜牌</span></li>
+            <li><span class="now-badge">睿抗 · 国二</span></li>
+          </ul>
+        </section>
+
+        <div class="now-grid">
+          <section class="now-cell">
+            <h2 class="now-h">教育经历</h2>
+            <p>某大学 · 本科</p>
+            <p class="hint-line">软件工程 · 2023 — 2027</p>
+            <p class="hint-line">专业排名（已隐藏）</p>
+          </section>
+          <section class="now-cell">
+            <h2 class="now-h">实习经历</h2>
+            <p>某有限公司</p>
+            <p class="hint-line">全栈工程师 · 2025.07 — 2025.09</p>
+            <p class="hint-line">实习详情（已隐藏）</p>
+          </section>
+          <section class="now-cell">
+            <h2 class="now-h">社团经历</h2>
+            <p>某大学 ACM 协会</p>
+            <p class="hint-line">会员 · 2023.10 — 至今</p>
+          </section>
+          <section class="now-cell">
+            <h2 class="now-h">资格证书</h2>
+            <p>大学英语四级</p>
+          </section>
+        </div>
+
+        <article class="now-card">
+          <h2 class="now-h">项目经历</h2>
+          <p class="hint-line">完整项目说明已收录在「创作 → 项目」页。</p>
+          <a class="now-btn" href="#">前往项目页</a>
+        </article>
+      </div>
+    </section>
+
+    <!-- A 单栏 -->
+    <section class="variant" data-scheme="a">
+      <h1 class="h">关于</h1>
+      <div class="ed-filter">
+        <p class="ed-kicker">
+          <span class="ed-en">Profile</span>
+          <span class="ed-mid" aria-hidden="true">·</span>
+          <span class="ed-zh">履历</span>
+        </p>
+        <p class="hint-line">
+          软件工程本科在读，做全栈开发与测试，习惯用 Cursor 等 AI 工具辅助编程。算法与数据结构基础扎实。
+        </p>
+        <p class="hint-line">
+          部分信息已做隐私处理。完整简历请来信：
+          <a class="ed-action" href="mailto:meachealed@gmail.com">meachealed@gmail.com</a>
+        </p>
+      </div>
+
+      <header class="who">
+        <div class="avatar" aria-hidden="true">GR</div>
+        <div>
+          <h2 class="who-name">GrunRay</h2>
+          <p class="who-meta">男 · 21 岁</p>
+          <a class="ed-action who-mail" href="mailto:meachealed@gmail.com">meachealed@gmail.com</a>
+        </div>
+      </header>
+
+      <section class="sec" aria-labelledby="a-awards">
+        <div class="sec-head">
+          <p class="ed-kicker" id="a-awards">
+            <span class="ed-en">Awards</span>
+            <span class="ed-mid" aria-hidden="true">·</span>
+            <span class="ed-zh">竞赛</span>
+          </p>
+        </div>
+        <p class="award-line">ICPC 西安邀请赛 · 铜牌</p>
+        <p class="award-line">CCPC 郑州邀请赛 · 铜牌</p>
+        <p class="award-line">睿抗 · 国二</p>
+      </section>
+
+      <section class="sec" aria-labelledby="a-exp">
+        <div class="sec-head">
+          <p class="ed-kicker" id="a-exp">
+            <span class="ed-en">Experience</span>
+            <span class="ed-mid" aria-hidden="true">·</span>
+            <span class="ed-zh">经历</span>
+          </p>
+        </div>
+
+        <article class="entry">
+          <p class="entry-when">2025.07 — 2025.09</p>
+          <div>
+            <h3 class="entry-title">全栈工程师</h3>
+            <p class="entry-sub">某有限公司</p>
+            <div class="priv">
+              <span class="priv-cap">实习详情（已隐藏）</span>
+              <span class="priv-body priv-body--empty" aria-hidden="true">
+                <span class="priv-scrim"></span>
+              </span>
+            </div>
+          </div>
+        </article>
+
+        <article class="entry">
+          <p class="entry-when">2023 — 2027</p>
+          <div>
+            <h3 class="entry-title">本科 · 软件工程</h3>
+            <p class="entry-sub">某大学</p>
+            <div class="priv">
+              <span class="priv-cap">专业排名（已隐藏）</span>
+              <span class="priv-body priv-body--empty" aria-hidden="true">
+                <span class="priv-scrim"></span>
+              </span>
+            </div>
+          </div>
+        </article>
+
+        <article class="entry">
+          <p class="entry-when">2023.10 — 至今</p>
+          <div>
+            <h3 class="entry-title">会员</h3>
+            <p class="entry-sub">某大学 ACM 协会</p>
+            <div class="priv">
+              <span class="priv-cap">社团详情（已隐藏）</span>
+              <span class="priv-body priv-body--empty" aria-hidden="true">
+                <span class="priv-scrim"></span>
+              </span>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="sec" aria-labelledby="a-cert">
+        <div class="sec-head">
+          <p class="ed-kicker" id="a-cert">
+            <span class="ed-en">Papers</span>
+            <span class="ed-mid" aria-hidden="true">·</span>
+            <span class="ed-zh">证书</span>
+          </p>
+        </div>
+        <ul class="cert-list">
+          <li>大学英语四级</li>
+        </ul>
+      </section>
+
+      <section class="sec" aria-labelledby="a-proj">
+        <div class="sec-head">
+          <p class="ed-kicker" id="a-proj">
+            <span class="ed-en">Projects</span>
+            <span class="ed-mid" aria-hidden="true">·</span>
+            <span class="ed-zh">项目</span>
+          </p>
+        </div>
+        <p class="hint-line">完整项目说明在「创作 → 项目」页，可按标签与技术栈浏览。</p>
+        <p style="margin: 0.65rem 0 0">
+          <a class="ed-action" href="#">前往项目页</a>
+        </p>
+      </section>
+    </section>
+
+    <!-- B 双栏 -->
+    <section class="variant" data-scheme="b">
+      <h1 class="h">关于</h1>
+      <div class="ed-filter">
+        <p class="ed-kicker">
+          <span class="ed-en">Profile</span>
+          <span class="ed-mid" aria-hidden="true">·</span>
+          <span class="ed-zh">履历</span>
+        </p>
+        <p class="hint-line">
+          软件工程本科在读，做全栈开发与测试，习惯用 Cursor 等 AI 工具辅助编程。算法与数据结构基础扎实。
+        </p>
+        <p class="hint-line">
+          部分信息已做隐私处理。完整简历请来信：
+          <button type="button" class="copy-mail" data-copy-mail="meachealed@gmail.com">meachealed@gmail.com</button>
+          <em class="copy-hint">点击复制邮箱</em>
+        </p>
+      </div>
+
+      <!--
+        合入约定（隐私）：
+        学校全称、专业排名、公司全称、实习详情、社团全称/活动细节等 Raw 字段
+        只存在于 import / 数据库，API 对外不要下发。前端只渲染公开文案
+        （某大学、某有限公司、某大学 ACM 协会）+「已隐藏」占位。
+        不要用 CSS blur 挡真实值——查看源代码仍能读到。
+        本原型因此不写真实隐私正文，只用空遮挡条示意。
+      -->
+
+      <div class="split">
+        <aside class="split-side">
+          <div class="avatar" aria-hidden="true">GR</div>
+          <h2 class="who-name">GrunRay</h2>
+          <p class="who-meta">男 · 21 岁</p>
+          <p style="margin: 0.55rem 0 0">
+            <button type="button" class="copy-mail" data-copy-mail="meachealed@gmail.com">meachealed@gmail.com</button>
+          </p>
+
+          <div class="side-block">
+            <p class="ed-kicker">
+              <span class="ed-en">Awards</span>
+              <span class="ed-mid" aria-hidden="true">·</span>
+              <span class="ed-zh">竞赛</span>
+            </p>
+            <p class="award-line award-line--bronze">ICPC 西安 · 铜牌</p>
+            <p class="award-line award-line--bronze">CCPC 郑州 · 铜牌</p>
+            <p class="award-line award-line--silver">睿抗 · 国二</p>
+          </div>
+
+          <div class="side-block">
+            <p class="ed-kicker">
+              <span class="ed-en">Papers</span>
+              <span class="ed-mid" aria-hidden="true">·</span>
+              <span class="ed-zh">证书</span>
+            </p>
+            <ul class="cert-list">
+              <li>大学英语四级</li>
+            </ul>
+          </div>
+        </aside>
+
+        <div class="split-main">
+          <section class="sec" style="margin-top: 0" aria-labelledby="b-edu">
+            <div class="sec-head">
+              <p class="ed-kicker" id="b-edu">
+                <span class="ed-en">Education</span>
+                <span class="ed-mid" aria-hidden="true">·</span>
+                <span class="ed-zh">教育</span>
+              </p>
+            </div>
+            <article class="entry">
+              <p class="entry-when">2023 — 2027</p>
+              <div>
+                <h3 class="entry-title">本科 · 软件工程</h3>
+                <p class="entry-sub">某大学</p>
+                <div class="priv">
+                  <span class="priv-cap">专业排名（已隐藏）</span>
+                  <span class="priv-body priv-body--empty" aria-hidden="true">
+                    <span class="priv-scrim"></span>
+                  </span>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="sec" aria-labelledby="b-work">
+            <div class="sec-head">
+              <p class="ed-kicker" id="b-work">
+                <span class="ed-en">Work</span>
+                <span class="ed-mid" aria-hidden="true">·</span>
+                <span class="ed-zh">实习</span>
+              </p>
+            </div>
+            <article class="entry">
+              <p class="entry-when">2025.07 — 2025.09</p>
+              <div>
+                <h3 class="entry-title">全栈工程师</h3>
+                <p class="entry-sub">某有限公司</p>
+                <div class="priv">
+                  <span class="priv-cap">实习详情（已隐藏）</span>
+                  <span class="priv-body priv-body--empty" aria-hidden="true">
+                    <span class="priv-scrim"></span>
+                  </span>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="sec" aria-labelledby="b-club">
+            <div class="sec-head">
+              <p class="ed-kicker" id="b-club">
+                <span class="ed-en">Community</span>
+                <span class="ed-mid" aria-hidden="true">·</span>
+                <span class="ed-zh">社团</span>
+              </p>
+            </div>
+            <article class="entry">
+              <p class="entry-when">2023.10 — 至今</p>
+              <div>
+                <h3 class="entry-title">会员</h3>
+                <p class="entry-sub">某大学 ACM 协会</p>
+                <div class="priv">
+                  <span class="priv-cap">社团详情（已隐藏）</span>
+                  <span class="priv-body priv-body--empty" aria-hidden="true">
+                    <span class="priv-scrim"></span>
+                  </span>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="sec" aria-labelledby="b-proj">
+            <div class="sec-head">
+              <p class="ed-kicker" id="b-proj">
+                <span class="ed-en">Projects</span>
+                <span class="ed-mid" aria-hidden="true">·</span>
+                <span class="ed-zh">项目</span>
+              </p>
+            </div>
+            <p class="hint-line">完整项目说明在「创作 → 项目」页。</p>
+            <p style="margin: 0.65rem 0 0">
+              <a class="ed-action" href="#">前往项目页</a>
+            </p>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- C 名录 -->
+    <section class="variant" data-scheme="c">
+      <h1 class="h">关于</h1>
+      <div class="ed-filter">
+        <p class="ed-kicker">
+          <span class="ed-en">Profile</span>
+          <span class="ed-mid" aria-hidden="true">·</span>
+          <span class="ed-zh">履历</span>
+        </p>
+        <p class="hint-line">
+          软件工程本科在读，做全栈开发与测试，习惯用 Cursor 等 AI 工具辅助编程。算法与数据结构基础扎实。
+        </p>
+        <p class="hint-line">
+          部分信息已做隐私处理。完整简历请来信：
+          <a class="ed-action" href="mailto:meachealed@gmail.com">meachealed@gmail.com</a>
+        </p>
+      </div>
+
+      <header class="who">
+        <div class="avatar" aria-hidden="true">GR</div>
+        <div>
+          <h2 class="who-name">GrunRay</h2>
+          <p class="who-meta">男 · 21 岁 · 全栈 / 测试</p>
+        </div>
+      </header>
+
+      <header class="ed-ledger-head">
+        <p class="ed-kicker">
+          <span class="ed-en">Dossier</span>
+          <span class="ed-mid" aria-hidden="true">·</span>
+          <span class="ed-zh">名录</span>
+        </p>
+        <span class="ed-ledger-tools">6 条</span>
+      </header>
+
+      <ol class="ed-feed">
+        <li>
+          <div class="ed-feed-row">
+            <p class="row-meta">实习 · 2025.07 — 2025.09</p>
+            <p class="row-name">全栈工程师 · 某有限公司</p>
+            <p class="row-body">实习详情（已隐藏）</p>
+          </div>
+        </li>
+        <li>
+          <div class="ed-feed-row">
+            <p class="row-meta">教育 · 2023 — 2027</p>
+            <p class="row-name">本科 · 软件工程 · 某大学</p>
+            <p class="row-body">专业排名（已隐藏）</p>
+          </div>
+        </li>
+        <li>
+          <div class="ed-feed-row">
+            <p class="row-meta">社团 · 2023.10 — 至今</p>
+            <p class="row-name">会员 · 某大学 ACM 协会</p>
+            <p class="row-body">社团详情（已隐藏）</p>
+          </div>
+        </li>
+        <li>
+          <div class="ed-feed-row">
+            <p class="row-meta">竞赛</p>
+            <p class="row-name">ICPC 西安 · CCPC 郑州 · 睿抗</p>
+            <p class="row-body">铜牌 · 铜牌 · 国二</p>
+          </div>
+        </li>
+        <li>
+          <div class="ed-feed-row">
+            <p class="row-meta">证书</p>
+            <p class="row-name">大学英语四级</p>
+          </div>
+        </li>
+        <li>
+          <div class="ed-feed-row">
+            <p class="row-meta">项目</p>
+            <p class="row-name">创作 → 项目</p>
+            <p class="row-body">完整说明按标签与技术栈浏览。 <a class="ed-action" href="#">前往项目页</a></p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <script src="shared.js"></script>
+  </body>
+</html>

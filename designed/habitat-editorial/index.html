@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="zh-CN" data-preview-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>栖息 · 碎念 / 推荐 Editorial</title>
+    <link rel="stylesheet" href="shared.css" />
+    <link rel="stylesheet" href="ed-ledger.css" />
+  </head>
+  <body data-scheme="b" data-page="fragments" data-role="guest">
+    <div class="preview-switcher">
+      <span class="brand">HABITAT</span>
+      <button type="button" class="scheme-btn" data-scheme="now">现状</button>
+      <button type="button" class="scheme-btn on" data-scheme="b">B 刊头分栏</button>
+      <span class="sep">|</span>
+      <button type="button" class="page-btn on" data-page="fragments">碎念</button>
+      <button type="button" class="page-btn" data-page="recommend">推荐</button>
+      <span class="sep">|</span>
+      <button type="button" class="role-btn on" data-role="guest">访客</button>
+      <button type="button" class="role-btn" data-role="owner">站长</button>
+      <span class="sep">|</span>
+      <button type="button" class="theme-btn on" data-theme="light">浅色</button>
+      <button type="button" class="theme-btn" data-theme="dark">深色</button>
+      <span class="hint">碎念与推荐是两页。方案 B：刊头 + 现有分栏。</span>
+    </div>
+
+    <p class="meta-note scheme-now">
+      <b>现状</b>
+      大图 Hero、渐变标题（<code>background-clip</code>，DESIGN §3 已禁）、玻璃欢迎卡、药丸 chip、左色条卡片、点开分栏。对照用，不合入。
+    </p>
+    <p class="meta-note scheme-b">
+      <b>方案 B · 刊头 + 分栏</b>
+      对齐 <code>/projects</code> / <code>/messages</code> / <code>/friends</code>：碎念页 H1「碎念」，推荐页 H1「推荐」，无返回链。说明进
+      <code>.ed-filter</code>；名录是目录行（顶 hairline），hover 同 <code>.toc-row</code>，<b>不套</b>方案 G。
+      点一行仍走现有分栏：关着名录通栏，点开压缩左侧、从折缝向右揭开详情，关或 Esc 收回。
+      名录 + 分栏是共用排版 <code>ed-ledger.css</code>；合入时并入 <code>page-ed-ledger.css</code> / <code>XiqiSplitLayout</code>。
+    </p>
+
+    <!-- 现状 · 碎念 -->
+    <section class="variant" data-scheme="now" data-page="fragments">
+      <header class="now-hero">
+        <p class="now-eyebrow">Fragments</p>
+        <h1 class="now-title">碎念</h1>
+        <p class="now-sub">短句 · 随笔 · 即时想法</p>
+      </header>
+      <blockquote class="now-welcome">
+        <p>这里放一些来不及写成文章的话——半成品、牢骚、灵光一现，都算数。</p>
+      </blockquote>
+      <div class="now-toolbar">
+        <p class="section-tools">共 3 条</p>
+        <p class="section-tools" style="margin-top: 0.45rem">心情</p>
+        <div class="now-chips">
+          <button type="button" class="now-chip is-on">全部</button>
+          <button type="button" class="now-chip">吐槽</button>
+          <button type="button" class="now-chip">随笔</button>
+          <button type="button" class="now-chip">瞬间</button>
+          <button type="button" class="now-chip">日常</button>
+        </div>
+        <div class="now-chips">
+          <button type="button" class="now-chip is-on">最新</button>
+          <button type="button" class="now-chip">最早</button>
+        </div>
+        <p class="when-owner" style="margin: 0.75rem 0 0">
+          <button type="button" class="now-chip is-on">撰写碎念 →</button>
+        </p>
+      </div>
+      <article class="now-card">
+        <div class="thumb" aria-hidden="true"></div>
+        <div class="now-card-body">
+          <p class="row-meta"><span class="ed-tone ed-tone--rant">吐槽</span> · 3 月 12 日</p>
+          <p class="row-body">今天 CI 又绿了，但心情没有。</p>
+        </div>
+      </article>
+    </section>
+
+    <!-- 现状 · 推荐 -->
+    <section class="variant" data-scheme="now" data-page="recommend">
+      <header class="now-hero">
+        <p class="now-eyebrow">Picks</p>
+        <h1 class="now-title">推荐</h1>
+        <p class="now-sub">软件 · 开源 · 番剧动漫</p>
+      </header>
+      <blockquote class="now-welcome">
+        <p>这里收录我觉得值得一看、值得用的东西——工具、开源仓库和番剧，随手记一笔推荐理由。</p>
+      </blockquote>
+      <div class="now-toolbar">
+        <p class="section-tools">共 3 条</p>
+        <p class="section-tools" style="margin-top: 0.45rem">分类</p>
+        <div class="now-chips">
+          <button type="button" class="now-chip is-on">全部</button>
+          <button type="button" class="now-chip">软件</button>
+          <button type="button" class="now-chip">开源</button>
+          <button type="button" class="now-chip">番剧动漫</button>
+        </div>
+        <div class="now-chips">
+          <button type="button" class="now-chip is-on">最新</button>
+          <button type="button" class="now-chip">最早</button>
+        </div>
+      </div>
+      <article class="now-card">
+        <div class="thumb" aria-hidden="true"></div>
+        <div class="now-card-body">
+          <p class="row-meta"><span class="ed-tone ed-tone--software">软件</span> · 3 月 12 日</p>
+          <p class="row-name">Obsidian</p>
+          <p class="row-body">本地优先的笔记，插件生态把日子撑起来。</p>
+        </div>
+      </article>
+    </section>
+
+    <!-- B · 碎念 -->
+    <section class="variant on" data-scheme="b" data-page="fragments">
+      <h1 class="h">碎念</h1>
+      <div class="ed-filter">
+        <p class="ed-kicker"><span class="ed-en">Notes</span><span class="ed-mid">·</span><span class="ed-zh">碎念</span></p>
+        <p class="hint-line">这里放一些来不及写成文章的话——半成品、牢骚、灵光一现，都算数。</p>
+        <!--
+          SYNC · 滑动下划线（只改动画，不改字号/字色）
+          对齐博客 Section·分类：.ed-cats + .ed-cat-line + 量宽位移。
+          合入碎念 / 推荐时复用 page-list-masthead.css 这套，不要另写 pill。
+          之后同步：留言 Inbox·来信 右侧「最新 / 最早 / 公开 / 待审」
+          （MessagesView .message-inbox-tools）。
+        -->
+        <div class="ed-switch">
+          <div class="ed-cats" data-cat-group>
+            <span class="ed-cat-line" aria-hidden="true"></span>
+            <button type="button" class="ed-cat is-on">全部</button>
+            <button type="button" class="ed-cat">吐槽</button>
+            <button type="button" class="ed-cat">随笔</button>
+            <button type="button" class="ed-cat">瞬间</button>
+            <button type="button" class="ed-cat">日常</button>
+          </div>
+          <div class="ed-switch-end">
+            <div class="ed-cats" data-cat-group>
+              <span class="ed-cat-line" aria-hidden="true"></span>
+              <button type="button" class="ed-cat is-on">最新</button>
+              <button type="button" class="ed-cat">最早</button>
+            </div>
+          </div>
+        </div>
+        <p class="when-owner"><button type="button" class="ed-action">撰写碎念</button></p>
+      </div>
+
+      <!-- SYNC：名录 + 分栏共用 .ed-split / .ed-ledger，两页同一套 -->
+      <div class="ed-split">
+        <div class="ed-ledger">
+          <header class="ed-ledger-head">
+            <p class="ed-kicker"><span class="ed-en">Ledger</span><span class="ed-mid">·</span><span class="ed-zh">名录</span></p>
+            <span class="ed-ledger-tools">4 条 · <span data-split-hint>点一行看详情</span></span>
+          </header>
+          <ol class="ed-feed">
+            <li>
+              <button
+                type="button"
+                class="ed-feed-row has-cover"
+                data-select-row
+                data-body="今天 CI 又绿了，但心情没有。正文走 Markdown，比卡片多几段。"
+              >
+                <span class="thumb"><img src="media/frag-ci.jpg" alt="" /></span>
+                <span>
+                  <p class="row-meta"><span class="ed-tone ed-tone--rant">吐槽</span> · 3 月 12 日</p>
+                  <p class="row-body">今天 CI 又绿了，但心情没有。</p>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="ed-feed-row"
+                data-select-row
+                data-body="纸比仪表盘安静。封面终于不像控制台。详情比列表多几段随笔。"
+              >
+                <span>
+                  <p class="row-meta"><span class="ed-tone ed-tone--sketch">随笔</span> · 2 月 28 日</p>
+                  <p class="row-body">纸比仪表盘安静。封面终于不像控制台。</p>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="ed-feed-row has-cover"
+                data-select-row
+                data-body="路灯把影子拉得很长，像一行还没写完的脚注。"
+              >
+                <span class="thumb"><img src="media/frag-lamp.jpg" alt="" /></span>
+                <span>
+                  <p class="row-meta"><span class="ed-tone ed-tone--flash">瞬间</span> · 1 月 4 日</p>
+                  <p class="row-body">路灯把影子拉得很长，像一行还没写完的脚注。</p>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="ed-feed-row"
+                data-select-row
+                data-body="晚饭后把杯子洗了。没有要记的事，也算一条。"
+              >
+                <span>
+                  <p class="row-meta"><span class="ed-tone ed-tone--daily">日常</span> · 12 月 8 日</p>
+                  <p class="row-body">晚饭后把杯子洗了。没有要记的事，也算一条。</p>
+                </span>
+              </button>
+            </li>
+          </ol>
+        </div>
+        <aside class="ed-read">
+          <span class="ed-read-spine" aria-hidden="true"></span>
+          <div class="ed-read-head">
+            <p class="ed-kicker"><span class="ed-en">Read</span><span class="ed-mid">·</span><span class="ed-zh">详情</span></p>
+            <button type="button" class="ed-action danger" data-close-detail>关闭</button>
+          </div>
+          <p class="row-meta" data-detail="meta"></p>
+          <img class="ed-read-cover" alt="" hidden data-detail="cover" />
+          <p class="hint-line" style="margin-top: 0.65rem" data-detail="body"></p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- B · 推荐 -->
+    <section class="variant" data-scheme="b" data-page="recommend">
+      <h1 class="h">推荐</h1>
+      <div class="ed-filter">
+        <p class="ed-kicker"><span class="ed-en">Picks</span><span class="ed-mid">·</span><span class="ed-zh">推荐</span></p>
+        <p class="hint-line">这里收录我觉得值得一看、值得用的东西——工具、开源仓库和番剧，随手记一笔推荐理由。</p>
+        <!--
+          SYNC · 同上：滑动下划线共用 .ed-cats / .ed-cat-line。
+          合入后与碎念、博客 Section·分类、留言 Inbox 工具同一套。
+        -->
+        <div class="ed-switch">
+          <div class="ed-cats" data-cat-group>
+            <span class="ed-cat-line" aria-hidden="true"></span>
+            <button type="button" class="ed-cat is-on">全部</button>
+            <button type="button" class="ed-cat">软件</button>
+            <button type="button" class="ed-cat">开源</button>
+            <button type="button" class="ed-cat">番剧动漫</button>
+          </div>
+          <div class="ed-switch-end">
+            <div class="ed-cats" data-cat-group>
+              <span class="ed-cat-line" aria-hidden="true"></span>
+              <button type="button" class="ed-cat is-on">最新</button>
+              <button type="button" class="ed-cat">最早</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SYNC：名录 + 分栏共用 .ed-split / .ed-ledger，两页同一套 -->
+      <div class="ed-split">
+        <div class="ed-ledger">
+          <header class="ed-ledger-head">
+            <p class="ed-kicker"><span class="ed-en">Ledger</span><span class="ed-mid">·</span><span class="ed-zh">名录</span></p>
+            <span class="ed-ledger-tools">3 条 · <span data-split-hint>点一行看详情</span></span>
+          </header>
+          <ol class="ed-feed">
+            <li>
+              <button
+                type="button"
+                class="ed-feed-row has-cover"
+                data-select-row
+                data-title="Obsidian"
+                data-body="本地优先的笔记。详情里还有「访问链接」出站确认。"
+                data-link="1"
+              >
+                <span class="thumb"><img src="media/pick-obsidian.jpg" alt="" /></span>
+                <span>
+                  <p class="row-meta"><span class="ed-tone ed-tone--software">软件</span> · 3 月 12 日</p>
+                  <p class="row-name">Obsidian</p>
+                  <p class="row-body">本地优先的笔记，插件生态把日子撑起来。</p>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="ed-feed-row"
+                data-select-row
+                data-title="ripgrep"
+                data-body="在仓库里找字，比 IDE 搜索更不客气。"
+                data-link="1"
+              >
+                <span>
+                  <p class="row-meta"><span class="ed-tone ed-tone--opensource">开源</span> · 2 月 28 日</p>
+                  <p class="row-name">ripgrep</p>
+                  <p class="row-body">在仓库里找字，比 IDE 搜索更不客气。</p>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="ed-feed-row has-cover"
+                data-select-row
+                data-title="少女歌剧 Revue Starlight"
+                data-body="舞台上的决斗比台词更像论文答辩。"
+                data-link="1"
+              >
+                <span class="thumb"><img src="media/pick-revue.webp" alt="" /></span>
+                <span>
+                  <p class="row-meta"><span class="ed-tone ed-tone--anime">番剧动漫</span> · 1 月 4 日</p>
+                  <p class="row-name">少女歌剧 Revue Starlight</p>
+                  <p class="row-body">舞台上的决斗比台词更像论文答辩。</p>
+                </span>
+              </button>
+            </li>
+          </ol>
+        </div>
+        <aside class="ed-read">
+          <span class="ed-read-spine" aria-hidden="true"></span>
+          <div class="ed-read-head">
+            <p class="ed-kicker"><span class="ed-en">Read</span><span class="ed-mid">·</span><span class="ed-zh">详情</span></p>
+            <button type="button" class="ed-action danger" data-close-detail>关闭</button>
+          </div>
+          <p class="row-meta" data-detail="meta"></p>
+          <p class="row-name" style="margin-top: 0.45rem" data-detail="title"></p>
+          <img class="ed-read-cover" alt="" hidden data-detail="cover" />
+          <p class="hint-line" style="margin-top: 0.65rem" data-detail="body"></p>
+          <p class="ed-read-link" hidden data-detail="link"><a class="ed-action" href="#">访问链接</a></p>
+        </aside>
+      </div>
+    </section>
+
+    <script src="shared.js"></script>
+  </body>
+</html>
