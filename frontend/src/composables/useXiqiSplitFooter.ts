@@ -8,10 +8,12 @@ export function isXiqiSplitFooterLocked(): boolean {
   return document.documentElement.hasAttribute(XIQI_SPLIT_OPEN_ATTR)
 }
 
-export function setXiqiSplitFooterLock(locked: boolean, options?: { deferRefresh?: boolean }) {
+export function setXiqiSplitFooterLock(locked: boolean, options?: { deferRefresh?: boolean; keepRevealSpace?: boolean }) {
   if (locked) {
     document.documentElement.setAttribute(XIQI_SPLIT_OPEN_ATTR, '')
-    document.documentElement.style.setProperty('--footer-reveal-space', '0px')
+    if (!options?.keepRevealSpace) {
+      document.documentElement.style.setProperty('--footer-reveal-space', '0px')
+    }
     document.documentElement.style.setProperty('--reveal-progress', '0')
     document.documentElement.removeAttribute('data-footer-over-cover')
     document.documentElement.removeAttribute('data-footer-revealing')

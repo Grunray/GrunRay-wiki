@@ -1,7 +1,5 @@
 /* 栖息分区页；根节点 .xiqi-page.page-enter--play
- * 三个页 (FragmentsView / AboutView / RecommendView) 共享。
- * Hero 卡参考首页 left-ellipse 大幅滑入；
- * Hero 内文字 chip / 主内容区块 / 列表卡参考首页·留言的 stagger 节奏。
+ * 关于方案 B：H1 + .ed-filter + 双栏。碎念 / 推荐：H1 + .ed-filter + 名录行。
  */
 
 /* ---------- keyframes ---------- */
@@ -45,7 +43,7 @@
  * 代价是 page-enter--play 类加上前可能有 1-2 帧 FOUC，可接受。
  */
 
-/* ---------- Hero 卡：从左侧大幅滑入 ---------- */
+/* ---------- Hero 卡：从左侧大幅滑入（关于页） ---------- */
 
 .xiqi-page.page-enter--play .xiqi-hero {
   animation: page-enter-xiqi-hero-slide 0.92s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
@@ -69,11 +67,12 @@
 /* ---------- 主内容区块（Fragments / Recommend：split-main-inner; About：about-page-inner） ---------- */
 
 .xiqi-page.page-enter--play .xiqi-split-main-inner > *:not(.xiqi-hero),
-.xiqi-page.page-enter--play .about-page-inner > *:not(.xiqi-hero) {
+.xiqi-page.page-enter--play .about-page-inner > *:not(.xiqi-hero),
+.xiqi-page.page-enter--play .xiqi-split-mast > * {
   animation: page-enter-xiqi-block 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* 第 2/3/4... 子项依次入场（hero 是 nth-child(1)，所以正文从 (2) 起步）
+/* 第 2/3/4... 子项依次入场（hero / H1 是 nth-child(1)，所以正文从 (2) 起步）
  * 留言页节奏：4 块 stagger ≈ 0.06s 间距，起步 ≈ 0.32s（在 hero 滑入到一半时入场）。
  */
 .xiqi-page.page-enter--play .xiqi-split-main-inner > *:nth-child(2),
@@ -104,10 +103,26 @@
 .xiqi-page.page-enter--play .about-page-inner > *:nth-child(8) {
   animation-delay: 0.68s;
 }
+.xiqi-page.page-enter--play .xiqi-split-mast > *:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.xiqi-page.page-enter--play .xiqi-split-mast > *:nth-child(2) {
+  animation-delay: 0.32s;
+}
+.habitat-page.page-enter--play .xiqi-split-main-inner > *:nth-child(1) {
+  animation-delay: 0.38s;
+}
+.habitat-page.page-enter--play .xiqi-split-main-inner > *:nth-child(2) {
+  animation-delay: 0.44s;
+}
+.habitat-page.page-enter--play .xiqi-split-main-inner > *:nth-child(3) {
+  animation-delay: 0.5s;
+}
 
-/* ---------- 列表卡：基于 --enter-i 的 stagger，间距对齐留言 0.07s ---------- */
+/* ---------- 列表卡 / 名录行：基于 --enter-i 的 stagger，间距对齐留言 0.07s ---------- */
 
-.xiqi-page.page-enter--play .xiqi-card {
+.xiqi-page.page-enter--play .xiqi-card,
+.xiqi-page.page-enter--play .ed-feed-row {
   animation: page-enter-xiqi-block 0.62s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: calc(0.55s + (var(--enter-i, 0) * 0.07s));
 }
@@ -118,16 +133,20 @@
   .xiqi-page.page-enter--play .xiqi-hero,
   .xiqi-page.page-enter--play .xiqi-hero-chips > *,
   .xiqi-page.page-enter--play .xiqi-split-main-inner > *,
+  .xiqi-page.page-enter--play .xiqi-split-mast > *,
   .xiqi-page.page-enter--play .about-page-inner > *,
-  .xiqi-page.page-enter--play .xiqi-card {
+  .xiqi-page.page-enter--play .xiqi-card,
+  .xiqi-page.page-enter--play .ed-feed-row {
     animation: none;
   }
 
   .xiqi-page .xiqi-hero,
   .xiqi-page .xiqi-hero-chips > *,
   .xiqi-page .xiqi-split-main-inner > *,
+  .xiqi-page .xiqi-split-mast > *,
   .xiqi-page .about-page-inner > *,
-  .xiqi-page .xiqi-card {
+  .xiqi-page .xiqi-card,
+  .xiqi-page .ed-feed-row {
     opacity: 1;
     transform: none;
   }
