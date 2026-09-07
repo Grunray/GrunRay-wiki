@@ -336,69 +336,6 @@ useMarkdownCodeCopy(bodyMarkdownRef, codeCopyLabels, renderedBodyHtml)
   white-space: normal;
 }
 
-.body-markdown :deep(.md-code-block--copyable) {
-  position: relative;
-}
-
-.body-markdown :deep(.md-code-copy-btn) {
-  position: absolute;
-  top: 0.45rem;
-  right: 0.45rem;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  min-width: 2rem;
-  height: 1.75rem;
-  padding: 0 0.45rem;
-  border: 1px solid rgb(255 255 255 / 14%);
-  border-radius: var(--radius-sm);
-  background: rgb(30 30 30 / 88%);
-  color: #c8c8c8;
-  font-size: 0.75rem;
-  line-height: 1;
-  cursor: pointer;
-  backdrop-filter: blur(6px);
-  transition:
-    color 0.2s ease,
-    border-color 0.2s ease,
-    background 0.2s ease;
-}
-
-.body-markdown :deep(.md-code-copy-btn:hover) {
-  color: #fff;
-  border-color: rgb(255 255 255 / 28%);
-  background: rgb(45 45 45 / 92%);
-}
-
-.body-markdown :deep(.md-code-copy-btn__icon) {
-  display: inline-flex;
-}
-
-.body-markdown :deep(.md-code-copy-btn__check),
-.body-markdown :deep(.md-code-copy-btn__label) {
-  display: none;
-}
-
-.body-markdown :deep(.md-code-copy-btn--done) {
-  color: #b5cea8;
-  border-color: color-mix(in srgb, #b5cea8 45%, rgb(255 255 255 / 14%));
-}
-
-.body-markdown :deep(.md-code-copy-btn--done .md-code-copy-btn__icon) {
-  display: none;
-}
-
-.body-markdown :deep(.md-code-copy-btn--done .md-code-copy-btn__check) {
-  display: inline;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.body-markdown :deep(.md-code-copy-btn--done .md-code-copy-btn__label) {
-  display: inline;
-}
-
 .empty {
   color: var(--color-text-muted);
 }
@@ -416,11 +353,6 @@ useMarkdownCodeCopy(bodyMarkdownRef, codeCopyLabels, renderedBodyHtml)
 
   .body {
     padding: 0.85rem 0.9rem;
-  }
-
-  .body-markdown :deep(.md-code-copy-btn) {
-    height: 2rem;
-    min-width: 2.25rem;
   }
 }
 </style>
