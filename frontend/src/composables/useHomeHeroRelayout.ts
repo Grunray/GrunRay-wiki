@@ -11,7 +11,7 @@ const STAGE_COVERED_ATTR = 'homeStageCovered'
 const BLUR_QUANT_STEPS = 2
 
 /**
- * 首页 Hero 重排：测量 peek / 导航高度，滚动时把照片背景 blur
+ * 首页 Hero 重排：测量刊头条 / 导航高度，滚动时把照片背景 blur
  * 从 0 插值到用户设定值；离页恢复。不新建 backdrop-filter 层。
  *
  * 导航占位只在展开态锁一次（resize 且非 compact 才重测），避免 compact 动画
@@ -21,6 +21,7 @@ const BLUR_QUANT_STEPS = 2
  */
 export function useHomeHeroRelayout(opts: {
   peekRef: Ref<HTMLElement | null>
+  peekHeadRef?: Ref<HTMLElement | null>
   scrollLayerRef: Ref<HTMLElement | null>
 }) {
   const ui = useUiStore()
@@ -79,7 +80,10 @@ export function useHomeHeroRelayout(opts: {
   function measurePeek() {
     const peek = opts.peekRef.value
     if (!peek) return
-    const peekHeight = Math.ceil(peek.getBoundingClientRect().height)
+    const top = peek.getBoundingClientRect().top
+    const head = opts.peekHeadRef?.value
+    const bottom = (head ?? peek).getBoundingClientRect().bottom
+    const peekHeight = Math.max(0, Math.ceil(bottom - top))
     const root = document.documentElement
     root.style.setProperty('--cover-peek-height', `${peekHeight}px`)
     root.style.setProperty('--cover-lift', `${-peekHeight}px`)
@@ -194,14 +198,15 @@ export function useHomeHeroRelayout(opts: {
 
   function observeChrome() {
     const peek = opts.peekRef.value
-    if (peek && typeof ResizeObserver !== 'undefined') {
-      peekObserver = new ResizeObserver(() => {
-        measurePeek()
-        cacheScrollLayout()
-        syncScrollDriven()
-      })
-      peekObserver.observe(peek)
-    }
+    const head = opts.peekHeadRef?.value
+    if (!peek || typeof ResizeObserver === 'undefined') return
+    peekObserver = new ResizeObserver(() => {
+      measurePeek()
+      cacheScrollLayout()
+      syncScrollDriven()
+    })
+    peekObserver.observe(peek)
+    if (head) peekObserver.observe(head)
   }
 
   onBeforeMount(() => {
