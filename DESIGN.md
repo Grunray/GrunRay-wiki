@@ -119,6 +119,9 @@
 
 - 保留 sticky 横条→滚动收缩成胶囊的动画契约（类名与 `data-nav-compact` 不动）。
 - 材质随主题：浅色=纸面微透，深色=近黑微透。模糊量收敛，靠色而不是靠 blur 分层。
+- 左右按钮组（方案 D）：不要圆角填充药丸。外层用 `--radius-sm` + 上下 hairline（`box-shadow: 0 -1px 0 / 0 1px 0 var(--color-border)`，两端随圆角走弧）。项是弱图标 + 字；分组展开符用轻 `+`。hover / 当前页 = 底部 1px accent 下划线，不要绿底药丸。
+- 二级菜单：R 角纸面卡（`--radius-md` + `--color-bg-surface`）。左栏 mono kicker，衬线标题，说明用 `nav.*Desc` 原句；**不要**叶子小图标。顶底 hairline 带弧、略宽于项间；项间直 hairline。hover 同 `.toc-row`（elevated 52% 洗底 + 标题 accent）。
+- 右侧工具钮：纯 icon；hover 同样下划线。溢出面板与二级菜单同为纸面卡 + hairline，不要玻璃药丸。
 
 ## 5. Layout Principles
 
@@ -160,7 +163,8 @@
 
 - 断点：768px（平板/手机）、480px（小手机）；页面自有断点在各自样式内补。
 - 移动端触控目标 ≥44px；表格/代码块横向滚动不撑破视口。
-- 首页窄屏：首屏（刊号/问候）→ COVER STORY → 目录纵向堆叠；问候语允许换行。
+- 首页窄屏：首屏（问候）→ COVER STORY → 目录纵向堆叠；问候语允许换行。**不显示刊号与头像。**
+- **手机壳层**（`html[data-mobile-shell]`，`max-width: 768px`）：顶栏只留品牌 + 主题 / 中英文 / 汉堡；汉堡打开纸面侧栏。禁用滚动胶囊。右侧工具（照片背景、拖尾、FPS、音乐展开）强制关，回桌面恢复。Footer 只留 ICP 胶囊，不要 GrunRay 扭曲字。碎念/推荐详情改为底部不透明 Read sheet，不要右栏分栏。
 
 ## 9. Motion
 
@@ -170,17 +174,17 @@
 
 ### Hover 语言（2026-08 收敛）
 
-- **导航链接/分组按钮**：hover 只提文字色 + 底部生长线（accent 渐变线是唯一着色）；展开/当前页态才给轻染色底。不做位移弹跳、不做图标旋转。
-- **下拉菜单项**：hover 用色阶表面（`bg-elevated`），当前页项才用 accent 14% 染色。
+- **导航链接/分组按钮**：hover 只提文字色 + 底部 1px accent 下划线；当前页/展开同样下划线，不要绿底药丸、不要位移弹跳、不要图标旋转。
+- **下拉菜单项**：hover 同 `.toc-row`（`bg-elevated` 52% 洗底 + 标题 accent）；当前页项标题 accent，不要 accent 14% 整行染色。
 - **卡片无全局 hover**：纸面/终端面不浮起、不扫光、无发光阴影。
-- **可点击卡**（`timeline-card--clickable`、首页 COVER STORY）：方案 G —— 轻浮 `translateY(-2px)` + 右下 24px 纸张翻角 + 标题/日期左右错位、标签提亮 + 右下花藤沿骨架生长。类名 `.card-hover-g`。`/projects` 与 `/blog` 时间线卡用同一套 G，但卡片造型是目录行密度（透明底 + 每张顶 hairline，hover **保留**顶线）。首页封面拆成 peek + detail 后，悬停任一块须 `:has()` 同步整套动效（见 §12）。`prefers-reduced-motion` 时去掉翻角/花藤/位移，只留着色。
+- **可点击卡**（`timeline-card--clickable`、首页 COVER STORY）：方案 G —— 轻浮 `translateY(-2px)` + 右下 24px 纸张翻角 + 标题/日期左右错位、标签提亮 + 右下花藤沿骨架生长。类名 `.card-hover-g`。`/projects` 与 `/blog` 时间线卡用同一套 G，但卡片造型是目录行密度（透明底 + 每张顶 hairline，hover **保留**顶线）。首页封面是滚动纸面上的一张 `.cover-story.card-hover-g`（kicker 与正文同卡；`SCROLL · 下读` 在纸面顶通栏 ink 下、卡外），悬停走卡上的方案 G，**不要**再拆 peek/detail 用 `:has()` 同步。`prefers-reduced-motion` 时去掉翻角/花藤/位移，只留着色。
 - **首页目录行**（`.toc-row`）：hairline 分隔 + 轻底色 hover + 标题提 accent；**不套**方案 G（无翻角/花藤/位移），与列表时间线卡边界分明。
 - **列表刊头**（`/projects` `/blog` 共用 `.ed-filter`）：编辑式 kicker（FILTER · 标签），不是纸面 Filter Bar。下拉仍是 `AppSelect`（`variant="editorial"`）；碎念撰写页保持默认药丸。博客置顶是独立 `.timeline-pin` 带，日期用 `.timeline-date--with-year` 叠年，**不**拉宽 `--timeline-date-col`，**不**另开 Timeline 排版文件。
 - **留言页**（`/messages` 方案 D）：一级列表刊头，H1「留言」，无返回链。Write 用 `.ed-filter` inset；Inbox 行不 inset。列表是目录行（头像 + 衬线名 + mono 元数据），hover 同首页 `.toc-row`（elevated 洗底 + 名提 accent），**不套**方案 G。楼中楼是 `replies[]`（`parent_id` 挂多行），不是单条站长 `reply`。危险色（琥珀/红）只给站长拉黑、删除与取消回复，不作页面强调色。
 - **友链页**（`/friends` 方案 A）：一级列表刊头，H1「友链」，无返回链。Links · 往来进 `.ed-filter`；申请 / 审核是下划线 `.ed-action`。Directory · 名录是目录行（头像 + 衬线名 + mono 域名），透明底 + 每张顶 hairline，hover 同 `.toc-row`，**不套**方案 G。Extra · 特殊两列并排。申请 / 审核是次级页：`← 友链` + H1「申请」/「审核」。Facts / Apply / Review / Queue 的内收与字段语言见批次 125。**必须保留**站点图标预览（申请 `previewAvatar`、审核 `previewAvatarFor`、Facts 本站 logo）。验证码视觉对齐留言，仍走本页 captcha，不抽共享组件。
 - **栖息碎念 / 推荐**（`/fragments` `/recommend` 方案 B）：两页独立，一级刊头，H1「碎念」/「推荐」，无返回链。说明进 `.ed-filter`；心情/分类在左，最新/最早同行最右。筛选钮滑动下划线对齐博客 Section·分类（`.ed-cats` / `.ed-cat-line`）。名录是目录行（顶 hairline），hover 同 `.toc-row`，**不套**方案 G。有封面行加高、图拉满行高；无封面不留缩略图位。心情/分类只给词上色，不要胶囊徽章、不要每行左边色条。点开仍走 `XiqiSplitLayout`（footer 锁定、滚动还原、clip 揭开），不要另写一套分栏。展开后选中行右侧 2px accent 竖线与详情折缝成对，**不要箭头**。关闭钮 `.ed-action.danger`。推荐星级前端不显示，后端字段不动。撰写页保持药丸 `AppSelect`。两页共用 `components/editorial`（kicker / 筛选切换 / 名录行 / 详情壳），详情 Markdown 仍挂 `.markdown-reading` 并接代码复制；友链名录与博客/项目 Timeline、详情整页 `.ed-mast` **不**并进这套。
 - **关于页**（`/about` 方案 B）：一级刊头，H1「关于」，无返回链、无 `XiqiPageHero`。说明与隐私句进 `.ed-filter`；邮箱点击复制，不要 `mailto:`。刊头邮箱旁斜体「点击复制邮箱」，左栏邮箱无斜体。双栏：左身份/竞赛/证书粘滞对齐首页 `.toc-side`（`align-self:start` + sticky）；右 Education / Work / Community / Projects，节间浅灰 hairline（`--color-border`），不是 ink。奖项只给词上色（铜/银/金），不要胶囊。项目「前往项目页」是 `.ed-action`。公开 API 与前端包不下发 Raw 隐私字段；占位只用「已隐藏」标签 + 空遮挡条。`AboutPrivateText` 本页停用。
-- **出站确认**（`/leave/redirect`）：一级刊头居中，H1「确认离开本站」，无卡片、无药丸按钮。LEAVE · 出站进较窄 `.ed-filter`（ink / hairline 随内容列收短）；域名单独放大，不要写进「即将前往」句。取消 / 继续是下划线 `.ed-action`。
+- **出站确认**：外链点击时同步 `open('about:blank')` 再 `location.replace` 到 `/leave/redirect?tab=1`（与原先同一套一级刊头；Chromium 直接 `open(url,'_blank')` 常返回 null，勿据此误开第二份确认）。`tab=1` 取消为关页，失败则提示手动关闭；弹窗被拦时当前标签进 `/leave/redirect`（取消返回）。禁止 `target="_blank"` 直开目标。OAuth 仍用 `/auth/redirect`。
 - **OAuth 过渡**（`/auth/redirect`）：同一套居中刊头。AUTH · 授权；提供方名（GitHub / Google）单独放大，不要写进「即将前往授权」句。取消 / 继续是下划线 `.ed-action`。
 - **法律声明**（`/legal`）：一级刊头，H1「法律声明」，无玻璃卡、无药丸。LEGAL · 声明与 intro 进 `.ed-filter`；返回是下划线 `.ed-action`（`← 首页`）。各节 kicker + 正文，节间浅灰 hairline（`--color-border`），不是 ink。邮箱点击复制，不要 `mailto:`。阅读栏约 `42rem`，不要拉成 `68rem`。
 - **项目笔记**（`/projects/:slug/notes`）：次级页，`← 项目名` + H1「笔记」+ NOTES · 笔记；列表仍是 `.toc-row`（`PostCard`）。
@@ -204,18 +208,19 @@
 
 ### 视觉契约
 
-- 拖尾只有月相圆点，**无连线**；idle 从末端收回；顶满时羽状微粒散开。克制、低饱和，不抢正文。
+- 拖尾只有月相圆点，**无连线**；idle 从末端收回；顶满时羽状微粒散开。克制、低饱和，不抢正文。同时最多约 5 颗，间距约 48px。
+- 指针精灵（Columbina / Damselette）整体约 3/4 原尺寸（`spriteMaxPx` 36）。顶栏拖尾开关图标用 Welkin Moon 填色 SVG（`TrailNavIcon`，`currentColor`）。
 - 悬停 **link**（`.toc-row`、文章链接）：虹月·恒月·霜月内收，虹月近读。调参：`frontend/src/cursor/moonlitCursorConfig.ts` 的 `CONSTELLATION_HOVER_TUNING.link`。
 - 悬停 **project**（项目卡、`.timeline-card`）：同一三月，外张、霜月更清楚。调参：`CONSTELLATION_HOVER_TUNING.project`。
 - 点击 **祈愿**：指针完全淡出 → `wish.svg` 显现 → 轨道虚线+节点圆旋转 → 多颗 `Primogem` 从圆内侧散落（青白 / 薰衣草 / 粉）。已替换旧 `water.svg` 水纹。
-- 静憩：指针停驻 ≥2s，Columbina / Damselette 淡出，切 `sleep.svg` 月摇篮 + `Kuuhenki.svg` 推摇；月光晕与银河落尘在世界坐标，不随月弯摇。
+- 静憩：指针停驻 ≥2s **且不在可点击控件上**，Columbina / Damselette 淡出，切 `sleep.svg` 月摇篮 + `Kuuhenki.svg` 推摇；月光晕与银河落尘在世界坐标，不随月弯摇。停在按钮 / 链接 / 可点卡上保持指针精灵，不进待机。
 - 浅色纸面月光偏冷灰蓝；深色/abstract 用 cyan 线稿。强调色仍只给 UI 交互点，拖尾不占用 `accent`。
 
 ### 行为契约
 
 - 仅 `pointer: fine` 启用；触屏不挂载。
 - `prefers-reduced-motion` 或顶栏关闭：不挂载 Canvas（`ui.cursorTrailActive`）。
-- 输入框 / `contenteditable` / `cursor: text`：恢复系统光标，不画自定义指针。
+- 启用时 `html.moonlit-cursor-on * { cursor: none }`，盖掉按钮/链接的 `cursor: pointer`，避免悬停露出系统指针。输入框 / `select` / `contenteditable`：加 `moonlit-cursor-input`，恢复系统光标，不画自定义指针。
 - Canvas `pointer-events: none`，不挡 hit-test；坐标不进 Vue 响应式。
 - 静止无动画时 rAF 休眠，`pointermove` 唤醒。
 
@@ -234,10 +239,11 @@
       .home-intro-track / .home-intro-stack
         .home-intro-greeting.card / .home-intro-note.card
   .home-rising
-    .home-peek-wrap > .cover-story-peek     ← sticky kicker；层级高于纸面
     .home-scroll-layer > …paper
-      .cover-story-detail.card.card-hover-g  ← 正文 + CardCornerVineLazy
-      .home-sheet                           ← NOW + TOC（无 FilmFeed）
+      .cover-paper-peek           ← 通栏 2px ink + SCROLL · 下读；与卡留缝
+      .cover-story.card-hover-g  ← 整张卡（kicker + 正文 + CardCornerVineLazy）
+        .cover-story-peek-head   ← 卡内刊头（kicker）；peek 高度 = 纸面顶 → 此条底
+      .home-sheet                ← NOW + TOC（无 FilmFeed）
 ```
 
 路由 meta：`appMainLayout: 'full-viewport'`。离页时 composable 清除 `data-home-hero-page` 与相关 CSS 变量。
@@ -246,19 +252,21 @@
 
 - **通透首屏**：开照片背景时整页去掉纸面蒙层与 `html::before` 灰罩；中间留空看 `body::before` 照片。**禁止**再叠独立 `backdrop-filter` / `__veil`。
 - **滚动 blur**：仅写 `--page-photo-bg-blur`，从 0 插值到用户设定值（默认 6px）；跟手、无 0.85s filter 过渡。离页恢复用户值。写入前量化到 0.5px，同值不刷变量；progress 用缓存的纸面文档偏移 + `scrollY`，不要每帧 `getBoundingClientRect`。
-- **关照片背景**：生产用 WebP 线稿（`/art/polonia_sandoren.webp` | `-dark.webp` | `-abstract.webp`）。高度：导航下缘 → COVER STORY 上缘，贴右可向左延伸。abstract 墨色 `#FFDB00`、纸面 `#0A2330`。矢量源与主题 SVG 留在 `designed/home-hero-relayout/`（只改 fill/stroke，勿当生产热路径）。
+- **关照片背景**：底图用改线稿前的填充 WebP（`/art/polonia_sandoren.webp` | `-dark.webp` | `-abstract.webp`，Git 里那版 1536×1024）。扇形内叠当前线稿换墨 WebP（`-wedge.webp` / `-dark-wedge.webp` / `-abstract-wedge.webp`）+ 10% 扇形墨底。线稿源 `designed/home-hero-relayout/polonia_sandoren_line.svg`（`fill:none`，只改 `stroke` 再栅格）。扇形预设（`homeStageArtWedge.ts`）：顶点 `(1270.93, 0)`、夹角 `39°`、中轴 `-45°`；浅色扇形墨 `#38697a`，深色 `#abde6b`，abstract `#f4f1e8`。无虚线射线。高度：导航下缘 → COVER STORY 上缘。宽屏贴右可向左延伸；**窄屏（≤640px）** 铺满舞台 cover、锚点约 `50% 38%`（勿贴右 100%），露出角色正脸。主题 SVG 只留 `designed/`，勿当生产热路径。
 - **盖住后跳过绘制**：纸面顶缘落到导航下后给 `html` 打 `data-home-stage-covered`，`.home-stage` 用 `content-visibility: hidden`（自身 height 仍撑 sticky 占位）。回顶在露出前一截就去掉该标记，避免闪空白。
-- **纸面挤入**：`.home-rising` 负 margin 叠在首屏上；peek 只露 kicker；卡片上下同色 `--cover-story-bg`，无接缝细线。底部与 footer 揭示区用盖板纸色接上（`app-page-cover::after`），勿留空缝。
+- **纸面挤入**：`.home-rising` 负 margin 叠在首屏上。COVER STORY 整张卡坐在滚动纸面上（`.home-scroll-layer-paper`），不要再拆 sticky peek。纸面顶先一根通栏 2px ink（`.cover-paper-rule`，封住卡左右缺口），其下是 `SCROLL · 下读` + 极细 ∨（muted，不加粗、不用 accent），再与卡片留缝。卡顶是 kicker `COVER STORY · 封面故事` → 标题 / 摘要 / 元数据。`--cover-peek-height` / `--cover-lift` **从纸面顶量到卡内 kicker 底**（通栏线 + cue + 缝 + kicker），不要量整张卡；线稿与欢迎卡 `bottom` 跟着上移。造型是 editorial 纸面圆角矩形（`--radius-md` 四角），底色 `--cover-story-bg`（`--color-bg-base`，与滚动纸面同一色）。卡顶底 ink 2px（`--cover-ink`，对齐 `.home-toc` 顶线 / NOW 下方那根）；顶用外侧 `box-shadow` 随 R 角走弧（不要用通栏直线横切圆角），底用 `inset`（卡上 `overflow:hidden` 会裁外侧底影）。悬停时两根卡 ink 都要保留，不要被方案 G 的浮起阴影盖掉。卡下再一根同样 2px 直 ink（`.cover-story-foot-ink`）。无左侧 accent 脊、无玻璃。底部与 footer 揭示区用盖板纸色接上（`app-page-cover::after`），勿留空缝。勿做成卡片外悬浮条、大三角或圆形按钮。
 
 ### 刊号 / 问候
 
-- 刊号与头像分卡：上方矩形 `.mast-vol.card`，下方圆形 `.home-mast-avatar.card`，中间留间距。
-- 问候语与介绍语分卡；问候略加宽。默认靠左下；**开照片背景**时整组 `transform` 滑到右侧（`.home-intro-track` 容器查询），关掉滑回。位移跟 `html[data-photo-bg]`，**不要**在 `.home-layout` 上绑 `is-photo-bg` 的 Vue `:class`。
+- `.home-stage` 顶一条 ink 线（`--color-text`），贴导航下缘。纸面顶用通栏 2px `--cover-ink` 封缝；COVER STORY 上圆角仍由卡顶弧 ink 负责，不要再用通栏直线切卡。
+- 刊号与头像分卡：上方矩形 `.mast-vol.card`，下方圆形 `.home-mast-avatar.card`，中间留间距。刊号字号与头像都略大于目录 kicker。
+- 问候语与介绍语分卡；问候略加宽。默认靠左下（关照片背景再向左收一截）；**开照片背景**时整组 `transform` 滑到右侧（`.home-intro-track` 容器查询），关掉滑回。位移跟 `html[data-photo-bg]`，**不要**在 `.home-layout` 上绑 `is-photo-bg` 的 Vue `:class`。
+- 四张欢迎卡（刊号 / 头像 / 问候 / 介绍）始终有 `.card` 纸面。关照片（线稿）时底改为不透明 `--color-bg-surface`、关掉 `backdrop-filter`，避免线稿透字；开照片走默认玻璃卡。开照片背景时问候整组仍滑到右下；关则滑回左下。`prefers-reduced-motion` 时位移直接到位。
 - 问候入场只淡入，不动 `transform`（避免冲掉左下/右下偏移）。只等 Great Vibes（短超时），**不要** `fonts.load` 不存在的 Noto 700 italic，也不要等整页 `fonts.ready`。就绪后加 `home-fonts-ready`。
 
 ### COVER STORY 悬停
 
-与项目卡同一套方案 G；peek 与 detail 拆开后，`.home-rising:has(.peek:hover, .detail:hover)` 同步上浮、折角、花藤、标题、kicker、tag。勿把 `transform` 加在含 sticky peek 的父级上。
+与项目卡同一套方案 G，挂在这一张 `.cover-story.card-hover-g` 上（上浮、折角、花藤、标题、kicker、tag）。`transform` 只加在卡上，不要加在 `.home-rising` / `.home-stage`。不要把刊头和正文拆成两块再 `:has()` 同步。
 
 ### 导航占位
 

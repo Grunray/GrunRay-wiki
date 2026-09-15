@@ -1,0 +1,355 @@
+/* Pixel Companion · 纸面令牌预览 */
+:root {
+  --paper: #f4f1e8;
+  --ink: #2b2823;
+  --muted: #6b6560;
+  --accent: #2e6b4f;
+  --line: #d8cfba;
+  --pixel-pink: #c45a8a;
+  --pixel-ink: #2a2a2e;
+  --pixel-moon: #c8c8cc;
+  --z-cursor: 9999;
+  --z-switcher: 10000;
+  font-family: "Iowan Old Style", "Palatino Linotype", "Songti SC", "Noto Serif SC", Georgia, serif;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgb(46 107 79 / 0.06), transparent 55%),
+    var(--paper);
+}
+
+body.cursor-active,
+body.cursor-active a,
+body.cursor-active button,
+body.cursor-active [data-cursor] {
+  cursor: none !important;
+}
+
+#cursor-layer {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-cursor);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.preview-switcher {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-switcher);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
+  padding: 0.7rem 1rem;
+  background: color-mix(in srgb, var(--paper) 92%, white);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+}
+
+.preview-switcher .brand {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+}
+
+.preview-switcher .sep {
+  color: var(--line);
+}
+
+.scheme-btn {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.82rem;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.scheme-btn.on {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.preview-switcher .hint {
+  flex: 1 1 12rem;
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+main {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 1.4rem 1.15rem 4rem;
+}
+
+.scheme-panel {
+  display: none;
+}
+
+.scheme-panel.on {
+  display: block;
+}
+
+.scheme-blurb {
+  margin: 0 0 1.1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 70%, white);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.scheme-blurb b {
+  color: var(--accent);
+}
+
+.scheme-blurb .tag {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--line);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.mock-page {
+  border: 1px solid var(--line);
+  background: var(--paper);
+  padding: 1.15rem 1.25rem 1.5rem;
+}
+
+.mock-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 1.1rem;
+}
+
+.mock-nav-brand {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.mock-nav-links {
+  display: flex;
+  gap: 0.85rem;
+  font-size: 0.88rem;
+}
+
+.mock-nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.mock-nav-links a:hover,
+.mock-nav-links a.on {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.mock-hero h1 {
+  margin: 0.35rem 0 0.55rem;
+  font-size: clamp(1.55rem, 3.2vw, 2.1rem);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.mock-kicker {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.mock-hero p {
+  margin: 0;
+  max-width: 36em;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.mock-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 1.25rem;
+  margin-top: 1.4rem;
+}
+
+@media (max-width: 640px) {
+  .mock-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mock-col h2 {
+  margin: 0 0 0.55rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.toc-row {
+  display: block;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--line);
+  color: inherit;
+  text-decoration: none;
+}
+
+.toc-row:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.toc-row h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.toc-row .meta {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.project-card {
+  display: block;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 85%, white);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.project-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.project-card .thumb {
+  display: block;
+  height: 5.5rem;
+  margin-bottom: 0.55rem;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--pixel-pink) 35%, var(--paper)), var(--pixel-moon));
+  border: 1px solid var(--line);
+  image-rendering: pixelated;
+}
+
+.project-card strong {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.project-card span {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.demo-field {
+  margin-top: 1.15rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.demo-field label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.demo-field input,
+.demo-field textarea {
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 88%, white);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.92rem;
+  border-radius: 0;
+}
+
+.demo-field textarea {
+  min-height: 4.5rem;
+  resize: vertical;
+}
+
+.ref-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin: 1.1rem 0 0;
+  padding: 0.75rem;
+  border: 1px dashed var(--line);
+  background: color-mix(in srgb, var(--paper) 60%, white);
+}
+
+.ref-strip img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  background:
+    repeating-conic-gradient(#eee 0% 25%, #fff 0% 50%) 0 0 / 12px 12px;
+  border: 1px solid var(--line);
+}
+
+.ref-strip p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.state-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.85rem;
+}
+
+.state-chips span {
+  font-size: 0.72rem;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-card {
+    transition: none;
+  }
+}

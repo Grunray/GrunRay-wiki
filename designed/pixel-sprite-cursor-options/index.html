@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pixel Companion · 像素精灵光标方案</title>
+    <link rel="stylesheet" href="shared.css" />
+  </head>
+  <body>
+    <div id="cursor-layer" aria-hidden="true"></div>
+
+    <div class="preview-switcher">
+      <span class="brand">PIXEL COMPANION</span>
+      <span class="sep">|</span>
+      <button type="button" class="scheme-btn" data-scheme="a">方案 A</button>
+      <button type="button" class="scheme-btn" data-scheme="b">方案 B</button>
+      <button type="button" class="scheme-btn" data-scheme="c">方案 C</button>
+      <button type="button" class="scheme-btn on" data-scheme="d">方案 D</button>
+      <p class="hint">默认 D · 移动看三月散开 · 悬停公转 · 点击羽毛 · 文本框看 I 形光标</p>
+    </div>
+
+    <main>
+      <section class="scheme-panel" data-scheme="a">
+        <p class="scheme-blurb">
+          <b>方案 A · 惯性伴随（推荐入门）</b>
+          鼠标核心是极小的墨色像素块；<code>shaonv</code> Sprite 以惯性落后 10–30px 跟随，停下后轻微呼吸。
+          改动量小，存在感克制，适合先验证「陪伴感」是否成立。
+          <span class="tag">DEFAULT / MOVE / IDLE</span>
+        </p>
+      </section>
+
+      <section class="scheme-panel" data-scheme="b">
+        <p class="scheme-blurb">
+          <b>方案 B · 像素解构 Morph</b>
+          移动时 Sprite → 色源方块散开；停下后重新聚合为完整角色。视觉语言完全来自图中墨 / 紫粉 / 月灰，比贴图跟随更「高级」。
+          实现与性能成本中等。
+          <span class="tag">SPRITE → PIXEL → SPRITE</span>
+        </p>
+      </section>
+
+      <section class="scheme-panel" data-scheme="c">
+        <p class="scheme-blurb">
+          <b>方案 C · Pixel Companion 完整层</b>
+          Layer1 热点像素 + Layer2 惯性角色 + Layer3 短命色源拖尾 + Layer4 交互态（Hover 偏转 / Click 爆散 / Text 细线光标）。
+          对应提示词里的最终体系；默认仍克制，只在交互时明显。
+          <span class="tag">DEFAULT · MOVE · HOVER · CLICK · TEXT</span>
+        </p>
+      </section>
+
+      <section class="scheme-panel on" data-scheme="d">
+        <p class="scheme-blurb">
+          <b>方案 D · 哥伦比娅 · 像素三月伴侣（综合）</b>
+          融合 A 的惯性跟随、B 的形态 Morph、C 的交互层。母题对齐原神「哥伦比娅」：
+          <strong>移动</strong>时角色隐去，散成<strong>虹月 · 恒月 · 霜月</strong>（直径 1:3:2，公转 3:2:1，隐轨道）；
+          <strong>停下</strong>重新聚成少女（无呼吸、无偏转）；
+          <strong>悬停</strong>链接/卡片时三月缓缓公转；
+          <strong>点击</strong>散发淡蓝白像素羽毛。
+          默认克制，交互时才明显。
+          <span class="tag">COLUMBINA · 虹月/恒月/霜月 · FEATHER</span>
+        </p>
+      </section>
+
+      <div class="mock-page">
+        <header class="mock-nav">
+          <span class="mock-nav-brand">GrunRay</span>
+          <nav class="mock-nav-links">
+            <a href="#">首页</a>
+            <a class="on" href="#">博客</a>
+            <a href="#">项目</a>
+          </nav>
+        </header>
+
+        <div class="mock-hero">
+          <p class="mock-kicker">PIXEL COMPANION</p>
+          <h1>不是指针皮肤，而是博客里的小角色</h1>
+          <p>
+            母题来自网格像素图：黑主体、紫粉强调、月牙灰边。真正点击点仍是鼠标坐标；角色偏移陪伴，不抢内容注意力。
+          </p>
+        </div>
+
+        <div class="mock-grid">
+          <div class="mock-col">
+            <h2>LATEST</h2>
+            <a class="toc-row" href="#">
+              <h3>Pixel Sprite 与光标状态机</h3>
+              <span class="meta">悬停我 · 看三月公转</span>
+            </a>
+            <a class="toc-row" href="#">
+              <h3>从贴图到陪伴型交互</h3>
+              <span class="meta">2026 / mock</span>
+            </a>
+            <a class="toc-row" href="#">
+              <h3>克制的存在感：80 / 15 / 5</h3>
+              <span class="meta">默认 / 微拖尾 / 交互爆发</span>
+            </a>
+          </div>
+          <div class="mock-col">
+            <h2>PROJECT</h2>
+            <a class="project-card" href="#" data-cursor="hover">
+              <span class="thumb" aria-hidden="true"></span>
+              <strong>点击卡片 · 像素羽毛</strong>
+              <span>方案 D：Hover 三月公转 / Click 羽散</span>
+            </a>
+            <div class="state-chips" aria-hidden="true">
+              <span>DEFAULT</span>
+              <span>MOVE→三月</span>
+              <span>HOVER</span>
+              <span>FEATHER</span>
+              <span>TEXT</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-field">
+          <label for="demo-input">TEXT 态（方案 C）</label>
+          <input id="demo-input" type="text" placeholder="点这里输入，光标变成细像素 I 形…" />
+          <textarea placeholder="多行文本同样进入 TEXT 态"></textarea>
+        </div>
+
+        <div class="ref-strip">
+          <img src="./sprite-preview.png" alt="少女像素精灵" width="96" height="96" />
+          <img src="./assets/columbina-pixel-preview.png?v=13" alt="三月与羽毛像素素材" width="200" height="62" />
+          <p>
+            素材：<code>sprite*.png</code>（角色）+ <code>assets/moon-*.png</code>（虹/恒/霜月）+
+            <code>assets/feather-*.png</code>（羽毛）。可用
+            <code>extract_sprite.py</code> / <code>bake_pixel_assets.py</code> 重烘焙。
+            <strong>选定前不改</strong> <code>frontend/src</code>。
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <script src="shared.js?v=14"></script>
+  </body>
+</html>
