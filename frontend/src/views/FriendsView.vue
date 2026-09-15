@@ -5,6 +5,7 @@ import { RouterLink, useRoute } from 'vue-router'
 
 import type { FriendLink, SpecialLink } from '@/content/data/mockFriends'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
+import { useSiteLeaveRedirect } from '@/composables/useSiteLeaveRedirect'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
 import { fetchFriendLinks, fetchSpecialLinks } from '@/services/friendsApi'
@@ -16,6 +17,7 @@ import '@/styles/page-friends.css'
 
 const { t } = useI18n()
 const route = useRoute()
+const { startExternalLeave } = useSiteLeaveRedirect()
 
 useSeoMeta(() => ({
   title: `${t('friends.title')} | ${SITE_NAME}`,
@@ -47,6 +49,11 @@ function friendAvatarSrc(friend: FriendLink): string {
 
 function specialAvatarSrc(item: SpecialLink): string {
   return resolveFriendAvatar(item.url, item.avatar)
+}
+
+function onExternalLinkClick(url: string, event: MouseEvent) {
+  event.preventDefault()
+  void startExternalLeave(url, route.fullPath)
 }
 
 onMounted(async () => {
@@ -102,8 +109,10 @@ onMounted(async () => {
         <a
           class="friend-row"
           :href="friend.url"
+          target="_blank"
           rel="noopener noreferrer"
           :style="{ '--enter-i': String(index) }"
+          @click="onExternalLinkClick(friend.url, $event)"
         >
           <img
             class="friend-row-avatar"
@@ -138,8 +147,10 @@ onMounted(async () => {
         <a
           class="friend-row"
           :href="item.url"
+          target="_blank"
           rel="noopener noreferrer"
           :style="{ '--enter-i': String(index) }"
+          @click="onExternalLinkClick(item.url, $event)"
         >
           <SpecialLinkAvatar v-if="item.icon" :item="item" />
           <img

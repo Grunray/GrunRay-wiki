@@ -179,6 +179,7 @@ useSeoMeta(() => {
                 v-if="project.github_url"
                 class="ed-action"
                 :href="project.github_url"
+                target="_blank"
                 rel="noopener noreferrer"
               >
                 {{ t('projects.openGithub') }}
@@ -226,6 +227,7 @@ useSeoMeta(() => {
           v-if="project.github_url"
           class="ed-action"
           :href="project.github_url"
+          target="_blank"
           rel="noopener noreferrer"
         >
           {{ t('projects.openGithub') }}
