@@ -12,17 +12,19 @@
 }
 
 @media (pointer: fine) {
-  html.moonlit-cursor-on {
-    cursor: none;
+  /* 子节点上的 cursor:pointer / grab 会盖掉 html 上的 none，必须连 * 一起藏 */
+  html.moonlit-cursor-on,
+  html.moonlit-cursor-on * {
+    cursor: none !important;
   }
 
   html.moonlit-cursor-on.moonlit-cursor-input,
   html.moonlit-cursor-on.moonlit-cursor-input * {
-    cursor: auto;
+    cursor: auto !important;
   }
 
   html.moonlit-cursor-on.moonlit-cursor-input :is(input, textarea, [contenteditable='true']) {
-    cursor: text;
+    cursor: text !important;
   }
 }
 

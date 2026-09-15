@@ -19,6 +19,37 @@ export type { CursorTheme }
 export { CONSTELLATION_HOVER_TUNING } from './moonlitCursorConfig'
 export type { ConstellationHoverKind } from './moonlitCursorConfig'
 
+/** 可点击命中：停在这些上面不进静憩（月灵推摇篮） */
+const CLICKABLE_SELECTOR = [
+  'a[href]',
+  'area[href]',
+  'button',
+  'summary',
+  'label',
+  '[role="button"]',
+  '[role="link"]',
+  '[role="tab"]',
+  '[role="menuitem"]',
+  '[role="option"]',
+  '[role="switch"]',
+  '[role="checkbox"]',
+  '[role="radio"]',
+  '[role="combobox"]',
+  'input[type="button"]',
+  'input[type="submit"]',
+  'input[type="reset"]',
+  'input[type="checkbox"]',
+  'input[type="radio"]',
+  'input[type="file"]',
+  'input[type="color"]',
+  'input[type="range"]',
+  '.toc-row',
+  '.nav-link',
+  '.card-hover-g',
+  '[data-cursor-hover]',
+  '[tabindex]:not([tabindex="-1"])',
+].join(', ')
+
 /**
  * Moonlit Editorial Cursor · 原型 Canvas 引擎（单 rAF 循环）
  */
@@ -27,8 +58,8 @@ const SCHEMES = {
   d: {
     label: '星座月相',
     mode: 'constellation',
-    maxTrailNodes: 9,
-    nodeSpacing: 27,
+    maxTrailNodes: 5,
+    nodeSpacing: 48,
     nodeFadeMs: 2600,
     trailRetractMs: 180,
     trailRetractPull: 0.16,
@@ -41,14 +72,14 @@ const SCHEMES = {
     /** 拖尾月亮不透明度（含头月）；life / 出生淡入仍可再乘 */
     trailMoonOpacity: 0.4,
     trailAlpha: 0.88,
-    spriteMaxPx: 48,
+    spriteMaxPx: 36,
     /** 点击热点（0–1）：Damselette 尖端对齐 mx/my */
     spriteHotX: 0.08,
     spriteHotY: 0.08,
     /** Columbina 线稿相对 Damselette 热点的偏移（再拉开一点，少叠在尖端上） */
-    spriteOffsetX: 14,
-    spriteOffsetY: 12,
-    anchorMaxPx: 20,
+    spriteOffsetX: 10,
+    spriteOffsetY: 9,
+    anchorMaxPx: 15,
     anchorHotX: 0.06,
     anchorHotY: 0.06,
     pointerAnchor: true,
@@ -57,19 +88,19 @@ const SCHEMES = {
     clickPointerFadeMs: 300,
     clickWishFadeInMs: 200,
     clickWishFadeOutMs: 420,
-    wishMaxPx: 56,
+    wishMaxPx: 42,
     wishHotX: 0.08,
     wishHotY: 0.08,
     wishOffsetX: 0,
     wishOffsetY: 0,
     clickPrimogemCount: 6,
-    clickPrimogemOrbitR: 42,
-    clickPrimogemMaxPx: 14,
+    clickPrimogemOrbitR: 32,
+    clickPrimogemMaxPx: 10,
     clickOrbitDotCount: 3,
-    clickOrbitDotR: 2.2,
+    clickOrbitDotR: 1.7,
     restAfterMs: 2000,
-    restSleepMaxPx: 54,
-    restKuuMaxPx: 20,
+    restSleepMaxPx: 40,
+    restKuuMaxPx: 15,
     restSleepHotX: 0.08,
     restSleepHotY: 0.08,
     restHangPivotX: 0.24,
@@ -764,8 +795,24 @@ export class MoonlitCursorEngine {
   }
 
   isPointerResting(now, cfg) {
+    if (this.inputBlocked) return false
+    if (this.isOverClickable()) return false
     const ms = cfg.restAfterMs ?? 2000
     return this.lastMove > 0 && this.mx >= 0 && this.my >= 0 && now - this.lastMove >= ms
+  }
+
+  isClickableTarget(el) {
+    if (!el || !(el instanceof Element)) return false
+    if (el.closest(CLICKABLE_SELECTOR)) return true
+    if (el.closest('[data-cursor-hover="project"], article.item, .project-card, .card.item, .timeline-card')) {
+      return true
+    }
+    return false
+  }
+
+  isOverClickable() {
+    if (this.mx < 0 || this.my < 0) return false
+    return this.isClickableTarget(document.elementFromPoint(this.mx, this.my))
   }
 
   stop() {
@@ -847,11 +894,9 @@ export class MoonlitCursorEngine {
 
   isInputTarget(el) {
     if (!el || !(el instanceof Element)) return false
-    if (el.closest('input, textarea, select, [contenteditable="true"], [contenteditable=""]')) {
-      return true
-    }
-    const cursor = getComputedStyle(el).cursor
-    return cursor === 'text' || cursor === 'auto' && Boolean(el.closest('p, li, pre, code, article, .md-body, .post-body'))
+    return Boolean(
+      el.closest('input, textarea, select, [contenteditable="true"], [contenteditable=""]'),
+    )
   }
 
   detectHover(x, y) {
@@ -875,13 +920,7 @@ export class MoonlitCursorEngine {
     ) {
       return 'project'
     }
-    if (
-      el.closest(
-        'a, button, [role="button"], [role="link"], .toc-row, summary, .nav-link',
-      )
-    ) {
-      return 'link'
-    }
+    if (this.isClickableTarget(el)) return 'link'
     return 'none'
   }
 
@@ -1067,6 +1106,13 @@ export class MoonlitCursorEngine {
       this.constellationTailRetract = null
     }
     this.smoothConstellationPointer(cfg)
+    if (idle && this.mx >= 0 && now - this.hoverPickT >= 120) {
+      this.hoverPickT = now
+      this.hoverKind = this.detectHover(this.mx, this.my)
+      if (this.hoverKind !== 'none') {
+        this.hoverPhase = Math.min(1, this.hoverPhase + dt * 8)
+      }
+    }
     this.headMoonRot += this.headMoonVr
     for (const n of this.constellationNodes) {
       n.rot = (n.rot || 0) + (n.vr || 0)
