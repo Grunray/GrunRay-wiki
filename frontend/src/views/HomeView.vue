@@ -6,7 +6,13 @@ import { RouterLink, useRoute } from 'vue-router'
 
 import CardCornerVineLazy from '@/components/hover/CardCornerVineLazy.vue'
 import AvatarCircleSkeleton from '@/components/ui/AvatarCircleSkeleton.vue'
+import {
+  HOME_STAGE_ART_VB,
+  HOME_STAGE_ART_WEDGE_COLOR,
+  homeStageArtWedgeClipPath,
+} from '@/composables/homeStageArtWedge'
 import { useHomeHeroRelayout } from '@/composables/useHomeHeroRelayout'
+import { injectMobileShell } from '@/composables/useMobileShell'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
@@ -22,6 +28,7 @@ const { t } = useI18n()
 const route = useRoute()
 const ui = useUiStore()
 const { photoBackgroundEnabled, theme } = storeToRefs(ui)
+const { isMobileShell } = injectMobileShell()
 
 useSeoMeta(() => ({
   title: `${t('nav.home')} | ${SITE_NAME}`,
@@ -32,6 +39,7 @@ useSeoMeta(() => ({
 
 const homeRoot = ref<HTMLElement | null>(null)
 const peekRef = ref<HTMLElement | null>(null)
+const peekHeadRef = ref<HTMLElement | null>(null)
 const scrollLayerRef = ref<HTMLElement | null>(null)
 const avatarUrl = ref('')
 const latestUpdatedPosts = ref<Post[]>([])
@@ -41,7 +49,7 @@ const CACHE_HOME_AVATAR = 'grunray.home.avatarUrl.v1'
 const CACHE_HOME_LATEST = 'grunray.home.latestPosts.v1'
 const CACHE_HOME_RANDOM = 'grunray.home.randomPost.v1'
 
-const { measureCoverPeek } = useHomeHeroRelayout({ peekRef, scrollLayerRef })
+const { measureCoverPeek } = useHomeHeroRelayout({ peekRef, peekHeadRef, scrollLayerRef })
 
 /**
  * 勿在 homeRoot 上再用 :class 绑 is-photo-bg：Vue 会重写 class，冲掉
@@ -58,6 +66,17 @@ const stageArtSrc = computed(() => {
   if (theme.value === 'abstract') return '/art/polonia_sandoren-abstract.webp'
   return '/art/polonia_sandoren-dark.webp'
 })
+
+const stageArtTintSrc = computed(() => {
+  if (theme.value === 'light') return '/art/polonia_sandoren-wedge.webp'
+  if (theme.value === 'abstract') return '/art/polonia_sandoren-abstract-wedge.webp'
+  return '/art/polonia_sandoren-dark-wedge.webp'
+})
+
+const stageArtWedgeClip = homeStageArtWedgeClipPath()
+const stageArtWedgeColor = computed(
+  () => HOME_STAGE_ART_WEDGE_COLOR[theme.value] ?? HOME_STAGE_ART_WEDGE_COLOR.light,
+)
 
 /** 刊号：VOL.年 · NO.年内周数 · 今天日期 */
 const issue = computed(() => {
@@ -185,16 +204,6 @@ onMounted(() => {
     measureCoverPeek()
     void playPageEnter(homeRoot.value)
   })()
-  const peek = peekRef.value
-  peek?.addEventListener(
-    'mouseenter',
-    () => {
-      homeRoot.value
-        ?.querySelector('.cover-story-detail')
-        ?.dispatchEvent(new Event('mouseenter'))
-    },
-    { once: true },
-  )
 })
 
 watch(coverStory, async () => {
@@ -207,18 +216,35 @@ watch(coverStory, async () => {
   <section ref="homeRoot" class="home-layout">
     <section class="home-stage" aria-label="首屏">
       <figure v-if="!photoBackgroundEnabled" class="home-stage-art" aria-hidden="true">
-        <img
-          :src="stageArtSrc"
-          alt=""
-          width="1536"
-          height="1024"
-          decoding="async"
-          fetchpriority="low"
-        />
+        <div class="home-stage-art-stack">
+          <img
+            class="home-stage-art-base"
+            :src="stageArtSrc"
+            alt=""
+            :width="HOME_STAGE_ART_VB.w"
+            :height="HOME_STAGE_ART_VB.h"
+            decoding="async"
+            fetchpriority="low"
+          />
+          <img
+            class="home-stage-art-tint"
+            :src="stageArtTintSrc"
+            alt=""
+            :width="HOME_STAGE_ART_VB.w"
+            :height="HOME_STAGE_ART_VB.h"
+            decoding="async"
+            fetchpriority="low"
+            :style="{ clipPath: stageArtWedgeClip }"
+          />
+          <div
+            class="home-stage-art-wash"
+            :style="{ clipPath: stageArtWedgeClip, backgroundColor: stageArtWedgeColor }"
+          />
+        </div>
       </figure>
 
       <div class="home-wrap home-stage-inner">
-        <header class="home-mast" aria-label="刊号">
+        <header v-if="!isMobileShell" class="home-mast" aria-label="刊号">
           <p class="mast-vol card">
             <strong>{{ SITE_NAME }}</strong> · VOL.{{ issue.year }} · NO.{{ issue.no }} · {{ issue.date }}
           </p>
@@ -250,37 +276,44 @@ watch(coverStory, async () => {
     </section>
 
     <div class="home-rising">
-      <div class="home-peek-wrap">
-        <article
-          ref="peekRef"
-          class="cover-story-peek"
-          data-cursor-hover="project"
-          aria-label="封面故事"
-        >
-          <p class="cover-story-kicker">{{ t('home.coverStoryKicker') }}</p>
-        </article>
-      </div>
-
       <div ref="scrollLayerRef" class="home-scroll-layer" aria-label="滚动纸面">
         <div class="home-scroll-layer-paper">
-          <div v-if="coverStory" class="home-wrap">
-            <div
-              class="cover-story cover-story-detail card card-hover-g"
+          <div ref="peekRef" class="cover-paper-peek">
+            <div class="cover-paper-rule" aria-hidden="true"></div>
+            <p class="cover-scroll-cue" aria-hidden="true">
+              <span class="cover-scroll-cue-en">{{ t('home.scrollCueEn') }}</span>
+              <span class="cover-scroll-cue-mid">·</span>
+              <span class="cover-scroll-cue-zh">{{ t('home.scrollCueZh') }}</span>
+              <svg class="cover-scroll-cue-chev" viewBox="0 0 12 8" aria-hidden="true">
+                <path d="M1 1.5 L6 6 L11 1.5" />
+              </svg>
+            </p>
+          </div>
+          <div class="home-wrap">
+            <article
+              class="cover-story card-hover-g"
               data-cursor-hover="project"
+              aria-label="封面故事"
             >
-              <h2 class="cover-story-title">
-                <RouterLink :to="`/blog/${coverStory.slug}`">{{ coverStory.title }}</RouterLink>
-              </h2>
-              <p v-if="coverStory.summary" class="cover-story-lede">{{ coverStory.summary }}</p>
-              <p class="cover-story-meta">
-                <time>{{ formatDateYmd(coverStory.updated_at) || '----/--/--' }}</time>
-                <span v-for="tag in coverStory.tags" :key="tag" class="tag">{{ tag }}</span>
-                <RouterLink class="cover-story-read" :to="`/blog/${coverStory.slug}`">
-                  {{ t('home.readStory') }} →
-                </RouterLink>
-              </p>
-              <CardCornerVineLazy />
-            </div>
+              <div ref="peekHeadRef" class="cover-story-peek-head">
+                <p class="cover-story-kicker">{{ t('home.coverStoryKicker') }}</p>
+              </div>
+              <template v-if="coverStory">
+                <h2 class="cover-story-title">
+                  <RouterLink :to="`/blog/${coverStory.slug}`">{{ coverStory.title }}</RouterLink>
+                </h2>
+                <p v-if="coverStory.summary" class="cover-story-lede">{{ coverStory.summary }}</p>
+                <p class="cover-story-meta">
+                  <time>{{ formatDateYmd(coverStory.updated_at) || '----/--/--' }}</time>
+                  <span v-for="tag in coverStory.tags" :key="tag" class="tag">{{ tag }}</span>
+                  <RouterLink class="cover-story-read" :to="`/blog/${coverStory.slug}`">
+                    {{ t('home.readStory') }} →
+                  </RouterLink>
+                </p>
+                <CardCornerVineLazy />
+              </template>
+            </article>
+            <div class="cover-story-foot-ink" aria-hidden="true"></div>
           </div>
 
           <section class="home-sheet" aria-label="目录与后续内容">
@@ -417,20 +450,20 @@ watch(coverStory, async () => {
   flex-direction: column;
   align-items: flex-start;
   align-self: flex-start;
-  gap: 0.95rem;
+  gap: 1.05rem;
   width: max-content;
-  max-width: min(100%, 36rem);
+  max-width: min(100%, 40rem);
   margin: 0.55rem 0 0;
 }
 
 .mast-vol {
   margin: 0;
-  padding: 0.7rem 1rem;
+  padding: 0.82rem 1.15rem;
   width: max-content;
   max-width: 100%;
   font-family: var(--font-mono);
-  font-size: 0.74rem;
-  letter-spacing: 0.14em;
+  font-size: 0.86rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-text-muted);
 }
@@ -442,7 +475,7 @@ watch(coverStory, async () => {
 
 .home-mast-avatar {
   flex: 0 0 auto;
-  width: 2.85rem;
+  width: 3.5rem;
   aspect-ratio: 1 / 1;
   padding: 0;
   border-radius: 50%;
@@ -471,16 +504,17 @@ watch(coverStory, async () => {
   pointer-events: none;
 }
 
-/* —— 封面故事正文（kicker 在 peek；花藤仍挂在 detail） —— */
+/* —— 封面故事（刊头 + 正文同一张卡） —— */
 
 .cover-story-kicker {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 0.74rem;
-  font-weight: 700;
+  font-size: 0.76rem;
+  font-weight: 500;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--color-accent);
+  color: var(--color-text-muted);
+  line-height: 1;
 }
 
 .cover-story-title {
@@ -732,15 +766,13 @@ watch(coverStory, async () => {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .home-mast {
-    margin-top: 0.35rem;
+    display: none;
   }
+}
 
-  .home-mast-avatar {
-    width: 2.55rem;
-  }
-
+@media (max-width: 640px) {
   .cover-story-read {
     margin-left: 0;
     margin-right: var(--card-vine-gutter, 4.25rem);

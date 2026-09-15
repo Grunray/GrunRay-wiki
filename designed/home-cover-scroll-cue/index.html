@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN" data-preview-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>首页 COVER STORY · 下读提示</title>
+    <link rel="stylesheet" href="shared.css" />
+  </head>
+  <body data-scheme="a" data-motion="off">
+    <div class="preview-switcher" aria-label="预览控制">
+      <span class="brand">SCROLL CUE</span>
+      <button type="button" class="scheme-btn on" data-scheme="a">A 线 + 下读</button>
+      <button type="button" class="scheme-btn" data-scheme="b">B Folio 方章</button>
+      <button type="button" class="scheme-btn" data-scheme="c">C 文字先行</button>
+      <span class="sep" aria-hidden="true">|</span>
+      <button type="button" class="theme-btn on" data-theme="light">浅色</button>
+      <button type="button" class="theme-btn" data-theme="dark">深色</button>
+      <span class="sep" aria-hidden="true">|</span>
+      <button type="button" class="motion-btn on" data-motion="off">静态</button>
+      <button type="button" class="motion-btn" data-motion="on">1–2px 微动</button>
+      <span class="hint">默认 A。加高 peek：提示贴 → hairline → COVER STORY；不合入 frontend 直至选定。</span>
+    </div>
+
+    <p class="meta-note scheme-a">
+      <b>方案 A · 线 + 字 + 极细 ∨（推荐）</b>
+      peek 加高。顶 ink 下先放
+      <code>SCROLL · 下读</code>
+      + 极细 ∨，再一条通栏 hairline，其下才是
+      <code>COVER STORY · 封面故事</code>
+      。杂志「续下页」，不抢封面。合入时改
+      <code>HomeView.vue</code> peek 与
+      <code>page-home-hero.css</code>，不动 sticky / 方案 G。
+    </p>
+    <p class="meta-note scheme-b">
+      <b>方案 B · Folio 页码箭头</b>
+      细描边小方章，内文 <code>01 ↓</code>，字号接近刊号 / 标签。和 VOL · NO. 同一家族。比 A 更「印刷物」，但多一个几何块，可能和 kicker 抢视线。
+    </p>
+    <p class="meta-note scheme-c">
+      <b>方案 C · 文字先行</b>
+      只写 <code>↓ 最新文章</code> / <code>↓ LATEST</code>，箭头当标点。首访更清楚「往下有什么」。信息强、装饰弱；和现有 kicker
+      <code>COVER STORY · 封面故事</code> 略重复。
+    </p>
+
+    <main class="mock-stage" aria-label="首页封面区局部">
+      <section class="hero" aria-hidden="true">
+        <p class="mast-vol">GrunRay · VOL.2026 · NO.38</p>
+        <p class="intro">你好，我是 GrunRay</p>
+        <p class="intro-note">找不到实习捏——代码不跑我跑！</p>
+      </section>
+
+      <div class="home-rising">
+        <div class="peek-wrap">
+          <article class="cover-peek" aria-label="封面故事">
+            <div class="peek-head">
+              <div class="cue-slot">
+                <div class="cue cue-a">
+                  <p class="cue-row">
+                    <span class="cue-en">Scroll</span>
+                    <span class="cue-mid" aria-hidden="true">·</span>
+                    <span class="cue-zh">下读</span>
+                    <svg class="cue-chev" viewBox="0 0 12 8" aria-hidden="true">
+                      <path d="M1 1.5 L6 6 L11 1.5" />
+                    </svg>
+                  </p>
+                </div>
+
+                <div class="cue cue-b">
+                  <span class="folio" aria-label="下读">
+                    <span class="folio-num">01</span>
+                    <span class="folio-arrow" aria-hidden="true">↓</span>
+                  </span>
+                </div>
+
+                <div class="cue cue-c">
+                  <p class="cue-plain">
+                    <span class="cue-mark" aria-hidden="true">↓</span>
+                    最新文章
+                    <span class="cue-en-inline">Latest</span>
+                  </p>
+                </div>
+              </div>
+
+              <div class="peek-hairline" aria-hidden="true"></div>
+
+              <p class="cover-kicker">
+                <span class="ed-en">Cover Story</span>
+                <span class="ed-mid" aria-hidden="true">·</span>
+                <span class="ed-zh">封面故事</span>
+              </p>
+            </div>
+          </article>
+        </div>
+
+        <div class="scroll-paper">
+          <div class="cover-detail">
+            <h2>首页 Hero：FilmFeed 降高与浏览器卡死</h2>
+            <p class="lede">
+              108.P0 压低 home-band 时 Chrome/Edge 首页卡死的根因、失败尝试与最终改法。
+            </p>
+            <p class="meta">2026/08/23 · Vue · 开始阅读 →</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="shared.js"></script>
+  </body>
+</html>

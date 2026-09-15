@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN" data-preview-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>首页线稿 · 扇形换色 · GrunRay wiki</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+SC:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="shared.css?v=wedge-ink" />
+  </head>
+  <body>
+    <div class="preview-switcher" aria-label="预览控制">
+      <span class="brand">WEDGE · TINT</span>
+      <button type="button" class="theme-btn is-on" data-theme="light">浅色</button>
+      <button type="button" class="theme-btn" data-theme="dark">深色</button>
+      <button type="button" class="theme-btn" data-theme="abstract">隐藏</button>
+      <span class="sep" aria-hidden="true"></span>
+      <label class="ctrl">
+        夹角
+        <input id="angle" type="range" min="12" max="72" step="1" value="39" />
+        <output id="angle-out" for="angle">39°</output>
+      </label>
+      <label class="ctrl">
+        中轴
+        <input id="heading" type="range" min="-50" max="50" step="1" value="-45" />
+        <output id="heading-out" for="heading">-45°</output>
+      </label>
+      <label class="ctrl swatch">
+        扇形墨
+        <input id="wedge-color" type="color" value="#38697a" />
+      </label>
+      <button type="button" id="btn-wash" class="is-on">扇形底 开</button>
+      <button type="button" id="btn-rays">射线 关</button>
+      <button type="button" id="btn-reset">复位</button>
+      <span class="hint">扇形外：旧填充图。扇形内：当前线稿，描边用扇形墨。拖圆点移顶点；复位回预设。</span>
+    </div>
+
+    <div class="params-bar" aria-label="当前扇形参数">
+      <span class="params-label">参数</span>
+      <code id="params-live" class="params-live"></code>
+      <button type="button" id="btn-copy-params">一键复制</button>
+      <span id="copy-status" class="copy-status" aria-live="polite"></span>
+    </div>
+
+    <p class="meta-note">
+      <b>做法</b>
+      扇形外用 Git HEAD 里改线稿前的填充图（<code>filled-*.svg</code>，evenodd 挖掉扇形）。扇形内铺纸面 + 当前
+      <code>polonia_sandoren_line.svg</code>
+      ，描边为扇形墨（浅色默认 `#38697a`）。两条射线仍是辅助线。
+    </p>
+
+    <main class="stage" id="stage">
+      <p class="load-msg" id="load-msg">载入线稿…</p>
+      <svg
+        id="art-svg"
+        class="art-svg"
+        viewBox="0 0 1536 1024"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-label="线稿扇形换色"
+      >
+        <defs>
+          <clipPath id="wedge-clip" clipPathUnits="userSpaceOnUse">
+            <polygon id="wedge-poly" points="401,0 127,1024 675,1024" />
+          </clipPath>
+          <clipPath id="outside-clip" clipPathUnits="userSpaceOnUse" clip-rule="evenodd">
+            <path
+              id="outside-path"
+              clip-rule="evenodd"
+              d="M0,0H1536V1024H0Z M401,0 L127,1024 L675,1024 Z"
+            />
+          </clipPath>
+          <g id="art-old"></g>
+          <g id="art-new"></g>
+        </defs>
+        <rect class="paper" width="1536" height="1024" />
+        <g clip-path="url(#outside-clip)">
+          <use href="#art-old" />
+        </g>
+        <g clip-path="url(#wedge-clip)">
+          <rect class="paper" width="1536" height="1024" />
+          <use href="#art-new" class="art-new" fill="none" />
+        </g>
+        <g class="guides" aria-hidden="true">
+          <polygon id="wedge-wash" class="wedge-wash" points="401,0 127,1024 675,1024" />
+          <line id="ray-l" class="ray" x1="401" y1="0" x2="127" y2="1024" />
+          <line id="ray-r" class="ray" x1="401" y1="0" x2="675" y2="1024" />
+          <circle id="apex" class="apex" cx="401" cy="0" r="14" />
+        </g>
+      </svg>
+    </main>
+
+    <script src="shared.js?v=wedge-ink"></script>
+  </body>
+</html>
