@@ -62,14 +62,15 @@ cd frontend; npm run dev;
 
 ### 当前提示词（复制给 AI）
 
-顶部导航栏按钮没有做Editorial化
+
 
 ### 灵感（未排期）
 
-1. 月相拖尾还需要细调，比如 光标颜色，拖尾月亮 等，悬浮在按钮上方（可点击）时不进入待机状态（月灵推哥伦比娅的状态）
-2. （已并入 129）关于页做成简历。
-3. 碎念/推荐 改为 绝区零绳网展示方式
+1. 首页 刊号、问候语等 卡片背景有些突兀
 
+2. 将卡片右下角折起纸张的效果补充到项目很多地方
+
+2. 碎念/推荐 改为 绝区零绳网展示方式
 - 通用：
 （1）顶部为标题，标题下方为图片（如果有），再下方为详情，点击卡片的整个区域都可以跳转；
 （2）每个卡片的高度可以不一致，高度根据标题字数、图片高度、详情字数等内容判断；
@@ -80,11 +81,7 @@ cd frontend; npm run dev;
 - 如果是博客界面：
 （1）有没有技术能够把代码给做成预览，就像是项目界面的图片一样，这样比较高级；
 
-1. 内容备份：脚本将数据库导出到本地，并定期推送到 GitHub。
-2. 记录一下之后添加到 推荐 部分，图片转换为SVG线条的方法：
-
-- 先去[https://colorart.ai/image-to-line-art?utm_source=chatgpt.com网页将彩色图转换为黑白线稿](https://colorart.ai/image-to-line-art?utm_source=chatgpt.com网页将彩色图转换为黑白线稿)
-- 然后去[https://pic2vector.com/app/将线稿转换为SVG矢量图](https://pic2vector.com/app/将线稿转换为SVG矢量图)
+3. 内容备份：脚本将数据库导出到本地，并定期推送到 GitHub。
 
 ---
 
@@ -243,6 +240,402 @@ cd frontend; npm run dev;
 ---
 
 ## 已完成
+
+## 145 · 2026-09-16 月相拖尾 · Welkin Moon 图标 / 可点不待机 / 藏系统指针
+
+**状态**：已完成（2026-09-16；本地目视：顶栏 / 溢出菜单图标、可点悬停不切摇篮、启用后按钮上 `cursor: none`）
+
+**方向**：顶栏拖尾开关换成 Welkin Moon；导航小尺寸加粗原造型描边；停在可点击控件上不进静憩（月灵推摇篮）；启用后盖掉各处 `cursor: pointer`，避免悬停露出系统箭头。不改造型为几何圈、不改祈愿 / 拖尾月相语义。
+
+**背景 / 现状**：源 SVG `E:/Project/sandoren/Welkin Moon.svg`；原 `html.moonlit-cursor-on { cursor: none }` 被子节点 `cursor: pointer` 盖掉；`isPointerResting` 只看停驻 ≥2s，可点区也会进待机。
+
+**P0 — 顶栏图标**
+
+- [x] 145-1 `TrailNavIcon` 同步 Welkin Moon 三层路径（`right` / `left` / `center`）；`currentColor`；去掉源文件组透明度
+- [x] 145-2 导航小尺寸：保留原路径，视口描边加粗 + 收紧 `viewBox`；勿改成 24 视口几何同心圆
+
+**P0 — 可点区不进待机**
+
+- [x] 145-3 `isPointerResting`：可点击命中（按钮 / 链接 / role / `.card-hover-g` / 项目卡等）或输入区时不进静憩；停在可点上保持哥伦比娅指针 + 悬停月相
+- [x] 145-4 静止时仍周期性 `detectHover`，避免停在按钮上 hover 态掉光后误进待机
+
+**P0 — 藏系统指针**
+
+- [x] 145-5 `cursor-trail.css`：`html.moonlit-cursor-on, html.moonlit-cursor-on * { cursor: none !important }`；输入态仍恢复 `auto` / `text`
+- [x] 145-6 `isInputTarget` 只认 `input` / `textarea` / `select` / `contenteditable`（启用后不能再靠 computed `cursor` 判断）
+
+**P1 — 契约**
+
+- [x] 145-7 `DESIGN.md` §11：可点不静憩、启用时全节点藏系统指针
+
+**⚠️ 回归 / 风险**
+
+- 可点选择器过宽会让正文几乎永不待机；过窄则按钮仍会进摇篮 —— 以 `CLICKABLE_SELECTOR` + 项目卡为准
+- `cursor: none !important` 只挂在 `moonlit-cursor-on`；关闭拖尾后按钮指针应恢复
+- 输入框 / 可编辑区须仍能见系统 I 形 / 箭头
+
+**涉及文件**
+
+`TrailNavIcon.vue`、`moonlitCursorEngine.ts`、`cursor-trail.css`、`DESIGN.md` §11
+
+**验收**
+
+- [x] 顶栏 / 溢出菜单月相图标可辨，线重接近其它工具图标
+- [x] 悬停按钮 / 链接 ≥2s：不切 sleep + Kuuhenki；离开可点区再停 ≥2s 仍进静憩
+- [x] 启用拖尾后悬停按钮：computed `cursor` 为 `none`，系统箭头不露；输入框仍恢复系统光标
+- [x] `DESIGN.md` §11 已同步
+
+---
+
+## 144 · 2026-09-15 首页 COVER STORY · 整卡合入纸面 + 通栏顶 ink
+
+**状态**：已完成（2026-09-15；本地目视：首屏 peek、滚动展开、方案 G 悬停、离页回首页单根正常）
+
+**方向**：把拆开的 peek + detail 合成滚动纸面上的一张 COVER STORY 卡；下读提示走 editorial 方案 A。再按方案 1 在纸面顶加通栏 2px ink，把 `SCROLL · 下读` 挪到线下方、卡外，与卡留缝，封住卡顶弧 ink 左右缺口。不改 sticky 首屏 / 方案 G / 单根 `HomeView`。
+
+**背景 / 现状**：原先 `.home-peek-wrap` sticky 刊头与 `.cover-story-detail` 两块，悬停靠 `:has()` 同步；卡顶弧 ink 只跟卡宽，纸面顶左右无墨线。原型：`designed/home-cover-scroll-cue/`（A/B/C，选定 A）。
+
+**P0 — 整卡合入**
+
+- [x] 144-1 去掉 `.home-peek-wrap` / `.cover-story-detail`；一张 `.cover-story.card-hover-g` 坐在 `.home-scroll-layer-paper`
+- [x] 144-2 删 `:has()` peek/detail 同步与 mouseenter 转发；方案 G 挂在整张卡上；悬停保留顶/底 2px ink
+- [x] 144-3 `page-enter-home.css` 入场目标改为 `.cover-story`；`HomeView` 仍单根
+
+**P0 — 下读提示（方案 A）**
+
+- [x] 144-4 合入 `SCROLL · 下读` + 极细 ∨（muted、不加粗、不用 accent）；i18n `home.scrollCueEn` / `scrollCueZh`
+
+**P0 — 纸面顶通栏 ink（方案 1）**
+
+- [x] 144-5 `.cover-paper-rule`：纸面顶铺满 2px `--cover-ink`；`.cover-paper-peek` = 通栏线 + cue；与卡留 `0.7rem` 缝
+- [x] 144-6 cue 出卡；卡内只留 kicker + 正文；去掉卡内 hairline
+- [x] 144-7 `--cover-peek-height` / `--cover-lift`：从纸面顶量到卡内 kicker 底（`peekRef` + `peekHeadRef`）；不量整张卡
+
+**P1 — 契约**
+
+- [x] 144-8 `DESIGN.md` §12 / §9 hover：结构、通栏顶缝、peek 测量、勿用通栏线横切卡上圆角
+
+**⚠️ 回归 / 风险**
+
+- peek 高度勿量整张卡，否则线稿 / 欢迎卡 `bottom` 被整卡顶死
+- 通栏顶 ink 与卡顶弧 ink 分工：前者封纸面缝，后者随 R 角；悬停只抬卡，通栏线不动
+- 勿再拆 peek/detail 或恢复 sticky 刊头
+
+**涉及文件**
+
+`HomeView.vue`、`page-home-hero.css`、`page-enter-home.css`、`useHomeHeroRelayout.ts`、`zh.json` / `en.json`、`DESIGN.md` §12、`designed/home-cover-scroll-cue/`
+
+**验收**
+
+- [x] 首屏底：通栏 ink + `SCROLL · 下读` + 缝 + 卡顶 kicker；左右无纸面缺口
+- [x] 下滚展开标题 / 摘要 / 元数据；卡顶弧 ink、卡底 inset ink、`.cover-story-foot-ink` 仍在
+- [x] 悬停方案 G（上浮 / 折角 / 花藤 / 标题 / kicker）；sticky 首屏与单根离页回首页正常
+- [x] `DESIGN.md` §12 已同步
+
+---
+
+## 143 · 2026-09-15 外链新标签确认 · footer 统一路径
+
+**状态**：已完成（2026-09-15；跟进：弃用手写注入页，改开同一套 `/leave/redirect?tab=1` 刊头）
+
+**方向**：外链改为新标签打开出站确认，**布局与原先 `/leave/redirect` 一级刊头一致**；footer 与其它外链同一路径。弹窗被拦回退当前标签过渡页。不改站内路由语义、不加埋点。
+
+**背景 / 现状**：曾用 `document.write` 另造简易确认 HTML，与站内 `.ed-filter` / `EdKicker` / 字体 / 壳层不一致；且 Chromium 对 `open(url,'_blank')` 常返回 `null`，会误开第二份确认。
+
+**P0 — 打开与确认页**
+
+- [x] 143-1 `isExternalHttpUrl`：非本站 http(s) 判定
+- [x] 143-2 `openExternalLeaveConfirm`：同步 `about:blank` → `location.replace` 到 `/leave/redirect?tab=1`（同一套 `SiteLeaveRedirectView`）；删除手写 `buildExternalLeaveConfirmHtml`
+- [x] 143-3 `tab=1`：取消「取消并关闭」；`close` 失败展示 `leave.tabCloseFailed`，隐藏操作、不跳转
+- [x] 143-3b 修复 Chromium `open(url,'_blank')` 返回 null 误判 → 当前页再 `router.push` 叠双确认
+
+**P0 — 挂点**
+
+- [x] 143-4 `installExternalLeaveClickGuard` 捕获阶段拦截；模块自挂 + HMR 可重装；`main.ts` 亦装
+- [x] 143-5 `startExternalLeave` 优先新标签，失败再当前页 `router.push`（无 `tab`）
+- [x] 143-6 Footer 外链 / ICP 去掉 `target="_blank"`；友链 / 推荐 / 项目 GitHub / Demo / 留言头像链同路径
+
+**P1 — 文案与契约**
+
+- [x] 143-7 i18n `leave.tabHint` / `tabCancel` / `tabCloseFailed`
+- [x] 143-8 `DESIGN.md` §9 出站确认契约更新（同页布局 + `tab=1` 关页）
+
+**涉及文件**
+
+`leave/openExternalLeaveConfirm.ts`、`leave/installExternalLeaveClickGuard.ts`、`SiteLeaveRedirectView.vue`、`page-leave-redirect.css`、`siteLeaveRedirect.ts`、`useSiteLeaveRedirect.ts`、`main.ts`、`FooterExternalLinks.vue`、`FooterGrunRayMetaBar.vue`、`FriendsView.vue`、`RecommendView.vue`、`ProjectDetailView.vue`、`DemoBlock.vue`、`MessagesView.vue`、`zh.json` / `en.json`、`DESIGN.md`
+
+**验收**
+
+- [x] 新标签 `/leave/redirect?tab=1` 刊头与旧出站页一致（H1、LEAVE · 出站、ink 顶线、域名放大、下划线操作）
+- [x] `tab=1` 取消文案为「取消并关闭」；非 tab 仍「取消，返回」
+- [x] Footer / ICP 无 `target="_blank"`；友链点击不直开目标
+- [x] 站内 `/legal`、申请友链等相对链不误拦
+- [ ] 真机 Chrome/Edge：新标签确认 → 继续打开目标；取消关页；close 失败见提示；不出现双确认页
+- [x] `DESIGN.md` §9 / i18n 已同步
+
+---
+
+## 142 · 2026-09-14 首页线稿扇形叠层 · ThemeDayNightToggle 警告
+
+**状态**：已完成（2026-09-14；关照片背景三主题目视：扇形外填充 / 扇形内线稿换墨 / 10% 扇形底；控制台无 Extraneous class 警告）
+
+**方向**：关照片背景时右侧舞台用**两套同构图图**叠层——扇形外旧填充、扇形内当前线稿换墨 + 10% 扇形底；几何写死在 composable。顺手修掉 `ThemeDayNightToggle` 因 fragment 根无法继承 `class` 的 Vue 警告。项目笔记入库说明。大 SVG 不进生产热路径。
+
+**背景 / 现状**：原先单张线稿 WebP；扇形内外要不同画法必须叠两层。原型 `designed/home-hero-wedge/`（evenodd 挖洞 + CSS `--wedge` 改 stroke）；生产等价为底图不裁 + 顶图 `clip-path`。契约见 `DESIGN.md` §12。
+
+**P0 — 扇形叠层合入**
+
+- [x] 142-1 底图恢复改线稿前填充 WebP（`polonia_sandoren.webp` / `-dark` / `-abstract`）；扇形内烤线稿换墨 WebP（`-wedge.webp` 等三主题）
+- [x] 142-2 `homeStageArtWedge.ts`：顶点 `(1270.93, 0)`、夹角 `39°`、中轴 `-45°`；墨色 light `#38697a` / dark `#abde6b` / abstract `#f4f1e8`；`homeStageArtWedgeClipPath()` 输出百分比 polygon
+- [x] 142-3 `HomeView`：`.home-stage-art-stack` = base img + tint img（同 clip）+ wash div（同 clip、`opacity: 0.1`）；无虚线射线
+- [x] 142-4 宽屏贴右 / 窄屏 cover 锚点契约不动；`DESIGN.md` §12 同步扇形内外与 WebP 热路径
+
+**P0 — Vue 警告**
+
+- [x] 142-5 `ThemeDayNightToggle`：`inheritAttrs: false` + 按钮 `v-bind="$attrs"`，消除 fragment/Teleport 根导致的 Extraneous `class` 警告；紧凑导航 `.header-theme-toggle` 仍生效
+
+**P1 — 文档**
+
+- [x] 142-6 项目笔记 `backend/import/markdown/project/grunray-wiki/grunray-wiki-note-home-stage-art-wedge.md`（两套图、clip 几何、原型 vs 生产）
+
+**⚠️ 回归 / 风险**
+
+- 扇形内描边勿烤成纸面墨 `--ink`，否则与填充外沿撞色，扇形边界「消失」
+- 勿把 `designed/` 大 SVG 拷回 `frontend/public/art/`；热路径只 WebP
+- 改夹角/顶点先在原型调，再抄进 `HOME_STAGE_ART_WEDGE`
+
+**涉及文件**
+
+`HomeView.vue`、`homeStageArtWedge.ts`、`page-home-hero.css`、`ThemeDayNightToggle.vue`、`frontend/public/art/polonia_sandoren*.webp`、`designed/home-hero-wedge/`、`designed/home-hero-relayout/polonia_sandoren_line.svg`、`DESIGN.md` §12、`grunray-wiki-note-home-stage-art-wedge.md`
+
+**验收**
+
+- [x] 关照片背景：浅/深/abstract 扇形外填充、扇形内线稿墨色、10% 扇形底可见；开照片背景舞台艺术不挂载
+- [x] 宽屏贴右、≤640px 正脸锚点
+- [x] 控制台无 `ThemeDayNightToggle` Extraneous class 警告；主题切换与紧凑态 padding 正常
+
+---
+
+## 141 · 2026-09-11 手机壳层 · 顶栏汉堡 / Read sheet / ICP-only footer
+
+**状态**：已完成（2026-09-11；390 窄屏目视：首页 / 博客 / 项目 / 碎念 sheet / 推荐 / 关于 / 留言 / 友链 / 详情 / 404）
+
+**方向**：`max-width: 768px` 统一手机壳层：顶栏只留品牌 + 主题 / 语言 / 汉堡；禁滚动胶囊；强制关右侧工具；Footer 仅 ICP 胶囊；碎念/推荐详情改底部不透明 Read sheet；首页藏刊号与头像。跟进一轮短页 ICP、关闭提示文案与触控热区。
+
+**背景 / 现状**：桌面顶栏横排目录 + 工具胶囊在窄屏挤占；碎念/推荐桌面右栏分栏在手机不可用；GrunRay 扭曲字占位过高。契约见 `DESIGN.md` §8。
+
+**P0 — 壳层入口与顶栏**
+
+- [x] 141-1 `useMobileShell`：`MOBILE_SHELL_MQ = (max-width: 768px)`、`html[data-mobile-shell]`、provide/inject、抽屉与 sheet 共用滚动锁
+- [x] 141-2 手机强制关照片背景 / 拖尾 / FPS、音乐最小化；回桌面恢复快照
+- [x] 141-3 顶栏：品牌左，右胶囊 = 主题 | 语言 | 汉堡（≥44px）；禁 `navCompact` / 胶囊 `::before` inset
+- [x] 141-4 汉堡抽屉 Teleport 到 body，纸面侧栏；`SiteNav variant="drawer"` 纵向目录
+
+**P0 — 碎念 / 推荐 / 首页 / Footer**
+
+- [x] 141-5 `XiqiSplitLayout`：手机 editorial 时底部不透明 Read sheet（`Teleport` body，约 `min(75dvh, 100dvh - 4.5rem)`）；开合动画；`data-xiqi-sheet` 藏回顶
+- [x] 141-6 首页：`v-if` + CSS 兜底藏 `.home-mast`；Splash 跳过头像飞入
+- [x] 141-7 Footer：手机不渲染 GrunRay 扭曲字；`META_ONLY` 垫高 110px；短页也露出 ICP 胶囊
+
+**P1 — 跟进打磨（同批收口）**
+
+- [x] 141-8 碎念/推荐打开详情：手机文案改为「点空白处关闭」（桌面仍 Esc / 右上角）
+- [x] 141-9 短页 ICP：`hasRevealRoom` 改为相对垫高本身判断，避免 110px padding 误判「还能滚」；404 等短页首屏即显胶囊
+- [x] 141-10 回顶钮：手机 `z-index` 高于 ICP 胶囊，避免被盖住点不到
+- [x] 141-11 博客/项目 `.ed-filter` 换行断点 640 → 768，与壳层对齐
+- [x] 141-12 名录 `.ed-cat`：透明 `::before` 扩大点按热区，不撑高筛选行
+
+**⚠️ 回归 / 风险**
+
+- IDE 内嵌浏览器截图常只画左列，fixed 层可能偏右；真机 / 实际 768 视口为准
+- 抽屉故意留左侧缝（`100vw - 2.25rem`），非 bug
+- 留言登录链、目录「全部 →」仍是刊头文字链，未改成大按钮（保纸面语言）
+
+**涉及文件**
+
+`useMobileShell.ts`、`AppShell.vue`、`SiteNav.vue`、`SiteNavGroup.vue`、`XiqiSplitLayout.vue`、`HomeView.vue`、`FragmentsView.vue`、`RecommendView.vue`、`FooterGrunRayPanel.vue`、`useFooterGrunRayReveal.ts`、`BackToTop.vue`、`SplashWoniuOverlay.vue`、`main.css`、`page-ed-ledger.css`、`footer-grunray.css`、`page-list-masthead.css`、`zh.json` / `en.json`、`DESIGN.md` §8
+
+**验收**
+
+- [x] 390×844：顶栏汉堡布局；音乐壳隐藏；碎念点开 sheet 不透明上滑；关闭后 DOM 卸掉
+- [x] 短页（404）首屏可见 ICP 胶囊；滚到底回顶可点
+- [x] `DESIGN.md` §8 已记手机壳层契约
+
+---
+
+## 140 · 2026-09-08 首页窄屏线稿锚点 · 欢迎卡恢复纸面
+
+**状态**：已完成（2026-09-08）
+
+**方向**：窄屏线稿不贴右；欢迎卡关照片背景时恢复 `.card` 纸面，避免线稿压字。宽屏贴右契约不动。
+
+**P0**
+
+- [x] 140-1 ≤640px：`.home-stage-art` 铺满、`cover`、`object-position: 72% 38%`
+- [x] 140-2 去掉关背景卡面全透明；线稿态欢迎卡用不透明 `--color-bg-surface`（关 blur），开照片仍默认玻璃
+- [x] 140-3 `DESIGN.md` §12 同步
+
+**涉及文件**
+
+`page-home-hero.css`、`DESIGN.md` §12
+
+---
+
+## 139 · 2026-09-08 首页 NOW · 在写 / 在读文案
+
+**状态**：已完成（2026-09-08）
+
+**方向**：只改 i18n。NOW 右侧两句仍走 `t('home.nowDoing')` / `t('home.nowReading')`，不接接口。
+
+**P0**
+
+- [x] 139-1 中文改为「在调整站点界面布局」「已退坑空月之歌」
+- [x] 139-2 英文改为 `Adjusting the site layout` / `Dropped Song of the Welkin Moon`
+
+**涉及文件**
+
+`zh.json`、`en.json`
+
+---
+
+## 138 · 2026-09-08 首页 COVER STORY · 纸色 / 2px ink
+
+**状态**：已完成（2026-09-08）
+
+**方向**：卡面与滚动纸面同色。顶底走弧 ink 加粗到目录顶线（NOW 下方那根 2px）；卡下再加一根同样粗的直 ink。方案 G 悬停不动。
+
+**背景 / 现状**：NOW 自身 `border-bottom` 是 1px `--color-border`；视觉上更粗的 ink 是 `.home-toc` 顶线 `2px` + `--color-text` 82%。
+
+**P0**
+
+- [x] 138-1 `--cover-story-bg` 改回 `--color-bg-base`（`#F4F1E8`）
+- [x] 138-2 peek 顶 / detail 底 ink 改为 2px（`--cover-ink`），悬停保留
+- [x] 138-3 卡下加 `.cover-story-foot-ink`，与 `.home-toc` 顶线同粗同色
+- [x] 138-4 `DESIGN.md` §12 同步
+
+**涉及文件**
+
+`page-home-hero.css`、`HomeView.vue`、`DESIGN.md` §12
+
+---
+
+## 137 · 2026-09-08 首页 COVER STORY · R 角 + 走弧 ink
+
+**状态**：已完成（2026-09-08）
+
+**方向**：整卡改成 `--radius-md` 圆角矩形（peek 上圆 / detail 下圆）。顶底 ink 随圆角走弧。欢迎层通栏底 ink 拿掉，避免横切上圆角。
+
+**P0**
+
+- [x] 137-1 peek `border-radius` 上两角 + 外侧 `box-shadow` 顶 ink
+- [x] 137-2 detail 下两角 + `inset` 底 ink（`overflow: hidden` 会裁外侧影）
+- [x] 137-3 `.home-stage::after` 通栏底线停用
+- [x] 137-4 悬停 elevation 不冲掉顶底 ink；`DESIGN.md` §12 同步
+
+**涉及文件**
+
+`page-home-hero.css`、`DESIGN.md` §12
+
+---
+
+## 136 · 2026-09-08 首页 COVER STORY · Editorial 刊头皮
+
+**状态**：已完成（2026-09-08）
+
+**方向**：只改 peek + detail 卡面。标题 / 摘要 / 标签 / 阅读链排布不动；方案 G 悬停不动。
+
+**P0**
+
+- [x] 136-1 去掉玻璃 `.card`、左侧 accent 脊、圆角、上浮阴影
+- [x] 136-2 peek 顶 ink + detail 底 hairline；纸底 `--color-bg-base`；kicker 改 editorial 字色
+- [x] 136-3 浏览器验收：静止刊头皮 + 悬停翻角/花藤/错位仍在
+
+**涉及文件**
+
+`page-home-hero.css`、`HomeView.vue`、`DESIGN.md` §12
+
+---
+
+## 135 · 2026-09-08 首页欢迎卡 · 关背景透明 / 开背景先铺再滑
+
+**状态**：已完成（2026-09-08）
+
+**方向**：四张欢迎卡跟 `html[data-photo-bg]`。纯 CSS 两段 delay，不在 `.home-layout` 绑 Vue class。
+
+**P0**
+
+- [x] 135-1 关照片背景：刊号 / 头像 / 问候 / 介绍卡面全透明（含关掉 `backdrop-filter`）
+- [x] 135-2 开：先铺卡面再滑到右下；关：先滑回再褪透明
+- [x] 135-3 `prefers-reduced-motion` 直接到位；`DESIGN.md` §12 补契约
+
+**涉及文件**
+
+`page-home-hero.css`、`DESIGN.md` §12
+
+---
+
+## 134 · 2026-09-08 首页欢迎层 · ink 线 / 左移 / 刊号放大
+
+**状态**：已完成（2026-09-08）
+
+**方向**：只动 `.home-stage` 欢迎层。通透背景、单根 Transition、`data-photo-bg` 位移契约不动。卡片透明再位移的想法只讨论、不落地。
+
+**P0**
+
+- [x] 134-1 `.home-stage` 顶底 ink 线（`--color-text`）；底线贴 peek 上缘
+- [x] 134-2 关照片背景时问候/介绍再向左收；开背景仍走现有右下位移
+- [x] 134-3 刊号字号与头像略放大
+- [x] 134-4 浏览器验收：浅色下关/开照片背景；问候左移与右滑均到位
+
+**涉及文件**
+
+`page-home-hero.css`、`HomeView.vue`、`DESIGN.md` §12
+
+---
+
+## 133 · 2026-09-08 导航按钮 · Editorial 方案 D
+
+**状态**：已完成（2026-09-08）
+
+**方向**：顶部导航按钮改成 editorial 目录项（方案 D）。不推倒收缩式导航；`data-nav-compact` 契约不动。二级菜单说明用现有 `nav.*Desc` 原句，不沿用叶子小图标。
+
+**背景 / 现状**：生产仍是绿填充药丸 + 圆形开关键。原型 `designed/nav-editorial-options/`，选定 **D 上下发丝**。
+
+**依赖 / 冲突**：不要改 404、首页封面（§12）、碎念撰写页药丸 `AppSelect`。不要给 editorial 列表加 `xiqi-page--split`。
+
+**P0 — 合入 Vue（先做）**
+
+- [x] 133-1 左侧按钮组：去掉药丸填充；弱图标 + 轻 `+`；hover/active 细绿下划线；胶囊上下发丝（`--color-border`，两端带弧）
+- [x] 133-2 二级菜单：R 角纸面卡；左栏 kicker、衬线标题、**原 i18n 说明**；无叶子图标；顶底发丝略宽于项间直 hairline；hover 对齐笔记 `.toc-row`
+- [x] 133-3 右侧工具组：同样发丝胶囊；悬停下划线（不再铺底）；溢出面板纸面卡 + hairline
+- [x] 133-4 浏览器验收：浅/深/抽象、展开横条/收缩胶囊、三组下拉、工具开/关、窄屏
+
+**P1 — 契约**
+
+- [x] 133-5 `DESIGN.md` §4 / §9 导航 hover 语言改成下划线 + 发丝，不再写生长线药丸
+- [x] 133-6 二级菜单 kicker 进 i18n（INDEX / NOTES / INBOX 等），说明句不改
+
+**方案对照**
+
+| 代号 | 名称 | 说明 |
+| --- | --- | --- |
+| 现状 | 药丸 | 对照用，不合入 |
+| A | 目录项 | 去按钮感 + 下划线 |
+| B | 斜杠分节 | 项间 `/` |
+| C | 顶部目录 | 拆掉左右内胶囊 |
+| **D** | **上下发丝** | **选定。A + 发丝包线 + 纸面下拉** |
+
+**涉及文件**
+
+`SiteNav.vue`、`SiteNavGroup.vue`、`nav-toolbar.css`、`AppShell.vue`（溢出面板皮）、`DESIGN.md`、`zh.json` / `en.json`、`designed/nav-editorial-options/`
+
+**验收**
+
+- [x] 本地目视（三主题 + 移动端）
+- [x] 二级菜单说明与改前 `nav.projectsDesc` 等一致
+- [x] DESIGN.md / i18n 已同步
+
+---
 
 ## 132 · 2026-09-07 剩余页 · Editorial 刊头
 

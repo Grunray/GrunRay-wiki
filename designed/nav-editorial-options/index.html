@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="zh-CN" data-preview-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>导航按钮 · Editorial 方案对比</title>
+    <link rel="stylesheet" href="shared.css" />
+  </head>
+  <body data-scheme="d" data-compact="false" data-active="home" data-open="">
+    <div class="preview-switcher">
+      <span class="brand">NAV BTN</span>
+      <button type="button" class="scheme-btn" data-scheme="now">现状</button>
+      <button type="button" class="scheme-btn" data-scheme="a">A 目录项</button>
+      <button type="button" class="scheme-btn" data-scheme="b">B 斜杠分节</button>
+      <button type="button" class="scheme-btn" data-scheme="c">C 顶部目录</button>
+      <button type="button" class="scheme-btn on" data-scheme="d">D 上下发丝</button>
+      <span class="sep">|</span>
+      <button type="button" class="compact-btn on" data-compact="false">展开横条</button>
+      <button type="button" class="compact-btn" data-compact="true">收缩胶囊</button>
+      <span class="sep">|</span>
+      <button type="button" class="theme-btn on" data-theme="light">浅色</button>
+      <button type="button" class="theme-btn" data-theme="dark">深色</button>
+      <span class="hint">默认 A。悬停「创作 / 社区 / 栖息」看下拉；点工具钮看开/关。</span>
+    </div>
+
+    <p class="meta-note scheme-now">
+      <b>现状</b>
+      对照用，不合入。左栏分段胶囊 + 右栏工具胶囊；首页是绿色填充药丸，工具是圆角开/关填充。和 LEDGER / READ / DIRECTORY 的排版语言割裂。结构（收缩式导航、分组下拉）保留，只对照按钮皮。
+    </p>
+    <p class="meta-note scheme-a">
+      <b>方案 A · 目录项</b>
+      用随手备注那套：<strong>不推倒导航结构</strong>，外层胶囊保留。去掉每个按钮自己的圆角底；首页 active 只留细绿下划线；分组是弱图标 + 字，hover/active 同样下划线；右侧圆形钮改成 icon + 发丝分隔。展开符用轻 <code>+</code>。改 <code>SiteNav</code> / <code>nav-toolbar.css</code>，不动 <code>data-nav-compact</code> 契约。
+    </p>
+    <p class="meta-note scheme-b">
+      <b>方案 B · 斜杠分节</b>
+      同一套「去按钮感」，项与项之间用 <code>/</code> 当报刊 section 分隔，不再用竖发丝。适合想更像刊头目录、又不想拆掉左右胶囊的情况。下划线 active 与 A 相同；工具区与 A 相同。
+    </p>
+    <p class="meta-note scheme-c">
+      <b>方案 C · 顶部目录</b>
+      随手备注里的「更进一步」：里面不再套左右胶囊，整栏只剩<strong>文字 + 细线</strong>。外层滚动收缩成胶囊的动画仍在（第四优先级：弱化内胶囊，不是拆 sticky 契约）。改动最大，和页面刊头最齐，但工具区会更「杂志网站」。
+    </p>
+    <p class="meta-note scheme-d">
+      <b>方案 D · 上下发丝</b>
+      其余照搬 A。左右按钮组用<strong>两端带弧的 hairline</strong>上下包住。创作下拉是 R 角纸面卡：顶底/项间 hairline 都向内收；项间直、顶底带弧。悬停对齐笔记目录行。
+    </p>
+
+    <div class="mock-stage">
+      <header class="glass-nav" data-nav-compact="false">
+        <div class="glass-nav-inner">
+          <div class="header-row">
+            <div class="header-left">
+              <a class="site-brand" href="#">GrunRay</a>
+              <nav class="nav-capsule" aria-label="Main">
+                <a
+                  class="nav-item nav-home"
+                  href="#"
+                  data-set-active="home"
+                  aria-current="page"
+                >
+                  <span class="ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M4 11.5 12 4 20 11.5"/><path d="M7 10.5V19H17V10.5"/></svg>
+                  </span>
+                  <span class="lab">首页</span>
+                </a>
+                <span class="nav-rule" aria-hidden="true"></span>
+                <div class="nav-groups">
+                  <div class="nav-group" data-group="create">
+                    <button type="button" class="nav-item nav-trigger" data-set-active="create">
+                      <span class="ico" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 19H5a2 2 0 0 1-2-2V5"/><path d="M14.5 4.5 19.5 9.5"/><path d="M8 15l7.5-7.5 5 5L13 20H8v-5z"/></svg>
+                      </span>
+                      <span class="lab">创作</span>
+                      <span class="affordance" aria-hidden="true"><span class="chev">▾</span><span class="plus">+</span></span>
+                    </button>
+                    <div class="dropdown" role="menu">
+                      <a class="drop-item" href="#" data-set-active="create" data-leaf="projects">
+                        <span class="drop-kicker">INDEX</span>
+                        <span class="drop-title">项目</span>
+                        <span class="drop-desc">做过的东西</span>
+                      </a>
+                      <a class="drop-item" href="#" data-set-active="create" data-leaf="blog">
+                        <span class="drop-kicker">NOTES</span>
+                        <span class="drop-title">博客</span>
+                        <span class="drop-desc">写下的字</span>
+                      </a>
+                    </div>
+                  </div>
+                  <div class="nav-group" data-group="community">
+                    <button type="button" class="nav-item nav-trigger" data-set-active="community">
+                      <span class="ico" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="9" cy="8" r="3"/><circle cx="16" cy="9" r="2.4"/><path d="M4 19c.4-3 2.4-5 5-5s4.6 2 5 5"/><path d="M14 19c.2-2 1.4-3.4 3.2-3.6"/></svg>
+                      </span>
+                      <span class="lab">社区</span>
+                      <span class="affordance" aria-hidden="true"><span class="chev">▾</span><span class="plus">+</span></span>
+                    </button>
+                    <div class="dropdown" role="menu">
+                      <a class="drop-item" href="#" data-set-active="community" data-leaf="messages">
+                        <span class="drop-kicker">INBOX</span>
+                        <span class="drop-title">留言</span>
+                        <span class="drop-desc">门口的纸条</span>
+                      </a>
+                      <a class="drop-item" href="#" data-set-active="community" data-leaf="friends">
+                        <span class="drop-kicker">LINKS</span>
+                        <span class="drop-title">友链</span>
+                        <span class="drop-desc">往来的站</span>
+                      </a>
+                    </div>
+                  </div>
+                  <div class="nav-group" data-group="xiqi">
+                    <button type="button" class="nav-item nav-trigger" data-set-active="xiqi">
+                      <span class="ico" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 21s-7-4.4-7-10a4.5 4.5 0 0 1 7-3.7A4.5 4.5 0 0 1 19 11c0 5.6-7 10-7 10z"/></svg>
+                      </span>
+                      <span class="lab">栖息</span>
+                      <span class="affordance" aria-hidden="true"><span class="chev">▾</span><span class="plus">+</span></span>
+                    </button>
+                    <div class="dropdown" role="menu">
+                      <a class="drop-item" href="#" data-set-active="xiqi" data-leaf="fragments">
+                        <span class="drop-kicker">LEDGER</span>
+                        <span class="drop-title">碎念</span>
+                        <span class="drop-desc">短的记录</span>
+                      </a>
+                      <a class="drop-item" href="#" data-set-active="xiqi" data-leaf="about">
+                        <span class="drop-kicker">RESUME</span>
+                        <span class="drop-title">关于</span>
+                        <span class="drop-desc">一份履历</span>
+                      </a>
+                      <a class="drop-item" href="#" data-set-active="xiqi" data-leaf="recommend">
+                        <span class="drop-kicker">PICKS</span>
+                        <span class="drop-title">推荐</span>
+                        <span class="drop-desc">想给别人的</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </nav>
+            </div>
+            <div class="header-right">
+            <div class="tool-capsule" aria-label="Tools">
+              <button type="button" class="tool-btn" data-tool="theme" aria-label="主题">
+                <span class="ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3a7.5 7.5 0 1 0 9 9.5A7 7 0 0 1 12 3z"/></svg>
+                </span>
+              </button>
+              <span class="tool-rule" aria-hidden="true"></span>
+              <div class="tool-cluster">
+                <button type="button" class="tool-btn" data-tool="photo" aria-pressed="false" aria-label="图片背景">
+                  <span class="ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="1"/><circle cx="8.5" cy="10" r="1.4"/><path d="m21 16-5.2-5.2-8.8 8.2"/></svg>
+                  </span>
+                </button>
+                <button type="button" class="tool-btn" data-tool="trail" aria-pressed="false" aria-label="拖尾">
+                  <span class="ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m12 3 1.8 5.4H19l-4.4 3.3 1.7 5.3L12 13.8 7.7 17l1.7-5.3L5 8.4h5.2z"/></svg>
+                  </span>
+                </button>
+                <button type="button" class="tool-btn" data-tool="music" aria-pressed="false" aria-label="音乐">
+                  <span class="ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 18V6l10-2v12"/><circle cx="7" cy="18" r="2.2"/><circle cx="17" cy="16" r="2.2"/></svg>
+                  </span>
+                </button>
+              </div>
+              <span class="tool-rule" aria-hidden="true"></span>
+              <button type="button" class="tool-btn tool-locale" data-tool="locale" aria-label="语言">EN</button>
+            </div>
+            <div class="overflow-wrap">
+              <button
+                type="button"
+                class="tool-btn overflow-trigger"
+                data-tool="overflow"
+                aria-expanded="false"
+                aria-label="更多工具"
+              >
+                <span class="ico" aria-hidden="true">
+                  <svg class="chevron-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                </span>
+              </button>
+            </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="extract-board" aria-label="方案 D 抽出件">
+        <figure class="extract">
+          <figcaption>创作 · 二级菜单</figcaption>
+          <div class="dropdown dropdown--pinned" role="menu">
+            <a class="drop-item is-on" href="#" data-set-active="create" data-leaf="projects">
+              <span class="drop-kicker">INDEX</span>
+              <span class="drop-title">项目</span>
+              <span class="drop-desc">做过的东西</span>
+            </a>
+            <a class="drop-item" href="#" data-set-active="create" data-leaf="blog">
+              <span class="drop-kicker">NOTES</span>
+              <span class="drop-title">博客</span>
+              <span class="drop-desc">写下的字</span>
+            </a>
+          </div>
+        </figure>
+        <figure class="extract">
+          <figcaption>更多工具</figcaption>
+          <div class="extract-overflow">
+            <button type="button" class="tool-btn overflow-trigger is-on" aria-label="更多工具" aria-expanded="true">
+              <span class="ico" aria-hidden="true">
+                <svg class="chevron-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+              </span>
+            </button>
+            <div class="overflow-panel" role="region" aria-label="隐藏的图标">
+              <button type="button" class="tool-btn" data-tool="fps" aria-pressed="false" aria-label="帧率监视">
+                <span class="ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
+                </span>
+              </button>
+              <button type="button" class="tool-btn" data-tool="splash" aria-label="重播开屏">
+                <span class="ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="13" cy="13" r="5"/><circle cx="13" cy="13" r="2.2"/><path d="M8.2 15.2c-1.6.6-3.8.4-5.2-.8"/><path d="M9.2 10.8 6.4 8.6"/></svg>
+                </span>
+              </button>
+            </div>
+          </div>
+        </figure>
+      </section>
+
+      <main class="mock-page">
+        <p class="page-kicker">LEDGER · 名录</p>
+        <h1 class="page-h">碎念</h1>
+        <p class="page-filter">FILTER · 心情 &nbsp; 全部 &nbsp;<span class="u">最新</span></p>
+        <ul class="toc">
+          <li><span class="d">09.07</span><b>把导航从按钮改回目录</b></li>
+          <li><span class="d">09.04</span><b>栖息展开后页宽要对齐折缝</b></li>
+          <li><span class="d">08.28</span><b>关于页改成双栏履历</b></li>
+        </ul>
+      </main>
+    </div>
+
+    <section class="legend">
+      <h2>对照时看这三处</h2>
+      <ol>
+        <li>首页选中：填充药丸，还是细绿线。</li>
+        <li>右侧图片 / 星星 / 音乐：圆形开关键，还是纯 icon。</li>
+        <li>外层胶囊还在不在（C 只弱化内胶囊，滚动收缩契约都保留）。</li>
+      </ol>
+    </section>
+
+    <script src="shared.js"></script>
+  </body>
+</html>
