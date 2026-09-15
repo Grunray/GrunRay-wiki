@@ -679,7 +679,6 @@ onMounted(async () => {
                 v-if="msg.profileUrl"
                 class="message-byline-name"
                 :href="msg.profileUrl"
-                target="_blank"
                 rel="noopener noreferrer"
               >{{ msg.author }}</a>
               <span v-else class="message-byline-name">{{ msg.author }}</span>
@@ -762,7 +761,6 @@ onMounted(async () => {
                         v-if="reply.profileUrl"
                         class="message-byline-name"
                         :href="reply.profileUrl"
-                        target="_blank"
                         rel="noopener noreferrer"
                       >{{ reply.author }}</a>
                       <span v-else class="message-byline-name">{{ reply.author }}</span>

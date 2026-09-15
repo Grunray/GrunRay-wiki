@@ -149,8 +149,10 @@ async function runAvatarHandoff(startX: number, startY: number) {
 
     const target = document.querySelector<HTMLImageElement>('[data-splash-avatar-target]')
     const onHome = route.name === 'home'
+    const mobileShell = document.documentElement.dataset.mobileShell === 'true'
 
-    if (!onHome || !target?.src || prefersReducedMotion()) {
+    /* 手机壳隐藏刊号头像：跳过飞入，直接揭开 */
+    if (!onHome || mobileShell || !target?.src || prefersReducedMotion()) {
       return
     }
 

@@ -551,14 +551,6 @@
     margin-top: 0;
   }
 
-  .habitat-page.habitat-split-docked .xiqi-split-main,
-  .habitat-page.habitat-split-docked .xiqi-split--open .xiqi-split-detail-rail,
-  .habitat-page.habitat-split-docked .ed-read {
-    height: auto;
-    max-height: none;
-    overflow: visible;
-  }
-
   .habitat-page .xiqi-split,
   .habitat-page .xiqi-split--open {
     --split-rail: 0px;
@@ -567,20 +559,115 @@
     column-gap: 0;
   }
 
-  .habitat-page .ed-read {
-    width: auto;
-    min-width: 0;
-    clip-path: inset(100% 0 0 0);
+  .habitat-page .xiqi-split-main {
+    max-height: none;
+    overflow: visible;
   }
+}
 
-  .habitat-page .xiqi-split--open .ed-read {
-    clip-path: inset(0 0 0 0);
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+  .xiqi-read-sheet__backdrop,
+  .xiqi-read-sheet .xiqi-read-sheet__panel {
+    transition: none;
   }
+}
 
-  .habitat-page .xiqi-split--open .xiqi-split-detail.ed-read {
-    border-left: 0;
-    border-top: 1px solid var(--color-border);
-  }
+/* 碎念/推荐手机 Read sheet：Teleport 到 body，不吃 .habitat-page 透明纸面 */
+.xiqi-read-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  pointer-events: none;
+}
+
+.xiqi-read-sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  background: rgb(20 16 12 / 42%);
+  opacity: 0;
+  transition: opacity 0.32s ease;
+}
+
+.xiqi-read-sheet--open .xiqi-read-sheet__backdrop {
+  opacity: 1;
+}
+
+.xiqi-read-sheet .xiqi-read-sheet__panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  height: min(75dvh, calc(100dvh - 4.5rem));
+  max-height: min(75dvh, calc(100dvh - 4.5rem));
+  overflow: hidden;
+  transform: translateY(110%);
+  transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  background: var(--color-bg-base);
+  border: 0;
+  border-top: 1px solid var(--color-border);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  box-shadow: 0 -16px 48px rgb(0 0 0 / 16%);
+  clip-path: none;
+  opacity: 1;
+}
+
+.xiqi-read-sheet--open .xiqi-read-sheet__panel {
+  transform: translateY(0);
+}
+
+.xiqi-read-sheet__handle {
+  display: block;
+  width: 2.4rem;
+  height: 3px;
+  margin: 0.55rem auto 0;
+  border-radius: 99px;
+  background: var(--color-border);
+  flex-shrink: 0;
+}
+
+.xiqi-read-sheet__panel .xiqi-detail-head {
+  position: relative;
+  top: auto;
+  flex-shrink: 0;
+  z-index: 1;
+  align-items: baseline;
+  padding: 0.55rem 1.05rem 0.7rem;
+  background: var(--color-bg-base);
+  border-bottom: 1px solid var(--color-border);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.xiqi-read-sheet__panel .xiqi-detail-close {
+  width: auto;
+  height: auto;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 0.15rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.xiqi-read-sheet__panel .xiqi-detail-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 0 1.05rem calc(1.15rem + env(safe-area-inset-bottom, 0px));
+}
+
+html[data-xiqi-sheet] .back-to-top {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 @media (max-width: 720px) {

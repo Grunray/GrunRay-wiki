@@ -121,4 +121,9 @@ onUnmounted(() => {
     height: 2.6rem;
   }
 }
+
+/* 手机胶囊升起时叠在左下角之上，避免抬高后压到正文 */
+html[data-mobile-shell] .back-to-top {
+  z-index: calc(var(--z-footer-meta-bar, 180) + 1);
+}
 </style>

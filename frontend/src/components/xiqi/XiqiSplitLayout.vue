@@ -6,6 +6,7 @@ import { useI18n } from 'vue-i18n'
 import EdKicker from '@/components/editorial/EdKicker.vue'
 import { prefersReducedMotionMedia } from '@/composables/usePageEnterAnimation'
 import { FOOTER_REFRESH_EVENT, setXiqiSplitFooterLock } from '@/composables/useXiqiSplitFooter'
+import { injectMobileShell } from '@/composables/useMobileShell'
 
 const selectedKey = defineModel<string | null>('selectedKey', { default: null })
 const emit = defineEmits<{
@@ -19,6 +20,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const { isMobileShell, acquireScrollLock, releaseScrollLock } = injectMobileShell()
 
 const splitMainRef = ref<HTMLElement | null>(null)
 const mastheadRef = ref<HTMLElement | null>(null)
@@ -49,6 +51,10 @@ const habitatDockStyle = computed(() => {
 })
 let editorialCloseGen = 0
 let editorialPinY = 0
+/** 手机 editorial 底部 sheet */
+const mobileSheetOpen = ref(false)
+const sheetLeaving = ref(false)
+const sheetMode = computed(() => props.editorial && isMobileShell.value)
 
 const SPLIT_LAYOUT_MS = 580
 const MAIN_INNER_FLIP_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
@@ -74,7 +80,7 @@ function killDetailTween() {
 }
 
 function isMobileSplit() {
-  return window.matchMedia('(max-width: 768px)').matches
+  return isMobileShell.value
 }
 
 function measureNavCoverBottom() {
@@ -183,6 +189,33 @@ async function applyEditorialDock() {
   if (dockGen !== editorialCloseGen || !isOpen.value) return
   restoreMainPanelScroll(listOffset)
   panelScrollAfterOpen = readPanelScroll()
+}
+
+async function applyMobileEditorialSheet() {
+  if (!isMobileSplit()) return
+  unpinEditorialWindow()
+  editorialDocked.value = false
+  habitatMastClipPx.value = 0
+  habitatFlowMinPx.value = 0
+  windowScrollBeforeSplit = window.scrollY
+  panelScrollAfterOpen = 0
+  mobileSheetOpen.value = false
+  sheetLeaving.value = false
+  document.documentElement.setAttribute('data-xiqi-sheet', '')
+  acquireScrollLock('xiqi-sheet')
+  setXiqiSplitFooterLock(true, { keepRevealSpace: true })
+  await nextTick()
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+  if (!isOpen.value || !isMobileSplit()) return
+  mobileSheetOpen.value = true
+}
+
+function releaseMobileEditorialSheet(targetY: number) {
+  mobileSheetOpen.value = false
+  sheetLeaving.value = false
+  document.documentElement.removeAttribute('data-xiqi-sheet')
+  releaseScrollLock('xiqi-sheet')
+  restoreWindowY(targetY)
 }
 
 function releaseEditorialDock(targetY: number) {
@@ -402,6 +435,10 @@ watch(
     if (props.editorial) {
       editorialCloseGen += 1
       if (open) {
+        if (isMobileSplit()) {
+          void applyMobileEditorialSheet()
+          return
+        }
         /* 不走 xiqi-page--split：html overflow:hidden 会把 scrollY 钳成 0，刊头钉回顶部。
          * 展开改为贴在导航下的双栏，名录 / 详情各自滚动，窗口滚动钉在打开时的位置。 */
         void applyEditorialDock()
@@ -443,16 +480,40 @@ watch(
   { flush: 'pre' },
 )
 
+watch(isMobileShell, (mobile) => {
+  if (!props.editorial || !isOpen.value) return
+  if (mobile) {
+    unpinEditorialWindow()
+    editorialDocked.value = false
+    void applyMobileEditorialSheet()
+    return
+  }
+  releaseScrollLock('xiqi-sheet')
+  document.documentElement.removeAttribute('data-xiqi-sheet')
+  mobileSheetOpen.value = false
+  sheetLeaving.value = false
+  void applyEditorialDock()
+})
+
 async function finishEditorialClose() {
   const gen = ++editorialCloseGen
   const extraPanelScroll = readPanelScroll() - panelScrollAfterOpen
   const targetY = Math.max(0, windowScrollBeforeSplit + extraPanelScroll)
-  const waitMs = prefersReducedMotionMedia() ? 0 : 680
+  const wasMobileSheet = mobileSheetOpen.value || document.documentElement.hasAttribute('data-xiqi-sheet')
+  if (wasMobileSheet) {
+    sheetLeaving.value = true
+    mobileSheetOpen.value = false
+  }
+  const waitMs = prefersReducedMotionMedia() ? 0 : wasMobileSheet ? 420 : 680
   await new Promise<void>((resolve) => {
     window.setTimeout(resolve, waitMs)
   })
   if (gen !== editorialCloseGen || isOpen.value) return
-  releaseEditorialDock(targetY)
+  if (wasMobileSheet) {
+    releaseMobileEditorialSheet(targetY)
+  } else {
+    releaseEditorialDock(targetY)
+  }
   setXiqiSplitFooterLock(false, { deferRefresh: true })
   await nextTick()
   restoreMainPanelScroll(0)
@@ -505,6 +566,9 @@ onBeforeUnmount(() => {
   if (inner) clearMainInnerFlipStyles(inner)
   unpinEditorialWindow()
   editorialDocked.value = false
+  if (mobileSheetOpen.value || document.documentElement.hasAttribute('data-xiqi-sheet')) {
+    releaseMobileEditorialSheet(windowScrollBeforeSplit)
+  }
   layoutSplit.value = false
   detailLeaving.value = false
   windowScrollBeforeSplit = 0
@@ -541,10 +605,27 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
+      <Teleport to="body" :disabled="!sheetMode">
       <div
-        class="xiqi-split-detail-rail"
-        :class="{ 'xiqi-split-detail-rail--open': detailRailOpen }"
+        v-if="!sheetMode || isOpen || sheetLeaving"
+        :class="
+          sheetMode
+            ? {
+                'xiqi-read-sheet': true,
+                'xiqi-read-sheet--open': mobileSheetOpen,
+              }
+            : {
+                'xiqi-split-detail-rail': true,
+                'xiqi-split-detail-rail--open': detailRailOpen,
+              }
+        "
       >
+        <div
+          v-if="sheetMode && (mobileSheetOpen || sheetLeaving)"
+          class="xiqi-read-sheet__backdrop"
+          aria-hidden="true"
+          @click="closeDetail"
+        />
         <Transition
           :css="false"
           @enter="onDetailEnter"
@@ -554,13 +635,18 @@ onBeforeUnmount(() => {
           <aside
             v-if="props.editorial || isOpen"
             class="xiqi-split-detail"
-            :class="props.editorial ? 'ed-read' : 'card card-glass-dense'"
+            :class="[
+              props.editorial ? 'ed-read' : 'card card-glass-dense',
+              { 'xiqi-read-sheet__panel': sheetMode },
+            ]"
             :inert="props.editorial && !isOpen ? true : undefined"
             :aria-hidden="props.editorial && !isOpen ? true : undefined"
-            role="complementary"
+            :role="sheetMode ? 'dialog' : 'complementary'"
+            :aria-modal="sheetMode && isOpen ? 'true' : undefined"
             :aria-label="detailTitle || t('xiqi.detailPanel')"
           >
-            <span class="xiqi-detail-spine" aria-hidden="true" />
+            <span v-if="!sheetMode" class="xiqi-detail-spine" aria-hidden="true" />
+            <span v-else class="xiqi-read-sheet__handle" aria-hidden="true" />
             <header class="xiqi-detail-head">
               <EdKicker
                 v-if="props.editorial"
@@ -593,6 +679,7 @@ onBeforeUnmount(() => {
           </aside>
         </Transition>
       </div>
+      </Teleport>
     </div>
     </div>
   </section>

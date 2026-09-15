@@ -3,18 +3,23 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
-import AboutNavIcon from '../icons/AboutNavIcon.vue'
-import BlogNavIcon from '../icons/BlogNavIcon.vue'
 import CommunityNavIcon from '../icons/CommunityNavIcon.vue'
 import CreateNavIcon from '../icons/CreateNavIcon.vue'
-import FragmentsNavIcon from '../icons/FragmentsNavIcon.vue'
-import FriendsNavIcon from '../icons/FriendsNavIcon.vue'
 import HomeNavIcon from '../icons/HomeNavIcon.vue'
-import MessagesNavIcon from '../icons/MessagesNavIcon.vue'
-import ProjectsNavIcon from '../icons/ProjectsNavIcon.vue'
-import RecommendNavIcon from '../icons/RecommendNavIcon.vue'
 import XiqiNavIcon from '../icons/XiqiNavIcon.vue'
 import SiteNavGroup, { type SiteNavDropdownItem } from './SiteNavGroup.vue'
+
+const props = withDefaults(
+  defineProps<{
+    /** drawer：手机侧栏纵向目录 */
+    variant?: 'bar' | 'drawer'
+  }>(),
+  { variant: 'bar' },
+)
+
+const emit = defineEmits<{
+  navigate: []
+}>()
 
 const { t } = useI18n()
 const route = useRoute()
@@ -25,13 +30,13 @@ function isActive(path: string) {
 }
 
 function mapItems(
-  entries: { to: string; labelKey: string; descKey: string; icon: SiteNavDropdownItem['icon'] }[],
+  entries: { to: string; labelKey: string; descKey: string; kickerKey: string }[],
 ): SiteNavDropdownItem[] {
   return entries.map((entry) => ({
     to: entry.to,
     label: t(entry.labelKey),
     desc: t(entry.descKey),
-    icon: entry.icon,
+    kicker: t(entry.kickerKey),
   }))
 }
 
@@ -40,8 +45,8 @@ const createGroup = computed(() => ({
   icon: CreateNavIcon,
   menuId: 'shell-nav-menu-create',
   items: mapItems([
-    { to: '/projects', labelKey: 'nav.projects', descKey: 'nav.projectsDesc', icon: ProjectsNavIcon },
-    { to: '/blog', labelKey: 'nav.blog', descKey: 'nav.blogDesc', icon: BlogNavIcon },
+    { to: '/projects', labelKey: 'nav.projects', descKey: 'nav.projectsDesc', kickerKey: 'nav.dropKickerProjects' },
+    { to: '/blog', labelKey: 'nav.blog', descKey: 'nav.blogDesc', kickerKey: 'nav.dropKickerBlog' },
   ]),
 }))
 
@@ -50,8 +55,8 @@ const communityGroup = computed(() => ({
   icon: CommunityNavIcon,
   menuId: 'shell-nav-menu-community',
   items: mapItems([
-    { to: '/messages', labelKey: 'nav.messages', descKey: 'nav.messagesDesc', icon: MessagesNavIcon },
-    { to: '/friends', labelKey: 'nav.friends', descKey: 'nav.friendsDesc', icon: FriendsNavIcon },
+    { to: '/messages', labelKey: 'nav.messages', descKey: 'nav.messagesDesc', kickerKey: 'nav.dropKickerMessages' },
+    { to: '/friends', labelKey: 'nav.friends', descKey: 'nav.friendsDesc', kickerKey: 'nav.dropKickerFriends' },
   ]),
 }))
 
@@ -60,27 +65,35 @@ const xiqiGroup = computed(() => ({
   icon: XiqiNavIcon,
   menuId: 'shell-nav-menu-xiqi',
   items: mapItems([
-    { to: '/fragments', labelKey: 'nav.fragments', descKey: 'nav.fragmentsDesc', icon: FragmentsNavIcon },
-    { to: '/about', labelKey: 'nav.about', descKey: 'nav.aboutDesc', icon: AboutNavIcon },
-    { to: '/recommend', labelKey: 'nav.recommend', descKey: 'nav.recommendDesc', icon: RecommendNavIcon },
+    { to: '/fragments', labelKey: 'nav.fragments', descKey: 'nav.fragmentsDesc', kickerKey: 'nav.dropKickerFragments' },
+    { to: '/about', labelKey: 'nav.about', descKey: 'nav.aboutDesc', kickerKey: 'nav.dropKickerAbout' },
+    { to: '/recommend', labelKey: 'nav.recommend', descKey: 'nav.recommendDesc', kickerKey: 'nav.dropKickerRecommend' },
   ]),
 }))
+
+function onNavigate() {
+  emit('navigate')
+}
 </script>
 
 <template>
-  <nav class="nav nav--shell" aria-label="Main">
+  <nav
+    class="nav nav--shell"
+    :class="{ 'nav--drawer': props.variant === 'drawer' }"
+    :aria-label="props.variant === 'drawer' ? t('nav.mobileMenuRegion') : 'Main'"
+  >
     <div class="nav-shell-capsule">
       <RouterLink
         to="/"
         class="link nav-shell-pill"
         :class="{ active: isActive('/') }"
         :aria-current="isActive('/') ? 'page' : undefined"
+        @click="onNavigate"
       >
         <span class="link-icon" aria-hidden="true">
           <HomeNavIcon />
         </span>
         <span class="link-label">{{ t('nav.home') }}</span>
-        <span class="leaf-glow" aria-hidden="true" />
         <span class="grow-line" aria-hidden="true" />
       </RouterLink>
 
@@ -92,18 +105,24 @@ const xiqiGroup = computed(() => ({
           :icon="createGroup.icon"
           :items="createGroup.items"
           :menu-id="createGroup.menuId"
+          :drawer="props.variant === 'drawer'"
+          @navigate="onNavigate"
         />
         <SiteNavGroup
           :label="communityGroup.label"
           :icon="communityGroup.icon"
           :items="communityGroup.items"
           :menu-id="communityGroup.menuId"
+          :drawer="props.variant === 'drawer'"
+          @navigate="onNavigate"
         />
         <SiteNavGroup
           :label="xiqiGroup.label"
           :icon="xiqiGroup.icon"
           :items="xiqiGroup.items"
           :menu-id="xiqiGroup.menuId"
+          :drawer="props.variant === 'drawer'"
+          @navigate="onNavigate"
         />
       </div>
     </div>
@@ -112,7 +131,7 @@ const xiqiGroup = computed(() => ({
 
 <style scoped>
 /*
- * 主导航 · 方案 G + A 紧凑分段胶囊
+ * 主导航 · Editorial 方案 D（上下发丝）
  */
 .nav {
   position: relative;
@@ -128,9 +147,12 @@ const xiqiGroup = computed(() => ({
   align-items: center;
   gap: 0.08rem;
   padding: 0.18rem 0.36rem;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--color-bg-surface) 90%, var(--color-bg-base));
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  box-shadow:
+    0 -1px 0 var(--color-border),
+    0 1px 0 var(--color-border);
   flex-wrap: nowrap;
   max-width: 100%;
 }
@@ -165,22 +187,23 @@ const xiqiGroup = computed(() => ({
   text-decoration: none;
   white-space: nowrap;
   padding: 0.42rem 0.62rem;
-  border-radius: 999px;
+  border-radius: 0;
   border: 1px solid transparent;
   background-color: transparent;
-  transition:
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    color 0.35s ease,
-    background-color 0.35s ease,
-    border-color 0.35s ease,
-    box-shadow 0.45s ease;
+  box-shadow: none;
+  transition: color 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .link-icon {
   display: inline-flex;
   flex-shrink: 0;
   line-height: 0;
-  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  opacity: 0.55;
+}
+
+.link:hover .link-icon,
+.link.active .link-icon {
+  opacity: 0.9;
 }
 
 .link :deep(.shell-nav-icon),
@@ -189,89 +212,40 @@ const xiqiGroup = computed(() => ({
   height: 0.88rem;
 }
 
-/* hover 只提升文字色；着色交给下方生长线（accent 唯一交互点，DESIGN.md §7） */
 .link:hover {
   color: var(--color-text);
   text-decoration: none;
 }
 
 .link.active {
-  color: #6fad87;
-  background-color: rgb(204 229 213 / 42%);
-  border-color: rgb(180 210 192 / 55%);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 75%),
-    0 3px 10px rgb(170 205 185 / 12%);
-  animation: shell-nav-breath-capsule 4s ease-in-out infinite;
-}
-
-:global([data-theme='dark']) .link.active {
-  color: color-mix(in srgb, var(--color-accent) 88%, #b8e6c8);
-  background-color: color-mix(in srgb, var(--color-accent) 14%, rgb(30 44 46 / 55%));
-  border-color: color-mix(in srgb, var(--color-accent) 28%, transparent);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 8%),
-    0 3px 10px rgb(0 0 0 / 14%);
-}
-
-.leaf-glow {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  right: 10px;
-  top: 8px;
-  border-radius: 100%;
-  background: rgb(172 222 186 / 45%);
-  filter: blur(3px);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.45s ease;
-}
-
-.link.active .leaf-glow {
-  opacity: 1;
+  color: var(--color-accent);
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .grow-line {
   position: absolute;
-  bottom: 4px;
-  left: 50%;
-  width: 0;
-  height: 2px;
-  border-radius: 10px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in srgb, var(--color-accent) 70%, transparent),
-    transparent
-  );
-  transition: width 0.5s ease, left 0.5s ease;
+  left: 0.28rem;
+  right: 0.28rem;
+  bottom: 0.12rem;
+  height: 1px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: 50% 50%;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
 
-.link:hover .grow-line {
-  width: 70%;
-  left: 15%;
-}
-
+.link:hover .grow-line,
 .link.active .grow-line {
-  width: 0;
+  transform: scaleX(1);
 }
 
 .nav-shell-capsule__groups :deep(.group-trigger) {
   padding: 0.42rem 0.62rem;
   font-size: 0.8rem;
   gap: 0.38rem;
-}
-
-@keyframes shell-nav-breath-capsule {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.012);
-  }
 }
 
 @media (max-width: 768px) {
@@ -304,21 +278,52 @@ const xiqiGroup = computed(() => ({
   }
 }
 
+/* 手机侧栏：纵向手风琴，不用顶栏胶囊横排 */
+.nav--drawer {
+  width: 100%;
+}
+
+.nav--drawer .nav-shell-capsule {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  gap: 0.2rem;
+  padding: 0.2rem 0;
+  box-shadow: none;
+}
+
+.nav--drawer .nav-shell-capsule__divider {
+  width: 100%;
+  height: 1px;
+  margin: 0.35rem 0;
+}
+
+.nav--drawer .nav-shell-capsule__groups {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  gap: 0.12rem;
+}
+
+.nav--drawer .link {
+  width: 100%;
+  justify-content: flex-start;
+  min-height: 44px;
+  padding: 0.72rem 0.35rem;
+  font-size: 0.95rem;
+}
+
+.nav--drawer .link :deep(.shell-nav-icon) {
+  width: 1rem;
+  height: 1rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .link,
-  .link:hover,
-  .link.active {
-    transition:
-      color 0.2s ease,
-      background-color 0.2s ease,
-      border-color 0.2s ease,
-      box-shadow 0.2s ease;
-    transform: none;
-    animation: none;
-  }
-
-  .link:hover .link-icon {
-    transform: none;
+  .grow-line {
+    transition: none;
   }
 }
 </style>

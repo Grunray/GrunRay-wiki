@@ -396,3 +396,12 @@ html[data-theme='light'] .footer-grunray-brand-reveal {
     transform: none !important;
   }
 }
+
+/* 手机壳：仅 ICP 胶囊，无扭曲字占位 */
+html[data-mobile-shell] .footer-grunray-brand-wrap,
+.footer-grunray-root--meta-only .footer-grunray-brand-wrap {
+  display: none;
+  height: 0;
+  min-height: 0;
+  overflow: hidden;
+}

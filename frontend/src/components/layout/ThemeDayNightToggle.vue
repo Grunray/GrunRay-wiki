@@ -5,6 +5,7 @@
   <button
     ref="anchorRef"
     type="button"
+    v-bind="$attrs"
     class="theme-nav-btn"
     :class="{
       'theme-nav-btn--light': ui.theme === 'light',
@@ -37,6 +38,8 @@ import { useI18n } from 'vue-i18n'
 import ThemeNavIcon from '@/components/icons/ThemeNavIcon.vue'
 import { useUiStore } from '@/stores/ui'
 import { DARK_MODE_PAGE_BACKGROUND, LIGHT_MODE_PAGE_BACKGROUND } from '@/theme/pageBackgrounds'
+
+defineOptions({ inheritAttrs: false })
 
 const { t } = useI18n()
 const ui = useUiStore()
