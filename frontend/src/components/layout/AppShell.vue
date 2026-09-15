@@ -10,11 +10,13 @@ import {
   playToolbarFlipAfterRemove,
   playToolbarFlipBeforeReveal,
 } from '@/composables/useHeaderToolbarLayoutShift'
+import { useMobileShell } from '@/composables/useMobileShell'
 import { useNavScrollCompact } from '@/composables/useNavScrollCompact'
 import { persistLocale } from '@/i18n'
 import '@/styles/nav-toolbar.css'
 
 import ChevronUpNavIcon from '@/components/icons/ChevronUpNavIcon.vue'
+import MenuNavIcon from '@/components/icons/MenuNavIcon.vue'
 import MusicNavIcon from '@/components/icons/MusicNavIcon.vue'
 import PhotoBgNavIcon from '@/components/icons/PhotoBgNavIcon.vue'
 import SnailNavIcon from '@/components/icons/SnailNavIcon.vue'
@@ -29,6 +31,7 @@ import ScrollProgress from './ScrollProgress.vue'
 import SiteNav from './SiteNav.vue'
 import ThemeDayNightToggle from './ThemeDayNightToggle.vue'
 import PhotoBgBlurAdjuster, { type PhotoBgBlurAnchorRect } from './PhotoBgBlurAdjuster.vue'
+import EdKicker from '@/components/editorial/EdKicker.vue'
 
 import { useUiStore } from '@/stores/ui'
 
@@ -36,7 +39,35 @@ const { t, locale } = useI18n()
 const route = useRoute()
 const ui = useUiStore()
 const { musicPlayerMinimized, musicPlayerPlaying, photoBackgroundEnabled } = storeToRefs(ui)
-const { compact: navCompact } = useNavScrollCompact()
+const { isMobileShell, acquireScrollLock, releaseScrollLock } = useMobileShell()
+const { compact: navCompactScroll } = useNavScrollCompact()
+/** 手机壳层强制横条，禁用滚动收成胶囊 */
+const navCompact = computed(() => (isMobileShell.value ? false : navCompactScroll.value))
+
+const mobileNavOpen = ref(false)
+
+function closeMobileNav() {
+  mobileNavOpen.value = false
+}
+
+function toggleMobileNav() {
+  mobileNavOpen.value = !mobileNavOpen.value
+}
+
+watch(mobileNavOpen, (open) => {
+  document.documentElement.classList.toggle('mobile-nav-open', open)
+  if (open) acquireScrollLock('nav-drawer')
+  else releaseScrollLock('nav-drawer')
+  if (open) {
+    document.addEventListener('keydown', onDocKeydown)
+  } else if (!overflowOpen.value) {
+    document.removeEventListener('keydown', onDocKeydown)
+  }
+})
+
+watch(isMobileShell, (mobile) => {
+  if (!mobile) closeMobileNav()
+})
 
 const musicNavPlayingAnimated = computed(
   () => musicPlayerMinimized.value && musicPlayerPlaying.value && !ui.prefersReducedMotion,
@@ -170,7 +201,10 @@ function onDocPointerDown(ev: PointerEvent) {
 }
 
 function onDocKeydown(ev: KeyboardEvent) {
-  if (ev.key === 'Escape') closeNavOverflow()
+  if (ev.key === 'Escape') {
+    closeNavOverflow()
+    closeMobileNav()
+  }
 }
 
 watch(overflowOpen, (open) => {
@@ -179,7 +213,9 @@ watch(overflowOpen, (open) => {
     document.addEventListener('keydown', onDocKeydown)
   } else {
     document.removeEventListener('pointerdown', onDocPointerDown, true)
-    document.removeEventListener('keydown', onDocKeydown)
+    if (!mobileNavOpen.value) {
+      document.removeEventListener('keydown', onDocKeydown)
+    }
   }
 })
 
@@ -187,6 +223,7 @@ watch(
   () => route.fullPath,
   () => {
     closeNavOverflow()
+    closeMobileNav()
   },
 )
 
@@ -449,6 +486,8 @@ onUnmounted(() => {
   mql?.removeEventListener('change', syncMotion)
   document.removeEventListener('pointerdown', onDocPointerDown, true)
   document.removeEventListener('keydown', onDocKeydown)
+  document.documentElement.classList.remove('mobile-nav-open')
+  releaseScrollLock('nav-drawer')
   if (overflowToolbarCueTimer != null) {
     window.clearTimeout(overflowToolbarCueTimer)
     overflowToolbarCueTimer = null
@@ -524,7 +563,7 @@ function onRouteEnter(el: Element, done: () => void) {
             <span v-else class="header-brand-mini-avatar-slot" aria-hidden="true" />
             <RouterLink to="/" class="brand">GrunRay</RouterLink>
           </div>
-          <SiteNav />
+          <SiteNav v-if="!isMobileShell" />
         </div>
         <div ref="headerRightRef" class="header-right">
           <div class="header-toolbar-capsule">
@@ -533,7 +572,7 @@ function onRouteEnter(el: Element, done: () => void) {
             </div>
             <span class="header-toolbar-capsule__divider" aria-hidden="true" />
             <!-- 三个圆形工具共用一个 flex 子项，避免各自占位时与 header-right 的 gap 叠成「假空白」 -->
-            <div class="header-toolbar-cluster">
+            <div v-if="!isMobileShell" class="header-toolbar-cluster">
             <div class="header-toolbar-slot-contents">
               <Transition
                 name="nav-toolbar-tool"
@@ -629,7 +668,7 @@ function onRouteEnter(el: Element, done: () => void) {
               </Transition>
             </div>
             </div>
-            <span class="header-toolbar-capsule__divider" aria-hidden="true" />
+            <span v-if="!isMobileShell" class="header-toolbar-capsule__divider" aria-hidden="true" />
             <div class="header-toolbar-slot" data-toolbar-flip="locale">
               <button
                 type="button"
@@ -642,8 +681,33 @@ function onRouteEnter(el: Element, done: () => void) {
                 <span class="nav-pill-grow-line" aria-hidden="true" />
               </button>
             </div>
+            <template v-if="isMobileShell">
+              <span class="header-toolbar-capsule__divider" aria-hidden="true" />
+              <div class="header-toolbar-slot">
+                <button
+                  type="button"
+                  class="mobile-nav-trigger"
+                  :class="{ 'is-open': mobileNavOpen }"
+                  :aria-expanded="mobileNavOpen ? 'true' : 'false'"
+                  aria-controls="mobile-nav-drawer"
+                  :data-nav-tip="mobileNavOpen ? t('nav.mobileMenuClose') : t('nav.mobileMenuOpen')"
+                  :aria-label="mobileNavOpen ? t('nav.mobileMenuClose') : t('nav.mobileMenuOpen')"
+                  @click="toggleMobileNav"
+                >
+                  <span class="mobile-nav-trigger-icon" aria-hidden="true">
+                    <MenuNavIcon />
+                  </span>
+                  <span class="nav-pill-grow-line" aria-hidden="true" />
+                </button>
+              </div>
+            </template>
           </div>
-          <div ref="overflowWrapRef" class="nav-overflow-wrap header-toolbar-slot" data-toolbar-flip="overflow">
+          <div
+            v-if="!isMobileShell"
+            ref="overflowWrapRef"
+            class="nav-overflow-wrap header-toolbar-slot"
+            data-toolbar-flip="overflow"
+          >
             <button
               type="button"
               class="nav-overflow-trigger"
@@ -668,7 +732,7 @@ function onRouteEnter(el: Element, done: () => void) {
               <div
                 v-show="overflowOpen"
                 id="nav-overflow-panel"
-                class="nav-overflow-panel card card-overflow-visible"
+                class="nav-overflow-panel card-overflow-visible"
                 role="region"
                 :aria-label="t('nav.overflowRegion')"
               >
@@ -769,6 +833,40 @@ function onRouteEnter(el: Element, done: () => void) {
       </div>
       </div>
     </header>
+
+    <Teleport to="body">
+      <Transition name="mobile-nav-backdrop">
+        <div
+          v-if="isMobileShell && mobileNavOpen"
+          class="mobile-nav-backdrop"
+          aria-hidden="true"
+          @click="closeMobileNav"
+        />
+      </Transition>
+      <Transition name="mobile-nav-drawer">
+        <aside
+          v-if="isMobileShell && mobileNavOpen"
+          id="mobile-nav-drawer"
+          class="mobile-nav-drawer"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="t('nav.mobileMenuRegion')"
+        >
+          <header class="mobile-nav-drawer-head">
+            <EdKicker :en="t('nav.mobileMenuKickerEn')" :zh="t('nav.mobileMenuKickerZh')" />
+            <button
+              type="button"
+              class="mobile-nav-drawer-close"
+              :aria-label="t('nav.mobileMenuClose')"
+              @click="closeMobileNav"
+            >
+              {{ t('xiqi.close') }}
+            </button>
+          </header>
+          <SiteNav variant="drawer" @navigate="closeMobileNav" />
+        </aside>
+      </Transition>
+    </Teleport>
 
     <main class="app-main" :class="appMainClasses">
       <RouterView v-slot="{ Component }">
@@ -941,50 +1039,123 @@ function onRouteEnter(el: Element, done: () => void) {
 
 @media (max-width: 768px) {
   .glass-nav-inner {
-    padding: 0.5rem 0.85rem;
+    padding: 0.42rem 0.85rem;
   }
 
-  /* 顶栏两行：第一行「品牌 + 工具」分列两端，第二行导航整行居中，省去纵向三层堆叠的高度 */
+  /* 手机壳：单行「品牌 | 主题 · 语言 · 汉堡」 */
   .header-inner {
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
     gap: 0.45rem 0.5rem;
   }
 
-  /* 解散 header-left 盒子，让品牌行与导航各自参与 header-inner 的换行排布 */
   .header-left {
-    display: contents;
+    display: flex;
+    flex: 1;
+    min-width: 0;
   }
 
   .header-brand-row {
-    order: 0;
     flex: 0 1 auto;
     width: auto;
     justify-content: flex-start;
   }
 
   .header-right {
-    order: 1;
     width: auto;
     margin-left: auto;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: flex-end;
-    gap: 0.4rem 0.45rem;
+    gap: 0.35rem 0.4rem;
   }
 
   .header-right .hint {
     display: none;
   }
+}
 
-  /* 导航：强制换到第二行，整行居中；放不下时换行（不可用 overflow，否则会裁掉分组下拉） */
-  .header-left :deep(.nav.nav--shell) {
-    order: 2;
-    flex: 1 0 100%;
-    width: 100%;
-    max-width: 100%;
-    justify-content: center;
-    flex-wrap: wrap;
+.mobile-nav-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 210;
+  background: color-mix(in srgb, var(--color-bg-base) 22%, rgb(0 0 0 / 44%));
+}
+
+.mobile-nav-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 220;
+  display: flex;
+  flex-direction: column;
+  width: min(21rem, calc(100vw - 2.25rem));
+  padding: calc(0.7rem + env(safe-area-inset-top, 0px)) 0.95rem
+    calc(1.1rem + env(safe-area-inset-bottom, 0px));
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--color-bg-base);
+  border-left: 1px solid var(--color-border);
+  box-shadow: -16px 0 48px rgb(0 0 0 / 16%);
+}
+
+.mobile-nav-drawer-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.mobile-nav-drawer-head :deep(.ed-kicker) {
+  margin: 0;
+}
+
+.mobile-nav-drawer-close {
+  min-height: 44px;
+  padding: 0 0.15rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: var(--font-serif);
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.mobile-nav-drawer-close:hover,
+.mobile-nav-drawer-close:focus-visible {
+  color: var(--color-accent);
+}
+
+.mobile-nav-backdrop-enter-active,
+.mobile-nav-backdrop-leave-active {
+  transition: opacity 0.22s ease;
+}
+
+.mobile-nav-backdrop-enter-from,
+.mobile-nav-backdrop-leave-to {
+  opacity: 0;
+}
+
+.mobile-nav-drawer-enter-active,
+.mobile-nav-drawer-leave-active {
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mobile-nav-drawer-enter-from,
+.mobile-nav-drawer-leave-to {
+  transform: translateX(104%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-nav-backdrop-enter-active,
+  .mobile-nav-backdrop-leave-active,
+  .mobile-nav-drawer-enter-active,
+  .mobile-nav-drawer-leave-active {
+    transition: none;
   }
 }
 
@@ -1038,17 +1209,10 @@ function onRouteEnter(el: Element, done: () => void) {
 }
 
 .nav-overflow-trigger.nav-overflow-trigger--cue-music-open {
-  color: #6fad87;
-  border-color: rgb(180 210 192 / 55%);
-  background-color: rgb(204 229 213 / 42%);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 75%),
-    0 4px 14px rgb(170 205 185 / 15%);
-  transition:
-    border-color 0.34s ease,
-    background-color 0.34s ease,
-    color 0.34s ease,
-    box-shadow 0.34s ease;
+  color: var(--color-accent);
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .nav-overflow-trigger--cue-pop {
@@ -1093,6 +1257,12 @@ function onRouteEnter(el: Element, done: () => void) {
   padding: 0.65rem 0.7rem;
   pointer-events: auto;
   overflow: visible;
+  background: var(--color-bg-surface);
+  border: none;
+  border-radius: var(--radius-md);
+  box-shadow:
+    0 -1px 0 var(--color-border),
+    0 1px 0 var(--color-border);
 }
 
 .nav-overflow-panel-tools [data-nav-tip]:hover,

@@ -187,6 +187,18 @@ export const useUiStore = defineStore('ui', () => {
     photoBackgroundEnabled.value = !photoBackgroundEnabled.value
   }
 
+  function setPhotoBackgroundEnabled(v: boolean) {
+    photoBackgroundEnabled.value = v
+  }
+
+  function setCursorTrailEnabled(v: boolean) {
+    cursorTrailEnabled.value = v
+  }
+
+  function setFpsMeterEnabled(v: boolean) {
+    fpsMeterEnabled.value = v
+  }
+
   function setPhotoBackgroundBlur(px: number) {
     photoBackgroundBlurPx.value = clampPhotoBackgroundBlur(px)
   }
@@ -214,6 +226,9 @@ export const useUiStore = defineStore('ui', () => {
     requestSplashWoniuReplay,
     setSplashAvatarHandoff,
     togglePhotoBackground,
+    setPhotoBackgroundEnabled,
+    setCursorTrailEnabled,
+    setFpsMeterEnabled,
     setPhotoBackgroundBlur,
   }
 })

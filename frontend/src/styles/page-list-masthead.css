@@ -283,7 +283,7 @@
   pointer-events: none;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .ed-filter {
     --ed-filter-inline: 0.85rem;
   }
@@ -308,6 +308,21 @@
     flex: none;
     max-width: none;
   }
+}
+
+html[data-mobile-shell] .ed-cats {
+  align-items: baseline;
+}
+
+html[data-mobile-shell] .ed-cat {
+  position: relative;
+}
+
+/* 扩大点按热区，不撑高名录筛选行，避免「最新 / 最早」被挤到下一行 */
+html[data-mobile-shell] .ed-cat::before {
+  content: '';
+  position: absolute;
+  inset: -0.7rem -0.35rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

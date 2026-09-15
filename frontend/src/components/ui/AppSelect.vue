@@ -226,9 +226,13 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentPointe
 
 .select-wrap--editorial .select-menu {
   left: -0.15rem;
-  width: auto;
+  width: max-content;
+  max-width: min(22rem, calc(100vw - 2.5rem));
   min-width: max(12.5rem, 100%);
-  overflow: visible;
+  max-height: 16.5rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 0.28rem;
   background: var(--color-bg-surface);
   backdrop-filter: none;
@@ -236,34 +240,27 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentPointe
 }
 
 .select-wrap--editorial .select-option {
-  width: calc(100% - 6px);
+  width: 100%;
   padding: 0.3rem 0.55rem;
   font-family: var(--font-serif);
   font-size: 0.95rem;
   font-weight: 500;
   line-height: 1.35;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .select-wrap--editorial .select-option:hover,
 .select-wrap--editorial .select-option:focus-visible {
-  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  background: color-mix(in srgb, var(--color-bg-elevated) 52%, transparent);
   color: var(--color-accent);
-  transform: translateX(6px);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .select-wrap--editorial .select-option,
   .select-wrap--editorial .select-btn-chevron {
     transition: none;
-  }
-
-  .select-wrap--editorial .select-option:hover,
-  .select-wrap--editorial .select-option:focus-visible {
-    transform: none;
   }
 }
 

@@ -52,14 +52,12 @@ const { t } = useI18n()
               <a
                 class="footer-grunray-icp-link"
                 href="https://icp.gov.moe/?keyword=20266668"
-                target="_blank"
                 rel="noopener noreferrer"
               >萌ICP备20266668号</a>
               <span class="footer-grunray-icp-sep" aria-hidden="true">·</span>
               <a
                 class="footer-grunray-icp-link"
                 href="https://beian.miit.gov.cn/"
-                target="_blank"
                 rel="noopener noreferrer"
               >黔ICP备2026008503号</a>
             </span>

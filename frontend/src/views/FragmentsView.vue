@@ -11,6 +11,7 @@ import EdReadArticle from '@/components/editorial/EdReadArticle.vue'
 import EdSwitchFilter from '@/components/editorial/EdSwitchFilter.vue'
 import XiqiSplitLayout from '@/components/xiqi/XiqiSplitLayout.vue'
 import { type FragmentMood } from '@/content/data/mockFragments'
+import { injectMobileShell } from '@/composables/useMobileShell'
 import { updateEdCatLines } from '@/composables/useEdCatLine'
 import { playPageEnter, prefersReducedMotionMedia } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
@@ -28,6 +29,7 @@ type SortOrder = 'newest' | 'oldest'
 const { t, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
+const { isMobileShell } = injectMobileShell()
 
 useSeoMeta(() => ({
   title: `${t('fragments.title')} | ${SITE_NAME}`,
@@ -76,7 +78,9 @@ const detailTitle = computed(() =>
 )
 
 const splitHint = computed(() =>
-  selectedFragmentId.value ? t('xiqi.splitHintOpen') : t('xiqi.splitHintClosed'),
+  selectedFragmentId.value
+    ? t(isMobileShell.value ? 'xiqi.splitHintOpenMobile' : 'xiqi.splitHintOpen')
+    : t('xiqi.splitHintClosed'),
 )
 
 function moodLabel(mood: FragmentMood): string {

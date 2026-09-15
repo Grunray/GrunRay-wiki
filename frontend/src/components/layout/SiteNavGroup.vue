@@ -3,13 +3,11 @@ import type { Component } from 'vue'
 import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 
-import ChevronNavIcon from '../icons/ChevronNavIcon.vue'
-
 export type SiteNavDropdownItem = {
   to: string
   label: string
   desc: string
-  icon: Component
+  kicker: string
 }
 
 const props = defineProps<{
@@ -17,11 +15,18 @@ const props = defineProps<{
   icon: Component
   items: SiteNavDropdownItem[]
   menuId: string
+  /** 侧栏：点击展开，无 hover */
+  drawer?: boolean
+}>()
+
+const emit = defineEmits<{
+  navigate: []
 }>()
 
 const route = useRoute()
 const isHover = ref(false)
-const isOpen = ref(false)
+/** 侧栏默认全开；顶栏分组仍默认收起 */
+const isOpen = ref(Boolean(props.drawer))
 let leaveTimer = 0
 
 function isActive(path: string) {
@@ -30,14 +35,18 @@ function isActive(path: string) {
 }
 
 const groupActive = computed(() => props.items.some((item) => isActive(item.to)))
-const expanded = computed(() => isHover.value || isOpen.value)
+const expanded = computed(() =>
+  props.drawer ? isOpen.value : isHover.value || isOpen.value,
+)
 
 function onEnter() {
+  if (props.drawer) return
   window.clearTimeout(leaveTimer)
   isHover.value = true
 }
 
 function onLeave() {
+  if (props.drawer) return
   window.clearTimeout(leaveTimer)
   leaveTimer = window.setTimeout(() => {
     isHover.value = false
@@ -45,6 +54,7 @@ function onLeave() {
 }
 
 function onFocusOut(event: FocusEvent) {
+  if (props.drawer) return
   const group = event.currentTarget as HTMLElement | null
   const next = event.relatedTarget
   if (group && next instanceof Node && group.contains(next)) return
@@ -55,9 +65,25 @@ function onTriggerClick() {
   isOpen.value = !isOpen.value
 }
 
+function onItemClick() {
+  if (!props.drawer) isOpen.value = false
+  emit('navigate')
+}
+
+watch(
+  () => props.drawer,
+  (drawer) => {
+    if (drawer) isOpen.value = true
+  },
+)
+
 watch(
   () => route.path,
   () => {
+    if (props.drawer) {
+      isOpen.value = true
+      return
+    }
     isOpen.value = false
     isHover.value = false
   },
@@ -67,7 +93,7 @@ watch(
 <template>
   <div
     class="nav-group"
-    :class="{ 'is-expanded': expanded }"
+    :class="{ 'is-expanded': expanded, 'nav-group--drawer': drawer }"
     @mouseenter="onEnter"
     @mouseleave="onLeave"
     @focusin="onEnter"
@@ -85,33 +111,28 @@ watch(
         <component :is="icon" />
       </span>
       <span class="link-label">{{ label }}</span>
-      <span class="link-icon link-icon--chevron" aria-hidden="true">
-        <ChevronNavIcon />
-      </span>
-      <span class="leaf-glow" aria-hidden="true" />
+      <span class="affordance-plus" aria-hidden="true">+</span>
       <span class="grow-line" aria-hidden="true" />
     </button>
 
     <Transition name="nav-group-dropdown">
       <div v-if="expanded" :id="menuId" class="dropdown" role="menu">
-        <RouterLink
-          v-for="(item, index) in items"
-          :key="item.to"
-          :to="item.to"
-          class="dropdown-item"
-          :class="{ active: isActive(item.to) }"
-          :style="{ '--nav-item-i': index }"
-          role="menuitem"
-          @click="isOpen = false"
-        >
-          <span class="link-icon" aria-hidden="true">
-            <component :is="item.icon" />
-          </span>
-          <span class="meta">
+        <div class="dropdown-sheet">
+          <RouterLink
+            v-for="(item, index) in items"
+            :key="item.to"
+            :to="item.to"
+            class="dropdown-item"
+            :class="{ active: isActive(item.to) }"
+            :style="{ '--nav-item-i': index }"
+            role="menuitem"
+            @click="onItemClick"
+          >
+            <span class="drop-dot" aria-hidden="true" />
             <span class="meta-title">{{ item.label }}</span>
             <span class="meta-desc">{{ item.desc }}</span>
-          </span>
-        </RouterLink>
+          </RouterLink>
+        </div>
       </div>
     </Transition>
   </div>
@@ -127,132 +148,74 @@ watch(
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.38rem;
   color: var(--color-text-muted);
   font: inherit;
   font-weight: 500;
-  font-size: 0.92rem;
+  font-size: 0.8rem;
   line-height: 1.2;
   letter-spacing: 0.02em;
   white-space: nowrap;
-  padding: 0.7rem 1.05rem;
-  border-radius: 999px;
+  padding: 0.42rem 0.62rem;
+  border-radius: 0;
   border: 1px solid transparent;
   background-color: transparent;
+  box-shadow: none;
   cursor: pointer;
-  transition:
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    color 0.35s ease,
-    background-color 0.35s ease,
-    border-color 0.35s ease,
-    box-shadow 0.45s ease;
+  transition: color 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .link-icon {
   display: inline-flex;
   flex-shrink: 0;
   line-height: 0;
-  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  opacity: 0.55;
 }
 
-.nav-group.is-expanded .link-icon--chevron :deep(.shell-nav-icon--chevron) {
-  transform: rotate(180deg);
+.group-trigger:hover .link-icon,
+.group-trigger.active .link-icon,
+.nav-group.is-expanded > .group-trigger .link-icon {
+  opacity: 0.9;
 }
 
-.link-icon--chevron :deep(.shell-nav-icon--chevron) {
-  transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+.affordance-plus {
+  display: inline-flex;
+  width: 0.7rem;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  opacity: 0.45;
 }
 
-/* hover 只提文字色 + 生长线（与 .link 同语言）；展开/选中态才给染色底 */
 .group-trigger:hover {
   color: var(--color-text);
 }
 
-.nav-group:focus-within > .group-trigger,
-.nav-group.is-expanded > .group-trigger,
-.group-trigger.active {
-  color: var(--color-text);
-  background-color: color-mix(in srgb, var(--color-accent) 18%, transparent);
-  border-color: color-mix(in srgb, var(--color-accent) 16%, transparent);
-}
-
-.group-trigger.active {
-  color: #6fad87;
-  background-color: rgb(204 229 213 / 42%);
-  border-color: rgb(180 210 192 / 55%);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 75%),
-    0 3px 10px rgb(170 205 185 / 12%);
-  animation: shell-nav-group-breath 4s ease-in-out infinite;
-}
-
-.group-trigger:active:not(.active) {
-  transform: translateY(-1px) scale(0.985);
-  transition-duration: 0.12s;
-}
-
-:global([data-theme='dark']) .group-trigger.active {
-  color: color-mix(in srgb, var(--color-accent) 88%, #b8e6c8);
-  background-color: color-mix(in srgb, var(--color-accent) 14%, rgb(30 44 46 / 55%));
-  border-color: color-mix(in srgb, var(--color-accent) 28%, transparent);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 8%),
-    0 3px 10px rgb(0 0 0 / 14%);
+.group-trigger.active,
+.nav-group.is-expanded > .group-trigger {
+  color: var(--color-accent);
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .grow-line {
   position: absolute;
-  bottom: 4px;
-  left: 50%;
-  width: 0;
-  height: 2px;
-  border-radius: 10px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in srgb, var(--color-accent) 70%, transparent),
-    transparent
-  );
-  transition: width 0.5s ease, left 0.5s ease, opacity 0.35s ease;
+  left: 0.28rem;
+  right: 0.28rem;
+  bottom: 0.12rem;
+  height: 1px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: 50% 50%;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
 
 .group-trigger:hover .grow-line,
-.nav-group.is-expanded .grow-line {
-  width: 70%;
-  left: 15%;
-}
-
-.group-trigger.active .grow-line {
-  width: 0;
-}
-
-.leaf-glow {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  right: 10px;
-  top: 8px;
-  border-radius: 100%;
-  background: rgb(172 222 186 / 45%);
-  filter: blur(3px);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.45s ease;
-}
-
-.group-trigger.active .leaf-glow {
-  opacity: 1;
-}
-
-@keyframes shell-nav-group-breath {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.012);
-  }
+.group-trigger.active .grow-line,
+.nav-group.is-expanded > .group-trigger .grow-line {
+  transform: scaleX(1);
 }
 
 .dropdown {
@@ -260,15 +223,12 @@ watch(
   top: 100%;
   left: 0;
   z-index: 60;
-  min-width: 15rem;
+  min-width: 16.5rem;
   margin-top: 0.45rem;
-  padding: 0.65rem;
-  border-radius: 1.25rem;
-  background: color-mix(in srgb, var(--glass-nav-bg) 72%, rgb(248 252 249 / 55%));
-  backdrop-filter: blur(var(--glass-nav-blur));
-  -webkit-backdrop-filter: blur(var(--glass-nav-blur));
-  border: 1px solid color-mix(in srgb, var(--glass-nav-border) 55%, rgb(220 234 226 / 70%));
-  box-shadow: 0 16px 40px rgb(124 148 136 / 12%);
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
   transform-origin: top left;
 }
 
@@ -281,9 +241,36 @@ watch(
   height: 0.55rem;
 }
 
-:global([data-theme='dark']) .dropdown {
-  background: color-mix(in srgb, var(--glass-nav-bg) 88%, rgb(30 44 46 / 65%));
-  box-shadow: 0 16px 40px rgb(0 0 0 / 28%);
+.dropdown-sheet {
+  position: relative;
+  padding: 0;
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+/* 顶/底弧线 hairline：贴齐首末选项（间距 0），拉满两端并随卡片圆角走弧 */
+.dropdown-sheet::before,
+.dropdown-sheet::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  height: 6px;
+  pointer-events: none;
+}
+
+.dropdown-sheet::before {
+  top: 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  box-shadow: inset 0 1px 0 var(--color-border);
+}
+
+.dropdown-sheet::after {
+  bottom: 0;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  box-shadow: inset 0 -1px 0 var(--color-border);
 }
 
 .nav-group-dropdown-enter-active {
@@ -321,53 +308,73 @@ watch(
 }
 
 .dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 0.7rem;
+  align-items: start;
   width: 100%;
-  padding: 0.85rem 0.95rem;
-  border-radius: 1rem;
-  color: var(--color-text-muted);
+  padding: 0.48rem 0.5rem;
+  border-radius: var(--radius-sm);
+  color: inherit;
   text-decoration: none;
-  transition:
-    transform 0.35s ease,
-    background-color 0.35s ease,
-    color 0.35s ease;
+  transition: background 0.2s ease;
 }
 
-/* hover = 色阶表面 + 轻移；active（当前页）才给 accent 染色 */
-.dropdown-item:hover {
-  background: var(--color-bg-elevated);
-  color: var(--color-text);
+.dropdown-item + .dropdown-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: var(--color-border);
+  pointer-events: none;
 }
 
-.dropdown-item.active {
-  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
-  color: var(--color-text);
-}
-
-.dropdown-item .link-icon {
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.meta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  min-width: 0;
-  text-align: left;
+/* 目录打孔：外实心环 + 内掏空（同心圆） */
+.drop-dot {
+  grid-row: 1 / span 2;
+  align-self: center;
+  box-sizing: border-box;
+  width: 0.55rem;
+  height: 0.55rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-border);
+  -webkit-mask: radial-gradient(circle, transparent 38%, #000 40%);
+  mask: radial-gradient(circle, transparent 38%, #000 40%);
+  transition: background-color 0.2s ease;
 }
 
 .meta-title {
-  font-size: 0.9rem;
+  font-family: var(--font-serif);
+  font-size: 0.92rem;
   font-weight: 600;
   color: var(--color-text);
+  transition: color 0.2s ease;
 }
 
 .meta-desc {
   font-size: 0.72rem;
   color: var(--color-text-muted);
   line-height: 1.35;
+}
+
+.dropdown-item:hover {
+  background: color-mix(in srgb, var(--color-bg-elevated) 52%, transparent);
+  text-decoration: none;
+}
+
+.dropdown-item:hover .meta-title,
+.dropdown-item.active .meta-title {
+  color: var(--color-accent);
+}
+
+.dropdown-item:hover .drop-dot,
+.dropdown-item.active .drop-dot {
+  background-color: var(--color-accent);
 }
 
 @media (max-width: 768px) {
@@ -377,7 +384,6 @@ watch(
     gap: 0.32rem;
   }
 
-  /* 下拉脱离分组定位，相对全宽导航行铺满（两侧留边距），避免最右分组的下拉溢出右缘 */
   .nav-group {
     position: static;
   }
@@ -402,23 +408,61 @@ watch(
   }
 }
 
+/* 侧栏手风琴：菜单落在触发器下方，不浮层 */
+.nav-group--drawer {
+  position: static;
+  width: 100%;
+}
+
+.nav-group--drawer > .group-trigger {
+  width: 100%;
+  justify-content: flex-start;
+  min-height: 44px;
+  padding: 0.72rem 0.35rem;
+  font-size: 0.95rem;
+}
+
+.nav-group--drawer .dropdown {
+  position: static;
+  left: auto;
+  right: auto;
+  top: auto;
+  width: 100%;
+  min-width: 0;
+  transform: none;
+  padding: 0 0 0.2rem 0.15rem;
+}
+
+.nav-group--drawer .dropdown-sheet {
+  padding: 0.15rem 0 0.25rem;
+  border-radius: 0;
+  box-shadow: none;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.nav-group--drawer .dropdown-sheet::before,
+.nav-group--drawer .dropdown-sheet::after {
+  display: none;
+}
+
+.nav-group--drawer .dropdown-item {
+  min-height: 44px;
+  align-items: center;
+  padding: 0.55rem 0.35rem;
+}
+
+.nav-group--drawer .nav-group-dropdown-enter-from,
+.nav-group--drawer .nav-group-dropdown-leave-to {
+  transform: none;
+  opacity: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .group-trigger,
-  .group-trigger:hover,
-  .group-trigger.active,
-  .nav-group.is-expanded > .group-trigger {
-    transition:
-      color 0.2s ease,
-      background-color 0.2s ease,
-      border-color 0.2s ease,
-      box-shadow 0.2s ease;
-    transform: none;
-    animation: none;
-  }
-
-  .group-trigger:hover .link-icon,
-  .nav-group.is-expanded > .group-trigger .link-icon:not(.link-icon--chevron) {
-    transform: none;
+  .grow-line {
+    transition: none;
   }
 
   .nav-group-dropdown-enter-active,
@@ -433,16 +477,6 @@ watch(
 
   .nav-group-dropdown-enter-active .dropdown-item {
     animation: none;
-  }
-
-  .dropdown-item:hover,
-  .dropdown-item.active {
-    transform: none;
-  }
-
-  .dropdown-item:hover .link-icon,
-  .dropdown-item.active .link-icon {
-    transform: none;
   }
 }
 </style>

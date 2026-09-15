@@ -9,10 +9,10 @@ import EdLedgerHead from '@/components/editorial/EdLedgerHead.vue'
 import EdReadArticle from '@/components/editorial/EdReadArticle.vue'
 import EdSwitchFilter from '@/components/editorial/EdSwitchFilter.vue'
 import XiqiSplitLayout from '@/components/xiqi/XiqiSplitLayout.vue'
+import { injectMobileShell } from '@/composables/useMobileShell'
 import { updateEdCatLines } from '@/composables/useEdCatLine'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
-import { useSiteLeaveRedirect } from '@/composables/useSiteLeaveRedirect'
 import { SITE_NAME } from '@/config/site'
 import {
   fetchRecommendDetail,
@@ -31,7 +31,7 @@ type SortOrder = 'newest' | 'oldest'
 
 const { t, locale } = useI18n()
 const route = useRoute()
-const { startExternalLeave } = useSiteLeaveRedirect()
+const { isMobileShell } = injectMobileShell()
 
 useSeoMeta(() => ({
   title: `${t('recommend.title')} | ${SITE_NAME}`,
@@ -73,7 +73,9 @@ const displayedItem = computed(
 const detailTitle = computed(() => displayedItem.value?.title ?? '')
 
 const splitHint = computed(() =>
-  selectedId.value ? t('xiqi.splitHintOpen') : t('xiqi.splitHintClosed'),
+  selectedId.value
+    ? t(isMobileShell.value ? 'xiqi.splitHintOpenMobile' : 'xiqi.splitHintOpen')
+    : t('xiqi.splitHintClosed'),
 )
 
 function categoryLabel(category: RecommendCategory): string {
@@ -91,11 +93,6 @@ function selectItem(id: string) {
 
 function refreshCatLines() {
   updateEdCatLines(filterRef.value)
-}
-
-function onVisitLink(url: string, event: MouseEvent) {
-  event.preventDefault()
-  void startExternalLeave(url, route.fullPath)
 }
 
 async function loadList() {
@@ -251,7 +248,7 @@ onBeforeUnmount(() => {
           <a
             class="ed-action"
             :href="displayedItem.url"
-            @click="onVisitLink(displayedItem.url, $event)"
+            rel="noopener noreferrer"
           >
             {{ t('recommend.visitLink') }}
           </a>

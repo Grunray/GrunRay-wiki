@@ -29,6 +29,10 @@ export function useNavScrollCompact(opts: NavScrollCompactOptions = {}) {
   }
 
   function tick() {
+    if (document.documentElement.dataset.mobileShell === 'true') {
+      compact.value = false
+      return
+    }
     syncFromScrollY(window.scrollY)
   }
 

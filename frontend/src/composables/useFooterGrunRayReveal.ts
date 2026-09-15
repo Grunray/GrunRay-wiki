@@ -2,6 +2,7 @@ import { nextTick, onMounted, onUnmounted, ref, watch, type Ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 import { useUiStore } from '@/stores/ui'
+import { injectMobileShell } from '@/composables/useMobileShell'
 import {
   FOOTER_REFRESH_EVENT,
   isXiqiSplitFooterLocked,
@@ -16,6 +17,9 @@ const WORD_RATIO = (7 * 896) / 960
 /** 与 footer-grunray.css --footer-grunray-brand-height 一致，避免滚动中改 padding 造成跳动 */
 const BRAND_HEIGHT_PX = 360
 const REVEAL_SPACE_PX = Math.ceil(BRAND_HEIGHT_PX * 1.12)
+/** 手机：无扭曲字，仅留 ICP 胶囊所需垫高 */
+const META_ONLY_BRAND_HEIGHT_PX = 0
+const META_ONLY_REVEAL_SPACE_PX = 110
 
 /** 超过此进度：页脚抬到 .app-page-cover 之上，避免蒙层与 padding 区挡住拖影 */
 const FOOTER_OVER_COVER_PROGRESS = 0.08
@@ -29,8 +33,9 @@ function clamp01(n: number) {
   return Math.min(1, Math.max(0, n))
 }
 
-function footerRevealThreshold() {
-  return Math.max(96, REVEAL_SPACE_PX * 0.72)
+function footerRevealThreshold(spacePx: number) {
+  if (spacePx <= META_ONLY_REVEAL_SPACE_PX) return Math.max(56, Math.ceil(spacePx * 0.82))
+  return Math.max(96, spacePx * 0.72)
 }
 
 export type FooterGrunRaySliceEntry = {
@@ -45,6 +50,7 @@ export function useFooterGrunRayReveal(
 ) {
   const route = useRoute()
   const ui = useUiStore()
+  const { isMobileShell } = injectMobileShell()
 
   /** ICP 胶囊：Eric-Terminal footer-inner glass-panel，进入页脚区即 is-visible + CSS 过渡 */
   const metaBarVisible = ref(false)
@@ -69,6 +75,12 @@ export function useFooterGrunRayReveal(
   let routeLayoutSettleTimer: ReturnType<typeof setTimeout> | null = null
   let routeLayoutObserver: ResizeObserver | null = null
 
+  const revealSpacePx = () =>
+    isMobileShell.value ? META_ONLY_REVEAL_SPACE_PX : REVEAL_SPACE_PX
+  const brandHeightPx = () =>
+    isMobileShell.value ? META_ONLY_BRAND_HEIGHT_PX : BRAND_HEIGHT_PX
+  const revealThresholdPx = () => footerRevealThreshold(revealSpacePx())
+
   const clearRouteLayoutWatch = () => {
     if (routeLayoutSettleTimer !== null) {
       window.clearTimeout(routeLayoutSettleTimer)
@@ -81,7 +93,14 @@ export function useFooterGrunRayReveal(
   const forceFooterHidden = () => {
     smoothedProgress = 0
     lastWrittenProgress = -1
-    applyRevealState(0, false, REVEAL_SPACE_PX + 999)
+    applyRevealState(0, false, revealSpacePx() + 999)
+  }
+
+  /** 可滚距离不够揭示区：桌面藏页脚；手机仍露出 ICP 胶囊 */
+  const applyShortPageFooter = () => {
+    smoothedProgress = 0
+    lastWrittenProgress = -1
+    applyRevealState(0, false, 0, false)
   }
 
   const scheduleRouteLayoutSettled = () => {
@@ -93,7 +112,7 @@ export function useFooterGrunRayReveal(
       routeLayoutObserver = null
       const { remaining, progress, hasRevealRoom } = getScrollMetrics()
       if (!hasRevealRoom) {
-        forceFooterHidden()
+        applyShortPageFooter()
         return
       }
       smoothedProgress = progress
@@ -130,18 +149,22 @@ export function useFooterGrunRayReveal(
     remaining: number,
     hasRevealRoom = true,
   ) => {
-    if (Math.abs(progress - lastWrittenProgress) > 0.0001) {
-      document.documentElement.style.setProperty('--reveal-progress', String(progress))
-      lastWrittenProgress = progress
-    }
-
-    const nextMetaVisible = hasRevealRoom && remaining <= footerRevealThreshold()
+    const nextMetaVisible = isMobileShell.value
+      ? !hasRevealRoom || remaining <= revealThresholdPx()
+      : hasRevealRoom && remaining <= revealThresholdPx()
     if (metaBarVisible.value !== nextMetaVisible) metaBarVisible.value = nextMetaVisible
 
-    if (isInteractive.value !== ready) isInteractive.value = ready
-    if (isFullyRevealed.value !== ready) isFullyRevealed.value = ready
+    const brandProgress = isMobileShell.value ? 0 : progress
+    if (Math.abs(brandProgress - lastWrittenProgress) > 0.0001) {
+      document.documentElement.style.setProperty('--reveal-progress', String(brandProgress))
+      lastWrittenProgress = brandProgress
+    }
 
-    const nextOverCover = progress >= FOOTER_OVER_COVER_PROGRESS
+    const brandReady = isMobileShell.value ? false : ready
+    if (isInteractive.value !== brandReady) isInteractive.value = brandReady
+    if (isFullyRevealed.value !== brandReady) isFullyRevealed.value = brandReady
+
+    const nextOverCover = brandProgress >= FOOTER_OVER_COVER_PROGRESS
     if (nextOverCover !== lastOverCover) {
       if (nextOverCover) {
         document.documentElement.setAttribute('data-footer-over-cover', '')
@@ -151,7 +174,7 @@ export function useFooterGrunRayReveal(
       lastOverCover = nextOverCover
     }
 
-    const nextRevealing = progress > 0.001 && progress < 0.999
+    const nextRevealing = brandProgress > 0.001 && brandProgress < 0.999
     if (nextRevealing !== lastRevealing) {
       if (nextRevealing) {
         document.documentElement.setAttribute('data-footer-revealing', '')
@@ -188,17 +211,20 @@ export function useFooterGrunRayReveal(
   /** 固定预留滚动区，不在滚动帧里读 getBoundingClientRect，避免 scrollHeight 突变卡顿 */
   const applyFooterMetrics = () => {
     if (!isXiqiSplitFooterLocked()) {
-      document.documentElement.style.setProperty('--footer-reveal-space', `${REVEAL_SPACE_PX}px`)
+      document.documentElement.style.setProperty('--footer-reveal-space', `${revealSpacePx()}px`)
     }
-    document.documentElement.style.setProperty('--footer-grunray-brand-height', `${BRAND_HEIGHT_PX}px`)
-    syncBrandLayout()
+    document.documentElement.style.setProperty(
+      '--footer-grunray-brand-height',
+      `${brandHeightPx()}px`,
+    )
+    if (!isMobileShell.value) syncBrandLayout()
     metricsApplied = true
   }
 
   const applyXiqiSplitFooterSuppressed = () => {
     smoothedProgress = 0
     lastWrittenProgress = -1
-    applyRevealState(0, false, REVEAL_SPACE_PX + 999)
+    applyRevealState(0, false, revealSpacePx() + 999)
   }
 
   const onFooterRefresh = () => {
@@ -211,11 +237,12 @@ export function useFooterGrunRayReveal(
   }
 
   const getScrollMetrics = () => {
-    const threshold = footerRevealThreshold()
+    const threshold = revealThresholdPx()
+    const space = revealSpacePx()
     const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
     const remaining = maxScroll - window.scrollY
-    /* 可滚距离不够一个揭示阈值时，顶部也会 remaining≈0，不能当成「已滚到底」 */
-    const hasRevealRoom = maxScroll >= threshold
+    /* 垫高本身就会贡献可滚距离；只有正文超出视口才算「有揭示区」 */
+    const hasRevealRoom = maxScroll >= space + 12
     const progress = hasRevealRoom ? clamp01(1 - remaining / threshold) : 0
     const atBottom = hasRevealRoom && remaining <= 12
     return { threshold, remaining, progress, atBottom, hasRevealRoom }
@@ -225,7 +252,7 @@ export function useFooterGrunRayReveal(
     if (isXiqiSplitFooterLocked()) return
     const { remaining, hasRevealRoom } = getScrollMetrics()
     if (!hasRevealRoom) {
-      forceFooterHidden()
+      applyShortPageFooter()
       return
     }
     smoothedProgress = 1
@@ -238,20 +265,20 @@ export function useFooterGrunRayReveal(
 
     if (isXiqiSplitFooterLocked()) {
       applyXiqiSplitFooterSuppressed()
-      return { progress: 0, remaining: REVEAL_SPACE_PX + 999 }
+      return { progress: 0, remaining: revealSpacePx() + 999 }
     }
 
     if (revealSuppressedUntilLayoutSettled) {
       forceFooterHidden()
-      return { progress: 0, remaining: REVEAL_SPACE_PX + 999 }
+      return { progress: 0, remaining: revealSpacePx() + 999 }
     }
 
     const reducedMotion = ui.prefersReducedMotion
     const { remaining, progress, atBottom, hasRevealRoom } = getScrollMetrics()
 
     if (!hasRevealRoom) {
-      forceFooterHidden()
-      return { progress: 0, remaining: REVEAL_SPACE_PX + 999 }
+      applyShortPageFooter()
+      return { progress: 0, remaining: revealSpacePx() + 999 }
     }
 
     if (reducedMotion || atBottom || progress >= 0.998) {
@@ -267,7 +294,7 @@ export function useFooterGrunRayReveal(
     }
 
     const ready =
-      remaining <= footerRevealThreshold() &&
+      remaining <= revealThresholdPx() &&
       (atBottom || progress >= 0.97 || smoothedProgress >= 0.985)
 
     applyRevealState(smoothedProgress, ready, remaining, true)
@@ -278,7 +305,7 @@ export function useFooterGrunRayReveal(
   }
 
   const needsRevealLoop = (progress: number, remaining: number) => {
-    const inZone = remaining <= footerRevealThreshold()
+    const inZone = remaining <= revealThresholdPx()
     if (Math.abs(progress - smoothedProgress) > PROGRESS_EPS) return true
     if (inZone && smoothedProgress < progress - PROGRESS_EPS) return true
     if (inZone && smoothedProgress > progress + PROGRESS_EPS) return true
@@ -302,7 +329,7 @@ export function useFooterGrunRayReveal(
     if (isXiqiSplitFooterLocked()) return
     const { remaining, hasRevealRoom } = getScrollMetrics()
     if (!hasRevealRoom) {
-      forceFooterHidden()
+      applyShortPageFooter()
       return
     }
     if (remaining <= 64) finalizeFooterAtBottom()
@@ -400,6 +427,7 @@ export function useFooterGrunRayReveal(
   }
 
   const bindBrandPointer = () => {
+    if (isMobileShell.value) return
     const brandWord = brandWordRef.value
     if (!brandWord) return
     brandWord.addEventListener('pointerenter', onPointerEnter)
@@ -415,6 +443,17 @@ export function useFooterGrunRayReveal(
     brandWord.removeEventListener('pointermove', onPointerMove)
     brandWord.removeEventListener('pointerleave', onPointerLeave)
     brandWord.removeEventListener('pointercancel', onPointerLeave)
+  }
+
+  const onMobileShellChange = (matches: boolean) => {
+    unbindBrandPointer()
+    applyFooterMetrics()
+    if (!matches) {
+      void nextTick(() => bindBrandPointer())
+    } else {
+      forceFooterHidden()
+    }
+    requestScrollUpdate()
   }
 
   onMounted(() => {
@@ -439,6 +478,13 @@ export function useFooterGrunRayReveal(
       window.addEventListener('scrollend', onScrollIdle, { passive: true })
     }
   })
+
+  watch(
+    isMobileShell,
+    (matches) => {
+      onMobileShellChange(matches)
+    },
+  )
 
   watch(
     () => route.fullPath,

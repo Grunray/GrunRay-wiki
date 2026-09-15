@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
+import { injectMobileShell } from '@/composables/useMobileShell'
 import { useFooterGrunRayReveal } from '@/composables/useFooterGrunRayReveal'
 
 import FooterGrunRayBrand from './FooterGrunRayBrand.vue'
@@ -8,6 +9,7 @@ import FooterGrunRayMetaBar from './FooterGrunRayMetaBar.vue'
 
 const footerRootRef = ref<HTMLElement | null>(null)
 const brandWordRef = ref<HTMLElement | null>(null)
+const { isMobileShell } = injectMobileShell()
 
 const { metaBarVisible, isInteractive, isFullyRevealed, registerSlices, syncBrandLayout } =
   useFooterGrunRayReveal(footerRootRef, brandWordRef)
@@ -15,6 +17,7 @@ const { metaBarVisible, isInteractive, isFullyRevealed, registerSlices, syncBran
 const rootClasses = computed(() => ({
   'is-interactive': isInteractive.value,
   'is-fully-revealed': isFullyRevealed.value,
+  'footer-grunray-root--meta-only': isMobileShell.value,
 }))
 
 function onBrandReady(payload: {
@@ -35,7 +38,7 @@ function onBrandReady(payload: {
     :class="rootClasses"
   >
     <footer class="footer-grunray-container">
-      <div class="footer-grunray-brand-wrap">
+      <div v-if="!isMobileShell" class="footer-grunray-brand-wrap">
         <div class="footer-grunray-brand-reveal">
           <div class="footer-grunray-content">
             <FooterGrunRayBrand @ready="onBrandReady" />

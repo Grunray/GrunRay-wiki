@@ -279,6 +279,44 @@ html[data-photo-bg='true'] .card.card-glass-dense {
   padding: 1.52rem 1.35rem;
 }
 
+/*
+ * 手机壳：顶栏贴齐视口顶（含安全区），禁止胶囊 inset。
+ * compact 的 padding / ::before 会把玻璃条收成浮岛，露出上方色带。
+ */
+html[data-mobile-shell] .glass-nav-sticky-wrap,
+html[data-mobile-shell] .glass-nav-sticky-wrap[data-nav-compact='true'] {
+  padding: env(safe-area-inset-top, 0px) 0 0;
+}
+
+html[data-mobile-shell] .glass-nav-sticky-wrap::before,
+html[data-mobile-shell] .glass-nav-sticky-wrap[data-nav-compact='true']::before {
+  width: 100%;
+  top: 0;
+  bottom: 0;
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid var(--glass-nav-border);
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.03);
+}
+
+html[data-mobile-shell] .glass-nav-sticky-wrap .glass-nav-inner,
+html[data-mobile-shell] .glass-nav-sticky-wrap[data-nav-compact='true'] .glass-nav-inner {
+  max-width: none;
+  padding: 0.42rem 0.85rem 0.5rem;
+}
+
+html[data-mobile-shell] .header-toolbar-capsule .theme-nav-btn,
+html[data-mobile-shell] .header-toolbar-capsule .locale-nav-btn,
+html[data-mobile-shell] .header-toolbar-capsule .mobile-nav-trigger {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+html.mobile-shell-locked,
+html.mobile-shell-locked body {
+  overflow: hidden;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .card,
   .glass-nav-sticky-wrap,
