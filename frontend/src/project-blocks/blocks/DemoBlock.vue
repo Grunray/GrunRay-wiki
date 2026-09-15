@@ -50,7 +50,7 @@ const hasDemoUrl = computed(() => Boolean(props.block.demoUrl))
     </div>
 
     <p class="actions">
-      <a v-if="hasDemoUrl" :href="block.demoUrl" target="_blank" rel="noreferrer noopener">
+      <a v-if="hasDemoUrl" :href="block.demoUrl" rel="noreferrer noopener">
         {{ t('projects.openDemo') }}
       </a>
       <span v-else class="action-disabled">{{ t('projects.demoLinkMissing') }}</span>

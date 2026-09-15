@@ -15,6 +15,8 @@ import './styles/footer-grunray.css'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
+import { installExternalLeaveClickGuard } from '@/leave/installExternalLeaveClickGuard'
+
 // GSAP 插件全局注册一次（官方 gsap-skills 最佳实践）
 gsap.registerPlugin(ScrollTrigger)
 
@@ -25,3 +27,4 @@ app.use(head)
 app.use(router)
 app.use(i18n)
 app.mount('#app')
+installExternalLeaveClickGuard()

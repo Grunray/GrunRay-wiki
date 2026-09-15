@@ -14,8 +14,7 @@ const { copyToastVisible, copyToastColor, handleExternalLinkClick } = useExterna
         class="footer-ext-btn"
         :style="{ '--icon-color': item.color }"
         :href="item.href"
-        target="_blank"
-        rel="noopener noreferrer"
+        :rel="item.emailToCopy ? undefined : 'noopener noreferrer'"
         @click="handleExternalLinkClick(item, $event)"
       >
         <svg :viewBox="item.viewBox" class="footer-ext-btn__icon" aria-hidden="true">
