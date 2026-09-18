@@ -1,0 +1,14 @@
+---
+description: GrunRay wiki — 先读 AGENTS.md，按文档地图下钻，勿另起视觉语言
+alwaysApply: true
+---
+
+# GrunRay · Agent 入口
+
+开任何改动前先读仓库根 `AGENTS.md`（文档地图、硬约束、开干/收工清单）。
+
+- UI / 动效 → `docs/DESIGN.md`；键盘焦点 → `docs/ACCESSIBILITY.md`
+- 怪现象先搜 `docs/TROUBLESHOOTING.md`
+- 任务勾选 → `TODO.md`（只读相关批次）；对外摘要 → `docs/CHANGELOG.md`
+- 未要求则不 commit / 不 push
+- 对用户用简体中文；禁止另起一套视觉语言
