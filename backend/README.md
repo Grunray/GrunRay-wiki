@@ -65,6 +65,18 @@ python run.py
 
 默认 `http://127.0.0.1:5000`。
 
+## 测试
+
+不连 MySQL。校验、序列化、友链/留言规则与不碰库的路由（`/`、`/api/health`、`/robots.txt`）走 pytest：
+
+```bash
+# 先激活本目录 venv（.venv 或 venv）
+pip install -r requirements-dev.txt
+pytest
+```
+
+排障见仓库 [`docs/TROUBLESHOOTING.md`](../docs/TROUBLESHOOTING.md)。
+
 ## API 摘要
 
 | 方法 | 路径 | 说明 |
