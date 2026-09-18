@@ -7,6 +7,22 @@ cd backend; . .\venv\Scripts\Activate.ps1; python run.py;
 cd frontend; npm run dev;
 ```
 
+测试 / 类型检查（153；CI 同命令）。后端先 Activate 再 `pip` / `pytest`（目录若是 `.venv` 则改 `. .\.venv\Scripts\Activate.ps1`）：
+
+```bat
+cd frontend
+npm ci
+npx vue-tsc -b
+npx vite build
+
+cd backend
+. .\venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
+pytest
+```
+
+排障 / 已知坑见 [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md)。
+
 ---
 
 ## 快捷提示词（复制用）
@@ -40,14 +56,14 @@ cd frontend; npm run dev;
 
 涉及前端样式 / 布局 / 动效时：
 
-- **我已指明风格或参考**（含截图、链接、DESIGN.md 条款）→ 直接在 `frontend/` 落地，对齐纸面令牌与 `DESIGN.md`，不必先做 HTML 原型。
+- **我已指明风格或参考**（含截图、链接、DESIGN.md 条款）→ 直接在 `frontend/` 落地，对齐纸面令牌与 `docs/DESIGN.md`，不必先做 HTML 原型。
 - **未指明、需你自由发挥或有多解**，或我提到 **「让我预览」「先预览」「出方案对比」** 等 → **先不要改 Vue 生产代码**；在 `designed/` 下新建主题文件夹（如 `designed/nav-tools-options/`），用静态 HTML 出 **≥2 套可切换方案**，把 `index.html` 路径告诉我后等我选定，再合入 `frontend/`。
 
 原型约定（沿用 `home-options`、`hover-options`、`page-transition`、`music_player`、`scroll-sidebar` 经验）：
 
 - 入口：`index.html`（必要时加 `shared.css` / `shared.js`，大改动可拆 `scheme-a.html` 等）
 - 顶部 **方案切换条**（按钮或 Tab），默认展示方案 A；每套附 **一两句说明**（适合场景、改动量、与现有组件关系）
-- 视觉：优先用站点纸面色（纸底 `#f4f1e8`、墨 `#2b2823`、accent `#2e6b4f`），与 `DESIGN.md` / `tokens.*.css` 一致；抽象档黄边等特殊主题仅在方案需要时单独标出
+- 视觉：优先用站点纸面色（纸底 `#f4f1e8`、墨 `#2b2823`、accent `#2e6b4f`），与 `docs/DESIGN.md` / `tokens.*.css` 一致；抽象档黄边等特殊主题仅在方案需要时单独标出
 - 范围：原型只演示目标区域 UI，不嵌整站路由；可 mock 文案与占位图
 - 交付：告诉我文件夹路径与方案代号（A/B/C…）；需要对比时可加 `shoot.py`（Playwright 截图到同目录）
 - **选定前**：`designed/` 内容可提交；**未选定方案不要写进** `frontend/src`
@@ -62,15 +78,21 @@ cd frontend; npm run dev;
 
 ### 当前提示词（复制给 AI）
 
-
+（无）
 
 ### 灵感（未排期）
 
 1. 首页 刊号、问候语等 卡片背景有些突兀
 
-2. 将卡片右下角折起纸张的效果补充到项目很多地方
+2. 创建一个给Agent读的文件
 
-2. 碎念/推荐 改为 绝区零绳网展示方式
+2. 
+博客/项目 详情页：
+（1）左侧侧栏的Contents·目录改为右侧，原本的图片预览改到左侧侧栏项目信息部分的下方
+（2）左侧侧栏项目信息部分、左侧图片预览部分、右侧Contents·目录部分，都添加一个功能，可以临时关闭
+
+2. 此项搁置
+碎念/推荐 改为 绝区零绳网展示方式
 - 通用：
 （1）顶部为标题，标题下方为图片（如果有），再下方为详情，点击卡片的整个区域都可以跳转；
 （2）每个卡片的高度可以不一致，高度根据标题字数、图片高度、详情字数等内容判断；
@@ -87,7 +109,7 @@ cd frontend; npm run dev;
 
 ## TODO 书写模板（复制开新批次）
 
-> 用法：从下方「批次骨架」复制一整段，粘贴到 **「进行中」** 区（灵感 / 搁置 / 已完成 之间）。旧批次只改状态、不删记录；整批完成后整块下移到对应分区。
+> 用法：从下方「批次骨架」复制一整段，粘贴到 **「进行中」** 区（灵感 / 搁置 / 已完成 之间）。旧批次只改状态、不删记录；整批完成后整块下移到对应分区；确定不做则下移到文末 **废案**。
 
 ### 本文件结构（自上而下）
 
@@ -98,6 +120,7 @@ cd frontend; npm run dev;
 5. 进行中
 6. 搁置
 7. 已完成 / 归档
+8. **废案**（确定不做；整块移到文件末尾，不删编号）
 
 ### 工作提示词区模板（书写格式）
 
@@ -125,7 +148,8 @@ cd frontend; npm run dev;
 ```markdown
 ## {编号} · {YYYY-MM-DD} {主题短标题}
 
-**状态**：进行中 | 搁置 | 已完成
+**状态**：进行中 | 搁置 | 已完成 | 废案
+<!-- 完成后示例：已完成（2026-09-18） · 摘要见 [CHANGELOG · 2026-09-18](docs/CHANGELOG.md#2026-09-18) -->
 
 **方向**：（1–2 句：要解决什么、不做什么）
 
@@ -184,17 +208,28 @@ cd frontend; npm run dev;
 
 - **编号**：批次号 + 连字符 + 序号（如 `111-1`），全文件唯一。
 - **优先级**：P0 体验/阻塞 > P1 设计语言 > P2 结构维护 > P3 单独立项 backlog。
-- **状态**：只改 `[ ]` / `[x]`；搁置整批写 **状态：搁置**；完成整批写 **状态：已完成**。
+- **状态**：只改 `[ ]` / `[x]`；搁置整批写 **状态：搁置**（可回炉）；完成整批写 **状态：已完成（日期）**，并在状态行旁加 CHANGELOG 日链（见上节边界）；确定不做写 **状态：废案**（附 **废案原因**），整块移到文末「废案」区。
 - **验收**：每批至少本地目视；动首页 Hero / FilmFeed 须 Edge 或 Chrome 停留 30 秒无卡死。
+- **CHANGELOG**：关单 / 合入当天追加一两句；GitHub 上传用已合并 PR 链接，不必抄完整 `git log`。
 
-### 与 DESIGN.md 的边界
+### 与 DESIGN.md / CHANGELOG 的边界
 
-- 令牌、hover 语言、阅读宽等**契约** → `DESIGN.md`
-- `TODO.md` 只跟踪**任务、优先级、验收**（可写「见 DESIGN.md §n」）
+- **编码代理入口**（文档地图 + 硬约束）→ [`AGENTS.md`](AGENTS.md)；Cursor 规则 `.cursor/rules/grunray-agents.mdc` 指向它
+- 令牌、hover 语言、阅读宽等**契约** → `docs/DESIGN.md`
+- 键盘 / Skip / 焦点陷阱等**无障碍契约** → `docs/ACCESSIBILITY.md`
+- **已经发生了什么**（对外摘要、按日倒序）→ `docs/CHANGELOG.md`
+- **踩过坑的解法**（现象 / 根因 / 解法）→ `docs/TROUBLESHOOTING.md`；未修完的活仍写本文件，不要把勾选清单贴进排障文
+- `TODO.md` 只跟踪**怎么做、优先级、勾选、验收、涉及文件**（可写「见 DESIGN.md §n」或「见 TROUBLESHOOTING · 某条」）
+- **不要**把本文件的 `- [x]` / P0 / 涉及文件整段粘进 CHANGELOG；关单或合入当天在 CHANGELOG 追加一两句效果 + 可选批次号；合入用已合并 PR（或上了 `main` 的关键 commit）挂对应日期节
+- 已完成批次状态行旁加：`摘要见 [CHANGELOG · YYYY-MM-DD](docs/CHANGELOG.md#yyyy-mm-dd)`（与 `## YYYY-MM-DD` 锚点对齐）
 
 ---
 
 ## 进行中
+
+> 对外变更摘要见 [docs/CHANGELOG.md](docs/CHANGELOG.md)。
+>
+> 进行中暂无批次。
 
 ---
 
@@ -241,9 +276,574 @@ cd frontend; npm run dev;
 
 ## 已完成
 
+> 对外摘要见 [docs/CHANGELOG.md](docs/CHANGELOG.md)。已完成批次尽量在状态行挂对应日链（含 08-17 起回填）。
+
+## 153 · 2026-09-16 自动化测试 + CI（收尾）
+
+**状态**：已完成（2026-09-19） · 摘要见 [CHANGELOG · 2026-09-19](docs/CHANGELOG.md#2026-09-19)
+
+**方向**：**排在 146–151 之后做**（152 已废案，不挡本批）；一次覆盖前面改动。最小：前端 `vue-tsc` + `vite build`、后端关键 API / 校验单测、GitHub Actions 在 PR 上跑。
+
+**背景 / 现状**：几乎无 `*.test` / `*.spec`；无 `.github/workflows`；合入靠人工目视。
+
+**做完有什么用**：PR 自动挡编译挂与明显回归；146–151 合完后有一张「全绿」网，后面加功能不怕 silently 炸。
+
+**依赖 / 冲突**：建议等 146–151 合入 `main` 再开本批实现；可提前草拟 workflow 文件但不以本批阻塞前序。
+
+**P0 — 本地与流水线**
+
+- [x] 153-1 前端 CI job：`npm ci` + `vue-tsc -b` + `vite build`（`frontend/`）
+- [x] 153-2 后端 CI job：pytest（或等价）跑校验 / 序列化 / 友链·留言关键用例；无 DB 则用 fixture 或 sqlite 测试配置
+- [x] 153-3 `.github/workflows/ci.yml`：push / PR 触发；失败阻断合并（或至少标红）
+
+**P1 — 冒烟**
+
+- [ ] ~~153-4 可选：Playwright 烟测首页 + 博客列表空/错态选择器（依赖 146 稳定文案）~~ — **本批不做**（可选；弱机个人站优先轻量 CI）
+- [x] 153-5 README 或 TODO 开发命令区补「如何跑测试」
+
+**涉及文件**
+
+`.github/workflows/ci.yml`、`frontend/package.json`、`backend/tests/`、`backend/requirements-dev.txt`、`backend/pytest.ini`、`TODO.md` 开发命令、`backend/README.md`、`frontend/README.md`
+
+**验收**
+
+- [x] 本地 pytest 绿；前端 `vue-tsc -b` + `vite build` 可独立跑（与 CI 同命令）
+- [ ] `main` 上 CI 绿（合入后看 Actions）
+
+---
+
+## 151 · 2026-09-16 动效降级策略（文档 + 挂钩）
+
+**状态**：已完成（2026-09-18） · 摘要见 [CHANGELOG · 2026-09-18](docs/CHANGELOG.md#2026-09-18)  
+**规格修订**：2026-09-18（统一 Motion Policy；FPS 只建议不偷关；短时采样；后续 agent 按本文实现，勿另起炉灶）
+
+**方向**：把分散的 `prefers-reduced-motion` / 手机壳层 / 拖尾开关 / FPS 浮层收成一套可复用的**动效运行时契约**。系统减动效是底线，导航手动三态是主入口，短时性能采样只建议、不自动改档。不另开视觉皮、不做 APM / 常驻性能监视器。
+
+**做完有什么用**：低端机更稳；系统无障碍不被 FULL 绕过；后人加特效只问「挂哪一档」，不必每个组件再写一套 `if`。
+
+---
+
+### 给后续 agent 的硬约束（先读完再改代码）
+
+1. **不要**「FPS 低 → 直接关特效」。FPS / 长帧只用来发现异常；改档必须用户点同意（或用户自己选 REDUCED）。
+2. **不要**为探测再挂一条常驻 `requestAnimationFrame`。现有 Footer / 拖尾已经各有 rAF；监视浮层（批次 119）默认关，关则必须停循环。探测只能短窗采样，结束即拆。
+3. **不要**让 FULL 覆盖系统 `prefers-reduced-motion: reduce`。那是无障碍底线，不是可选皮肤。
+4. **不要**把 119 的 `FpsMeter` 升级成常开 Performance Monitor。浮层仍是调试 overlay；进站采样是另一条短命路径。
+5. **不要**第一版就做 `allows("cursor-tail")` 细权限表，也不要把 Long Animation Frames（LoAF）当主路径。
+6. **不要** `if (deviceMemory <= 4) disableAnimations()`。硬件 API 只作软提示。
+7. 组件禁止继续各自 `matchMedia` + `isMobile` + `fps < 40` 分叉。只读 **最终档位**（见下）。CSS 纯动画用 `html[data-motion]`（或等价 dataset）+ 现有 `@media (prefers-reduced-motion)`。
+8. 手机壳层契约不变（`useMobileShell` / DESIGN §8）：窄屏强制关照片 / 拖尾 / FPS / 音乐展开，**不写** localStorage。壳层是第四条输入，不是 MOTION 三态的替代。
+9. 风格走 editorial：MOTION 是刊头控制，不是 CMS Switch；建议气泡从导航 MOTION 附近冒出，不要屏幕中央对话框。
+10. 先写 `docs/DESIGN.md` 契约（扩 §9，交叉 §8 壳层 / §11 拖尾 / §13 FPS），再改 `ui` store 与消费方。未写清映射不要先堆 UI。
+
+---
+
+### 背景 / 现状（实现时对照，避免重复造轮）
+
+判断入口已经散落，151 的核心是**收口**，不是再加一层平行 `if`：
+
+| 现状 | 位置 |
+| --- | --- |
+| 系统 reduced-motion 写入 store | `AppShell.vue` `matchMedia` → `ui.setReducedMotion`；`ui.prefersReducedMotion` |
+| 拖尾是否挂载 | `ui.cursorTrailActive` = `cursorTrailEnabled && !prefersReducedMotion`（`stores/ui.ts`）；`CursorTrail.vue` 另要求 `pointer: fine` |
+| 手机壳层强制关工具 | `useMobileShell.ts` `lockTools`：关照片 / 拖尾 / FPS、音乐收起；`runWithoutToolPersist` |
+| Footer 扭曲字 | `FooterGrunRayPanel.vue` 窄屏 `footer-grunray-root--meta-only` 不渲染品牌字；`footer-grunray.css` 亦有 reduced-motion |
+| 入场 GSAP / CSS | `usePageEnterAnimation.ts` 的 `prefersReducedMotionMedia()`；多份 `page-enter-*.css` 的 `@media (prefers-reduced-motion)` |
+| 组件私自 matchMedia | `VinylDeck.vue`、`GalleryImagePreview.vue`、`FilmFeed.vue`、`SplashWoniuOverlay.vue`、`useDetailScrollSidebar.ts`、`pagePhotoBackgrounds.ts` 等 |
+| CSS 媒体查询 | `AppShell.vue`、`page-home-hero.css`、`page-ed-ledger.css`、`page-xiqi.css`、`page-messages.css`… 多处 |
+| FPS 调试浮层 | `useFpsMeter.ts` + `FpsMeter.vue`；仅 `ui.fpsMeterEnabled` 为真时挂载；注释已写「卸载即停循环」 |
+| 顶栏工具 | 溢出面板：拖尾 / FPS / 照片背景。尚无 MOTION 三态 |
+
+`DESIGN.md` §9 目前只写「全部动效遵守 prefers-reduced-motion」，没有档位表、没有用户手动策略、没有「性能只建议」。§13 明确 FPS 浮层是调试用、关闭必须停 rAF。
+
+---
+
+### 两套「三态」不要混用
+
+**用户控制**（导航可见、持久化）≠ **运行时档位**（组件真正遵守）。DESIGN 必须写死映射。
+
+#### A. 用户偏好 `userPreference`（localStorage，建议键 `ui.motionPreference`）
+
+```text
+AUTO      跟随系统（默认）
+REDUCED   永久手动降级
+FULL      尽可能完整（仍不能压过系统 reduce）
+```
+
+刊头文案建议（editorial，不要 ON/OFF Switch）：
+
+```text
+MOTION · 动效
+AUTO        跟随系统
+REDUCED     降级
+FULL        完整
+```
+
+系统当前为 reduce 时，面板里给一句提示：「检测到系统减少动态效果」。FULL 选项可显示，但**生效结果仍是 MINIMAL**（见解析）。
+
+#### B. 运行时档位 `effectiveLevel`
+
+```text
+FULL      Level 0 · 完整
+REDUCED   Level 1 · 砍持续消耗，留氛围
+MINIMAL   Level 2 · 非必要动画全关（≈ 今日 prefers-reduced-motion）
+```
+
+#### C. 解析顺序（优先级从高到低，必须写进 DESIGN）
+
+```text
+1. 系统 prefers-reduced-motion: reduce
+      → 一律 MINIMAL
+      （AUTO / REDUCED / FULL 都不能抬上去）
+
+2. 手机壳层 isMobileShell
+      → 持续特效按现有壳层：拖尾 / FPS / 照片 / 音乐展开强制关；
+        Footer 只留 ICP。这是壳层契约，不改 MOTION 存储。
+      → 运行时对「持续 rAF 特效」视同 MINIMAL；短 hover 仍可走 CSS。
+
+3. userPreference === REDUCED
+      → REDUCED（即使用户机器 144fps）
+
+4. 用户刚同意「性能建议降级」
+      → 写入 REDUCED（或单独记一条已接受建议；不要静默改）
+
+5. userPreference === FULL 且系统不是 reduce
+      → FULL
+
+6. AUTO 且系统 no-preference
+      → FULL
+      低端特征 / 采样异常 只提高「弹出建议」的概率，不在这一步改档
+```
+
+图示：
+
+```text
+system reduce ──→ MINIMAL          （底线，FULL 也进这里）
+      │
+user REDUCED ──→ REDUCED
+      │
+performance 同意 ──→ REDUCED       （只建议，须点同意）
+      │
+AUTO / FULL ──→ FULL
+```
+
+**禁止**：检测到卡顿后偷偷关掉 Footer 扭曲或拖尾。用户可能正在看扭曲字，突然消失会像 bug。
+
+---
+
+### 特效挂档（新动效只问「属于哪一档」）
+
+实现时以 `effectiveLevel` 一处判断；下面是 2026-09-18 应对齐的清单。未列到的新特效先归类再写代码。
+
+| 能力 | FULL | REDUCED | MINIMAL |
+| --- | --- | --- | --- |
+| Footer GrunRay 扭曲字 | 开（桌面） | **关**（仍可静态字/ICP，不要持续扭曲 rAF） | 关；窄屏本就 meta-only |
+| 月相拖尾 Canvas / rAF | 尊重 `cursorTrailEnabled` | **不挂载** | 不挂载 |
+| 页面入场 GSAP / `page-enter--play` | 现时长 | 很短或瞬切 | 瞬切 / 不播放 |
+| 顶栏 FLIP / spring pop | 开 | 缩短或关 | 关 |
+| 方案 G 卡 hover（翻角/花藤/位移） | 开 | 可留着色，去掉翻角花藤位移 | 只留着色 |
+| 普通 CSS hover / 下划线 | 开 | 开 | 开（非位移类） |
+| 音乐：音频播放 | 开 | 开 | 开（不自动播，见既有契约） |
+| 音乐：碟片/可视化持续动效 | 开 | 减或关 | 关 |
+| 照片背景 blur-up / 呼吸 | 开 | 可减 | 关（直接到位） |
+| 开屏蜗牛 / 头像交接 | 开 | 缩短 | 跳过 |
+| FPS 调试浮层 | 用户手动开才挂 | 同左（仍是调试工具，不是降级手段） | 同左 |
+| 滚动 smooth | 开 | 可保留 | `auto` |
+
+REDUCED 的意图：**去掉持续占主线程的东西，网站还要像这份纸面刊**，不是把站变成无动画静态页。MINIMAL 才对应系统无障碍。
+
+建议同时写 `html[data-motion="full|reduced|minimal"]`，让 CSS 在用户选 REDUCED、系统并非 reduce 时也能砍方案 G / 入场，而不是只认 `@media (prefers-reduced-motion)`。
+
+消费方统一问：
+
+```ts
+// 伪代码，名字可不同，但只能有这一处
+motionPolicy.effectiveLevel  // 'full' | 'reduced' | 'minimal'
+// 或
+html.dataset.motion
+```
+
+禁止再写：
+
+```ts
+if (prefersReducedMotion) ...
+if (isMobile) ...
+if (fps < 40) ...
+if (deviceMemory < 4) ...
+```
+
+壳层窄屏逻辑继续留在 `useMobileShell`（关工具、不写 storage），不要复制进每个动效组件。
+
+---
+
+### 性能检测（附件，不是主功能）
+
+#### 原则
+
+- **常态不测。**
+- 只在：首次进入（或本会话尚未得出结论）+ 页面已稳定 + `document.visibilityState === 'visible'` 时，做一次短窗采样。
+- 异常 → 再确认一轮（仍要页面可见、用户确实在用，不要后台算长帧）。
+- 两轮仍异常 → **气泡建议**，不是改档。
+- 用户点「忽略」后本机记住（localStorage），不要每次进站都问。
+- 页面 hidden 时暂停/丢掉采样（浏览器会节流后台 rAF；切回的超长帧本来就不该进 119 的 1%L）。
+
+建议时序：
+
+```text
+首次进入
+  → 等空闲约 5–10s（首屏入场结束、不在 hidden）
+  → 采样约 8–10s
+  → 正常：本会话不再测
+  → 异常：若用户不在前台 / 刚切回 → 暂缓
+        若在用 → 第二轮采样
+          → 仍异常 → 气泡
+```
+
+#### 判据（不要单看 1%L）
+
+60Hz 与 144Hz 上「45 FPS」含义不同；平均 FPS 好看仍可能「顿」。卡顿更接近**个别帧太长**。
+
+短窗记录至少：
+
+```ts
+{
+  fps,              // 平均 / 近窗
+  lowFps,           // 1%L 可作辅证，不是唯一开关
+  longFrameCount,   // 例如帧时间 > 50ms 的次数
+  frameTimeP95,     // 有则更好
+  sampleDuration
+}
+```
+
+「建议降级」需要 **持续** 长帧 + 低帧，且 **两轮** 都异常。一次掉到 40 FPS 不够。
+
+阈值写进 DESIGN 时用「相对刷新 / 长帧次数」表述，不要写死「低于 40 就弹」。具体数字实现时定，但必须：两轮、可见、非后台长帧。
+
+#### LoAF
+
+`PerformanceObserver` + `long-animation-frame` 可作为 **P2 可选增强**（精确长帧、以后排查 Footer / GSAP / 拖尾）。MDN 标实验 / 覆盖有限。
+
+```text
+优先：LoAF（若存在）
+否则：短窗 rAF 帧时间（可复用 useFpsMeter 的采样思路，但必须独立短命、默认不挂浮层）
+```
+
+**禁止**把 151 建在 LoAF 上；无 API 时 fallback 必须能独立完成建议流程。
+
+#### 低端特征（软提示）
+
+可用则作为「提高建议概率」的加分，**不单独改档**：
+
+- `navigator.hardwareConcurrency`（支持较广）
+- `navigator.deviceMemory`（粗粒度、支持有限）
+- `navigator.getBattery()`（支持很有限；省电模式可加分）
+
+组合直觉：低端特征 + 系统已 reduce → 已经是 MINIMAL，无需再弹。低端 + AUTO + 采样异常 → 比高端更容易弹出建议。
+
+---
+
+### UI 规格
+
+#### 导航 MOTION（P1，151 的用户主入口）
+
+- 放顶栏溢出面板（工具槽已挤：拖尾 / FPS / 照片）。不要再做独立「动画 ON/OFF」。
+- 点击展开小面板：AUTO / REDUCED / FULL，纸面、ink 顶线、`.ed-action` / editorial 选项，不要药丸 Switch。
+- 状态持久化；壳层强制关工具时**不要**把 MOTION 偏好写成关（MOTION 不是那四个工具快照里的项；窄屏可持续特效仍被壳层关掉）。
+- 拖尾开关可保留：FULL 时仍尊重「用户关拖尾」；REDUCED / MINIMAL 时拖尾根本不该挂上（即使 storage 里是开）。
+
+#### 性能建议气泡（P2）
+
+不要：
+
+```text
+屏幕中央大对话框「检测到页面动画可能导致卡顿」
+```
+
+要：从 MOTION 钮附近冒出的轻量纸面气泡（刊头控制，不是后台管理）：
+
+```text
+PERFORMANCE
+检测到页面存在持续卡顿。
+是否降低动效？
+[降低动效]  [忽略]
+```
+
+「降低动效」→ `userPreference = REDUCED`（或等价）。「忽略」→ 记住，本机不再为这次结论打扰。
+
+---
+
+### 建议代码收敛（目标结构，文件名可微调）
+
+```text
+AppShell
+  └── ui.motionPolicy（或拆 composable，但对外只暴露最终档）
+         ├── systemPreference     matchMedia
+         ├── userPreference       localStorage AUTO|REDUCED|FULL
+         ├── mobileShell          已有 useMobileShell
+         ├── performanceHint      none | dismissed | accepted
+         └── effectiveLevel       FULL|REDUCED|MINIMAL
+                │
+                ├── html[data-motion]
+                ├── CursorTrail / moonlitCursorEngine
+                ├── Footer GrunRay distortion
+                ├── usePageEnterAnimation / page-enter-*.css
+                ├── VinylDeck 等可视化
+                └── 其余动效只读 dataset / store
+```
+
+`cursorTrailActive` 应改为同时尊重 `effectiveLevel`（REDUCED/MINIMAL 不挂），而不是只 `!prefersReducedMotion`。
+
+把 `VinylDeck` / `FilmFeed` / `GalleryImagePreview` / `SplashWoniuOverlay` / `pagePhotoBackgrounds` / `useDetailScrollSidebar` 的私自 `matchMedia` 迁到同一源。CSS `@media (prefers-reduced-motion)` 可保留作系统底线；用户 REDUCED 靠 `[data-motion="reduced"]` / `minimal`。
+
+---
+
+### 批次拆分（按此顺序做，不要一次做完所有「可以做」）
+
+**P0 — Motion Contract（先文档再收口）**
+
+- [x] 151-1 `docs/DESIGN.md`：扩 §9（可加「Motion Policy」小节），写清两套三态、解析顺序、特效挂档表、壳层关系、FPS 浮层≠探测。交叉引用 §8 / §11 / §13，不要三处各写一套互相矛盾的句子。
+- [x] 151-2 `ui` store（或小 composable）产出 `userPreference` + `effectiveLevel`，同步 `html[data-motion]`；`AppShell` 继续听系统 matchMedia。列出所有私自 `matchMedia('(prefers-reduced-motion')` 的 TS/Vue 并迁到最终档；CSS 补 `[data-motion]`。此步**还不要**做采样弹窗。
+
+**P1 — 用户控制**
+
+- [x] 151-3 溢出面板 MOTION：AUTO / REDUCED / FULL；i18n zh/en；持久化；系统 reduce 时提示句；FULL 不能抬过系统底线。拖尾在 REDUCED/MINIMAL 不挂载。
+
+**P1 — 降级落地（读档位，不读 FPS）**
+
+- [x] 151-4 REDUCED/MINIMAL：关 Footer 扭曲 rAF、拖尾不启动、入场瞬切或极短；音乐可视化减/关、音频仍可播。对照上表逐项打勾。窄屏继续走壳层，不要双重实现。
+
+**P2 — 短时采样建议（可后做；P0/P1 可独立验收）**
+
+- [x] 151-5 短命 Performance 采样：LoAF 优先、rAF 帧时间 fallback；不常驻；两轮异常才从 MOTION 旁出气泡；忽略持久化。禁止常开 rAF，禁止一次掉帧就问。
+- [x] 151-6 可选：`hardwareConcurrency` / `deviceMemory` / `getBattery` 只加建议权重。无 API 则跳过。
+
+**明确不做（本批）**
+
+- 常驻性能监视器、把 1%L 当自动开关、细粒度 `allows("…")` 特效权限框架、用 LoAF attribution 做可视化调试台、新视觉皮肤、改 152/153。
+
+---
+
+### 依赖 / 冲突
+
+- 119 FPS 浮层：保留调试用途；与 151 采样路径分离；两者都开时不要跑两条无限 rAF（采样应短、浮层仅用户打开时存在）。
+- 113 拖尾 / 118 首页 blur / 150 首屏预算：降级是卸载或缩短，不是再打进主包。拖尾仍默认关、动态 import。
+- `docs/ACCESSIBILITY.md`：系统 reduce 的键盘/焦点契约不动；本批只补运动档位，不改 Skip / 焦点陷阱。
+- 原型：规格已定，**不要**再出 `designed/` 多方案。直接 `frontend/` + DESIGN。
+
+---
+
+### 涉及文件（预期会动；按需增减）
+
+`docs/DESIGN.md`  
+`frontend/src/stores/ui.ts`  
+`frontend/src/components/layout/AppShell.vue`  
+`frontend/src/composables/useMobileShell.ts`（只对齐，勿破坏工具快照）  
+`frontend/src/composables/usePageEnterAnimation.ts`  
+`frontend/src/composables/useFpsMeter.ts`（采样若复用思路，勿让浮层常开）  
+`frontend/src/components/layout/FpsMeter.vue`  
+`frontend/src/components/layout/FooterGrunRayPanel.vue` 及 `footer-grunray.css` / reveal composable  
+`frontend/src/components/layout/CursorTrail.vue`、`cursor/moonlitCursorEngine.ts`  
+`frontend/src/components/music/VinylDeck.vue`、音乐挂载  
+`frontend/src/theme/pagePhotoBackgrounds.ts`  
+`frontend/src/styles/page-enter-*.css`、`page-home-hero.css` 等 reduced-motion 媒体查询  
+上表「私自 matchMedia」各组件  
+`frontend/src/i18n/locales/zh.json` `en.json`  
+`TODO.md`（勾选）
+
+---
+
+### 验收
+
+- [x] 系统「减少动态效果」开：无论 AUTO/REDUCED/FULL，有效档 MINIMAL；无拖尾、无 Footer 扭曲 rAF、入场可接受、方案 G 无位移花藤
+- [x] 系统关 reduce，用户选 REDUCED：扭曲/拖尾/长入场关掉；刷新保持；普通下划线 hover 仍在
+- [x] 系统关 reduce，用户选 FULL：桌面完整特效（拖尾仍看自己的开关）
+- [x] 系统开 reduce + 用户选 FULL：仍 MINIMAL（回归：不得绕过无障碍）
+- [x] 窄屏壳层：工具强制关且不写掉桌面 MOTION/拖尾 storage；回桌面恢复
+- [x] 用户未开 FPS 浮层时，无常驻探测 rAF（Performance 面板不应多一条无限循环）
+- [x] 若已做 151-5：两轮可见异常才出气泡；忽略后刷新不再弹；同意后变 REDUCED 且不再偷偷改回来
+- [x] DESIGN §9 与代码一致；新特效能按挂档表归类
+- [x] `npx vue-tsc -b`；桌面 + 窄屏各走一遍首页 / 博客 / Footer
+
+**⚠️ 回归 / 风险**
+
+- 现象：关 FPS 浮层后仍掉帧 → 根因：探测 rAF 没拆；对照 119
+- 现象：用户开系统减动效仍见拖尾 → `cursorTrailActive` 没吃到 effectiveLevel
+- 现象：选 REDUCED 但方案 G 花藤还在 → CSS 只认 media query，没认 `data-motion`
+- 现象：手机打开一次，桌面拖尾/MOTION 丢了 → 壳层写入了 storage；必须 `runWithoutToolPersist`
+- 现象：Footer 扭曲突然消失无人点过 → 采样走了自动改档；禁止
+
+
+---
+
+## 150 · 2026-09-16 首屏与资源预算
+
+**状态**：已完成（2026-09-18） · 摘要见 [CHANGELOG · 2026-09-18](docs/CHANGELOG.md#2026-09-18)
+
+**方向**：量一轮生产构建基线；收紧首屏 JS / 图 / 字体；拖尾与音乐默认更晚挂载。不删功能。
+
+**P0 — 度量与收紧**
+
+- [x] 150-1 记录基线：生产构建主包 / 舞台 WebP / 字体体积，写入 `docs/DESIGN.md` §14
+- [x] 150-2 舞台图：当前主题底+楔整文件加载；**不加** `sizes`/`srcset`（横竖屏不换源）；不预拉其它主题
+- [x] 150-3 拖尾无键默认关、开启后动态 import；音乐点开展开才挂；壳层强制关不写 localStorage
+
+**P1 — 字体与 chunk**
+
+- [x] 150-4 Great Vibes 只随首页 CSS；Noto SC 子集本批不重做（各约 1.5 MB，有 `display:swap`）
+- [x] 150-5 拖尾 / 音乐 / FPS 拆出独立 chunk，默认不进首屏主包
+
+**涉及文件**
+
+`HomeView.vue`、`App.vue`、`AppShell.vue`、`ui` store、`useMobileShell.ts`、`fonts.css`、`page-home-hero.css`、`docs/DESIGN.md` §14
+
+**验收**
+
+- [x] 主包 / 壳层 CSS 下降；拖尾、音乐可手动打开
+
+---
+
+## 149 · 2026-09-16 无障碍扫一遍（壳层后）
+
+**状态**：已完成（2026-09-18） · 摘要见 [CHANGELOG · 2026-09-18](docs/CHANGELOG.md#2026-09-18)
+
+**方向**：键盘与读屏能走完主导航、汉堡抽屉、Read sheet、出站确认；补「跳到主内容」与焦点陷阱。不重做视觉。
+
+**背景 / 现状**：已有部分 `aria-*` / `focus-visible`；手机壳层与 sheet 刚合入，最容易漏焦点归还。
+
+**做完有什么用**：键盘用户与读屏可用；合规与口碑；顺带抓到「点不开 / 焦点丢了」类回归。
+
+**P0 — 焦点与跳转**
+
+- [x] 149-1 页顶 Skip link：Tab 可见，跳到 `#main`
+- [x] 149-2 汉堡抽屉 / Read sheet：打开时焦点陷阱；关闭后焦点回到触发按钮；`Esc` 关闭
+- [x] 149-3 出站确认页：主要操作可纯键盘完成；关页失败 `aria-live="assertive"`
+
+**P1 — 扫尾**
+
+- [x] 149-4 顶栏工具 / 溢出菜单：键盘可达与可见焦点环
+- [x] 149-5 验收清单写进 `docs/ACCESSIBILITY.md`（`docs/DESIGN.md` §8 指针）
+
+**涉及文件**
+
+`AppShell.vue`、`XiqiSplitLayout.vue`、`SiteLeaveRedirectView.vue`、`useFocusTrap.ts`、`nav-toolbar.css`、`docs/ACCESSIBILITY.md`、`docs/DESIGN.md`
+
+**验收**
+
+- [x] 不碰鼠标：打开抽屉 → 选页 → 关抽屉；碎念打开 sheet → Esc 关闭
+- [x] Skip link 跳过后焦点在主内容
+
+---
+
+## 148 · 2026-09-16 内容运营面板（轻量）
+
+**状态**：已完成（2026-09-18） · 摘要见 [CHANGELOG · 2026-09-18](docs/CHANGELOG.md#2026-09-18)
+
+**方向**：站长登录后完善碎念 / 推荐运营入口；新增「今日状态」（首页 NOW）可编辑，避免改前端 i18n 才能换文案。不做完整 CMS。
+
+**背景 / 现状**：`xiqi_admin_api` + `FragmentComposeView` 已有 import 写入能力；推荐运营 UI 偏弱；首页 `home.nowDoing` / `home.nowReading` 写死在 locale。
+
+**做完有什么用**：站长改 NOW / 发碎念 / 管推荐不用改代码发版；首页「此刻」真正跟着生活走；运营与访客皮分离，少误伤公网。
+
+**P0 — 今日状态（NOW）**
+
+- [x] 148-1 后端：站长可读写「今日状态」（在写 / 在读等字段）；公开只读 API 供首页
+- [x] 148-2 前端：受保护编辑入口（可挂关于旁、或独立短页 / 浮层）；保存后首页即时或下次进入可见
+- [x] 148-3 无配置时回退现有 i18n 默认文案；非站长不可见编辑入口
+
+**P1 — 碎念 / 推荐运营**
+
+- [x] 148-4 碎念：compose / 列表侧补齐草稿·隐藏·发布与媒体上传的站长路径（对齐已有 API，缺 UI 补 UI）
+- [x] 148-5 推荐：同等轻量运营面板（新建 / 改状态 / 分类）；复用 editorial 表单语言，不新开一套皮肤
+- [x] 148-6 权限：一律 `is_site_owner`；未登录跳留言 OAuth 或既有登录流
+- [x] 148-8 站长编辑名录：`/fragments/edit` `/recommend/edit` 用 Ledger 行（无分栏），点开 compose `?id=` 填原文；撰写下拉菜单走 AppSelect editorial 纸面，`/design` 有实况样例
+
+**P2 — 可选**
+
+- [x] ~~148-7 COVER STORY 可选「置顶覆盖 latest-updated」~~ — **不做**（本批明确跳过；需要时另开任务）
+
+**涉及文件**
+
+`xiqi_admin_api.py`、`xiqi_import_apply.py`、`fragment_repo.py`、`recommend_repo.py`、`site_now_repo.py`、`sql/site_now.sql`、`HomeView.vue`、`SiteNowEditView.vue`、`siteNowApi.ts`、`FragmentComposeView.vue`、`RecommendComposeView.vue`、`XiqiOwnerEditView.vue`、`DesignSystemView.vue`、`AppSelect.vue`、`fragmentsAdminApi.ts`、router、i18n、`DESIGN.md`
+
+**验收**
+
+- [x] 非站长看不到运营入口；站长改 NOW 后首页文案更新
+- [x] 碎念 / 推荐站长路径可完成「写一条 → 列表可见 / 可隐藏」
+- [x] 站长可从编辑名录点开已有条目，compose 填入原文；撰写下拉菜单是纸面不是卡片
+- [x] 本地测试用的站长 bypass 已恢复；未登录写接口 401
+
+---
+
+## 147 · 2026-09-16 阅读与列表交互细节
+
+**状态**：已完成（2026-09-18） · 摘要见 [CHANGELOG · 2026-09-18](docs/CHANGELOG.md#2026-09-18)
+
+**方向**：博客 / 项目列表筛选写入 URL；从列表进详情再返回尽量恢复滚动；长文阅读侧栏旁补 TOC / 上下篇（轻量，不重做详情皮）。
+
+**背景 / 现状**：`tagFilter` / `keyword` 多在组件本地状态；刷新或分享链接会丢筛选；详情已有侧栏进度与代码复制。
+
+**做完有什么用**：筛选结果可分享、可刷新不丢；返回列表不「跳回顶」；长文跳章节更快，SEO / 站内停留更自然。
+
+**P0 — 列表 URL**
+
+- [x] 147-1 博客：`?tag=` / `?q=`（或现有命名）与筛选双向同步；前进后退跟着历史走
+- [x] 147-2 项目列表同理（标签等）；空参不污染 URL
+
+**P1 — 滚动与阅读**
+
+- [x] 147-3 列表→详情→返回：恢复列表滚动位置（`sessionStorage` 或 router state；注意 slug 切换勿串位）
+- [x] 147-4 文章详情：文内 TOC（从 h2/h3 生成）挂侧栏或折叠；无标题则不渲染
+- [x] 147-5 上一篇 / 下一篇或「相关」轻量入口（同标签或按时间邻接即可）
+
+**⚠️ 回归 / 风险**
+
+- URL 同步勿与手机壳层 / editorial filter 动画抢焦点；改 query 不应整页闪白
+
+**涉及文件**
+
+`BlogView.vue`、`ProjectsView.vue`、`useListQuerySync.ts`、`useListScrollRestore.ts`、`AppShell.vue`、`PostDetailView.vue`、`PostTocNav.vue`、`useDetailScrollSidebar.ts`、router、i18n
+
+**验收**
+
+- [x] 复制带筛选项的 `/blog?...` 在新标签打开结果一致
+- [x] 返回列表滚动大致回到离开位置
+- [x] 长文 TOC 可点跳；无 h2 时不露空壳
+
+---
+
+## 146 · 2026-09-16 错误态与空态统一
+
+**状态**：已完成（2026-09-16） · 摘要见 [CHANGELOG · 2026-09-16](docs/CHANGELOG.md#2026-09-16)
+
+**方向**：列表 / 详情 / 栖息等页的加载失败与空结果，统一成 editorial 空态组件 + 可重试；去掉面向开发者的「请确认后端已启动」类文案对访客露出。
+
+**做完有什么用**：访客遇断网 / 空库时仍读得懂、能重试；站长自测与截图口径一致；后续 CI / E2E 有稳定选择器可挂。
+
+**P0 — 组件与文案**
+
+- [x] 146-1 `PageStatusBlock` + `page-status.css` + `common.status.*` i18n（中英）
+- [x] 146-2 博客 / 项目 / 碎念 / 推荐 / 友链 / 留言：error 可重试；loading 用骨架或 `kind=loading`
+- [x] 146-3 文章 / 项目详情 / 笔记：`loadError` 与 notFound 走同一组件
+
+**P1 — 边界**
+
+- [x] 146-4 博客 / 项目 / 碎念 / 推荐：库空 vs 筛选无匹配分文案
+- [x] 146-5 compose / 友链审核：`ownerFacingMessage` 截断堆栈；公网页不抛 raw Error
+
+**涉及文件**
+
+`PageStatusBlock.vue`、`page-status.css`、`publicErrorMessage.ts`、各列表/详情 View、`i18n`、`DESIGN.md` §4
+
+**验收**
+
+- [x] 断后端文案无「请启动后端」；错误态可点重试
+- [x] 空列表 / 筛选无结果文案分开
+
+---
+
 ## 145 · 2026-09-16 月相拖尾 · Welkin Moon 图标 / 可点不待机 / 藏系统指针
 
-**状态**：已完成（2026-09-16；本地目视：顶栏 / 溢出菜单图标、可点悬停不切摇篮、启用后按钮上 `cursor: none`）
+**状态**：已完成（2026-09-16；本地目视：顶栏 / 溢出菜单图标、可点悬停不切摇篮、启用后按钮上 `cursor: none`） · 摘要见 [CHANGELOG · 2026-09-16](docs/CHANGELOG.md#2026-09-16)
 
 **方向**：顶栏拖尾开关换成 Welkin Moon；导航小尺寸加粗原造型描边；停在可点击控件上不进静憩（月灵推摇篮）；启用后盖掉各处 `cursor: pointer`，避免悬停露出系统箭头。不改造型为几何圈、不改祈愿 / 拖尾月相语义。
 
@@ -289,7 +889,7 @@ cd frontend; npm run dev;
 
 ## 144 · 2026-09-15 首页 COVER STORY · 整卡合入纸面 + 通栏顶 ink
 
-**状态**：已完成（2026-09-15；本地目视：首屏 peek、滚动展开、方案 G 悬停、离页回首页单根正常）
+**状态**：已完成（2026-09-15；本地目视：首屏 peek、滚动展开、方案 G 悬停、离页回首页单根正常） · 摘要见 [CHANGELOG · 2026-09-15](docs/CHANGELOG.md#2026-09-15) · 合入 [2026-09-16](docs/CHANGELOG.md#2026-09-16)（PR #46）
 
 **方向**：把拆开的 peek + detail 合成滚动纸面上的一张 COVER STORY 卡；下读提示走 editorial 方案 A。再按方案 1 在纸面顶加通栏 2px ink，把 `SCROLL · 下读` 挪到线下方、卡外，与卡留缝，封住卡顶弧 ink 左右缺口。不改 sticky 首屏 / 方案 G / 单根 `HomeView`。
 
@@ -336,7 +936,7 @@ cd frontend; npm run dev;
 
 ## 143 · 2026-09-15 外链新标签确认 · footer 统一路径
 
-**状态**：已完成（2026-09-15；跟进：弃用手写注入页，改开同一套 `/leave/redirect?tab=1` 刊头）
+**状态**：已完成（2026-09-15；跟进：弃用手写注入页，改开同一套 `/leave/redirect?tab=1` 刊头） · 摘要见 [CHANGELOG · 2026-09-15](docs/CHANGELOG.md#2026-09-15) · 合入 [2026-09-16](docs/CHANGELOG.md#2026-09-16)（PR #47）
 
 **方向**：外链改为新标签打开出站确认，**布局与原先 `/leave/redirect` 一级刊头一致**；footer 与其它外链同一路径。弹窗被拦回退当前标签过渡页。不改站内路由语义、不加埋点。
 
@@ -377,7 +977,7 @@ cd frontend; npm run dev;
 
 ## 142 · 2026-09-14 首页线稿扇形叠层 · ThemeDayNightToggle 警告
 
-**状态**：已完成（2026-09-14；关照片背景三主题目视：扇形外填充 / 扇形内线稿换墨 / 10% 扇形底；控制台无 Extraneous class 警告）
+**状态**：已完成（2026-09-14；关照片背景三主题目视：扇形外填充 / 扇形内线稿换墨 / 10% 扇形底；控制台无 Extraneous class 警告） · 摘要见 [CHANGELOG · 2026-09-14](docs/CHANGELOG.md#2026-09-14)
 
 **方向**：关照片背景时右侧舞台用**两套同构图图**叠层——扇形外旧填充、扇形内当前线稿换墨 + 10% 扇形底；几何写死在 composable。顺手修掉 `ThemeDayNightToggle` 因 fragment 根无法继承 `class` 的 Vue 警告。项目笔记入库说明。大 SVG 不进生产热路径。
 
@@ -418,7 +1018,7 @@ cd frontend; npm run dev;
 
 ## 141 · 2026-09-11 手机壳层 · 顶栏汉堡 / Read sheet / ICP-only footer
 
-**状态**：已完成（2026-09-11；390 窄屏目视：首页 / 博客 / 项目 / 碎念 sheet / 推荐 / 关于 / 留言 / 友链 / 详情 / 404）
+**状态**：已完成（2026-09-11；390 窄屏目视：首页 / 博客 / 项目 / 碎念 sheet / 推荐 / 关于 / 留言 / 友链 / 详情 / 404） · 摘要见 [CHANGELOG · 2026-09-11](docs/CHANGELOG.md#2026-09-11) · 合入 [2026-09-16](docs/CHANGELOG.md#2026-09-16)（PR #45）
 
 **方向**：`max-width: 768px` 统一手机壳层：顶栏只留品牌 + 主题 / 语言 / 汉堡；禁滚动胶囊；强制关右侧工具；Footer 仅 ICP 胶囊；碎念/推荐详情改底部不透明 Read sheet；首页藏刊号与头像。跟进一轮短页 ICP、关闭提示文案与触控热区。
 
@@ -465,7 +1065,7 @@ cd frontend; npm run dev;
 
 ## 140 · 2026-09-08 首页窄屏线稿锚点 · 欢迎卡恢复纸面
 
-**状态**：已完成（2026-09-08）
+**状态**：已完成（2026-09-08） · 摘要见 [CHANGELOG · 2026-09-08](docs/CHANGELOG.md#2026-09-08)
 
 **方向**：窄屏线稿不贴右；欢迎卡关照片背景时恢复 `.card` 纸面，避免线稿压字。宽屏贴右契约不动。
 
@@ -483,7 +1083,7 @@ cd frontend; npm run dev;
 
 ## 139 · 2026-09-08 首页 NOW · 在写 / 在读文案
 
-**状态**：已完成（2026-09-08）
+**状态**：已完成（2026-09-08） · 摘要见 [CHANGELOG · 2026-09-08](docs/CHANGELOG.md#2026-09-08)
 
 **方向**：只改 i18n。NOW 右侧两句仍走 `t('home.nowDoing')` / `t('home.nowReading')`，不接接口。
 
@@ -500,7 +1100,7 @@ cd frontend; npm run dev;
 
 ## 138 · 2026-09-08 首页 COVER STORY · 纸色 / 2px ink
 
-**状态**：已完成（2026-09-08）
+**状态**：已完成（2026-09-08） · 摘要见 [CHANGELOG · 2026-09-08](docs/CHANGELOG.md#2026-09-08)
 
 **方向**：卡面与滚动纸面同色。顶底走弧 ink 加粗到目录顶线（NOW 下方那根 2px）；卡下再加一根同样粗的直 ink。方案 G 悬停不动。
 
@@ -521,7 +1121,7 @@ cd frontend; npm run dev;
 
 ## 137 · 2026-09-08 首页 COVER STORY · R 角 + 走弧 ink
 
-**状态**：已完成（2026-09-08）
+**状态**：已完成（2026-09-08） · 摘要见 [CHANGELOG · 2026-09-08](docs/CHANGELOG.md#2026-09-08)
 
 **方向**：整卡改成 `--radius-md` 圆角矩形（peek 上圆 / detail 下圆）。顶底 ink 随圆角走弧。欢迎层通栏底 ink 拿掉，避免横切上圆角。
 
@@ -540,7 +1140,7 @@ cd frontend; npm run dev;
 
 ## 136 · 2026-09-08 首页 COVER STORY · Editorial 刊头皮
 
-**状态**：已完成（2026-09-08）
+**状态**：已完成（2026-09-08） · 摘要见 [CHANGELOG · 2026-09-08](docs/CHANGELOG.md#2026-09-08)
 
 **方向**：只改 peek + detail 卡面。标题 / 摘要 / 标签 / 阅读链排布不动；方案 G 悬停不动。
 
@@ -558,7 +1158,7 @@ cd frontend; npm run dev;
 
 ## 135 · 2026-09-08 首页欢迎卡 · 关背景透明 / 开背景先铺再滑
 
-**状态**：已完成（2026-09-08）
+**状态**：已完成（2026-09-08） · 摘要见 [CHANGELOG · 2026-09-08](docs/CHANGELOG.md#2026-09-08)
 
 **方向**：四张欢迎卡跟 `html[data-photo-bg]`。纯 CSS 两段 delay，不在 `.home-layout` 绑 Vue class。
 
@@ -576,7 +1176,7 @@ cd frontend; npm run dev;
 
 ## 134 · 2026-09-08 首页欢迎层 · ink 线 / 左移 / 刊号放大
 
-**状态**：已完成（2026-09-08）
+**状态**：已完成（2026-09-08） · 摘要见 [CHANGELOG · 2026-09-08](docs/CHANGELOG.md#2026-09-08)
 
 **方向**：只动 `.home-stage` 欢迎层。通透背景、单根 Transition、`data-photo-bg` 位移契约不动。卡片透明再位移的想法只讨论、不落地。
 
@@ -595,7 +1195,7 @@ cd frontend; npm run dev;
 
 ## 133 · 2026-09-08 导航按钮 · Editorial 方案 D
 
-**状态**：已完成（2026-09-08）
+**状态**：已完成（2026-09-08） · 摘要见 [CHANGELOG · 2026-09-08](docs/CHANGELOG.md#2026-09-08)
 
 **方向**：顶部导航按钮改成 editorial 目录项（方案 D）。不推倒收缩式导航；`data-nav-compact` 契约不动。二级菜单说明用现有 `nav.*Desc` 原句，不沿用叶子小图标。
 
@@ -639,7 +1239,7 @@ cd frontend; npm run dev;
 
 ## 132 · 2026-09-07 剩余页 · Editorial 刊头
 
-**状态**：已完成（2026-09-07）
+**状态**：已完成（2026-09-07） · 摘要见 [CHANGELOG · 2026-09-07](docs/CHANGELOG.md#2026-09-07)
 
 **方向**：扫公开路由，把还没 editorial 的页收进同一批。404 不动。撰写页药丸按 DESIGN 保留。首页封面（§12）不改成列表刊头。
 
@@ -675,7 +1275,7 @@ cd frontend; npm run dev;
 
 ## 131 · 2026-09-07 OAuth 过渡 · Editorial 刊头
 
-**状态**：已完成（2026-09-07）
+**状态**：已完成（2026-09-07） · 摘要见 [CHANGELOG · 2026-09-07](docs/CHANGELOG.md#2026-09-07)
 
 **方向**：`/auth/redirect` 对齐出站确认：居中刊头、无卡片 / 药丸。不改授权跳转逻辑。
 
@@ -687,7 +1287,7 @@ cd frontend; npm run dev;
 
 ## 130 · 2026-09-07 出站确认 · Editorial 刊头
 
-**状态**：已完成（2026-09-07）
+**状态**：已完成（2026-09-07） · 摘要见 [CHANGELOG · 2026-09-07](docs/CHANGELOG.md#2026-09-07)
 
 **方向**：`/leave/redirect` 去掉卡片 / 药丸，改成一级刊头。不改 OAuth `/auth/redirect`。
 
@@ -699,7 +1299,7 @@ cd frontend; npm run dev;
 
 ## 129 · 2026-09-07 关于页 · Editorial 简历排版
 
-**状态**：已完成（2026-09-07）
+**状态**：已完成（2026-09-07） · 摘要见 [CHANGELOG · 2026-09-07](docs/CHANGELOG.md#2026-09-07)
 
 **方向**：把 `/about` 从 Hero + 玻璃卡改成 editorial 简历。**选定 B · 双栏履历**。不改撰写页药丸、碎念/推荐、友链名录、博客/项目 Timeline、详情 `.ed-mast`。
 
@@ -748,7 +1348,7 @@ cd frontend; npm run dev;
 
 ## 128 · 2026-09-07 栖息 · 碎念 / 推荐共用 editorial 排版
 
-**状态**：已完成（2026-09-07）
+**状态**：已完成（2026-09-07） · 摘要见 [CHANGELOG · 2026-09-07](docs/CHANGELOG.md#2026-09-07)
 
 **方向**：把碎念 / 推荐接到同一套 editorial 语言上。抽共用 Vue 组件与日期格式，详情 Markdown 接博客同款代码复制。不为抽公共改撰写页药丸、关于 Hero、友链名录行、博客/项目 Timeline 卡、详情整页 `.ed-mast`、验证码。
 
@@ -778,7 +1378,7 @@ cd frontend; npm run dev;
 
 ## 127 · 2026-09-07 栖息分栏 · 双栏独立滚动与阅读态留白
 
-**状态**：已完成（2026-09-07）
+**状态**：已完成（2026-09-07） · 摘要见 [CHANGELOG · 2026-09-07](docs/CHANGELOG.md#2026-09-07)
 
 **方向**：碎念 / 推荐展开详情后，名录与详情各自滚动，刊头保持滚走后的位置；阅读态加宽并留出上下空隙。不锁 `html overflow`（会把 `scrollY` 钳成 0，H1/筛选钉回顶部）。不改撰写页、关于页、后端。
 
@@ -816,7 +1416,7 @@ cd frontend; npm run dev;
 
 ## 126 · 2026-09-06 栖息 · 碎念 / 推荐 Editorial 方案 B 合入
 
-**状态**：已完成（2026-09-06）
+**状态**：已完成（2026-09-06） · 摘要见 [CHANGELOG · 2026-09-06](docs/CHANGELOG.md#2026-09-06)
 
 **方向**：把 `designed/habitat-editorial/` **方案 B** 合入 `/fragments` 与 `/recommend`。刊头语言对齐 121 列表、123 留言、125 友链。现状 / A 不合入。分栏逻辑仍走现有 `XiqiSplitLayout`（footer 锁定、滚动还原、clip 揭开），不要在 `page-xiqi.css` 另写一套分栏。
 
@@ -861,7 +1461,7 @@ cd frontend; npm run dev;
 
 ## 125 · 2026-09-06 友链页 · Editorial 方案 A 合入
 
-**状态**：已完成（2026-09-06）
+**状态**：已完成（2026-09-06） · 摘要见 [CHANGELOG · 2026-09-06](docs/CHANGELOG.md#2026-09-06)
 
 **方向**：把 `designed/friends-editorial/` **方案 A** 合入 `/friends`、`/friends/apply`、`/friends/admin`。刊头语言对齐 121 项目列表与 123 留言。B / C 已废弃，不合入。
 
@@ -919,7 +1519,7 @@ cd frontend; npm run dev;
 
 ## 124 · 2026-09-06 开屏 · 跨标签 / OAuth 回跳不再重播
 
-**状态**：已完成（2026-09-06）
+**状态**：已完成（2026-09-06） · 摘要见 [CHANGELOG · 2026-09-06](docs/CHANGELOG.md#2026-09-06)
 
 **方向**：蜗牛开屏只在本机第一次访问播；新标签、留言登录整页回到 `/messages` 不再重播。顶栏 🐌 手动重播不动。
 
@@ -949,7 +1549,7 @@ cd frontend; npm run dev;
 
 ## 123 · 2026-09-06 留言页 · 方案 D 刊头 + 楼中楼
 
-**状态**：已完成（2026-09-06；访客浅/深/abstract 目视；友链申请验证码未改）
+**状态**：已完成（2026-09-06；访客浅/深/abstract 目视；友链申请验证码未改） · 摘要见 [CHANGELOG · 2026-09-06](docs/CHANGELOG.md#2026-09-06)
 
 **方向**：把 `designed/messages-editorial/` 已选定的方案 D 合入 `/messages`。视觉跟 121 列表刊头同一套 kicker；回复从「每条只一条站长回复」改为楼中楼（`replies[]`）。验证码布局本批不动。
 
@@ -1019,7 +1619,7 @@ cd frontend; npm run dev;
 
 ## 122 · 2026-09-05 详情顶栏 · Editorial 刊头
 
-**状态**：已完成（2026-09-05；浅/深目视收口）
+**状态**：已完成（2026-09-05；浅/深目视收口） · 摘要见 [CHANGELOG · 2026-09-05](docs/CHANGELOG.md#2026-09-05)
 
 **方向**：把 `designed/detail-header-editorial/` 已选定的方案 A 合入博客 / 项目详情题录区。只改顶栏，不重排正文与滚动侧栏。
 
@@ -1082,7 +1682,7 @@ cd frontend; npm run dev;
 
 ## 121 · 2026-09-05 项目 / 博客列表 · 方案 D Editorial 刊头
 
-**状态**：已完成（2026-09-05；浅/深/abstract + 390 窄屏目视收口）
+**状态**：已完成（2026-09-05；浅/深/abstract + 390 窄屏目视收口） · 摘要见 [CHANGELOG · 2026-09-05](docs/CHANGELOG.md#2026-09-05)
 
 **方向**：把 `designed/project-list-notes-options/` 已选定的方案 D 合入 `/projects` 与 `/blog`。两页继续共用时间线与下拉，不新开一份 Timeline 排版文件。
 
@@ -1150,7 +1750,7 @@ cd frontend; npm run dev;
 
 ## 120 · 2026-08-28 首页问候字体 · 月相拖尾微调
 
-**状态**：已完成（2026-08-28；本地目视）
+**状态**：已完成（2026-08-28；本地目视） · 摘要见 [CHANGELOG · 2026-08-28](docs/CHANGELOG.md#2026-08-28)
 
 **方向**：修复部署后首页问候语中文掉系统宋体、品牌名花体下伸被裁；月相拖尾月亮缩小、Columbina 相对 Damselette 拉开、拖尾月亮不透明度 40%。
 
@@ -1190,7 +1790,7 @@ cd frontend; npm run dev;
 
 ## 119 · 2026-08-28 全站 FPS / 1%L 监视浮层
 
-**状态**：已完成（2026-08-28；首页+博客目视，开关可用）
+**状态**：已完成（2026-08-28；首页+博客目视，开关可用） · 摘要见 [CHANGELOG · 2026-08-28](docs/CHANGELOG.md#2026-08-28)
 
 **方向**：全站右下角纸面卡片显示瞬时 FPS 与 1% Low（1%L），方便目视流畅度。可开关、持久化；**不是**首页专属。不另加 backdrop-filter 假毛玻璃层（用现有 `--glass-nav-`*）。
 
@@ -1236,7 +1836,7 @@ cd frontend; npm run dev;
 
 ## 118 · 2026-08-28 首页 Hero 滚动 / 首屏性能
 
-**状态**：已完成（2026-08-28；本地目视 + 30s 停留）
+**状态**：已完成（2026-08-28；本地目视 + 30s 停留） · 摘要见 [CHANGELOG · 2026-08-28](docs/CHANGELOG.md#2026-08-28)
 
 **方向**：在不改 §12 视觉契约的前提下减首页 GPU 重绘与首屏等待。Blur 仍只写 `--page-photo-bg-blur`，**不**另加 `backdrop-filter` / 双层照片 opacity。FilmFeed 不进首页。
 
@@ -1299,7 +1899,7 @@ cd frontend; npm run dev;
 
 ## 117 · 2026-08-28 首页 Hero 重排（hslzz 式首屏）
 
-**状态**：已完成（2026-08-28；117-10 三主题+移动端+30s 目视收口）
+**状态**：已完成（2026-08-28；117-10 三主题+移动端+30s 目视收口） · 摘要见 [CHANGELOG · 2026-08-28](docs/CHANGELOG.md#2026-08-28)
 
 **方向**：首页改成「通透首屏 + 纸面从下挤入」；FilmFeed **不进首页**（组件保留）；介绍语沉左下（开照片背景时滑到右侧）；COVER STORY 只露 kicker，随滚动与全宽纸面一起上移。**不**另做 backdrop-filter 假毛玻璃层，模糊只走导航栏照片背景那套 `--page-photo-bg-blur`。
 
@@ -1385,7 +1985,7 @@ cd frontend; npm run dev;
 
 ## 116 · 2026-08-27 照片背景默认模糊 · 首页栏目标题字重
 
-**状态**：已完成（本地；未推送）
+**状态**：已完成（本地；未推送） · 摘要见 [CHANGELOG · 2026-08-28](docs/CHANGELOG.md#2026-08-28)（随 PR #22 组合入）
 
 **方向**：顶栏照片背景钮调节器默认模糊强度减轻；首页目录区 LATEST / PROJECTS / ABOUT / REREAD 栏目标题略加重字重。
 
@@ -1416,7 +2016,7 @@ cd frontend; npm run dev;
 
 ## 115 · 2026-08-27 友链申请优化 · 站长审核后台
 
-**状态**：已完成（本地；未推送）
+**状态**：已完成（本地；未推送） · 摘要见 [CHANGELOG · 2026-08-28](docs/CHANGELOG.md#2026-08-28)（随 PR #23 组合入）
 
 **方向**：完善友链申请页交互；站长在 `/friends/admin` 审核/编辑友链；前后端双重校验站长身份；审核列表按状态分色与分组分隔；恢复临时 DEV bypass 并验收权限。
 
@@ -1473,7 +2073,7 @@ cd frontend; npm run dev;
 
 ## 114 · 2026-08-27 出站确认 · OAuth 过渡 · 页脚短页修复
 
-**状态**：已完成（本地；未推送）
+**状态**：已完成（本地；未推送） · 摘要见 [CHANGELOG · 2026-08-28](docs/CHANGELOG.md#2026-08-28)（随 PR #23 组合入）
 
 **方向**：社交登录与友链外链离开本站前，经独立过渡页用户确认；留言登录点击有即时反馈；修复短内容页误揭页脚 GRUNRAY / ICP 胶囊且切页残留；页脚法律声明页；film import 同步删除脚本与 xiaoye.gif 清理。
 
@@ -1543,7 +2143,7 @@ cd frontend; npm run dev;
 
 ## 113 · 2026-08-25 鼠标光标拖尾 · 星座月相（Moonlit Cursor）
 
-**状态**：已完成
+**状态**：已完成 · 摘要见 [CHANGELOG · 2026-08-25](docs/CHANGELOG.md#2026-08-25)
 
 **GitHub**：`feat/moonlit-cursor` → PR [#17](https://github.com/Grunray/GrunRay-wiki/pull/17) 合入 `main`（2026-08-25）；叠分支变基后合并；远程分支已删
 
@@ -1620,7 +2220,7 @@ cd frontend; npm run dev;
 
 ## 112 · 2026-08-23 图片背景模糊调节器
 
-**状态**：已完成
+**状态**：已完成 · 摘要见 [CHANGELOG · 2026-08-23](docs/CHANGELOG.md#2026-08-23)
 
 **GitHub**：`feat/photo-bg-blur` → PR [#21](https://github.com/Grunray/GrunRay-wiki/pull/21) 合入 `main`（2026-08-25；原 #16 因 base 分支删除而关闭，重建后合并）；远程分支已删
 
@@ -1653,7 +2253,7 @@ cd frontend; npm run dev;
 
 ## 111 · 2026-08-23 顶栏导航与工具区（方案 G + A）
 
-**状态**：已完成
+**状态**：已完成 · 摘要见 [CHANGELOG · 2026-08-23](docs/CHANGELOG.md#2026-08-23)
 
 **GitHub**：`feat/nav-toolbar` → PR [#15](https://github.com/Grunray/GrunRay-wiki/pull/15) 合入 `main`（2026-08-25）；远程分支已删
 
@@ -1683,7 +2283,7 @@ cd frontend; npm run dev;
 
 ## 110 · 2026-08-23 笔记界面优化
 
-**状态**：已完成
+**状态**：已完成 · 摘要见 [CHANGELOG · 2026-08-23](docs/CHANGELOG.md#2026-08-23)
 
 **GitHub**：`feat/page-toc-row` → PR [#18](https://github.com/Grunray/GrunRay-wiki/pull/18) 合入 `main`（2026-08-25）；远程分支已删
 
@@ -1699,7 +2299,7 @@ cd frontend; npm run dev;
 
 ## 109 · 2026-08-23 项目 / 博客详情页完善
 
-**状态**：已完成
+**状态**：已完成 · 摘要见 [CHANGELOG · 2026-08-23](docs/CHANGELOG.md#2026-08-23)
 
 **GitHub**：`feat/gallery-detail` → PR [#19](https://github.com/Grunray/GrunRay-wiki/pull/19) 合入 `main`（2026-08-25）；远程分支已删
 
@@ -1723,7 +2323,7 @@ cd frontend; npm run dev;
 
 ## 归档 · 2026-08-25 GitHub 分批合入（109–113）
 
-**状态**：已完成
+**状态**：已完成 · 摘要见 [CHANGELOG · 2026-08-25](docs/CHANGELOG.md#2026-08-25)
 
 六批独立分支 + PR，按依赖顺序合入 `main`（merge commit）。叠分支在 #15 合并后变基到 `main` 再续合并。
 
@@ -1745,7 +2345,7 @@ cd frontend; npm run dev;
 
 ## 108 · 2026-08-23 首页减法与阅读层级
 
-**状态**：已完成
+**状态**：已完成 · 摘要见 [CHANGELOG · 2026-08-23](docs/CHANGELOG.md#2026-08-23)
 
 **方向**：Hero 减法，Cover Story / Latest / Projects / About 承担内容；只调布局与字阶，不堆新装饰。
 
@@ -1780,7 +2380,7 @@ cd frontend; npm run dev;
 
 ## 105 · 2026-08-19 前端收尾（纸面重构后）
 
-**状态**：已完成
+**状态**：已完成 · 摘要见 [CHANGELOG · 2026-08-19](docs/CHANGELOG.md#2026-08-19)
 
 **方向**：体验/性能优先，再收束设计语言与结构去重。
 
@@ -1812,7 +2412,7 @@ cd frontend; npm run dev;
 
 ## 归档 · 2026-08-19 方案 G 与胶片
 
-**状态**：已完成
+**状态**：已完成 · 摘要见 [CHANGELOG · 2026-08-19](docs/CHANGELOG.md#2026-08-19)
 
 - [x] 方案 G（翻角+错位+檐角）：`.card-hover-g` + `CardCornerVine.vue` + timeline-card + cover-story
 - [x] cover-story「开始阅读」右移 gutter，避开花藤 SVG
@@ -1823,7 +2423,7 @@ cd frontend; npm run dev;
 
 ## 归档 · 2026-08-17 ~ 08-18 风格与字号
 
-**状态**：已完成
+**状态**：已完成 · 摘要见 [CHANGELOG · 2026-08-17](docs/CHANGELOG.md#2026-08-17)
 
 **2026-08-17 风格统一性回归**
 
@@ -1840,4 +2440,41 @@ cd frontend; npm run dev;
 **2026-08-18 全局基准字号 16px → 17px**
 
 - `html font-size: 106.25%`；元数据发虚问题缓解；DESIGN.md §3 增补下限
+
+---
+
+## 废案
+
+> 确定不做。保留编号与原文，避免以后重复立项；与「搁置」（可能回炉）不同。新废案整块追加到本区末尾。
+
+## 152 · 2026-09-16 监控：前端错误与 API 日志
+
+**状态**：废案
+
+**废案原因**：弱机个人站 + 已有 153 CI；错误上报 / API 结构化日志不是刚需，时间优先给自动化测试与流水线。不做完整 APM，也不再排期轻量 endpoint。
+
+**方向**：前端全局错误轻量上报（或至少 `console` + 可选 endpoint）；后端 API 对 4xx/5xx 打结构化简单日志。不做完整 APM。
+
+**背景 / 现状**：出问题多靠用户口述；Flask 默认日志未必带 path / status 汇总。
+
+**做完有什么用**：上线后能发现白屏 / 接口炸；修回归有线索；为 153 CI 之外的「生产可观测」补一层。
+
+**P0 — 前端**
+
+- [ ] 152-1 `window.onerror` / `unhandledrejection`（及 Vue `app.config.errorHandler`）汇总；开发环境只打日志
+- [ ] 152-2 生产：可选 POST 到自有轻量 endpoint（无第三方也行）；注意脱敏（勿带 token / 正文）
+
+**P1 — 后端**
+
+- [ ] 152-3 after_request 或 errorhandler：记录 method、path、status、耗时；5xx 带 request id
+- [ ] 152-4 4xx 高频路径（友链 / 留言）可采样，避免刷屏
+
+**涉及文件**
+
+`frontend/src/main.ts`、新建小模块、`backend/app/__init__.py`、config
+
+**验收**
+
+- [ ] 故意抛错：前端能看到汇总日志或收到上报
+- [ ] 打一个 500：后端日志含 path 与 status
 

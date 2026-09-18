@@ -24,9 +24,9 @@ layout:
     body: |
       GrunRay Wiki 是我正在维护的个人成果站与技术博客：集中展示独立项目、项目开发笔记、算法学习文章，并扩展了「栖息」板块的碎念、推荐清单与关于页履历，以及访客留言板与友链申请。
 
-      设计原则来自仓库内 designed/site-design-spec.md：数据驱动、易于扩展——新增一篇博文、一个项目卡片或一条碎念，优先通过 Markdown 与 import 脚本写入数据库，而不是改业务页面代码。主站与项目 Demo 解耦：Demo 以独立子工程构建，静态产物由后端 /api/media/files/... 托管，详情页以 iframe 嵌入。
+      设计原则来自仓库内 designed/site-design-spec.md：数据驱动、易于扩展——新增一篇博文、一个项目卡片或一条碎念，优先通过 Markdown 与 import 脚本写入数据库，而不是改业务页面代码。现行视觉与动效契约在 docs/DESIGN.md（根 DESIGN.md 为指针）；键盘与焦点见 docs/ACCESSIBILITY.md。主站与项目 Demo 解耦：Demo 以独立子工程构建，静态产物由后端 /api/media/files/... 托管，详情页以 iframe 嵌入。
 
-      仓库为 monorepo：frontend/（主站）、backend/（API 与内容）、demos/（可独立构建的演示页）、designed/（设计稿与规范）、backend/import/（各类内容的 Markdown 源）。
+      仓库为 monorepo：frontend/（主站）、backend/（API 与内容）、demos/（可独立构建的演示页）、designed/（设计稿与规范）、backend/import/（各类内容的 Markdown 源）、docs/（DESIGN、ACCESSIBILITY、CHANGELOG、TROUBLESHOOTING）。编码代理入口是根目录 AGENTS.md。CI（.github/workflows/ci.yml）在 push / PR 跑前端 vue-tsc + vite build，以及后端 pytest（不连 MySQL）。
   - type: markdown
     title: 整体架构
     body: |
@@ -43,8 +43,9 @@ layout:
 
       ## 开发联调
 
-      - 后端：`cd backend && python run.py`，默认 `http://127.0.0.1:5000`
+      - 后端：`cd backend && python run.py`，默认 `http://127.0.0.1:5000`（先激活本目录 `.venv` 或 `venv`）
       - 前端：`cd frontend && npm run dev`，Vite 将 `/api` 与 `/rss.xml` **代理**到 Flask（见 `frontend/vite.config.ts`）
+      - 检查：前端 `npx vue-tsc -b` 与 `npx vite build`；后端同一 venv 内 `pip install -r requirements-dev.txt` 后 `pytest`（不连 MySQL）
       - 生产：前端 `npm run build` 产出静态资源；API 与 `content/` 由同一 Flask 进程或反向代理统一对外
 
       ## Demo 子工程策略
@@ -126,7 +127,7 @@ layout:
 
       | 路径 | 页面 | 说明 |
       |------|------|------|
-      | `/` | HomeView | 首页、胶片流 `FilmFeed`、入口 |
+      | `/` | HomeView | 通透首屏、COVER STORY、此刻；胶片流已不进首页 |
       | `/projects` | ProjectsView | 项目时间轴与标签筛选 |
       | `/projects/:slug` | ProjectDetailView | 布局块渲染 + SEO |
       | `/projects/:slug/notes` | ProjectNotesView | 关联 `project_note` 列表 |
@@ -134,19 +135,30 @@ layout:
       | `/blog/:slug` | PostDetailView | Markdown 正文、相关推荐 |
       | `/fragments` | FragmentsView | 碎念列表（栖息分栏） |
       | `/fragments/compose` | FragmentComposeView | 站长撰写（需 OAuth） |
-      | `/about` | AboutView | 关于 + 履历 Markdown |
+      | `/fragments/edit` | XiqiOwnerEditView | 站长碎念名录，点开 compose `?id=` |
+      | `/about` | AboutView | 关于 + 双栏履历 |
       | `/recommend` | RecommendView | 推荐清单 |
+      | `/recommend/compose` | RecommendComposeView | 站长撰写推荐 |
+      | `/recommend/edit` | XiqiOwnerEditView | 站长推荐名录 |
+      | `/now` | SiteNowEditView | 站长编辑首页「此刻」 |
       | `/messages` | MessagesView | 留言板 |
       | `/friends` | FriendsView | 友链展示 |
       | `/friends/apply` | FriendsApplyView | 友链申请 |
+      | `/friends/admin` | FriendsAdminView | 站长审核友链 |
+      | `/leave/redirect` | SiteLeaveRedirectView | 外链出站确认刊头 |
+      | `/auth/redirect` | OAuthRedirectView | OAuth 回跳过渡 |
+      | `/legal` | LegalView | 法律页 |
+      | `/design` | DesignSystemView | 样式规范实况（页脚胶囊入口） |
 
       ## 全局壳层（`AppShell.vue`）
 
-      - `SiteNav`：主导航；滚动紧凑模式 `useNavScrollCompact`
-      - 主题：日/夜切换、按路由的照片背景 `pagePhotoBackgrounds`、部分页面「损坏」视觉 `pageCorruptState`
-      - 音乐播放器：调用 `GET /api/music/tracks`，音频 URL 同源 `/api/media/files/music/...`
-      - 光标轨迹、页脚 `FooterGrunRayPanel`（外链与元信息栏）
-      - 工具栏溢出与 FLIP 过渡，减少布局跳动
+      - `SiteNav`：主导航；滚动紧凑模式 `useNavScrollCompact`；窄屏（`max-width: 768px`）改汉堡抽屉
+      - 主题：日/夜/抽象三档、按路由的照片背景与模糊滑杆、部分页面「损坏」视觉 `pageCorruptState`
+      - 动效档：运行时写 `html[data-motion]`（`full` / `reduced` / `minimal`）；溢出面板 MOTION 三态只建议、须同意才降级；系统 `prefers-reduced-motion: reduce` 永远 MINIMAL
+      - 音乐播放器：调用 `GET /api/music/tracks`，点开展开才挂载；音频 URL 同源 `/api/media/files/music/...`
+      - 月相拖尾默认关、开启后才加载；FPS 浮层同样按需（调试，非常驻）
+      - 页脚 `FooterGrunRayPanel`；外链统一走出站确认。页顶 Skip link → `#main`
+      - 工具栏溢出与 FLIP 过渡；窄屏碎念 / 推荐用底部 Read sheet（焦点陷阱、Esc、关闭归还焦点）
 
       ## 其他前端能力
 
@@ -200,6 +212,7 @@ layout:
       ## 站长撰写（`xiqi_admin_api`）
 
       - 写 `import/xiqi/...` 源文件与上传媒体；**不自动写 DB**，需手动跑 import 脚本后前台可见
+      - `GET` / `PUT /api/site/now`：首页「此刻」（在写 / 在读）；公开只读，写入需站长会话，直接 upsert `site_now`
 
       ## RSS
 
@@ -307,6 +320,32 @@ layout:
       2026-08-23  全屏路由跳转遮罩原型（`designed/page-transition`，任务 107，待选方案合入 Vue）。
 
       2026-08-23  首页 Hero 降高（108.P0）：压低 `home-band` 同时修复 `FilmFeed` 副本测量（去轨道 `:key`、rAF 合并测量、`minSet` 门槛），避免 Chrome/Edge 卡死；工程笔记 `grunray-wiki-note-home-filmfeed-height`；胶片资源新增 `duck.jpg`、`Columbina_Sandrone.gif`。
+
+      2026-08-23  详情画廊预览与滚动侧栏（109）；项目笔记列表对齐 toc-row（110）；顶栏工具与主导航分段胶囊（111）；照片背景钮右键模糊滑杆 0–48px（112）。
+
+      2026-08-25  月相拖尾替换字母指针（113）：Columbina / Damselette / 月相 / 静憩 / 祈愿；可点不待机，启用后藏系统指针。
+
+      2026-08-28  通透首屏：纸面从下挤入，FilmFeed 退出首页（117）；减首页 GPU（118）；可开关 FPS 浮层（119）；问候语裁切与月相尺寸微调（120）。出站确认、友链站长审核、照片背景默认模糊同期合入。
+
+      2026-09-05  项目 / 博客列表与详情顶栏收进 editorial 刊头（121–122）；正文与滚动侧栏不重排。
+
+      2026-09-06  留言刊头与楼中楼（123）；蜗牛开屏只本机首次播（124）；友链目录 / 申请 / 审核 editorial（125）；碎念 / 推荐 habitat editorial（126）。
+
+      2026-09-07  深色主题强调色改为 Dendro 黄绿。碎念 / 推荐双栏各自滚动（127）；共用 editorial 组件与代码复制（128）；关于页双栏履历（129）；出站与 OAuth 改一级刊头（130–131）；其余公开路由收进同一套刊头（132）。
+
+      2026-09-08  首页 editorial：顶栏目录项（133）、欢迎层（134–135）、COVER STORY 刊头与走弧 ink（136–138）、窄屏线稿锚点（140）。
+
+      2026-09-11  手机壳层（141）：768px 以下汉堡抽屉、碎念 / 推荐 Read sheet、页脚仅 ICP；强制关照片 / 拖尾 / FPS（不写 localStorage）。
+
+      2026-09-14  关照片背景时首页右侧舞台：扇形外填充 + 扇形内线稿换墨（142）。
+
+      2026-09-15  COVER STORY 合成滚动纸面上的一张卡，纸面顶通栏 ink（144）。外链新标签走出站确认，与 `/leave/redirect` 同皮（143）。
+
+      2026-09-16  合入手机壳层、首页楔形线稿、出站确认、月相拖尾（PR #45–#49）。列表 / 详情 / 栖息统一 `PageStatusBlock`：失败可重试，空库与筛选无匹配分文案（146）。
+
+      2026-09-18  博客 / 项目列表筛选与 URL 同步，返回尽量恢复滚动；文章 TOC 与邻接篇（147）。首页「此刻」站长可写；碎念 / 推荐撰写与名录编辑合入（148）。Skip link、抽屉与 Read sheet 焦点陷阱（149）。拖尾 / 音乐 / FPS 按需加载（150）。Motion Policy：`html[data-motion]` 三档，REDUCED 仍瞬切可见、不伪造页脚揭开（151）。设计契约迁到 `docs/DESIGN.md`，并加 CHANGELOG 与 ACCESSIBILITY。
+
+      2026-09-19  GitHub Actions：前端类型检查 + 生产构建、后端 pytest（153）。新增 `docs/TROUBLESHOOTING.md` 与根目录 `AGENTS.md`（代理文档地图）。
 related_posts:
   - slug: grunray-wiki-note-home
     label: 首页布局与 API
