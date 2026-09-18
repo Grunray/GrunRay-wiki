@@ -1,4 +1,4 @@
-"""站长：碎念 / 栖息页面 import 写入与媒体上传。"""
+"""站长：碎念 / 栖息页面 import 写入、媒体上传、首页 NOW 状态。"""
 from __future__ import annotations
 
 import uuid
@@ -9,8 +9,23 @@ from flask import Blueprint, jsonify, request, session
 
 from app.about_md import validate_about_meta
 from app.about_serialize import api_to_profile
+from app.config import config
+from app.db import cursor
+from app.fragment_repo import get_by_public_id as get_fragment_by_public_id
+from app.fragment_repo import list_all as list_all_fragments
+from app.fragment_serialize import row_to_fragment, row_to_fragment_detail
 from app.recommend_md import validate_recommend_meta
+from app.recommend_repo import get_by_public_id as get_recommend_by_public_id
+from app.recommend_repo import list_all as list_all_recommends
+from app.recommend_serialize import row_to_recommend, row_to_recommend_detail
+from app.site_now_repo import (
+    get_site_now,
+    normalize_now_field,
+    serialize_site_now,
+    upsert_site_now,
+)
 from app.site_owner import is_site_owner
+from app.xiqi_import_apply import apply_fragment_markdown, apply_recommend_markdown
 from app.xiqi_md_write import (
     render_about_markdown,
     render_fragment_markdown,
@@ -98,31 +113,41 @@ def _save_upload(scope: str) -> tuple[dict | None, tuple | None]:
     return {"url": url, "alt": alt}, None
 
 
-@bp.post("/xiqi/media")
-def upload_xiqi_media():
-    scope = request.args.get("scope") or request.form.get("scope") or ""
-    data, err = _save_upload(scope)
-    if err:
-        return err
-    return _ok(data)
+@bp.get("/site/now")
+def get_public_site_now():
+    """公开只读：首页 NOW · 此刻。空字段前端回退 i18n。"""
+    try:
+        with cursor() as cur:
+            row = get_site_now(cur)
+    except Exception:
+        return _ok(serialize_site_now(None))
+    return _ok(serialize_site_now(row))
 
 
-@bp.post("/fragments/media")
-def upload_fragment_media_legacy():
-    """兼容计划路径；等价于 scope=fragments。"""
-    data, err = _save_upload("fragments")
-    if err:
-        return err
-    return _ok(data)
-
-
-@bp.post("/fragments/import-file")
-def save_fragment_import_file():
+@bp.put("/site/now")
+def put_site_now():
+    """站长写入今日状态；空字符串清空该字段（回退 i18n）。"""
     _, err = _require_site_owner()
     if err:
         return err
 
     payload = request.get_json(silent=True) or {}
+    try:
+        doing = normalize_now_field(payload.get("doing"), field="doing")
+        reading = normalize_now_field(payload.get("reading"), field="reading")
+    except ValueError as e:
+        return _error(str(e))
+
+    with cursor() as cur:
+        row = upsert_site_now(cur, doing=doing, reading=reading)
+    return _ok(serialize_site_now(row), message="已更新此刻状态")
+
+
+def _rel_import_path(md_path: Path) -> str:
+    return str(md_path.relative_to(md_path.parents[2]))
+
+
+def _write_fragment_import(payload: dict) -> tuple[dict | None, tuple | None]:
     public_id = (payload.get("publicId") or payload.get("public_id") or "").strip()
     if not public_id:
         public_id = f"frag-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:8]}"
@@ -133,14 +158,16 @@ def save_fragment_import_file():
         created_at = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
     body = (payload.get("bodyMarkdown") or payload.get("body") or "").strip()
     images_raw = payload.get("images") or []
-    cover_index = int(payload.get("coverIndex") if payload.get("coverIndex") is not None else payload.get("cover_index", 0))
+    cover_index = int(
+        payload.get("coverIndex") if payload.get("coverIndex") is not None else payload.get("cover_index", 0)
+    )
 
     if mood not in _ALLOWED_MOODS:
-        return _error(f"mood 必须是 {sorted(_ALLOWED_MOODS)}")
+        return None, _error(f"mood 必须是 {sorted(_ALLOWED_MOODS)}")
     if status not in _ALLOWED_FRAGMENT_STATUS:
-        return _error(f"status 必须是 {sorted(_ALLOWED_FRAGMENT_STATUS)}")
+        return None, _error(f"status 必须是 {sorted(_ALLOWED_FRAGMENT_STATUS)}")
     if not body:
-        return _error("正文不能为空")
+        return None, _error("正文不能为空")
 
     images: list[dict[str, str]] = []
     if isinstance(images_raw, list):
@@ -164,15 +191,245 @@ def save_fragment_import_file():
     IMPORT_XIQI_FRAGMENTS.mkdir(parents=True, exist_ok=True)
     md_path = IMPORT_XIQI_FRAGMENTS / f"{public_id}.md"
     md_path.write_text(md_text, encoding="utf-8")
+    return {
+        "publicId": public_id,
+        "path": _rel_import_path(md_path),
+        "importCommand": _IMPORT_FRAGMENTS_HINT,
+    }, None
 
-    return _ok(
-        {
-            "publicId": public_id,
-            "path": str(md_path.relative_to(md_path.parents[2])),
-            "importCommand": _IMPORT_FRAGMENTS_HINT,
-        },
-        message=f"已保存至 import，请运行 {_IMPORT_FRAGMENTS_HINT}",
+
+def _write_recommend_import(payload: dict) -> tuple[dict | None, tuple | None]:
+    public_id = (payload.get("publicId") or payload.get("public_id") or "").strip()
+    if not public_id:
+        public_id = f"rec-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:8]}"
+    category = (payload.get("category") or "software").strip().lower()
+    status = (payload.get("status") or "draft").strip().lower()
+    title = (payload.get("title") or "").strip()
+    created_at = (payload.get("createdAt") or payload.get("created_at") or "").strip()
+    if not created_at:
+        created_at = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    body = (payload.get("bodyMarkdown") or payload.get("body") or "").strip()
+    summary = (payload.get("summary") or "").strip()
+    url = (payload.get("url") or "").strip() or None
+    try:
+        rating = int(payload.get("rating") if payload.get("rating") is not None else 5)
+    except (TypeError, ValueError):
+        return None, _error("rating 必须是 1–5 的整数")
+    images_raw = payload.get("images") or []
+    cover_index = int(
+        payload.get("coverIndex") if payload.get("coverIndex") is not None else payload.get("cover_index", 0)
     )
+
+    if category not in _ALLOWED_CATEGORIES:
+        return None, _error(f"category 必须是 {sorted(_ALLOWED_CATEGORIES)}")
+    if status not in _ALLOWED_RECOMMEND_STATUS:
+        return None, _error(f"status 必须是 {sorted(_ALLOWED_RECOMMEND_STATUS)}")
+    if not title:
+        return None, _error("title 不能为空")
+    if not body:
+        return None, _error("正文不能为空")
+    if rating < 1 or rating > 5:
+        return None, _error("rating 必须是 1–5")
+
+    images: list[dict[str, str]] = []
+    if isinstance(images_raw, list):
+        for item in images_raw:
+            if isinstance(item, dict) and item.get("url"):
+                images.append({"url": str(item["url"]), "alt": str(item.get("alt") or "")})
+
+    if images and (cover_index < 0 or cover_index >= len(images)):
+        cover_index = 0
+
+    try:
+        meta = {
+            "public_id": public_id,
+            "category": category,
+            "rating": rating,
+            "title": title,
+            "status": status,
+            "created_at": created_at,
+            "url": url,
+            "summary": summary,
+            "images": images,
+            "cover_index": cover_index,
+        }
+        validated = validate_recommend_meta(meta, body, Path(f"{public_id}.md"))
+    except ValueError as e:
+        return None, _error(str(e))
+
+    md_text = render_recommend_markdown(
+        public_id=validated["public_id"],
+        category=validated["category"],
+        rating=validated["rating"],
+        title=validated["title"],
+        status=validated["status"],
+        created_at=created_at,
+        url=validated.get("url"),
+        summary=validated["summary"],
+        images=validated["images"],
+        cover_index=validated["cover_index"],
+        body=validated["body"],
+    )
+
+    IMPORT_XIQI_RECOMMENDATIONS.mkdir(parents=True, exist_ok=True)
+    md_path = IMPORT_XIQI_RECOMMENDATIONS / f"{validated['public_id']}.md"
+    md_path.write_text(md_text, encoding="utf-8")
+    return {
+        "publicId": validated["public_id"],
+        "path": _rel_import_path(md_path),
+        "importCommand": _IMPORT_RECOMMENDATIONS_HINT,
+    }, None
+
+
+def _content_body(md_url: str) -> str:
+    path = config.CONTENT_ROOT / (md_url or "")
+    if not path.is_file():
+        return ""
+    return path.read_text(encoding="utf-8")
+
+
+def _admin_status_arg() -> str | None:
+    status = (request.args.get("status") or "").strip().lower()
+    if not status or status == "all":
+        return None
+    return status
+
+
+@bp.get("/xiqi/admin/fragments")
+def admin_list_fragments():
+    _, err = _require_site_owner()
+    if err:
+        return err
+    mood = (request.args.get("mood") or "").strip().lower() or None
+    status = _admin_status_arg()
+    if status and status not in _ALLOWED_FRAGMENT_STATUS:
+        return _error(f"status 必须是 {sorted(_ALLOWED_FRAGMENT_STATUS)}")
+    sort = (request.args.get("sort") or "newest").strip().lower()
+    if sort not in ("newest", "oldest"):
+        sort = "newest"
+    try:
+        page = max(1, int(request.args.get("page", "1")))
+        size = max(1, min(100, int(request.args.get("size", "50"))))
+    except ValueError:
+        return _error("invalid page/size")
+    with cursor() as cur:
+        rows, total = list_all_fragments(cur, mood=mood, status=status, sort=sort, page=page, size=size)
+    items = []
+    for raw in rows:
+        row = dict(raw)
+        item = row_to_fragment(row)
+        item["status"] = row.get("status")
+        items.append(item)
+    return _ok({"items": items, "total": total, "page": page, "size": size})
+
+
+@bp.get("/xiqi/admin/fragments/<public_id>")
+def admin_get_fragment(public_id: str):
+    _, err = _require_site_owner()
+    if err:
+        return err
+    with cursor() as cur:
+        row = get_fragment_by_public_id(cur, public_id)
+    if not row:
+        return _error("not_found", status=404)
+    body = _content_body(row["md_url"])
+    data = row_to_fragment_detail(dict(row), body, "")
+    data["status"] = row.get("status")
+    return _ok(data)
+
+
+@bp.get("/xiqi/admin/recommendations")
+def admin_list_recommendations():
+    _, err = _require_site_owner()
+    if err:
+        return err
+    category = (request.args.get("category") or "").strip().lower() or None
+    status = _admin_status_arg()
+    if status and status not in _ALLOWED_RECOMMEND_STATUS:
+        return _error(f"status 必须是 {sorted(_ALLOWED_RECOMMEND_STATUS)}")
+    sort = (request.args.get("sort") or "newest").strip().lower()
+    if sort not in ("newest", "oldest"):
+        sort = "newest"
+    try:
+        page = max(1, int(request.args.get("page", "1")))
+        size = max(1, min(100, int(request.args.get("size", "50"))))
+    except ValueError:
+        return _error("invalid page/size")
+    with cursor() as cur:
+        rows, total = list_all_recommends(
+            cur, category=category, status=status, sort=sort, page=page, size=size
+        )
+    items = []
+    for raw in rows:
+        row = dict(raw)
+        item = row_to_recommend(row)
+        item["status"] = row.get("status")
+        items.append(item)
+    return _ok({"items": items, "total": total, "page": page, "size": size})
+
+
+@bp.get("/xiqi/admin/recommendations/<public_id>")
+def admin_get_recommendation(public_id: str):
+    _, err = _require_site_owner()
+    if err:
+        return err
+    with cursor() as cur:
+        row = get_recommend_by_public_id(cur, public_id)
+    if not row:
+        return _error("not_found", status=404)
+    body = _content_body(row["md_url"])
+    data = row_to_recommend_detail(dict(row), body, "")
+    data["status"] = row.get("status")
+    return _ok(data)
+
+
+@bp.post("/xiqi/media")
+def upload_xiqi_media():
+    scope = request.args.get("scope") or request.form.get("scope") or ""
+    data, err = _save_upload(scope)
+    if err:
+        return err
+    return _ok(data)
+
+
+@bp.post("/fragments/media")
+def upload_fragment_media_legacy():
+    """兼容计划路径；等价于 scope=fragments。"""
+    data, err = _save_upload("fragments")
+    if err:
+        return err
+    return _ok(data)
+
+
+@bp.post("/fragments/import-file")
+def save_fragment_import_file():
+    _, err = _require_site_owner()
+    if err:
+        return err
+    data, write_err = _write_fragment_import(request.get_json(silent=True) or {})
+    if write_err:
+        return write_err
+    return _ok(data, message=f"已保存至 import，请运行 {_IMPORT_FRAGMENTS_HINT}")
+
+
+@bp.post("/fragments/import-db")
+def import_fragment_to_db():
+    """写 import 文件后立刻入库，列表可见。"""
+    _, err = _require_site_owner()
+    if err:
+        return err
+    data, write_err = _write_fragment_import(request.get_json(silent=True) or {})
+    if write_err:
+        return write_err
+    md_path = IMPORT_XIQI_FRAGMENTS / f"{data['publicId']}.md"
+    try:
+        with cursor() as cur:
+            apply_fragment_markdown(cur, md_path)
+    except ValueError as e:
+        return _error(str(e))
+    except Exception:
+        return _error("写入数据库失败", status=500)
+    return _ok({**data, "imported": True}, message="已写入数据库")
 
 
 @bp.post("/xiqi/pages/import-file")
@@ -278,92 +535,30 @@ def save_recommendation_import_file():
     _, err = _require_site_owner()
     if err:
         return err
+    data, write_err = _write_recommend_import(request.get_json(silent=True) or {})
+    if write_err:
+        return write_err
+    return _ok(data, message=f"已保存至 import，请运行 {_IMPORT_RECOMMENDATIONS_HINT}")
 
-    payload = request.get_json(silent=True) or {}
-    public_id = (payload.get("publicId") or payload.get("public_id") or "").strip()
-    if not public_id:
-        public_id = f"rec-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:8]}"
-    category = (payload.get("category") or "software").strip().lower()
-    status = (payload.get("status") or "draft").strip().lower()
-    title = (payload.get("title") or "").strip()
-    created_at = (payload.get("createdAt") or payload.get("created_at") or "").strip()
-    if not created_at:
-        created_at = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-    body = (payload.get("bodyMarkdown") or payload.get("body") or "").strip()
-    summary = (payload.get("summary") or "").strip()
-    url = (payload.get("url") or "").strip() or None
+
+@bp.post("/recommendations/import-db")
+def import_recommendation_to_db():
+    """写 import 文件后立刻入库，列表可见。"""
+    _, err = _require_site_owner()
+    if err:
+        return err
+    data, write_err = _write_recommend_import(request.get_json(silent=True) or {})
+    if write_err:
+        return write_err
+    md_path = IMPORT_XIQI_RECOMMENDATIONS / f"{data['publicId']}.md"
     try:
-        rating = int(payload.get("rating") if payload.get("rating") is not None else 5)
-    except (TypeError, ValueError):
-        return _error("rating 必须是 1–5 的整数")
-    images_raw = payload.get("images") or []
-    cover_index = int(
-        payload.get("coverIndex") if payload.get("coverIndex") is not None else payload.get("cover_index", 0)
-    )
-
-    if category not in _ALLOWED_CATEGORIES:
-        return _error(f"category 必须是 {sorted(_ALLOWED_CATEGORIES)}")
-    if status not in _ALLOWED_RECOMMEND_STATUS:
-        return _error(f"status 必须是 {sorted(_ALLOWED_RECOMMEND_STATUS)}")
-    if not title:
-        return _error("title 不能为空")
-    if not body:
-        return _error("正文不能为空")
-    if rating < 1 or rating > 5:
-        return _error("rating 必须是 1–5")
-
-    images: list[dict[str, str]] = []
-    if isinstance(images_raw, list):
-        for item in images_raw:
-            if isinstance(item, dict) and item.get("url"):
-                images.append({"url": str(item["url"]), "alt": str(item.get("alt") or "")})
-
-    if images and (cover_index < 0 or cover_index >= len(images)):
-        cover_index = 0
-
-    try:
-        meta = {
-            "public_id": public_id,
-            "category": category,
-            "rating": rating,
-            "title": title,
-            "status": status,
-            "created_at": created_at,
-            "url": url,
-            "summary": summary,
-            "images": images,
-            "cover_index": cover_index,
-        }
-        validated = validate_recommend_meta(meta, body, Path(f"{public_id}.md"))
+        with cursor() as cur:
+            apply_recommend_markdown(cur, md_path)
     except ValueError as e:
         return _error(str(e))
-
-    md_text = render_recommend_markdown(
-        public_id=validated["public_id"],
-        category=validated["category"],
-        rating=validated["rating"],
-        title=validated["title"],
-        status=validated["status"],
-        created_at=created_at,
-        url=validated.get("url"),
-        summary=validated["summary"],
-        images=validated["images"],
-        cover_index=validated["cover_index"],
-        body=validated["body"],
-    )
-
-    IMPORT_XIQI_RECOMMENDATIONS.mkdir(parents=True, exist_ok=True)
-    md_path = IMPORT_XIQI_RECOMMENDATIONS / f"{validated['public_id']}.md"
-    md_path.write_text(md_text, encoding="utf-8")
-
-    return _ok(
-        {
-            "publicId": validated["public_id"],
-            "path": str(md_path.relative_to(md_path.parents[2])),
-            "importCommand": _IMPORT_RECOMMENDATIONS_HINT,
-        },
-        message=f"已保存至 import，请运行 {_IMPORT_RECOMMENDATIONS_HINT}",
-    )
+    except Exception:
+        return _error("写入数据库失败", status=500)
+    return _ok({**data, "imported": True}, message="已写入数据库")
 
 
 @bp.post("/xiqi/hero-media")

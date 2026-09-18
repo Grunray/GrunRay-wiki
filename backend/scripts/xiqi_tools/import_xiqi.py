@@ -39,9 +39,8 @@ from app.about_repo import upsert_about  # noqa: E402
 from app.config import config  # noqa: E402
 from app.db import connect  # noqa: E402
 from app.fragment_md import parse_fragment_markdown, validate_fragment_meta  # noqa: E402
-from app.fragment_repo import upsert_fragment  # noqa: E402
 from app.recommend_md import parse_recommend_markdown, validate_recommend_meta  # noqa: E402
-from app.recommend_repo import upsert_recommend  # noqa: E402
+from app.xiqi_import_apply import apply_fragment_markdown, apply_recommend_markdown  # noqa: E402
 from app.xiqi_md_write import render_about_markdown  # noqa: E402
 from app.xiqi_page_md import parse_xiqi_page_markdown, validate_xiqi_page_meta  # noqa: E402
 from app.xiqi_page_repo import upsert_page  # noqa: E402
@@ -80,18 +79,17 @@ def import_fragments(*, root: Path, public_id: str, dry_run: bool) -> int:
     try:
         for md_path in files:
             try:
-                meta, body = parse_fragment_markdown(md_path)
-                row = validate_fragment_meta(meta, body, md_path)
-                content_path = config.CONTENT_ROOT / row["md_url"]
-                print(f"{'[dry-run] ' if dry_run else ''}import {md_path.name} -> {content_path}")
                 if dry_run:
+                    meta, body = parse_fragment_markdown(md_path)
+                    row = validate_fragment_meta(meta, body, md_path)
+                    content_path = config.CONTENT_ROOT / row["md_url"]
+                    print(f"[dry-run] import {md_path.name} -> {content_path}")
                     print(json.dumps(row, ensure_ascii=False, indent=2, default=str))
                     continue
-                content_path.parent.mkdir(parents=True, exist_ok=True)
-                content_path.write_text(row["body"] + "\n", encoding="utf-8")
                 cur = conn.cursor()
-                upsert_fragment(cur, row)
+                row = apply_fragment_markdown(cur, md_path)
                 conn.commit()
+                print(f"import {md_path.name} -> {config.CONTENT_ROOT / row['md_url']}")
             except Exception as e:
                 errors += 1
                 print(f"ERROR {md_path.name}: {e}", file=sys.stderr)
@@ -196,18 +194,17 @@ def import_recommendations(*, root: Path, public_id: str, dry_run: bool) -> int:
     try:
         for md_path in files:
             try:
-                meta, body = parse_recommend_markdown(md_path)
-                row = validate_recommend_meta(meta, body, md_path)
-                content_path = config.CONTENT_ROOT / row["md_url"]
-                print(f"{'[dry-run] ' if dry_run else ''}import {md_path.name} -> {content_path}")
                 if dry_run:
+                    meta, body = parse_recommend_markdown(md_path)
+                    row = validate_recommend_meta(meta, body, md_path)
+                    content_path = config.CONTENT_ROOT / row["md_url"]
+                    print(f"[dry-run] import {md_path.name} -> {content_path}")
                     print(json.dumps(row, ensure_ascii=False, indent=2, default=str))
                     continue
-                content_path.parent.mkdir(parents=True, exist_ok=True)
-                content_path.write_text(row["body"] + "\n", encoding="utf-8")
                 cur = conn.cursor()
-                upsert_recommend(cur, row)
+                row = apply_recommend_markdown(cur, md_path)
                 conn.commit()
+                print(f"import {md_path.name} -> {config.CONTENT_ROOT / row['md_url']}")
             except Exception as e:
                 errors += 1
                 print(f"ERROR {md_path.name}: {e}", file=sys.stderr)

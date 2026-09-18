@@ -4,8 +4,11 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
 import DetailScrollSidebar from '@/components/detail/DetailScrollSidebar.vue'
+import PostTocNav from '@/components/detail/PostTocNav.vue'
+import PageStatusBlock from '@/components/ui/PageStatusBlock.vue'
 import ProjectDetailPageSkeleton from '@/components/ui/ProjectDetailPageSkeleton.vue'
 import { useDetailScrollSidebar } from '@/composables/useDetailScrollSidebar'
+import { readListReturnPath } from '@/composables/useListScrollRestore'
 import { restartPageEnter } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
@@ -13,6 +16,7 @@ import ProjectBlockRenderer from '@/project-blocks/ProjectBlockRenderer.vue'
 import '@/styles/page-enter-post.css'
 import { canAccessProjectPublic, ensureProjectsLoaded, getProjectBySlug } from '@/services/contentRepository'
 import type { Project } from '@/types/content'
+import { stampHeadingIds, type TocItem } from '@/utils/headingToc'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -22,6 +26,9 @@ const loading = ref(true)
 const loadError = ref(false)
 const articleRoot = ref<HTMLElement | null>(null)
 const foldZoneRef = ref<HTMLElement | null>(null)
+const blocksRef = ref<HTMLElement | null>(null)
+const tocItems = ref<TocItem[]>([])
+const projectsListTo = computed(() => readListReturnPath('projects'))
 const sidebarContentKey = computed(() => project.value?.slug ?? '')
 const { progress: sidebarProgress, wideEnough: sidebarWide } = useDetailScrollSidebar(foldZoneRef, {
   contentKey: sidebarContentKey,
@@ -51,21 +58,33 @@ async function restartProjectEnterWhenReady() {
   if (el) restartPageEnter(el)
 }
 
+async function loadProject(slug: string) {
+  loading.value = true
+  loadError.value = false
+  try {
+    await ensureProjectsLoaded()
+    project.value = getProjectBySlug(slug) ?? null
+  } catch {
+    loadError.value = true
+    project.value = null
+  } finally {
+    loading.value = false
+    await restartProjectEnterWhenReady()
+    await refreshProjectToc()
+  }
+}
+
+async function refreshProjectToc() {
+  await nextTick()
+  await nextTick()
+  const root = blocksRef.value
+  tocItems.value = root ? stampHeadingIds(root) : []
+}
+
 watch(
   () => route.params.slug as string,
-  async (slug) => {
-    loading.value = true
-    loadError.value = false
-    try {
-      await ensureProjectsLoaded()
-      project.value = getProjectBySlug(slug) ?? null
-    } catch {
-      loadError.value = true
-      project.value = null
-    } finally {
-      loading.value = false
-      await restartProjectEnterWhenReady()
-    }
+  (slug) => {
+    void loadProject(slug)
   },
   { immediate: true },
 )
@@ -126,17 +145,37 @@ useSeoMeta(() => {
     type: 'website' as const,
   }
 })
+
+watch(
+  [tocItems, () => route.hash],
+  async () => {
+    const raw = route.hash.replace(/^#/, '')
+    if (!raw) return
+    await nextTick()
+    let id = raw
+    try {
+      id = decodeURIComponent(raw)
+    } catch {
+      /* keep raw */
+    }
+    document.getElementById(id)?.scrollIntoView({ block: 'start' })
+  },
+)
 </script>
 
 <template>
-  <article v-if="loadError">
-    <p class="empty">加载失败，请确认后端已启动并已导入项目数据。</p>
-  </article>
+  <PageStatusBlock
+    v-if="loadError"
+    kind="error"
+    :title="t('common.status.loadFailed')"
+    retryable
+    @retry="loadProject(route.params.slug as string)"
+  />
   <ProjectDetailPageSkeleton v-else-if="loading" />
   <article v-else-if="ok && project" ref="articleRoot" class="project-detail">
     <div ref="foldZoneRef" class="project-fold">
       <p class="back">
-        <RouterLink to="/projects">← {{ t('projects.title') }}</RouterLink>
+        <RouterLink :to="projectsListTo">← {{ t('projects.title') }}</RouterLink>
       </p>
 
       <div class="ed-mast">
@@ -193,12 +232,19 @@ useSeoMeta(() => {
       </div>
     </div>
 
+    <PostTocNav
+      v-if="tocItems.length && !sidebarWide"
+      :items="tocItems"
+      :label="t('projects.tocLabel')"
+      folded
+    />
+
     <div class="detail-grid">
       <section class="main-content">
         <!-- <section class="card content-head">
           <h2 class="content-title">{{ t('projects.contentTitle') }}</h2>
         </section> -->
-        <div class="blocks">
+        <div ref="blocksRef" class="blocks">
           <ProjectBlockRenderer v-for="(block, i) in project.layout" :key="i" :block="block" />
         </div>
       </section>
@@ -234,9 +280,15 @@ useSeoMeta(() => {
           {{ t('projects.notes') }}
         </RouterLink>
       </div>
+      <PostTocNav v-if="tocItems.length" :items="tocItems" :label="t('projects.tocLabel')" />
     </DetailScrollSidebar>
   </article>
-  <p v-else class="empty">{{ t('common.notFound') }}</p>
+  <PageStatusBlock
+    v-else
+    kind="empty"
+    :title="t('common.status.notFoundTitle')"
+    :description="t('common.status.notFoundHint')"
+  />
 </template>
 
 <style scoped>
@@ -275,7 +327,8 @@ useSeoMeta(() => {
   margin-top: 0;
 }
 
-.empty {
-  color: var(--color-text-muted);
+.blocks :deep(h2),
+.blocks :deep(h3) {
+  scroll-margin-top: 5.75rem;
 }
 </style>

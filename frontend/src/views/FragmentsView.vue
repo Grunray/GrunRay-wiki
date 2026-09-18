@@ -9,6 +9,7 @@ import EdKicker from '@/components/editorial/EdKicker.vue'
 import EdLedgerHead from '@/components/editorial/EdLedgerHead.vue'
 import EdReadArticle from '@/components/editorial/EdReadArticle.vue'
 import EdSwitchFilter from '@/components/editorial/EdSwitchFilter.vue'
+import PageStatusBlock from '@/components/ui/PageStatusBlock.vue'
 import XiqiSplitLayout from '@/components/xiqi/XiqiSplitLayout.vue'
 import { type FragmentMood } from '@/content/data/mockFragments'
 import { injectMobileShell } from '@/composables/useMobileShell'
@@ -47,7 +48,7 @@ const moodFilter = ref<MoodFilter>('all')
 const sortOrder = ref<SortOrder>('newest')
 const fragments = ref<Fragment[]>([])
 const listLoading = ref(true)
-const listError = ref('')
+const listError = ref(false)
 const detail = ref<FragmentDetail | null>(null)
 const detailLoading = ref(false)
 const isSiteOwner = ref(false)
@@ -68,6 +69,18 @@ const sortOptions = computed<Array<{ id: SortOrder; label: string }>>(() => [
 ])
 
 const visibleFragments = computed(() => fragments.value)
+
+const listEmpty = computed(
+  () => !listLoading.value && !listError.value && fragments.value.length === 0 && moodFilter.value === 'all',
+)
+
+const filteredEmpty = computed(
+  () =>
+    !listLoading.value &&
+    !listError.value &&
+    fragments.value.length === 0 &&
+    moodFilter.value !== 'all',
+)
 
 const displayedFragment = computed(() =>
   visibleFragments.value.find((item) => item.id === detailDisplayId.value) ?? null,
@@ -109,7 +122,7 @@ function refreshCatLines() {
 
 async function loadList() {
   listLoading.value = true
-  listError.value = ''
+  listError.value = false
   try {
     const result = await fetchFragments({
       mood: moodFilter.value,
@@ -117,8 +130,8 @@ async function loadList() {
       size: 50,
     })
     fragments.value = result.items
-  } catch (e) {
-    listError.value = e instanceof Error ? e.message : String(e)
+  } catch {
+    listError.value = true
     fragments.value = []
   } finally {
     listLoading.value = false
@@ -140,6 +153,10 @@ async function loadDetail(id: string) {
 
 function goCompose() {
   router.push({ name: 'fragments-compose' })
+}
+
+function goEdit() {
+  router.push({ name: 'fragments-edit' })
 }
 
 watch([moodFilter, sortOrder], () => {
@@ -266,9 +283,12 @@ onBeforeUnmount(() => {
           :filter-options="moodOptions"
           :sort-options="sortOptions"
         />
-        <p v-if="isSiteOwner">
+        <p v-if="isSiteOwner" class="habitat-owner-links">
           <button type="button" class="ed-action" @click="goCompose">
             {{ t('fragments.compose.button') }}
+          </button>
+          <button type="button" class="ed-action" @click="goEdit">
+            {{ t('fragments.edit.button') }}
           </button>
         </p>
       </div>
@@ -279,8 +299,18 @@ onBeforeUnmount(() => {
       · {{ splitHint }}
     </EdLedgerHead>
 
-    <p v-if="listError" class="habitat-empty">{{ listError }}</p>
-    <p v-else-if="listLoading" class="habitat-empty">{{ t('xiqi.loading') }}</p>
+    <PageStatusBlock
+      v-if="listError"
+      kind="error"
+      :title="t('fragments.loadFailed')"
+      retryable
+      @retry="loadList"
+    />
+    <PageStatusBlock
+      v-else-if="listLoading"
+      kind="loading"
+      :title="t('xiqi.loading')"
+    />
     <TransitionGroup
       v-else-if="visibleFragments.length"
       name="xiqi-feed-item"
@@ -303,7 +333,16 @@ onBeforeUnmount(() => {
         />
       </li>
     </TransitionGroup>
-    <p v-else class="habitat-empty">{{ t('fragments.empty') }}</p>
+    <PageStatusBlock
+      v-else-if="listEmpty"
+      kind="empty"
+      :title="t('fragments.empty')"
+    />
+    <PageStatusBlock
+      v-else-if="filteredEmpty"
+      kind="empty"
+      :title="t('fragments.emptyFiltered')"
+    />
 
     <template #detail>
       <EdReadArticle

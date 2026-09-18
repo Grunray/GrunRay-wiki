@@ -10,6 +10,7 @@ import './styles/page-timeline.css'
 import './styles/page-list-masthead.css'
 import './styles/page-detail-masthead.css'
 import './styles/markdown-reading.css'
+import './styles/page-status.css'
 import './styles/footer-grunray.css'
 
 import { gsap } from 'gsap'

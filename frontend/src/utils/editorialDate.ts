@@ -8,6 +8,16 @@ export function formatEditorialListDate(iso: string, locale: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
+/** 撰写时间控件：转成本地 `YYYY-MM-DDTHH:mm:ss`。 */
+export function toDatetimeLocalValue(iso: string): string {
+  const raw = iso.trim()
+  if (!raw) return ''
+  const d = new Date(raw.includes('T') || raw.includes(' ') ? raw.replace(' ', 'T') : raw)
+  if (Number.isNaN(d.getTime())) return raw.replace(' ', 'T').slice(0, 19)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
+
 /** 栖息详情 meta：年月日时分。 */
 export function formatEditorialDateTime(iso: string, locale: string): string {
   const d = new Date(iso)

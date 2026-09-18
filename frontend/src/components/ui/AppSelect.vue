@@ -12,7 +12,7 @@ const props = withDefaults(
     options: AppSelectOption[]
     ariaLabel?: string
     minWidth?: string
-    /** editorial：列表刊头皮肤；默认药丸留给碎念撰写等 */
+    /** editorial：刊头 / 撰写纸面；默认药丸仅留给尚未改版的控件 */
     variant?: 'default' | 'editorial'
   }>(),
   {
@@ -226,22 +226,28 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentPointe
 
 .select-wrap--editorial .select-menu {
   left: -0.15rem;
+  top: calc(100% + 0.25rem);
   width: max-content;
   max-width: min(22rem, calc(100vw - 2.5rem));
-  min-width: max(12.5rem, 100%);
+  min-width: max(11rem, 100%);
   max-height: 16.5rem;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 0.28rem;
-  background: var(--color-bg-surface);
+  padding: 0.28rem 0;
+  border: none;
+  border-radius: 0;
+  border-top: 1px solid var(--color-text);
+  background: var(--color-bg-base);
+  box-shadow: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
 
 .select-wrap--editorial .select-option {
   width: 100%;
-  padding: 0.3rem 0.55rem;
+  padding: 0.28rem 0.85rem;
+  border-radius: 0;
   font-family: var(--font-serif);
   font-size: 0.95rem;
   font-weight: 500;
@@ -256,6 +262,16 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentPointe
 .select-wrap--editorial .select-option:focus-visible {
   background: color-mix(in srgb, var(--color-bg-elevated) 52%, transparent);
   color: var(--color-accent);
+}
+
+.select-wrap--editorial .select-option--active {
+  background: transparent;
+  color: var(--color-accent);
+}
+
+.select-wrap--editorial .select-option--active:hover,
+.select-wrap--editorial .select-option--active:focus-visible {
+  background: color-mix(in srgb, var(--color-bg-elevated) 52%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {

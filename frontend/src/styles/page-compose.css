@@ -1,0 +1,384 @@
+/* 碎念 / 推荐撰写：方案 A 次级刊头 + 双栏纸面 */
+
+.compose-ed-page {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 0 3rem;
+  overflow: visible;
+}
+
+.compose-ed-back {
+  margin: 0 0 0.85rem;
+  font-size: 0.88rem;
+}
+
+.compose-ed-back a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.compose-ed-back a:hover {
+  text-decoration: underline;
+}
+
+.compose-ed-page .h {
+  margin: 0 0 1.1rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.7rem, 3.2vw, 2.25rem);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.compose-ed-kicker-gap {
+  margin-top: 1.35rem;
+}
+
+.compose-ed-page .ed-filter {
+  margin-bottom: 1.35rem;
+}
+
+.compose-ed-hint {
+  margin: 0.45rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+.compose-ed-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(14rem, 20rem);
+  gap: 1.5rem 0;
+  align-items: start;
+  overflow: visible;
+}
+
+.compose-ed-preview {
+  position: sticky;
+  top: 5.4rem;
+  margin-left: 2rem;
+  padding-left: 2rem;
+  border-left: 1px solid var(--color-border);
+}
+
+.compose-ed-meta {
+  position: relative;
+  z-index: 12;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem 1.35rem;
+  overflow: visible;
+}
+
+.compose-ed-field {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  overflow: visible;
+}
+
+.compose-ed-label {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.compose-ed-page .ed-search {
+  display: grid;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.compose-ed-page .ed-search input,
+.compose-ed-page .ed-search textarea {
+  width: 100%;
+  margin: 0;
+  padding: 0.08rem 0 0.2rem;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.3;
+  border-radius: 0;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.compose-ed-page .ed-search textarea {
+  min-height: 14rem;
+  resize: vertical;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 400;
+  line-height: 1.55;
+  padding-top: 0.45rem;
+}
+
+.compose-ed-page .ed-search input:hover,
+.compose-ed-page .ed-search input:focus,
+.compose-ed-page .ed-search textarea:hover,
+.compose-ed-page .ed-search textarea:focus {
+  border-bottom-color: var(--color-accent);
+  outline: none;
+}
+
+.compose-ed-page .ed-search input::placeholder,
+.compose-ed-page .ed-search textarea::placeholder {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.compose-ed-editor-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin: 1.15rem 0 0.55rem;
+}
+
+.compose-ed-editor-head .ed-kicker {
+  margin: 0;
+}
+
+.compose-ed-editor.is-dragover .ed-search textarea {
+  border-bottom-color: var(--color-accent);
+}
+
+.compose-ed-upload {
+  cursor: pointer;
+}
+
+.compose-ed-attach {
+  list-style: none;
+  margin: 0.65rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.compose-ed-attach-item {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.compose-ed-preview-title {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.compose-ed-preview-card .compose-ed-thumb {
+  margin-bottom: 0.55rem;
+}
+
+.compose-ed-page .ed-search + .compose-ed-meta {
+  margin-top: 1rem;
+}
+
+.compose-ed-cover {
+  position: relative;
+  display: block;
+  margin: 0;
+  cursor: pointer;
+}
+
+.compose-ed-cover img,
+.compose-ed-thumb {
+  width: 4.5rem;
+  height: 4.5rem;
+  object-fit: cover;
+  background: var(--color-bg-elevated);
+}
+
+.compose-ed-cover input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.compose-ed-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.65rem 1.35rem;
+  margin-top: 1.1rem;
+}
+
+.compose-ed-page .ed-action {
+  appearance: none;
+  display: inline;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  color: var(--color-accent);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.compose-ed-page .ed-action:hover:not(:disabled) {
+  text-decoration: none;
+  border-bottom-color: var(--color-accent);
+}
+
+.compose-ed-page .ed-action:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.compose-ed-page .ed-action.ghost {
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+  border-bottom-color: var(--color-border);
+}
+
+.compose-ed-ok {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--color-accent);
+}
+
+.compose-ed-err {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--color-danger, #a33);
+}
+
+.compose-ed-cli {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.compose-ed-issues {
+  list-style: none;
+  margin: 0 0 0.85rem;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.compose-ed-issues .is-error {
+  color: var(--color-danger, #a33);
+}
+
+.compose-ed-preview-card {
+  padding: 0.85rem 0 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.compose-ed-preview-meta {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+
+.compose-ed-preview-meta .tone {
+  color: var(--color-accent);
+}
+
+.compose-ed-preview-body {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.compose-ed-preview-body :deep(p) {
+  margin: 0;
+}
+
+.compose-ed-preview-detail :deep(img),
+.compose-ed-preview-body :deep(img) {
+  max-width: 100%;
+}
+
+.compose-ed-preview-detail {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.92rem;
+  max-height: 18rem;
+  overflow: auto;
+}
+
+.compose-ed-empty {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+}
+
+.habitat-owner-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.55rem 1.35rem;
+  margin: 0.15rem 0 0;
+}
+
+.compose-ed-page .thumb {
+  display: block;
+  overflow: hidden;
+  border-radius: 4px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-accent) 22%, var(--color-bg-elevated)),
+    var(--color-bg-elevated)
+  );
+}
+
+.compose-ed-page .thumb :deep(.app-image),
+.compose-ed-page .thumb :deep(img),
+.compose-ed-page .thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 900px) {
+  .compose-ed-grid,
+  .compose-ed-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .compose-ed-preview {
+    position: static;
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
+    margin-top: 0.35rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-border);
+  }
+}
+
+@media (max-width: 480px) {
+  .compose-ed-page .ed-search input,
+  .compose-ed-page .ed-search textarea {
+    font-size: 16px;
+  }
+}

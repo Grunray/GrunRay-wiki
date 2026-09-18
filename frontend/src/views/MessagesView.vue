@@ -26,6 +26,7 @@ import {
   type MessageAuthUser,
 } from '@/services/messageAuth'
 import MessageAvatarWithProvider from '@/components/message/MessageAvatarWithProvider.vue'
+import PageStatusBlock from '@/components/ui/PageStatusBlock.vue'
 import '@/styles/page-enter-message.css'
 import '@/styles/page-messages.css'
 
@@ -52,6 +53,7 @@ const enterPlayed = ref(false)
 
 const messages = ref<GuestMessage[]>([])
 const messagesLoading = ref(true)
+const messagesLoadError = ref(false)
 const messagesTotal = ref(0)
 const authUser = ref<MessageAuthUser | null>(null)
 const authProviders = ref<MessageAuthProviders>({ github: false, google: false })
@@ -148,6 +150,7 @@ function showSubmitToast(text: string) {
 
 async function loadMessages() {
   messagesLoading.value = true
+  messagesLoadError.value = false
   try {
     const data = await fetchMessages({ sort: sortOrder.value, page: 1, size: 50 })
     messages.value = data.items.map((m) => ({ ...m, replies: m.replies ?? [] }))
@@ -155,7 +158,7 @@ async function loadMessages() {
   } catch {
     messages.value = []
     messagesTotal.value = 0
-    showSubmitToast(t('messages.loadError'))
+    messagesLoadError.value = true
   } finally {
     messagesLoading.value = false
   }
@@ -656,8 +659,22 @@ onMounted(async () => {
     </ul>
 
     <ul v-else class="message-list">
-      <li v-if="messagesLoading" class="message-list-hint">{{ t('messages.loading') }}…</li>
-      <li v-else-if="!messages.length" class="message-list-hint">{{ t('messages.empty') }}</li>
+      <li v-if="messagesLoadError" class="message-list-status">
+        <PageStatusBlock
+          kind="error"
+          :title="t('messages.loadError')"
+          :description="t('messages.loadFailedHint')"
+          retryable
+          @retry="loadMessages"
+        />
+      </li>
+      <li v-else-if="messagesLoading" class="message-list-status">
+        <PageStatusBlock kind="loading" :title="t('messages.loading')" />
+      </li>
+      <li v-else-if="!messages.length" class="message-list-status">
+        <PageStatusBlock kind="empty" :title="t('messages.empty')" />
+      </li>
+      <template v-else>
       <li
         v-for="(msg, index) in messages"
         :key="msg.id"
@@ -833,6 +850,7 @@ onMounted(async () => {
           </div>
         </div>
       </li>
+      </template>
     </ul>
   </section>
 </template>

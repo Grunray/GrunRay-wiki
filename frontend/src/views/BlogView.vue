@@ -5,7 +5,10 @@ import { useRoute, useRouter } from 'vue-router'
 
 import CardCornerVineLazy from '@/components/hover/CardCornerVineLazy.vue'
 import AppSelect from '@/components/ui/AppSelect.vue'
+import PageStatusBlock from '@/components/ui/PageStatusBlock.vue'
 import TimelinePageSkeleton from '@/components/ui/TimelinePageSkeleton.vue'
+import { debounceFn, queryParam, useListQuerySync } from '@/composables/useListQuerySync'
+import { useListScrollRestore } from '@/composables/useListScrollRestore'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
@@ -51,17 +54,26 @@ useSeoMeta(() => ({
   path: route.path,
   type: 'website',
 }))
+const BLOG_CATS: BlogCategoryFilter[] = ['all', 'misc', 'project', 'algorithm']
+const BLOG_QUERY_KEYS = ['cat', 'tag', 'q'] as const
+
+function parseBlogCategory(query: typeof route.query): BlogCategoryFilter {
+  const cat = queryParam(query, 'cat')
+  return BLOG_CATS.includes(cat as BlogCategoryFilter) ? (cat as BlogCategoryFilter) : 'all'
+}
+
 const posts = ref<Post[]>([])
-const error = ref<string | null>(null)
+const error = ref(false)
 const loading = ref(false)
-const category = ref<BlogCategoryFilter>('all')
-const tagFilter = ref('')
-const keyword = ref('')
+const category = ref<BlogCategoryFilter>(parseBlogCategory(route.query))
+const tagFilter = ref(queryParam(route.query, 'tag'))
+const keyword = ref(queryParam(route.query, 'q'))
 const categoryGroupRef = ref<HTMLElement | null>(null)
 const categoryBtnRefs = ref<HTMLElement[]>([])
 const categoryLineStyle = ref<Record<string, string>>({ opacity: '0' })
 const pageRoot = ref<HTMLElement | null>(null)
 const enterPlayed = ref(false)
+const { skipEnter, markListResumed, restoreAfterPaint } = useListScrollRestore('blog')
 
 interface TimelineItem {
   post: Post
@@ -83,10 +95,14 @@ const categoryOptions = computed<Array<{ id: BlogCategoryFilter; label: string }
   { id: 'algorithm', label: t('blog.categoryAlgorithm') },
 ])
 
-const tagSelectOptions = computed(() => [
-  { value: '', label: t('projects.allTags') },
-  ...allTags.value.map((tag) => ({ value: tag, label: tag })),
-])
+const tagSelectOptions = computed(() => {
+  const tags = [...allTags.value]
+  if (tagFilter.value && !tags.includes(tagFilter.value)) tags.unshift(tagFilter.value)
+  return [
+    { value: '', label: t('projects.allTags') },
+    ...tags.map((tag) => ({ value: tag, label: tag })),
+  ]
+})
 
 function setCategoryBtnRef(el: Element | null, index: number) {
   if (!el) return
@@ -111,7 +127,7 @@ function updateCategoryLine() {
 
 async function loadByCategory() {
   const cat = category.value
-  error.value = null
+  error.value = false
 
   const cached = readCachedPostsForCategory(cat)
   if (cached !== null) {
@@ -126,7 +142,7 @@ async function loadByCategory() {
     posts.value = next
     writeCachedPostsForCategory(cat, next)
   } catch {
-    error.value = '加载失败，请确认后端已启动并已导入数据。'
+    error.value = true
     if (cached === null) {
       posts.value = []
     }
@@ -134,7 +150,12 @@ async function loadByCategory() {
     loading.value = false
     if (!enterPlayed.value) {
       enterPlayed.value = true
-      await playPageEnter(pageRoot.value)
+      if (skipEnter) {
+        markListResumed(pageRoot.value)
+        await restoreAfterPaint()
+      } else {
+        await playPageEnter(pageRoot.value)
+      }
     }
   }
 }
@@ -155,11 +176,37 @@ const allTags = computed(() => {
   return [...set].sort()
 })
 
-watch(allTags, (tags) => {
-  if (tagFilter.value && !tags.includes(tagFilter.value)) {
-    tagFilter.value = ''
-  }
+const { write: writeListQuery, applyFromRoute } = useListQuerySync([...BLOG_QUERY_KEYS], () => ({
+  cat: category.value === 'all' ? undefined : category.value,
+  tag: tagFilter.value || undefined,
+  q: keyword.value.trim() || undefined,
+}))
+
+watch(category, () => {
+  void writeListQuery('push')
 })
+watch(tagFilter, () => {
+  void writeListQuery('push')
+})
+const writeKeywordQuery = debounceFn(() => {
+  void writeListQuery('replace')
+}, 280)
+watch(keyword, writeKeywordQuery)
+
+watch(
+  () => route.fullPath,
+  () => {
+    writeKeywordQuery.cancel()
+    applyFromRoute((query) => {
+      const nextCat = parseBlogCategory(query)
+      const nextTag = queryParam(query, 'tag')
+      const nextQ = queryParam(query, 'q')
+      if (category.value !== nextCat) category.value = nextCat
+      if (tagFilter.value !== nextTag) tagFilter.value = nextTag
+      if (keyword.value !== nextQ) keyword.value = nextQ
+    })
+  },
+)
 
 onMounted(() => {
   window.addEventListener('resize', updateCategoryLine)
@@ -375,7 +422,13 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
         </div>
       </div>
     </div>
-    <p v-if="error" class="empty">{{ error }}</p>
+    <PageStatusBlock
+      v-if="error"
+      kind="error"
+      :title="t('blog.loadFailed')"
+      retryable
+      @retry="loadByCategory"
+    />
     <TimelinePageSkeleton v-else-if="loading && !posts.length" variant="notes" />
     <div v-else-if="hasTimeline" class="timeline">
       <section v-if="pinnedItems.length" class="timeline-pin" :aria-label="t('blog.pinned')" :style="{ '--enter-gi': 0 }">
@@ -487,8 +540,16 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
         </div>
       </section>
     </div>
-    <p v-else-if="listEmpty" class="empty">{{ t('blog.emptyCategory') }}</p>
-    <p v-else-if="filteredEmpty" class="empty">{{ t('blog.emptyFiltered') }}</p>
+    <PageStatusBlock
+      v-else-if="listEmpty"
+      kind="empty"
+      :title="t('blog.emptyCategory')"
+    />
+    <PageStatusBlock
+      v-else-if="filteredEmpty"
+      kind="empty"
+      :title="t('blog.emptyFiltered')"
+    />
   </section>
 </template>
 
@@ -555,9 +616,5 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
   .timeline-date {
     font-size: 0.78rem;
   }
-}
-
-.empty {
-  color: var(--color-text-muted);
 }
 </style>

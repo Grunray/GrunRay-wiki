@@ -175,3 +175,11 @@ CREATE TABLE `friend_link` (
   KEY `idx_friend_link_sort` (`sort_order`, `created_at`),
   KEY `idx_friend_link_url_normalized` (`url_normalized`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `site_now` (
+  `id` TINYINT UNSIGNED NOT NULL DEFAULT 1,
+  `doing` VARCHAR(200) NOT NULL DEFAULT '',
+  `reading` VARCHAR(200) NOT NULL DEFAULT '',
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
