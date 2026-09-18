@@ -2,10 +2,16 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-const props = defineProps<{
-  modelValue: string
-  ariaLabel?: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    modelValue: string
+    ariaLabel?: string
+    variant?: 'default' | 'editorial'
+  }>(),
+  {
+    variant: 'default',
+  },
+)
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
@@ -104,25 +110,52 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentPointe
 </script>
 
 <template>
-  <div ref="rootRef" class="datetime-field" :class="{ 'datetime-field--open': open }">
-    <div class="datetime-display" :aria-label="ariaLabel">
-      <span class="datetime-display-label">{{ displayLabel }}</span>
-    </div>
+  <div
+    ref="rootRef"
+    class="datetime-field"
+    :class="{
+      'datetime-field--open': open,
+      'datetime-field--editorial': variant === 'editorial',
+    }"
+  >
     <button
+      v-if="variant === 'editorial'"
       type="button"
-      class="datetime-trigger"
+      class="datetime-ed-btn"
       :aria-expanded="open"
       aria-haspopup="dialog"
-      :aria-label="t('fragments.compose.createdAtPick')"
+      :aria-label="ariaLabel || t('fragments.compose.createdAtPick')"
       @click="toggleMenu"
     >
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <rect x="3" y="4" width="18" height="18" rx="2" />
-        <path d="M16 2v4M8 2v4M3 10h18" stroke-linecap="round" />
-      </svg>
+      <span class="datetime-display-label">{{ displayLabel }}</span>
+      <span class="datetime-ed-chevron" aria-hidden="true" />
     </button>
+    <template v-else>
+      <div class="datetime-display" :aria-label="ariaLabel">
+        <span class="datetime-display-label">{{ displayLabel }}</span>
+      </div>
+      <button
+        type="button"
+        class="datetime-trigger"
+        :aria-expanded="open"
+        aria-haspopup="dialog"
+        :aria-label="t('fragments.compose.createdAtPick')"
+        @click="toggleMenu"
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18" rx="2" />
+          <path d="M16 2v4M8 2v4M3 10h18" stroke-linecap="round" />
+        </svg>
+      </button>
+    </template>
 
-    <div v-if="open" class="select-menu card datetime-menu" role="dialog" :aria-label="t('fragments.compose.createdAtPick')">
+    <div
+      v-if="open"
+      class="select-menu datetime-menu"
+      :class="{ card: variant !== 'editorial' }"
+      role="dialog"
+      :aria-label="t('fragments.compose.createdAtPick')"
+    >
       <p class="datetime-menu-title">{{ t('fragments.compose.createdAtPick') }}</p>
       <label class="datetime-menu-field">
         <span>{{ t('fragments.compose.createdAtDate') }}</span>
@@ -143,10 +176,20 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentPointe
         </label>
       </div>
       <div class="datetime-menu-actions">
-        <button type="button" class="btn-accent datetime-menu-btn" @click="setNow">
+        <button
+          type="button"
+          class="datetime-menu-btn"
+          :class="variant === 'editorial' ? 'datetime-menu-btn--ed' : 'btn-accent'"
+          @click="setNow"
+        >
           {{ t('fragments.compose.createdAtNow') }}
         </button>
-        <button type="button" class="btn-accent datetime-menu-btn datetime-menu-btn--primary" @click="applyDraft">
+        <button
+          type="button"
+          class="datetime-menu-btn datetime-menu-btn--primary"
+          :class="variant === 'editorial' ? 'datetime-menu-btn--ed' : 'btn-accent'"
+          @click="applyDraft"
+        >
           {{ t('fragments.compose.createdAtConfirm') }}
         </button>
       </div>
@@ -284,6 +327,112 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentPointe
   background: color-mix(in srgb, var(--color-accent) 20%, var(--color-bg-surface));
 }
 
+.datetime-field--editorial {
+  display: block;
+  width: 100%;
+}
+
+.datetime-ed-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.08rem 0 0.2rem;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+}
+
+.datetime-ed-btn:hover,
+.datetime-ed-btn:focus-visible,
+.datetime-field--editorial.datetime-field--open .datetime-ed-btn {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-accent);
+  outline: none;
+}
+
+.datetime-ed-chevron {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 0.38rem;
+  height: 0.38rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-0.12em) rotate(45deg);
+  opacity: 0.55;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.datetime-field--editorial.datetime-field--open .datetime-ed-chevron {
+  transform: translateY(0.06em) rotate(225deg);
+}
+
+.datetime-field--editorial .datetime-menu {
+  left: -0.15rem;
+  right: auto;
+  top: calc(100% + 0.25rem);
+  width: max-content;
+  max-width: min(22rem, calc(100vw - 2.5rem));
+  min-width: max(12.5rem, 100%);
+  padding: 0.65rem 0.85rem 0.75rem;
+  border: none;
+  border-radius: 0;
+  border-top: 1px solid var(--color-text);
+  background: var(--color-bg-base);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.datetime-field--editorial .datetime-date-input,
+.datetime-field--editorial .datetime-time-select {
+  padding: 0.08rem 0 0.2rem;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+  font-family: var(--font-serif);
+}
+
+.datetime-field--editorial .datetime-menu-btn--ed {
+  appearance: none;
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--color-accent);
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 500;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.datetime-field--editorial .datetime-menu-btn--primary {
+  background: transparent;
+  border-color: transparent;
+}
+
+.datetime-field--editorial .datetime-menu-btn--ed:hover {
+  border-bottom-color: var(--color-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .datetime-ed-chevron {
+    transition: none;
+  }
+}
+
 @media (max-width: 768px) {
   .datetime-display {
     min-height: 2.6rem;
@@ -292,6 +441,10 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentPointe
   .datetime-trigger {
     width: 2.6rem;
     height: 2.6rem;
+  }
+
+  .datetime-field--editorial .datetime-ed-btn {
+    min-height: 0;
   }
 
   /* 日期/时间原生控件 ≥16px 防 iOS 聚焦缩放，并增大触控 */

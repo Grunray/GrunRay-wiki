@@ -4,22 +4,21 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 
 import EdKicker from '@/components/editorial/EdKicker.vue'
-import AppDateTimeField from '@/components/ui/AppDateTimeField.vue'
 import AppSelect from '@/components/ui/AppSelect.vue'
-import { type FragmentMood } from '@/content/data/mockFragments'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
 import {
-  fetchFragmentAdminDetail,
-  publishFragmentImport,
-  saveFragmentImportFile,
+  fetchRecommendAdminDetail,
+  publishRecommendImport,
+  saveRecommendImportFile,
   uploadXiqiMedia,
   type FragmentImageRef,
-  type SaveFragmentImportPayload,
+  type SaveRecommendImportPayload,
 } from '@/services/fragmentsAdminApi'
 import { fetchMessageAuthUser } from '@/services/messageAuth'
-import { formatEditorialListDate, toDatetimeLocalValue } from '@/utils/editorialDate'
+import type { RecommendCategory } from '@/services/recommendApi'
+import { toDatetimeLocalValue } from '@/utils/editorialDate'
 import { buildMarkdownPreview } from '@/utils/markdownPreview'
 import { ownerFacingMessage } from '@/utils/publicErrorMessage'
 import '@/styles/page-enter-legal.css'
@@ -28,22 +27,23 @@ import '@/styles/page-compose.css'
 type ComposeStatus = 'published' | 'hidden' | 'draft'
 type SaveMode = 'file' | 'db'
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
 const pageRoot = ref<HTMLElement | null>(null)
 const publicId = ref('')
-const mood = ref<FragmentMood>('daily')
+const title = ref('')
+const category = ref<RecommendCategory>('software')
 const status = ref<ComposeStatus>('draft')
-const createdAt = ref(new Date().toISOString().slice(0, 19))
+const url = ref('')
+const createdAt = ref('')
 const bodyMarkdown = ref('')
 const images = ref<FragmentImageRef[]>([])
 const coverIndex = ref(0)
 const editorRef = ref<HTMLTextAreaElement | null>(null)
 const dragOver = ref(false)
 const submitting = ref(false)
-const loadingItem = ref(false)
 const lastMode = ref<SaveMode | null>(null)
 const submitMessage = ref('')
 const submitError = ref('')
@@ -55,26 +55,22 @@ const editId = computed(() => {
 })
 
 const pageTitle = computed(() =>
-  editId.value || publicId.value ? t('fragments.compose.editTitle') : t('fragments.compose.title'),
+  editId.value || publicId.value ? t('recommend.compose.editTitle') : t('recommend.compose.title'),
 )
 
 useSeoMeta(() => ({
   title: `${pageTitle.value} | ${SITE_NAME}`,
-  description: t('fragments.compose.seoDescription'),
+  description: t('recommend.compose.seoDescription'),
   path: route.path,
   type: 'website',
   robots: 'noindex, nofollow',
 }))
-
-const moodOptions: FragmentMood[] = ['rant', 'sketch', 'flash', 'daily']
 
 const previewCover = computed(() => images.value[coverIndex.value] ?? null)
 
 const markdownPreview = computed(() => buildMarkdownPreview(bodyMarkdown.value))
 
 const previewCardHtml = computed(() => markdownPreview.value.summaryHtml)
-
-const previewDetailHtml = computed(() => markdownPreview.value.html)
 
 const markdownIssues = computed(() =>
   markdownPreview.value.issues.map((issue) => ({
@@ -87,9 +83,11 @@ const markdownIssues = computed(() =>
 
 const hasMarkdownErrors = computed(() => markdownPreview.value.hasErrors)
 
-const moodSelectOptions = computed(() =>
-  moodOptions.map((m) => ({ value: m, label: moodLabel(m) })),
-)
+const categorySelectOptions = computed(() => [
+  { value: 'software', label: t('recommend.categorySoftware') },
+  { value: 'opensource', label: t('recommend.categoryOpensource') },
+  { value: 'anime', label: t('recommend.categoryAnime') },
+])
 
 const statusSelectOptions = computed(() => [
   { value: 'draft', label: t('fragments.compose.statusDraft') },
@@ -97,16 +95,13 @@ const statusSelectOptions = computed(() => [
   { value: 'hidden', label: t('fragments.compose.statusHidden') },
 ])
 
-const previewDateLabel = computed(() => formatEditorialListDate(createdAt.value, locale.value))
-
-function moodLabel(m: FragmentMood): string {
-  const map: Record<FragmentMood, string> = {
-    rant: t('fragments.moodRant'),
-    sketch: t('fragments.moodSketch'),
-    flash: t('fragments.moodFlash'),
-    daily: t('fragments.moodDaily'),
+function categoryLabel(c: RecommendCategory): string {
+  const map: Record<RecommendCategory, string> = {
+    software: t('recommend.categorySoftware'),
+    opensource: t('recommend.categoryOpensource'),
+    anime: t('recommend.categoryAnime'),
   }
-  return map[m]
+  return map[c]
 }
 
 function insertAtCaret(text: string) {
@@ -126,10 +121,10 @@ function insertAtCaret(text: string) {
 }
 
 async function uploadAndInsert(file: File) {
-  const uploaded = await uploadXiqiMedia('fragments', file)
+  const uploaded = await uploadXiqiMedia('recommendations', file)
   images.value.push(uploaded)
   if (images.value.length === 1) coverIndex.value = 0
-  const alt = uploaded.alt || t('fragments.compose.imageDefaultAlt')
+  const alt = uploaded.alt || title.value || t('recommend.compose.imageDefaultAlt')
   insertAtCaret(`\n![${alt}](${uploaded.url})\n`)
 }
 
@@ -164,23 +159,30 @@ function removeImage(index: number) {
   }
 }
 
-function buildPayload(): SaveFragmentImportPayload {
+function buildPayload(): SaveRecommendImportPayload {
   return {
     publicId: publicId.value || undefined,
-    mood: mood.value,
+    title: title.value.trim(),
+    category: category.value,
     status: status.value,
-    createdAt: createdAt.value,
+    url: url.value.trim() || undefined,
+    createdAt: createdAt.value || undefined,
     images: images.value,
     coverIndex: coverIndex.value,
     bodyMarkdown: bodyMarkdown.value,
+    rating: 5,
   }
 }
 
-async function submitFragment(mode: SaveMode) {
+async function submitRecommend(mode: SaveMode) {
   if (submitting.value) return
   submitError.value = ''
   submitMessage.value = ''
   importCommand.value = ''
+  if (!title.value.trim()) {
+    submitError.value = t('recommend.compose.titleRequired')
+    return
+  }
   if (!bodyMarkdown.value.trim()) {
     submitError.value = t('fragments.compose.bodyRequired')
     return
@@ -193,7 +195,7 @@ async function submitFragment(mode: SaveMode) {
   submitting.value = true
   try {
     const result =
-      mode === 'db' ? await publishFragmentImport(buildPayload()) : await saveFragmentImportFile(buildPayload())
+      mode === 'db' ? await publishRecommendImport(buildPayload()) : await saveRecommendImportFile(buildPayload())
     publicId.value = result.publicId
     submitMessage.value =
       mode === 'db' ? t('fragments.compose.publishSuccess') : t('fragments.compose.submitSuccess')
@@ -209,11 +211,11 @@ onMounted(async () => {
   try {
     const user = await fetchMessageAuthUser()
     if (!user?.isSiteOwner) {
-      router.replace({ name: 'fragments' })
+      router.replace({ name: 'recommend' })
       return
     }
   } catch {
-    router.replace({ name: 'fragments' })
+    router.replace({ name: 'recommend' })
     return
   }
   if (!editId.value) await playPageEnter(pageRoot.value)
@@ -223,13 +225,14 @@ watch(
   editId,
   async (id) => {
     if (!id) return
-    loadingItem.value = true
     submitError.value = ''
     try {
-      const item = await fetchFragmentAdminDetail(id)
+      const item = await fetchRecommendAdminDetail(id)
       publicId.value = item.id
-      mood.value = item.mood
+      title.value = item.title
+      category.value = item.category
       status.value = item.status
+      url.value = item.url || ''
       createdAt.value = toDatetimeLocalValue(item.createdAt || '')
       bodyMarkdown.value = item.body || ''
       images.value = (item.images ?? []).map((img) => ({ url: img.url, alt: img.alt || '' }))
@@ -237,7 +240,6 @@ watch(
     } catch (e) {
       submitError.value = ownerFacingMessage(e, t('common.status.ownerActionFailed'))
     } finally {
-      loadingItem.value = false
       await playPageEnter(pageRoot.value)
     }
   },
@@ -248,26 +250,37 @@ watch(
 <template>
   <article ref="pageRoot" class="compose-ed-page">
     <p class="compose-ed-back">
-      <RouterLink v-if="editId" to="/fragments/edit">← {{ t('fragments.edit.title') }}</RouterLink>
-      <RouterLink v-else to="/fragments">← {{ t('fragments.title') }}</RouterLink>
+      <RouterLink v-if="editId" to="/recommend/edit">← {{ t('recommend.edit.title') }}</RouterLink>
+      <RouterLink v-else to="/recommend">← {{ t('recommend.title') }}</RouterLink>
     </p>
     <h1 class="h">{{ pageTitle }}</h1>
 
     <div class="ed-filter">
       <EdKicker :en="t('fragments.compose.kickerWriteEn')" :zh="t('fragments.compose.kickerWriteZh')" />
-      <p class="compose-ed-hint">{{ t('fragments.compose.subtitle') }}</p>
+      <p class="compose-ed-hint">{{ t('recommend.compose.subtitle') }}</p>
     </div>
 
     <div class="compose-ed-grid">
       <div>
+        <label class="ed-search">
+          {{ t('recommend.compose.fieldTitle') }}
+          <input
+            v-model="title"
+            type="text"
+            maxlength="120"
+            :placeholder="t('recommend.compose.titlePlaceholder')"
+            :aria-label="t('recommend.compose.fieldTitle')"
+          />
+        </label>
+
         <div class="compose-ed-meta">
           <div class="compose-ed-field">
-            <span class="compose-ed-label">{{ t('fragments.compose.mood') }}</span>
+            <span class="compose-ed-label">{{ t('recommend.compose.category') }}</span>
             <AppSelect
-              v-model="mood"
+              v-model="category"
               variant="editorial"
-              :options="moodSelectOptions"
-              :aria-label="t('fragments.compose.mood')"
+              :options="categorySelectOptions"
+              :aria-label="t('recommend.compose.category')"
               min-width="0"
             />
           </div>
@@ -281,14 +294,16 @@ watch(
               min-width="0"
             />
           </div>
-          <div class="compose-ed-field">
-            <span class="compose-ed-label">{{ t('fragments.compose.createdAt') }}</span>
-            <AppDateTimeField
-              v-model="createdAt"
-              variant="editorial"
-              :aria-label="t('fragments.compose.createdAt')"
+          <label class="ed-search">
+            {{ t('recommend.compose.fieldUrl') }}
+            <input
+              v-model="url"
+              type="url"
+              maxlength="512"
+              :placeholder="t('recommend.compose.urlPlaceholder')"
+              :aria-label="t('recommend.compose.fieldUrl')"
             />
-          </div>
+          </label>
         </div>
 
         <div class="compose-ed-editor" :class="{ 'is-dragover': dragOver }">
@@ -305,7 +320,7 @@ watch(
               ref="editorRef"
               v-model="bodyMarkdown"
               rows="14"
-              :placeholder="t('fragments.compose.bodyPlaceholder')"
+              :placeholder="t('recommend.compose.bodyPlaceholder')"
               @dragover.prevent="dragOver = true"
               @dragleave="dragOver = false"
               @drop="onEditorDrop"
@@ -342,7 +357,7 @@ watch(
             type="button"
             class="ed-action"
             :disabled="submitting || hasMarkdownErrors"
-            @click="submitFragment('file')"
+            @click="submitRecommend('file')"
           >
             {{
               submitting && lastMode === 'file'
@@ -354,7 +369,7 @@ watch(
             type="button"
             class="ed-action"
             :disabled="submitting || hasMarkdownErrors"
-            @click="submitFragment('db')"
+            @click="submitRecommend('db')"
           >
             {{
               submitting && lastMode === 'db'
@@ -362,7 +377,7 @@ watch(
                 : t('fragments.compose.publish')
             }}
           </button>
-          <RouterLink class="ed-action" to="/fragments">{{ t('fragments.compose.viewList') }}</RouterLink>
+          <RouterLink class="ed-action" to="/recommend">{{ t('fragments.compose.viewList') }}</RouterLink>
           <p v-if="submitMessage" class="compose-ed-ok" role="status">{{ submitMessage }}</p>
           <p v-if="submitError" class="compose-ed-err" role="alert">{{ submitError }}</p>
         </div>
@@ -382,17 +397,17 @@ watch(
             {{ issue.label }}
           </li>
         </ul>
-        <p class="compose-ed-label">{{ t('fragments.compose.previewCardLabel') }}</p>
+        <p class="compose-ed-label">{{ t('recommend.compose.previewRowLabel') }}</p>
         <div class="compose-ed-preview-card">
           <p class="compose-ed-preview-meta">
-            <span class="tone">{{ moodLabel(mood) }}</span>
-            <template v-if="previewDateLabel"> · {{ previewDateLabel }}</template>
+            <span class="tone">{{ categoryLabel(category) }}</span>
           </p>
+          <p class="compose-ed-preview-title">{{ title || t('recommend.compose.previewEmptyTitle') }}</p>
           <img
             v-if="previewCover"
             class="compose-ed-thumb"
             :src="previewCover.url"
-            :alt="previewCover.alt || t('fragments.compose.imageDefaultAlt')"
+            :alt="previewCover.alt || title"
             loading="lazy"
           />
           <div
@@ -402,13 +417,6 @@ watch(
           />
           <p v-else class="compose-ed-empty">{{ t('fragments.compose.previewEmpty') }}</p>
         </div>
-        <p class="compose-ed-label">{{ t('fragments.compose.previewDetailLabel') }}</p>
-        <div
-          v-if="previewDetailHtml"
-          class="compose-ed-preview-detail body-markdown markdown-reading"
-          v-html="previewDetailHtml"
-        />
-        <p v-else class="compose-ed-empty">{{ t('fragments.compose.previewEmpty') }}</p>
       </aside>
     </div>
   </article>

@@ -6,6 +6,7 @@ import { RouterLink, useRoute } from 'vue-router'
 import EdKicker from '@/components/editorial/EdKicker.vue'
 import PostCard from '@/components/blog/PostCard.vue'
 import NotesListSkeleton from '@/components/ui/NotesListSkeleton.vue'
+import PageStatusBlock from '@/components/ui/PageStatusBlock.vue'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
 import { ensureProjectsLoaded, getProjectBySlug, listPostsForProjectSlug } from '@/services/contentRepository'
@@ -22,22 +23,26 @@ const posts = ref<Post[]>([])
 const loading = ref(false)
 const loadError = ref(false)
 
+async function loadNotes(s: string) {
+  loading.value = true
+  loadError.value = false
+  try {
+    await ensureProjectsLoaded()
+    project.value = getProjectBySlug(s) ?? null
+    posts.value = await listPostsForProjectSlug(s)
+  } catch {
+    loadError.value = true
+    project.value = null
+    posts.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
 watch(
   slug,
-  async (s) => {
-    loading.value = true
-    loadError.value = false
-    try {
-      await ensureProjectsLoaded()
-      project.value = getProjectBySlug(s) ?? null
-      posts.value = await listPostsForProjectSlug(s)
-    } catch {
-      loadError.value = true
-      project.value = null
-      posts.value = []
-    } finally {
-      loading.value = false
-    }
+  (s) => {
+    void loadNotes(s)
   },
   { immediate: true },
 )
@@ -81,7 +86,13 @@ useSeoMeta(() => {
 </script>
 
 <template>
-  <p v-if="loadError" class="empty">加载失败，请确认后端已启动并已导入项目数据。</p>
+  <PageStatusBlock
+    v-if="loadError"
+    kind="error"
+    :title="t('common.status.loadFailed')"
+    retryable
+    @retry="loadNotes(slug)"
+  />
   <NotesListSkeleton v-else-if="loading" />
   <div v-else-if="ok && project" class="notes-page">
     <p class="notes-back">
@@ -93,10 +104,19 @@ useSeoMeta(() => {
     </div>
     <section class="notes-toc" :aria-label="t('projects.notes')">
       <PostCard v-for="p in posts" :key="p.id" :post="p" />
-      <p v-if="!posts.length" class="toc-empty">{{ t('projects.notesEmpty') }}</p>
+      <PageStatusBlock
+        v-if="!posts.length"
+        kind="empty"
+        :title="t('projects.notesEmpty')"
+      />
     </section>
   </div>
-  <p v-else class="empty">{{ t('common.notFound') }}</p>
+  <PageStatusBlock
+    v-else
+    kind="empty"
+    :title="t('common.status.notFoundTitle')"
+    :description="t('common.status.notFoundHint')"
+  />
 </template>
 
 <style scoped>
@@ -128,9 +148,5 @@ useSeoMeta(() => {
 
 .notes-toc {
   border-top: 1px solid var(--color-border);
-}
-
-.empty {
-  color: var(--color-text-muted);
 }
 </style>

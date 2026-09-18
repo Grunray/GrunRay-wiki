@@ -11,6 +11,8 @@ import {
 } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 
+import { isMotionCut } from '@/composables/useMotionPolicy'
+
 /**
  * 方案 D：题录区滚出视口顶之后，侧栏淡入并稳定展示（不再随正文滚动半露半隐）。
  * 侧栏是视口 overlay，不改 app-main 宽度、不给正文加 margin。
@@ -41,7 +43,7 @@ export function useDetailScrollSidebar(
 
   function tweenProgress(to: number, immediate = false) {
     revealTween?.kill()
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const reduced = isMotionCut()
     if (immediate || reduced) {
       applyProgress(to)
       return

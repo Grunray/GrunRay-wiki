@@ -1,26 +1,22 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 import EdFeedRow from '@/components/editorial/EdFeedRow.vue'
 import EdKicker from '@/components/editorial/EdKicker.vue'
 import EdLedgerHead from '@/components/editorial/EdLedgerHead.vue'
 import EdReadArticle from '@/components/editorial/EdReadArticle.vue'
 import EdSwitchFilter from '@/components/editorial/EdSwitchFilter.vue'
+import PageStatusBlock from '@/components/ui/PageStatusBlock.vue'
 import XiqiSplitLayout from '@/components/xiqi/XiqiSplitLayout.vue'
 import { injectMobileShell } from '@/composables/useMobileShell'
 import { updateEdCatLines } from '@/composables/useEdCatLine'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
-import {
-  fetchRecommendDetail,
-  fetchRecommendations,
-  type RecommendCategory,
-  type RecommendDetail,
-  type RecommendItem,
-} from '@/services/recommendApi'
+import { fetchRecommendDetail, fetchRecommendations, type RecommendCategory, type RecommendDetail, type RecommendItem } from '@/services/recommendApi'
+import { fetchMessageAuthUser } from '@/services/messageAuth'
 import '@/styles/page-enter-xiqi.css'
 import '@/styles/page-xiqi.css'
 import '@/styles/page-ed-ledger.css'
@@ -31,6 +27,7 @@ type SortOrder = 'newest' | 'oldest'
 
 const { t, locale } = useI18n()
 const route = useRoute()
+const router = useRouter()
 const { isMobileShell } = injectMobileShell()
 
 useSeoMeta(() => ({
@@ -48,9 +45,10 @@ const categoryFilter = ref<CategoryFilter>('all')
 const sortOrder = ref<SortOrder>('newest')
 const items = ref<RecommendItem[]>([])
 const listLoading = ref(true)
-const listError = ref('')
+const listError = ref(false)
 const detail = ref<RecommendDetail | null>(null)
 const detailLoading = ref(false)
+const isSiteOwner = ref(false)
 
 const categoryOptions = computed<Array<{ id: CategoryFilter; label: string }>>(() => [
   { id: 'all', label: t('recommend.categoryAll') },
@@ -65,6 +63,18 @@ const sortOptions = computed<Array<{ id: SortOrder; label: string }>>(() => [
 ])
 
 const visibleItems = computed(() => items.value)
+
+const listEmpty = computed(
+  () => !listLoading.value && !listError.value && items.value.length === 0 && categoryFilter.value === 'all',
+)
+
+const filteredEmpty = computed(
+  () =>
+    !listLoading.value &&
+    !listError.value &&
+    items.value.length === 0 &&
+    categoryFilter.value !== 'all',
+)
 
 const displayedItem = computed(
   () => visibleItems.value.find((item) => item.id === detailDisplayId.value) ?? null,
@@ -91,13 +101,21 @@ function selectItem(id: string) {
   selectedId.value = id
 }
 
+function goCompose() {
+  router.push({ name: 'recommend-compose' })
+}
+
+function goEdit() {
+  router.push({ name: 'recommend-edit' })
+}
+
 function refreshCatLines() {
   updateEdCatLines(filterRef.value)
 }
 
 async function loadList() {
   listLoading.value = true
-  listError.value = ''
+  listError.value = false
   try {
     const result = await fetchRecommendations({
       category: categoryFilter.value,
@@ -105,8 +123,8 @@ async function loadList() {
       size: 50,
     })
     items.value = result.items
-  } catch (e) {
-    listError.value = e instanceof Error ? e.message : String(e)
+  } catch {
+    listError.value = true
     items.value = []
   } finally {
     listLoading.value = false
@@ -166,6 +184,12 @@ onMounted(async () => {
     refreshCatLines()
   }
   void startEnter()
+  try {
+    const user = await fetchMessageAuthUser()
+    isSiteOwner.value = Boolean(user?.isSiteOwner)
+  } catch {
+    isSiteOwner.value = false
+  }
   await loadList()
 })
 
@@ -196,6 +220,14 @@ onBeforeUnmount(() => {
           :filter-options="categoryOptions"
           :sort-options="sortOptions"
         />
+        <p v-if="isSiteOwner" class="habitat-owner-links">
+          <button type="button" class="ed-action" @click="goCompose">
+            {{ t('recommend.compose.button') }}
+          </button>
+          <button type="button" class="ed-action" @click="goEdit">
+            {{ t('recommend.edit.button') }}
+          </button>
+        </p>
       </div>
     </template>
 
@@ -204,8 +236,18 @@ onBeforeUnmount(() => {
       · {{ splitHint }}
     </EdLedgerHead>
 
-    <p v-if="listError" class="habitat-empty">{{ listError }}</p>
-    <p v-else-if="listLoading" class="habitat-empty">{{ t('xiqi.loading') }}</p>
+    <PageStatusBlock
+      v-if="listError"
+      kind="error"
+      :title="t('recommend.loadFailed')"
+      retryable
+      @retry="loadList"
+    />
+    <PageStatusBlock
+      v-else-if="listLoading"
+      kind="loading"
+      :title="t('xiqi.loading')"
+    />
     <TransitionGroup
       v-else-if="visibleItems.length"
       name="xiqi-feed-item"
@@ -229,7 +271,16 @@ onBeforeUnmount(() => {
         />
       </li>
     </TransitionGroup>
-    <p v-else class="habitat-empty">{{ t('recommend.empty') }}</p>
+    <PageStatusBlock
+      v-else-if="listEmpty"
+      kind="empty"
+      :title="t('recommend.empty')"
+    />
+    <PageStatusBlock
+      v-else-if="filteredEmpty"
+      kind="empty"
+      :title="t('recommend.emptyFiltered')"
+    />
 
     <template #detail>
       <EdReadArticle

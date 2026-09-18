@@ -158,6 +158,12 @@ const railStyle = computed(
   margin: 0.65rem 0 0;
 }
 
+.detail-scroll-rail__body :deep(.post-toc) {
+  margin-top: 0.7rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--color-border);
+}
+
 .detail-scroll-rail__body :deep(a) {
   color: var(--color-accent);
   text-decoration: none;
@@ -165,6 +171,17 @@ const railStyle = computed(
 
 .detail-scroll-rail__body :deep(a:hover:not(.ed-action)) {
   text-decoration: underline;
+}
+
+.detail-scroll-rail__body :deep(.post-toc a) {
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.detail-scroll-rail__body :deep(.post-toc a:hover),
+.detail-scroll-rail__body :deep(.post-toc a.is-active) {
+  color: var(--color-accent);
+  text-decoration: none;
 }
 
 @media (min-width: 1600px) {

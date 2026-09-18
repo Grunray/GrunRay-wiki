@@ -9,26 +9,30 @@ _ROW_SELECT = """
 """
 
 
-def list_published(
+def list_all(
     cur,
     *,
     mood: str | None = None,
+    status: str | None = None,
     sort: str = "newest",
     page: int = 1,
     size: int = 50,
 ) -> tuple[list[dict[str, Any]], int]:
     page = max(1, page)
-    size = min(max(1, size), 50)
+    size = min(max(1, size), 100)
     offset = (page - 1) * size
     order = "DESC" if sort != "oldest" else "ASC"
 
-    where = ["status = %s"]
-    params: list[Any] = ["published"]
+    where: list[str] = []
+    params: list[Any] = []
+    if status:
+        where.append("status = %s")
+        params.append(status)
     if mood:
         where.append("mood = %s")
         params.append(mood)
 
-    where_sql = " AND ".join(where)
+    where_sql = " AND ".join(where) if where else "1=1"
     cur.execute(f"SELECT COUNT(*) AS cnt FROM fragment WHERE {where_sql}", params)
     total = int((cur.fetchone() or {"cnt": 0})["cnt"])
 
@@ -42,6 +46,17 @@ def list_published(
         (*params, size, offset),
     )
     return cur.fetchall() or [], total
+
+
+def list_published(
+    cur,
+    *,
+    mood: str | None = None,
+    sort: str = "newest",
+    page: int = 1,
+    size: int = 50,
+) -> tuple[list[dict[str, Any]], int]:
+    return list_all(cur, mood=mood, status="published", sort=sort, page=page, size=size)
 
 
 def get_by_public_id(cur, public_id: str) -> dict[str, Any] | None:

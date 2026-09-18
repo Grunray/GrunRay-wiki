@@ -1,0 +1,110 @@
+/* /now：站长编辑首页 NOW · 此刻。刊头复用 page-list-masthead.css */
+
+.site-now-page {
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: 0 0 3rem;
+}
+
+.site-now-back {
+  margin: 0 0 0.85rem;
+  font-size: 0.88rem;
+}
+
+.site-now-back a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.site-now-back a:hover {
+  text-decoration: underline;
+}
+
+.site-now-page .h {
+  margin: 0 0 1.1rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.85rem, 3.2vw, 2.35rem);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.site-now-page .ed-filter {
+  margin-bottom: 1.25rem;
+}
+
+.site-now-hint {
+  margin: 0.55rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+.site-now-form {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.site-now-form .ed-search {
+  display: grid;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.site-now-note {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.site-now-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem 1.35rem;
+  margin-top: 0.25rem;
+}
+
+/* 与友链 / 法律一致：衬线 + accent 下划线，勿用胶囊 btn */
+.site-now-page .ed-action {
+  appearance: none;
+  display: inline;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  color: var(--color-accent);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.site-now-page .ed-action:hover:not(:disabled) {
+  text-decoration: none;
+  border-bottom-color: var(--color-accent);
+}
+
+.site-now-page .ed-action:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.site-now-ok {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--color-accent);
+}
+
+.site-now-err {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--color-danger, #a33);
+}

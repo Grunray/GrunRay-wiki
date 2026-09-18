@@ -17,6 +17,8 @@ import { playPageEnter } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
 import { ensureProjectsLoaded, listProjectsPublic } from '@/services/contentRepository'
+import { fetchMessageAuthUser } from '@/services/messageAuth'
+import { fetchSiteNow } from '@/services/siteNowApi'
 import '@/styles/page-enter-home.css'
 import '@/styles/page-home-hero.css'
 import '@/styles/page-toc-row.css'
@@ -45,9 +47,15 @@ const avatarUrl = ref('')
 const latestUpdatedPosts = ref<Post[]>([])
 const randomRecommendedPost = ref<Post | null>(null)
 const homeProjects = ref<Project[]>([])
+const nowDoing = ref('')
+const nowReading = ref('')
+const isSiteOwner = ref(false)
 const CACHE_HOME_AVATAR = 'grunray.home.avatarUrl.v1'
 const CACHE_HOME_LATEST = 'grunray.home.latestPosts.v1'
 const CACHE_HOME_RANDOM = 'grunray.home.randomPost.v1'
+
+const nowDoingText = computed(() => nowDoing.value || t('home.nowDoing'))
+const nowReadingText = computed(() => nowReading.value || t('home.nowReading'))
 
 const { measureCoverPeek } = useHomeHeroRelayout({ peekRef, peekHeadRef, scrollLayerRef })
 
@@ -72,6 +80,8 @@ const stageArtTintSrc = computed(() => {
   if (theme.value === 'abstract') return '/art/polonia_sandoren-abstract-wedge.webp'
   return '/art/polonia_sandoren-dark-wedge.webp'
 })
+
+/** 舞台图只挂当前主题底图 + 楔形，整文件下载。不加 sizes/srcset，横竖屏不换源、不重拉。 */
 
 const stageArtWedgeClip = homeStageArtWedgeClipPath()
 const stageArtWedgeColor = computed(
@@ -159,6 +169,26 @@ async function loadHomeProjects() {
   }
 }
 
+async function loadSiteNow() {
+  try {
+    const status = await fetchSiteNow()
+    nowDoing.value = status.doing?.trim() || ''
+    nowReading.value = status.reading?.trim() || ''
+  } catch {
+    nowDoing.value = ''
+    nowReading.value = ''
+  }
+}
+
+async function loadOwnerFlag() {
+  try {
+    const user = await fetchMessageAuthUser()
+    isSiteOwner.value = Boolean(user?.isSiteOwner)
+  } catch {
+    isSiteOwner.value = false
+  }
+}
+
 function formatDateYmd(input?: string): string {
   if (!input) return ''
   const d = new Date(input)
@@ -197,6 +227,8 @@ onMounted(() => {
   loadLatestUpdatedPost()
   loadRandomRecommendedPost()
   void loadHomeProjects()
+  void loadSiteNow()
+  void loadOwnerFlag()
   void (async () => {
     await waitGreetingFonts()
     homeRoot.value?.classList.add('home-fonts-ready')
@@ -320,10 +352,15 @@ watch(coverStory, async () => {
             <div class="home-sheet-body">
               <div class="home-wrap">
                 <section class="home-now" aria-label="此刻">
-      <p class="now-kicker">{{ t('home.nowKicker') }}</p>
+      <div class="now-kicker-col">
+        <p class="now-kicker">{{ t('home.nowKicker') }}</p>
+        <RouterLink v-if="isSiteOwner" class="now-edit ed-action" to="/now">
+          {{ t('home.nowEdit') }}
+        </RouterLink>
+      </div>
       <ul class="now-list">
-        <li>{{ t('home.nowDoing') }}</li>
-        <li>{{ t('home.nowReading') }}</li>
+        <li>{{ nowDoingText }}</li>
+        <li>{{ nowReadingText }}</li>
       </ul>
     </section>
 
@@ -581,15 +618,30 @@ watch(coverStory, async () => {
   border-bottom: 1px solid var(--color-border);
 }
 
+.now-kicker-col {
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+  padding-top: 0.15rem;
+}
+
 .now-kicker {
   margin: 0;
-  padding-top: 0.15rem;
   font-family: var(--font-mono);
   font-size: 0.74rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-text-muted);
+}
+
+.now-edit {
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  justify-self: start;
 }
 
 .now-list {

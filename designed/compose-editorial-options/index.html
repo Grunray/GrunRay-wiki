@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="zh-CN" data-preview-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>撰写 · Editorial 方案对比</title>
+    <link rel="stylesheet" href="shared.css" />
+  </head>
+  <body data-scheme="a" data-page="fragments">
+    <div class="preview-switcher">
+      <span class="brand">COMPOSE</span>
+      <button type="button" class="scheme-btn" data-scheme="now">现状</button>
+      <button type="button" class="scheme-btn on" data-scheme="a">A 次级刊头双栏</button>
+      <button type="button" class="scheme-btn" data-scheme="b">B 单栏 /now</button>
+      <span class="sep">|</span>
+      <button type="button" class="page-btn on" data-page="fragments">碎念</button>
+      <button type="button" class="page-btn" data-page="recommend">推荐</button>
+      <span class="sep">|</span>
+      <button type="button" class="theme-btn on" data-theme="light">浅色</button>
+      <button type="button" class="theme-btn" data-theme="dark">深色</button>
+      <span class="hint">默认方案 A。选定前不要写进 frontend/src。</span>
+    </div>
+
+    <p class="meta-note scheme-now">
+      <b>现状</b>
+      <code>FragmentComposeView</code>：玻璃刊头、药丸 <code>AppSelect</code>、胶囊 <code>.btn-accent</code>、卡片围栏。
+      DESIGN §9 目前写「撰写页保持药丸 / 玻璃头」——这是对照，不合入。推荐撰写页还不存在。
+    </p>
+    <p class="meta-note scheme-a">
+      <b>方案 A · 次级刊头 + 双栏纸面</b>
+      对齐 <code>/friends/apply</code> / <code>/now</code>：<code>← 碎念</code> + H1「撰写碎念」。
+      说明进 <code>.ed-filter</code>；心情 / 状态 / 时间用 editorial <code>AppSelect</code>（下划线衬线，不是药丸）；
+      保存 / 上传 / 返回是 <code>.ed-action</code>。左右栏之间一根竖 hairline（<code>--color-border</code>）。
+      右栏粘滞预览保留现有工作流。推荐撰写换分类下拉即可共用。改动量中等：拆玻璃卡、换动作语言、保留双栏。
+    </p>
+    <p class="meta-note scheme-b">
+      <b>方案 B · 单栏同构 /now</b>
+      阅读宽约 36rem。心情 / 状态改成栖息列表那套 <code>.ed-cats</code> 滑动下划线；日期与正文是
+      <code>.ed-search</code> 底线输入。预览沉到表单下，不再 sticky 侧栏。
+      适合少切方案、和此刻编辑同一套骨架。预览要来回滚。推荐页同样单栏。
+    </p>
+
+    <!-- 现状 · 碎念 -->
+    <section class="variant" data-scheme="now" data-page="fragments">
+      <div class="now-page">
+        <header class="now-head">
+          <div>
+            <p class="now-eyebrow">Owner</p>
+            <h1 class="now-title">撰写碎念</h1>
+            <p class="now-sub">Markdown 正文、拖拽插图、封面预览；保存至 import 后请运行导入脚本。</p>
+          </div>
+          <button type="button" class="btn-accent">← 返回列表</button>
+        </header>
+        <div class="now-grid">
+          <div>
+            <div class="now-card now-pills">
+              <div>
+                <p class="now-label">心情</p>
+                <button type="button" class="now-pill">日常 ▾</button>
+              </div>
+              <div>
+                <p class="now-label">状态</p>
+                <button type="button" class="now-pill">草稿 ▾</button>
+              </div>
+              <div>
+                <p class="now-label">创建时间</p>
+                <button type="button" class="now-pill">2026-09-17 21:00 ▾</button>
+              </div>
+            </div>
+            <div class="now-card" style="margin-top: 1rem">
+              <div class="editor-head">
+                <span>正文（Markdown）</span>
+                <button type="button" class="btn-accent">上传图片</button>
+              </div>
+              <textarea class="now-textarea" data-live-source="now-frag">今天 CI 又绿了，但心情没有。</textarea>
+              <p class="hint-line">拖拽图片到编辑器，会在光标处插入 ![](url)。</p>
+            </div>
+            <div class="now-card" style="margin-top: 1rem">
+              <p class="now-label">图片附件</p>
+              <div class="attach-item" style="border: 0; padding: 0">
+                <div class="attach-thumb" aria-hidden="true"></div>
+                <input class="now-textarea" style="min-height: 2.4rem" value="配图说明" />
+                <button type="button" class="now-chip">移除</button>
+              </div>
+            </div>
+            <p style="margin: 1rem 0 0; display: flex; flex-wrap: wrap; gap: 0.65rem">
+              <!-- MERGE：现状对照也放上「写入数据库」，合入时不要沿用胶囊 btn-accent。 -->
+              <button type="button" class="btn-accent" data-mock-save>保存至 import</button>
+              <button type="button" class="btn-accent" data-mock-publish>写入数据库</button>
+            </p>
+            <p class="ok" data-save-ok hidden>已保存至 import 目录。</p>
+            <p class="ok" data-publish-ok hidden>已写入数据库（原型占位，合入时接 API）。</p>
+          </div>
+          <aside class="now-card">
+            <p class="now-label">卡片预览</p>
+            <p class="now-label">列表卡片</p>
+            <div class="preview-card">
+              <p class="row-meta"><span class="tone">日常</span> · 9 月 17 日</p>
+              <p class="row-body" data-live-target="now-frag"></p>
+            </div>
+            <p class="now-label" style="margin-top: 1rem">详情区</p>
+            <div class="preview-detail" data-live-target="now-frag"></div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- 现状 · 推荐（尚无页） -->
+    <section class="variant" data-scheme="now" data-page="recommend">
+      <div class="now-page">
+        <header class="now-head">
+          <div>
+            <p class="now-eyebrow">Owner</p>
+            <h1 class="now-title">撰写推荐</h1>
+            <p class="now-sub">现状：推荐没有独立 compose 页，只有 import 脚本。</p>
+          </div>
+        </header>
+        <p class="hint-line">选定 A 或 B 后，推荐撰写按同一套纸面补页，不要再开玻璃皮肤。</p>
+      </div>
+    </section>
+
+    <!-- A · 碎念 -->
+    <section class="variant" data-scheme="a" data-page="fragments">
+      <p class="back"><a href="#">← 碎念</a></p>
+      <h1 class="h">撰写碎念</h1>
+      <div class="ed-filter">
+        <p class="ed-kicker"><span class="ed-en">Write</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">撰写</span></p>
+        <p class="hint-line">Markdown 正文、拖拽插图。保存进 import 后跑导入脚本才会上列表。</p>
+      </div>
+      <!-- MERGE：双栏之间竖 hairline，合入时用 --color-border，不要 accent 脊。 -->
+      <div class="scheme-a-grid">
+        <div>
+          <div class="meta-grid">
+            <div class="meta-field">
+              <span class="meta-label">心情</span>
+              <div class="select-ed">
+                <button type="button" class="select-ed-btn"><span data-select-label>日常</span><span class="select-ed-chevron"></span></button>
+                <div class="select-ed-menu">
+                  <button type="button" class="select-ed-option">吐槽</button>
+                  <button type="button" class="select-ed-option">随笔</button>
+                  <button type="button" class="select-ed-option">瞬间</button>
+                  <button type="button" class="select-ed-option is-on">日常</button>
+                </div>
+              </div>
+            </div>
+            <div class="meta-field">
+              <span class="meta-label">状态</span>
+              <div class="select-ed">
+                <button type="button" class="select-ed-btn"><span data-select-label>草稿</span><span class="select-ed-chevron"></span></button>
+                <div class="select-ed-menu">
+                  <button type="button" class="select-ed-option is-on">草稿</button>
+                  <button type="button" class="select-ed-option">发布</button>
+                  <button type="button" class="select-ed-option">隐藏</button>
+                </div>
+              </div>
+            </div>
+            <label class="ed-search">
+              创建时间
+              <input type="text" value="2026-09-17 21:00" />
+            </label>
+          </div>
+          <div class="editor-head" style="margin-top: 1.15rem">
+            <p class="ed-kicker"><span class="ed-en">Body</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">正文</span></p>
+            <button type="button" class="ed-action">上传图片</button>
+          </div>
+          <label class="ed-search">
+            Markdown
+            <textarea data-live-source="a-frag">今天 CI 又绿了，但心情没有。</textarea>
+          </label>
+          <p class="hint-line">拖到编辑器会在光标处插入 <code>![](url)</code>。</p>
+          <p class="ed-kicker" style="margin-top: 1.35rem"><span class="ed-en">Media</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">配图</span></p>
+          <ul class="attach-list">
+            <li class="attach-item">
+              <div class="attach-thumb" aria-hidden="true"></div>
+              <label class="ed-search">
+                配图说明
+                <input type="text" value="CI 绿灯截图" />
+              </label>
+              <button type="button" class="ed-action ghost">移除</button>
+            </li>
+          </ul>
+          <div class="foot">
+            <!--
+              MERGE 合入 frontend 时（后端暂不改）：
+              「保存至 import」= 现有 POST /api/fragments/import-file
+              或 /api/recommendations/import-file，只把 Markdown 写到
+              backend/import/xiqi/…，列表不会出现。
+              「写入数据库」= 新增站长接口：写完 import 文件后立刻跑
+              scripts/xiqi_tools/import_xiqi.py 同源入库逻辑（按 public_id），
+              该条进入 DB，列表可见。不要在原型阶段改 xiqi_admin_api。
+            -->
+            <button type="button" class="ed-action" data-mock-save>保存至 import</button>
+            <button type="button" class="ed-action" data-mock-publish>写入数据库</button>
+            <a class="ed-action" href="#">回列表查看</a>
+            <p class="ok" data-save-ok hidden>已保存至 import 目录。</p>
+            <p class="ok" data-publish-ok hidden>已写入数据库（原型占位，合入时接 API）。</p>
+          </div>
+          <p class="cli">python scripts/xiqi_tools/import_xiqi.py fragments</p>
+        </div>
+        <aside class="scheme-a-preview">
+          <p class="ed-kicker"><span class="ed-en">Preview</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">预览</span></p>
+          <p class="meta-label">列表卡片</p>
+          <div class="preview-card">
+            <p class="row-meta"><span class="tone">日常</span> · 9 月 17 日</p>
+            <p class="row-body" data-live-target="a-frag"></p>
+          </div>
+          <p class="meta-label" style="margin-top: 1rem">详情</p>
+          <div class="preview-detail" data-live-target="a-frag"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- A · 推荐 -->
+    <section class="variant" data-scheme="a" data-page="recommend">
+      <p class="back"><a href="#">← 推荐</a></p>
+      <h1 class="h">撰写推荐</h1>
+      <div class="ed-filter">
+        <p class="ed-kicker"><span class="ed-en">Write</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">撰写</span></p>
+        <p class="hint-line">标题、分类、链接、正文。保存进 import 后跑导入脚本。</p>
+      </div>
+      <!-- MERGE：双栏之间竖 hairline，合入时用 --color-border，不要 accent 脊。 -->
+      <div class="scheme-a-grid">
+        <div>
+          <label class="ed-search">
+            标题
+            <input type="text" value="Playfair Display" />
+          </label>
+          <div class="meta-grid" style="margin-top: 1rem">
+            <div class="meta-field">
+              <span class="meta-label">分类</span>
+              <div class="select-ed">
+                <button type="button" class="select-ed-btn"><span data-select-label>软件</span><span class="select-ed-chevron"></span></button>
+                <div class="select-ed-menu">
+                  <button type="button" class="select-ed-option is-on">软件</button>
+                  <button type="button" class="select-ed-option">开源</button>
+                  <button type="button" class="select-ed-option">动画</button>
+                </div>
+              </div>
+            </div>
+            <div class="meta-field">
+              <span class="meta-label">状态</span>
+              <div class="select-ed">
+                <button type="button" class="select-ed-btn"><span data-select-label>草稿</span><span class="select-ed-chevron"></span></button>
+                <div class="select-ed-menu">
+                  <button type="button" class="select-ed-option is-on">草稿</button>
+                  <button type="button" class="select-ed-option">发布</button>
+                  <button type="button" class="select-ed-option">隐藏</button>
+                </div>
+              </div>
+            </div>
+            <label class="ed-search">
+              链接
+              <input type="url" value="https://fonts.google.com" />
+            </label>
+          </div>
+          <div class="editor-head" style="margin-top: 1.15rem">
+            <p class="ed-kicker"><span class="ed-en">Body</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">正文</span></p>
+            <button type="button" class="ed-action">上传图片</button>
+          </div>
+          <label class="ed-search">
+            Markdown
+            <textarea data-live-source="a-rec">衬线题名用它刚刚好，不要再加粗一档。</textarea>
+          </label>
+          <div class="foot">
+            <!--
+              MERGE 合入 frontend 时（后端暂不改）：
+              「保存至 import」= 现有 POST /api/fragments/import-file
+              或 /api/recommendations/import-file，只把 Markdown 写到
+              backend/import/xiqi/…，列表不会出现。
+              「写入数据库」= 新增站长接口：写完 import 文件后立刻跑
+              scripts/xiqi_tools/import_xiqi.py 同源入库逻辑（按 public_id），
+              该条进入 DB，列表可见。不要在原型阶段改 xiqi_admin_api。
+            -->
+            <button type="button" class="ed-action" data-mock-save>保存至 import</button>
+            <button type="button" class="ed-action" data-mock-publish>写入数据库</button>
+            <a class="ed-action" href="#">回列表查看</a>
+            <p class="ok" data-save-ok hidden>已保存至 import 目录。</p>
+            <p class="ok" data-publish-ok hidden>已写入数据库（原型占位，合入时接 API）。</p>
+          </div>
+        </div>
+        <aside class="scheme-a-preview">
+          <p class="ed-kicker"><span class="ed-en">Preview</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">预览</span></p>
+          <p class="meta-label">列表行</p>
+          <div class="preview-card">
+            <p class="row-meta"><span class="tone">软件</span></p>
+            <p class="row-body">Playfair Display</p>
+            <p class="row-body" data-live-target="a-rec"></p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- B · 碎念 -->
+    <section class="variant" data-scheme="b" data-page="fragments">
+      <article class="scheme-b-page">
+        <p class="back"><a href="#">← 碎念</a></p>
+        <h1 class="h">撰写碎念</h1>
+        <div class="ed-filter">
+          <p class="ed-kicker"><span class="ed-en">Write</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">撰写</span></p>
+          <p class="hint-line">留空字段不要发明默认句；保存后回列表看。</p>
+          <div class="meta-field">
+            <span class="meta-label">心情</span>
+            <div class="ed-cats">
+              <button type="button" class="ed-cat">吐槽</button>
+              <button type="button" class="ed-cat">随笔</button>
+              <button type="button" class="ed-cat">瞬间</button>
+              <button type="button" class="ed-cat is-on">日常</button>
+            </div>
+          </div>
+          <div class="meta-field">
+            <span class="meta-label">状态</span>
+            <div class="ed-cats">
+              <button type="button" class="ed-cat is-on">草稿</button>
+              <button type="button" class="ed-cat">发布</button>
+              <button type="button" class="ed-cat">隐藏</button>
+            </div>
+          </div>
+          <label class="ed-search">
+            创建时间
+            <input type="text" value="2026-09-17 21:00" />
+          </label>
+        </div>
+        <div class="editor-head">
+          <p class="ed-kicker"><span class="ed-en">Body</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">正文</span></p>
+          <button type="button" class="ed-action">上传图片</button>
+        </div>
+        <label class="ed-search">
+          Markdown
+          <textarea data-live-source="b-frag">今天 CI 又绿了，但心情没有。</textarea>
+        </label>
+        <p class="hint-line">拖到此处插入图片语法。</p>
+        <p class="ed-kicker" style="margin-top: 1.35rem"><span class="ed-en">Media</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">配图</span></p>
+        <ul class="attach-list">
+          <li class="attach-item">
+            <div class="attach-thumb" aria-hidden="true"></div>
+            <label class="ed-search">
+              配图说明
+              <input type="text" value="CI 绿灯截图" />
+            </label>
+            <button type="button" class="ed-action ghost">移除</button>
+          </li>
+        </ul>
+        <div class="foot">
+          <!--
+            MERGE 合入 frontend 时（后端暂不改）：
+            「保存至 import」= 现有 POST /api/fragments/import-file
+            或 /api/recommendations/import-file，只把 Markdown 写到
+            backend/import/xiqi/…，列表不会出现。
+            「写入数据库」= 新增站长接口：写完 import 文件后立刻跑
+            scripts/xiqi_tools/import_xiqi.py 同源入库逻辑（按 public_id），
+            该条进入 DB，列表可见。不要在原型阶段改 xiqi_admin_api。
+          -->
+          <button type="button" class="ed-action" data-mock-save>保存至 import</button>
+          <button type="button" class="ed-action" data-mock-publish>写入数据库</button>
+          <a class="ed-action" href="#">回列表查看</a>
+          <p class="ok" data-save-ok hidden>已保存至 import 目录。</p>
+          <p class="ok" data-publish-ok hidden>已写入数据库（原型占位，合入时接 API）。</p>
+        </div>
+        <p class="ed-kicker" style="margin-top: 2rem"><span class="ed-en">Preview</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">预览</span></p>
+        <div class="preview-card">
+          <p class="row-meta"><span class="tone">日常</span> · 9 月 17 日</p>
+          <p class="row-body" data-live-target="b-frag"></p>
+        </div>
+        <div class="preview-detail" data-live-target="b-frag"></div>
+      </article>
+    </section>
+
+    <!-- B · 推荐 -->
+    <section class="variant" data-scheme="b" data-page="recommend">
+      <article class="scheme-b-page">
+        <p class="back"><a href="#">← 推荐</a></p>
+        <h1 class="h">撰写推荐</h1>
+        <div class="ed-filter">
+          <p class="ed-kicker"><span class="ed-en">Write</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">撰写</span></p>
+          <p class="hint-line">分类与碎念列表筛选同一套下划线。</p>
+          <label class="ed-search">
+            标题
+            <input type="text" value="Playfair Display" />
+          </label>
+          <div class="meta-field">
+            <span class="meta-label">分类</span>
+            <div class="ed-cats">
+              <button type="button" class="ed-cat is-on">软件</button>
+              <button type="button" class="ed-cat">开源</button>
+              <button type="button" class="ed-cat">动画</button>
+            </div>
+          </div>
+          <div class="meta-field">
+            <span class="meta-label">状态</span>
+            <div class="ed-cats">
+              <button type="button" class="ed-cat is-on">草稿</button>
+              <button type="button" class="ed-cat">发布</button>
+              <button type="button" class="ed-cat">隐藏</button>
+            </div>
+          </div>
+          <label class="ed-search">
+            链接
+            <input type="url" value="https://fonts.google.com" />
+          </label>
+        </div>
+        <label class="ed-search">
+          正文
+          <textarea data-live-source="b-rec">衬线题名用它刚刚好，不要再加粗一档。</textarea>
+        </label>
+        <div class="foot">
+          <!--
+            MERGE 合入 frontend 时（后端暂不改）：
+            「保存至 import」= 现有 POST /api/fragments/import-file
+            或 /api/recommendations/import-file，只把 Markdown 写到
+            backend/import/xiqi/…，列表不会出现。
+            「写入数据库」= 新增站长接口：写完 import 文件后立刻跑
+            scripts/xiqi_tools/import_xiqi.py 同源入库逻辑（按 public_id），
+            该条进入 DB，列表可见。不要在原型阶段改 xiqi_admin_api。
+          -->
+          <button type="button" class="ed-action" data-mock-save>保存至 import</button>
+          <button type="button" class="ed-action" data-mock-publish>写入数据库</button>
+          <a class="ed-action" href="#">回列表查看</a>
+          <p class="ok" data-save-ok hidden>已保存至 import 目录。</p>
+          <p class="ok" data-publish-ok hidden>已写入数据库（原型占位，合入时接 API）。</p>
+        </div>
+        <p class="ed-kicker" style="margin-top: 2rem"><span class="ed-en">Preview</span><span class="ed-mid" aria-hidden="true">·</span><span class="ed-zh">预览</span></p>
+        <div class="preview-card">
+          <p class="row-meta"><span class="tone">软件</span></p>
+          <p class="row-body">Playfair Display</p>
+          <p class="row-body" data-live-target="b-rec"></p>
+        </div>
+      </article>
+    </section>
+
+    <script src="shared.js"></script>
+  </body>
+</html>

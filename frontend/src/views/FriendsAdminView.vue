@@ -15,6 +15,7 @@ import {
   type FriendModerationAction,
 } from '@/services/friendsApi'
 import { fetchMessageAuthUser } from '@/services/messageAuth'
+import { ownerFacingMessage } from '@/utils/publicErrorMessage'
 import { resolveFriendAvatar } from '@/utils/siteFavicon'
 import '@/styles/page-enter-friends.css'
 import '@/styles/page-friends.css'
@@ -121,7 +122,7 @@ async function loadList() {
   } catch (e) {
     items.value = []
     total.value = 0
-    showToast(e instanceof Error ? e.message : t('friends.adminLoadError'))
+    showToast(ownerFacingMessage(e, t('friends.adminLoadError')))
   } finally {
     listLoading.value = false
   }
@@ -153,7 +154,7 @@ async function onSave(item: AdminFriendLink) {
     }
     showToast(message || t('friends.adminSaveSuccess'))
   } catch (e) {
-    showToast(e instanceof Error ? e.message : t('friends.adminSaveFailed'))
+    showToast(ownerFacingMessage(e, t('friends.adminSaveFailed')))
   } finally {
     busyId.value = null
   }
@@ -181,7 +182,7 @@ async function onModerate(item: AdminFriendLink, action: FriendModerationAction)
             : t('friends.adminModerationRestored')
     showToast(message || actionMsg)
   } catch (e) {
-    showToast(e instanceof Error ? e.message : t('friends.adminModerationFailed'))
+    showToast(ownerFacingMessage(e, t('friends.adminModerationFailed')))
   } finally {
     busyId.value = null
   }

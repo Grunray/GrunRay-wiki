@@ -43,6 +43,10 @@
   font-size: 1.42rem;
 }
 
+.markdown-reading :where(h2, h3, h4) {
+  scroll-margin-top: 5.75rem;
+}
+
 .markdown-reading :where(h2) {
   font-size: 1.22rem;
   padding-bottom: 0.3em;
@@ -92,6 +96,14 @@
 .markdown-reading :where(a:hover) {
   text-decoration-color: var(--color-accent);
   background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+}
+
+/* GFM 删除线 ~~text~~ → <del>（服务端 StrikethroughExtension / 前端 marked gfm） */
+.markdown-reading :where(del) {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, var(--color-text-muted) 70%, transparent);
 }
 
 .markdown-reading :where(hr) {

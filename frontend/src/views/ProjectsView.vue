@@ -5,7 +5,10 @@ import { useRoute, useRouter } from 'vue-router'
 
 import CardCornerVineLazy from '@/components/hover/CardCornerVineLazy.vue'
 import AppSelect from '@/components/ui/AppSelect.vue'
+import PageStatusBlock from '@/components/ui/PageStatusBlock.vue'
 import TimelinePageSkeleton from '@/components/ui/TimelinePageSkeleton.vue'
+import { queryParam, useListQuerySync } from '@/composables/useListQuerySync'
+import { useListScrollRestore } from '@/composables/useListScrollRestore'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
@@ -17,18 +20,21 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
+const PROJECT_QUERY_KEYS = ['tag', 'archived'] as const
+
 useSeoMeta(() => ({
   title: `${t('projects.title')} | ${SITE_NAME}`,
   description: `${t('projects.title')} — ${t('home.tagline')}`,
   path: route.path,
   type: 'website',
 }))
-const includeArchived = ref(true)
-const tagFilter = ref('')
+const includeArchived = ref(queryParam(route.query, 'archived') !== '0')
+const tagFilter = ref(queryParam(route.query, 'tag'))
 const loading = ref(true)
-const loadError = ref<string | null>(null)
+const loadError = ref(false)
 const pageRoot = ref<HTMLElement | null>(null)
 const enterPlayed = ref(false)
+const { skipEnter, markListResumed, restoreAfterPaint } = useListScrollRestore('projects')
 
 interface TimelineItem {
   project: Project
@@ -57,6 +63,7 @@ function formatMonthDay(value?: string): string {
 }
 
 const allTags = computed(() => {
+  void loading.value
   const set = new Set<string>()
   for (const p of listProjectsPublic({ includeArchived: true })) {
     for (const tag of p.tags) set.add(tag)
@@ -64,10 +71,14 @@ const allTags = computed(() => {
   return [...set].sort()
 })
 
-const tagSelectOptions = computed(() => [
-  { value: '', label: t('projects.allTags') },
-  ...allTags.value.map((tag) => ({ value: tag, label: tag })),
-])
+const tagSelectOptions = computed(() => {
+  const tags = [...allTags.value]
+  if (tagFilter.value && !tags.includes(tagFilter.value)) tags.unshift(tagFilter.value)
+  return [
+    { value: '', label: t('projects.allTags') },
+    ...tags.map((tag) => ({ value: tag, label: tag })),
+  ]
+})
 
 const timelineItems = computed<TimelineItem[]>(() => {
   let list = listProjectsPublic({ includeArchived: includeArchived.value })
@@ -102,6 +113,35 @@ const timelineGroups = computed<TimelineYearGroup[]>(() => {
   return groups
 })
 
+/** 当前「含归档」开关下的全量（未按标签筛） */
+const unfilteredCount = computed(
+  () => listProjectsPublic({ includeArchived: includeArchived.value }).length,
+)
+
+const listEmpty = computed(
+  () => !loading.value && !loadError.value && unfilteredCount.value === 0,
+)
+
+const filteredEmpty = computed(
+  () =>
+    !loading.value &&
+    !loadError.value &&
+    unfilteredCount.value > 0 &&
+    timelineItems.value.length === 0,
+)
+
+async function loadProjects() {
+  loading.value = true
+  loadError.value = false
+  try {
+    await ensureProjectsLoaded()
+  } catch {
+    loadError.value = true
+  } finally {
+    loading.value = false
+  }
+}
+
 function timelineItemEnterIndex(groupIndex: number, itemIndex: number): number {
   let sum = 0
   for (let i = 0; i < groupIndex; i++) {
@@ -123,20 +163,41 @@ function onCardKeydown(event: KeyboardEvent, slug: string) {
 watch(loading, async (isLoading) => {
   if (enterPlayed.value || isLoading) return
   enterPlayed.value = true
+  if (skipEnter) {
+    markListResumed(pageRoot.value)
+    await restoreAfterPaint()
+    return
+  }
   await playPageEnter(pageRoot.value)
 })
 
 onMounted(async () => {
-  loading.value = true
-  loadError.value = null
-  try {
-    await ensureProjectsLoaded()
-  } catch {
-    loadError.value = '加载失败，请确认后端已启动并已导入项目数据。'
-  } finally {
-    loading.value = false
-  }
+  await loadProjects()
 })
+
+const { write: writeListQuery, applyFromRoute } = useListQuerySync([...PROJECT_QUERY_KEYS], () => ({
+  tag: tagFilter.value || undefined,
+  archived: includeArchived.value ? undefined : '0',
+}))
+
+watch(tagFilter, () => {
+  void writeListQuery('push')
+})
+watch(includeArchived, () => {
+  void writeListQuery('push')
+})
+
+watch(
+  () => route.fullPath,
+  () => {
+    applyFromRoute((query) => {
+      const nextTag = queryParam(query, 'tag')
+      const nextArchived = queryParam(query, 'archived') !== '0'
+      if (tagFilter.value !== nextTag) tagFilter.value = nextTag
+      if (includeArchived.value !== nextArchived) includeArchived.value = nextArchived
+    })
+  },
+)
 </script>
 
 <template>
@@ -182,7 +243,13 @@ onMounted(async () => {
       </div>
     </div>
 
-    <p v-if="loadError" class="empty">{{ loadError }}</p>
+    <PageStatusBlock
+      v-if="loadError"
+      kind="error"
+      :title="t('projects.loadFailed')"
+      retryable
+      @retry="loadProjects"
+    />
     <TimelinePageSkeleton v-else-if="loading" variant="notes" />
     <div v-else-if="timelineGroups.length" class="timeline">
       <section
@@ -231,7 +298,16 @@ onMounted(async () => {
         </div>
       </section>
     </div>
-    <p v-else class="empty">{{ t('projects.empty') }}</p>
+    <PageStatusBlock
+      v-else-if="listEmpty"
+      kind="empty"
+      :title="t('projects.empty')"
+    />
+    <PageStatusBlock
+      v-else-if="filteredEmpty"
+      kind="empty"
+      :title="t('projects.emptyFiltered')"
+    />
   </section>
 </template>
 
@@ -251,10 +327,6 @@ onMounted(async () => {
   font-size: clamp(1.6rem, 3.4vw, 2.1rem);
   font-weight: 600;
   letter-spacing: 0.01em;
-}
-
-.empty {
-  color: var(--color-text-muted);
 }
 
 @media (max-width: 760px) {

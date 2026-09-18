@@ -1,0 +1,67 @@
+/* 列表 / 详情共享空态与错误态（PageStatusBlock） */
+.page-status {
+  margin: 1rem 0 0.25rem;
+  padding: 1rem 0 0.35rem;
+  max-width: 36rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 85%, transparent);
+}
+
+.page-status-kicker {
+  margin: 0 0 0.45rem;
+}
+
+.page-status-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.12rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  color: var(--color-text);
+}
+
+.page-status-desc {
+  margin: 0.4rem 0 0;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--color-text-muted);
+}
+
+/* 与刊头 / 栖息 `.ed-action` 一致：衬线 + accent 下划线，不是胶囊 btn */
+.page-status-retry.ed-action {
+  appearance: none;
+  display: inline;
+  margin-top: 0.85rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+  color: var(--color-accent);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.4;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.page-status-retry.ed-action:hover {
+  border-bottom-color: var(--color-accent);
+}
+
+.page-status-retry.ed-action:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.page-status[data-kind='error'] .page-status-title {
+  color: var(--color-text);
+}
+
+.page-status[data-kind='loading'] .page-status-title {
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 500;
+}

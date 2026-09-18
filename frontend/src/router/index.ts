@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import AppShell from '@/components/layout/AppShell.vue'
+import { isListReturnNavigation } from '@/composables/useListScrollRestore'
 import { syncPageCorruptForRoute } from '@/theme/pageCorruptState'
 import { applyPagePhotoBackgroundToDocument } from '@/theme/pagePhotoBackgrounds'
 
@@ -48,14 +49,38 @@ const router = createRouter({
           meta: { appMainLayout: 'full-viewport' },
         },
         {
+          path: 'fragments/edit',
+          name: 'fragments-edit',
+          component: () => import('@/views/XiqiOwnerEditView.vue'),
+          meta: { appMainLayout: 'full-viewport' },
+        },
+        {
+          path: 'recommend/compose',
+          name: 'recommend-compose',
+          component: () => import('@/views/RecommendComposeView.vue'),
+          meta: { appMainLayout: 'full-viewport' },
+        },
+        {
+          path: 'recommend/edit',
+          name: 'recommend-edit',
+          component: () => import('@/views/XiqiOwnerEditView.vue'),
+          meta: { appMainLayout: 'full-viewport' },
+        },
+        {
           path: 'about',
           name: 'about',
           component: () => import('@/views/AboutView.vue'),
         },
         {
-          path: 'legal',
-          name: 'legal',
-          component: () => import('@/views/LegalView.vue'),
+          path: 'now',
+          name: 'site-now',
+          component: () => import('@/views/SiteNowEditView.vue'),
+        },
+        { path: 'legal', name: 'legal', component: () => import('@/views/LegalView.vue') },
+        {
+          path: 'design',
+          name: 'design-system',
+          component: () => import('@/views/DesignSystemView.vue'),
         },
         {
           path: 'recommend',
@@ -67,7 +92,16 @@ const router = createRouter({
       ],
     },
   ],
-  scrollBehavior() {
+  scrollBehavior(to, from, savedPosition) {
+    if (to.hash) {
+      return {
+        el: to.hash,
+        top: 96,
+        behavior: to.path === from.path ? 'smooth' : 'auto',
+      }
+    }
+    if (isListReturnNavigation(to.name, from.name)) return false
+    if (savedPosition) return savedPosition
     return { top: 0 }
   },
 })

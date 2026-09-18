@@ -4,15 +4,21 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
 import DetailScrollSidebar from '@/components/detail/DetailScrollSidebar.vue'
+import PostTocNav from '@/components/detail/PostTocNav.vue'
+import EdKicker from '@/components/editorial/EdKicker.vue'
+import PageStatusBlock from '@/components/ui/PageStatusBlock.vue'
 import PostDetailPageSkeleton from '@/components/ui/PostDetailPageSkeleton.vue'
 import { useDetailScrollSidebar } from '@/composables/useDetailScrollSidebar'
+import { readListReturnPath } from '@/composables/useListScrollRestore'
 import { useMarkdownCodeCopy } from '@/composables/useMarkdownCodeCopy'
 import { restartPageEnter } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
-import { canAccessPostPublic, ensureProjectsLoaded, getPostBySlug, getProjectById } from '@/services/contentRepository'
+import { canAccessPostPublic, ensureProjectsLoaded, getPostBySlug, getProjectById, listPostsForBlog } from '@/services/contentRepository'
 import '@/styles/page-enter-post.css'
 import type { AlgorithmPost, Post, ProjectNote } from '@/types/content'
+import { injectHeadingIds } from '@/utils/headingToc'
+import { pickPostNeighbors } from '@/utils/postNeighbors'
 
 const POST_DETAIL_CACHE_PREFIX = 'grunray-post-detail:'
 
@@ -44,11 +50,14 @@ const route = useRoute()
 const { t } = useI18n()
 
 const post = ref<Post | null>(null)
+const newerPost = ref<Post | null>(null)
+const olderPost = ref<Post | null>(null)
 const loadError = ref(false)
 const loading = ref(true)
 const articleRoot = ref<HTMLElement | null>(null)
 const bodyMarkdownRef = ref<HTMLElement | null>(null)
 const foldZoneRef = ref<HTMLElement | null>(null)
+const blogListTo = computed(() => readListReturnPath('blog'))
 
 function bindHtmlBody(el: Element | { $el?: Element } | null) {
   const node = (el && '$el' in el ? el.$el : el) as HTMLElement | null | undefined
@@ -95,9 +104,20 @@ async function load(slug: string) {
     const next = (await getPostBySlug(slug)) ?? null
     post.value = next
     if (next) writeCachedPost(slug, next)
+    try {
+      const neighbors = await listPostsForBlog({ category: 'all' })
+      const pair = next ? pickPostNeighbors(neighbors, slug) : { newer: null, older: null }
+      newerPost.value = pair.newer
+      olderPost.value = pair.older
+    } catch {
+      newerPost.value = null
+      olderPost.value = null
+    }
   } catch {
     loadError.value = true
     if (!cached) post.value = null
+    newerPost.value = null
+    olderPost.value = null
   } finally {
     loading.value = false
     await restartArticleEnterWhenReady()
@@ -168,7 +188,9 @@ useSeoMeta(() => {
 const algo = computed(() => (post.value?.type === 'algorithm' ? (post.value as AlgorithmPost) : null))
 const note = computed(() => (post.value?.type === 'project_note' ? (post.value as ProjectNote) : null))
 const noteProject = computed(() => (note.value ? getProjectById(note.value.project_id) : null))
-const renderedBodyHtml = computed(() => post.value?.body_html?.trim() || '')
+const toc = computed(() => injectHeadingIds(post.value?.body_html?.trim() || ''))
+const renderedBodyHtml = computed(() => toc.value.html)
+const tocItems = computed(() => toc.value.items)
 
 const codeCopyLabels = computed(() => ({
   copy: t('post.copyCode'),
@@ -176,17 +198,37 @@ const codeCopyLabels = computed(() => ({
 }))
 
 useMarkdownCodeCopy(bodyMarkdownRef, codeCopyLabels, renderedBodyHtml)
+
+watch(
+  [renderedBodyHtml, () => route.hash],
+  async () => {
+    const raw = route.hash.replace(/^#/, '')
+    if (!raw) return
+    await nextTick()
+    let id = raw
+    try {
+      id = decodeURIComponent(raw)
+    } catch {
+      /* keep raw */
+    }
+    document.getElementById(id)?.scrollIntoView({ block: 'start' })
+  },
+)
 </script>
 
 <template>
-  <article v-if="loadError">
-    <p class="empty">加载失败，请确认后端已启动。</p>
-  </article>
+  <PageStatusBlock
+    v-if="loadError"
+    kind="error"
+    :title="t('common.status.loadFailed')"
+    retryable
+    @retry="load(route.params.slug as string)"
+  />
   <PostDetailPageSkeleton v-else-if="loading && !post" />
   <article v-else-if="ok && post" ref="articleRoot" class="post-detail-article">
     <div ref="foldZoneRef" class="post-fold">
       <p class="back">
-        <RouterLink to="/blog">← {{ t('blog.title') }}</RouterLink>
+        <RouterLink :to="blogListTo">← {{ t('blog.title') }}</RouterLink>
       </p>
       <div class="ed-mast">
         <section class="ed-zone">
@@ -223,6 +265,8 @@ useMarkdownCodeCopy(bodyMarkdownRef, codeCopyLabels, renderedBodyHtml)
       </p>
     </div>
 
+    <PostTocNav v-if="tocItems.length && !sidebarWide" :items="tocItems" folded />
+
     <div
       v-if="renderedBodyHtml"
       :ref="bindHtmlBody"
@@ -230,6 +274,17 @@ useMarkdownCodeCopy(bodyMarkdownRef, codeCopyLabels, renderedBodyHtml)
       v-html="renderedBodyHtml"
     />
     <div v-else-if="post.body" class="body prose body-plain">{{ post.body }}</div>
+
+    <nav v-if="newerPost || olderPost" class="post-adjacent" :aria-label="t('post.adjacentLabel')">
+      <div v-if="newerPost" class="post-adjacent-item">
+        <EdKicker :en="t('post.newerKickerEn')" :zh="t('post.newerKickerZh')" />
+        <RouterLink class="ed-action" :to="`/blog/${newerPost.slug}`">{{ newerPost.title }}</RouterLink>
+      </div>
+      <div v-if="olderPost" class="post-adjacent-item">
+        <EdKicker :en="t('post.olderKickerEn')" :zh="t('post.olderKickerZh')" />
+        <RouterLink class="ed-action" :to="`/blog/${olderPost.slug}`">{{ olderPost.title }}</RouterLink>
+      </div>
+    </nav>
 
     <DetailScrollSidebar
       v-if="sidebarWide"
@@ -264,9 +319,15 @@ useMarkdownCodeCopy(bodyMarkdownRef, codeCopyLabels, renderedBodyHtml)
         {{ t('post.projectNote') }}:
         <RouterLink :to="`/projects/${noteProject.slug}`">{{ noteProject.title }}</RouterLink>
       </p>
+      <PostTocNav v-if="tocItems.length" :items="tocItems" />
     </DetailScrollSidebar>
   </article>
-  <p v-else class="empty">{{ t('common.notFound') }}</p>
+  <PageStatusBlock
+    v-else
+    kind="empty"
+    :title="t('common.status.notFoundTitle')"
+    :description="t('common.status.notFoundHint')"
+  />
 </template>
 
 <style scoped>
@@ -336,8 +397,27 @@ useMarkdownCodeCopy(bodyMarkdownRef, codeCopyLabels, renderedBodyHtml)
   white-space: normal;
 }
 
-.empty {
-  color: var(--color-text-muted);
+.post-adjacent {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.1rem 1.5rem;
+  margin: 2.2rem 0 0;
+  padding: 1.15rem 0 0;
+  border-top: 1px solid var(--color-text);
+}
+
+.post-adjacent-item .ed-kicker {
+  margin-bottom: 0.35rem;
+}
+
+.post-adjacent-item .ed-action {
+  display: inline;
+}
+
+@media (min-width: 640px) {
+  .post-adjacent {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 @media (max-width: 480px) {
