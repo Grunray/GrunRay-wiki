@@ -33,6 +33,10 @@ export function useNavScrollCompact(opts: NavScrollCompactOptions = {}) {
       compact.value = false
       return
     }
+    if (document.documentElement.dataset.motion !== 'full') {
+      compact.value = false
+      return
+    }
     syncFromScrollY(window.scrollY)
   }
 

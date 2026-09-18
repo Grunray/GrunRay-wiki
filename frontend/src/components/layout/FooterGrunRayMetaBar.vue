@@ -44,6 +44,15 @@ const { t } = useI18n()
               to="/legal"
               :title="t('footer.legalTitle')"
             >{{ t('footer.legalLabel') }}</RouterLink>
+            <span
+              class="footer-grunray-meta-divider footer-grunray-meta-divider--inline"
+              aria-hidden="true"
+            />
+            <RouterLink
+              class="footer-grunray-meta-link"
+              to="/design"
+              :title="t('footer.designTitle')"
+            >{{ t('footer.designLabel') }}</RouterLink>
           </div>
           <span class="footer-grunray-meta-divider" aria-hidden="true" />
           <div class="footer-grunray-meta-col footer-grunray-meta-col--end">

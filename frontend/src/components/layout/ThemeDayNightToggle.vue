@@ -74,7 +74,7 @@ const diskStyle = computed(() => ({
 let rippleClearTimer: ReturnType<typeof setTimeout> | null = null
 
 function playRippleFromAnchor(ev?: MouseEvent) {
-  if (ui.prefersReducedMotion) return
+  if (ui.motionCut) return
   const el = anchorRef.value
   if (!el) return
 
@@ -98,7 +98,7 @@ function playRippleFromAnchor(ev?: MouseEvent) {
 }
 
 watch(
-  () => ui.prefersReducedMotion,
+  () => ui.motionCut,
   (reduce) => {
     if (reduce) {
       ripple.show = false

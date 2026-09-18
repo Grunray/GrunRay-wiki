@@ -20,7 +20,7 @@ let ctx: ReturnType<typeof gsap.context> | undefined
 watch(visible, (v) => {
   const el = btnRef.value
   if (!el) return
-  if (ui.prefersReducedMotion) {
+  if (ui.motionCut) {
     gsap.set(el, { autoAlpha: v ? 1 : 0, scale: 1, y: 0 })
     return
   }
@@ -34,7 +34,7 @@ watch(visible, (v) => {
 })
 
 function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: ui.prefersReducedMotion ? 'auto' : 'smooth' })
+  window.scrollTo({ top: 0, behavior: ui.motionLevel === 'minimal' ? 'auto' : 'smooth' })
 }
 
 onMounted(() => {

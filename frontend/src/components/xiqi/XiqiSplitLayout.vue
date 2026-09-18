@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 
 import EdKicker from '@/components/editorial/EdKicker.vue'
 import { prefersReducedMotionMedia } from '@/composables/usePageEnterAnimation'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 import { FOOTER_REFRESH_EVENT, setXiqiSplitFooterLock } from '@/composables/useXiqiSplitFooter'
 import { injectMobileShell } from '@/composables/useMobileShell'
 
@@ -55,6 +56,10 @@ let editorialPinY = 0
 const mobileSheetOpen = ref(false)
 const sheetLeaving = ref(false)
 const sheetMode = computed(() => props.editorial && isMobileShell.value)
+const detailPanelRef = ref<HTMLElement | null>(null)
+const sheetTrapActive = computed(() => sheetMode.value && isOpen.value)
+
+useFocusTrap(detailPanelRef, sheetTrapActive)
 
 const SPLIT_LAYOUT_MS = 580
 const MAIN_INNER_FLIP_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
@@ -244,12 +249,12 @@ function finishPanelTween(
   killDetailTween()
   if (opts.clearClip) panel.style.clipPath = ''
   panel.style.willChange = ''
-  done()
+  requestAnimationFrame(() => done())
 }
 
 function onDetailEnter(el: Element, done: () => void) {
   if (props.editorial) {
-    done()
+    requestAnimationFrame(() => done())
     return
   }
   const panel = el as HTMLElement
@@ -258,7 +263,9 @@ function onDetailEnter(el: Element, done: () => void) {
   const finish = () => finishPanelTween(panel, done, finished, { clearClip: true })
 
   if (prefersReducedMotionMedia()) {
-    gsap.set(panel, { autoAlpha: 1, x: 0, y: 0, clearProps: 'clipPath,transform,opacity' })
+    /* 不可 clearProps opacity：会把 Vue/GSAP 入场前的 opacity:0 露出来 */
+    gsap.set(panel, { autoAlpha: 1, x: 0, y: 0 })
+    panel.style.clipPath = ''
     finish()
     return
   }
@@ -303,7 +310,7 @@ function onDetailEnter(el: Element, done: () => void) {
 
 function onDetailLeave(el: Element, done: () => void) {
   if (props.editorial) {
-    done()
+    requestAnimationFrame(() => done())
     return
   }
   const panel = el as HTMLElement
@@ -414,7 +421,46 @@ function flipMainInnerAfterLayout(before: DOMRect | null) {
   })
 }
 
+/** 打开详情时的名录行；关闭后归还，避免关闭钮还在焦点里时面板被标 aria-hidden */
+let restoreFocusEl: HTMLElement | null = null
+
+function findLedgerTrigger(): HTMLElement | null {
+  return (
+    pageRef.value?.querySelector<HTMLElement>(
+      '.ed-feed-row.is-on, .ed-feed-row[aria-expanded="true"]',
+    ) ?? null
+  )
+}
+
+function captureDetailTrigger() {
+  const panel = detailPanelRef.value
+  const active = document.activeElement
+  if (
+    active instanceof HTMLElement
+    && active !== document.body
+    && (!panel || !panel.contains(active))
+  ) {
+    restoreFocusEl = active
+    return
+  }
+  restoreFocusEl = findLedgerTrigger()
+}
+
+function releaseDetailFocus() {
+  const panel = detailPanelRef.value
+  const active = document.activeElement
+  const focusedInPanel = active instanceof HTMLElement && Boolean(panel?.contains(active))
+  const target = restoreFocusEl?.isConnected ? restoreFocusEl : findLedgerTrigger()
+  restoreFocusEl = null
+  if (target && target !== active) {
+    target.focus()
+    return
+  }
+  if (focusedInPanel) active.blur()
+}
+
 function closeDetail() {
+  releaseDetailFocus()
   selectedKey.value = null
 }
 
@@ -435,6 +481,7 @@ watch(
     if (props.editorial) {
       editorialCloseGen += 1
       if (open) {
+        captureDetailTrigger()
         if (isMobileSplit()) {
           void applyMobileEditorialSheet()
           return
@@ -444,6 +491,7 @@ watch(
         void applyEditorialDock()
         return
       }
+      releaseDetailFocus()
       void finishEditorialClose()
       return
     }
@@ -634,6 +682,7 @@ onBeforeUnmount(() => {
         >
           <aside
             v-if="props.editorial || isOpen"
+            ref="detailPanelRef"
             class="xiqi-split-detail"
             :class="[
               props.editorial ? 'ed-read' : 'card card-glass-dense',

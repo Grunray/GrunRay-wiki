@@ -373,15 +373,6 @@ html[data-theme='light'] .footer-grunray-brand-reveal {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .footer-grunray-brand-wrap {
-    height: auto;
-    min-height: var(--footer-grunray-brand-height);
-  }
-
-  .footer-grunray-brand-reveal {
-    clip-path: none;
-  }
-
   .footer-grunray-meta-bar__shell {
     transition: opacity 0.2s ease;
     transform: none;

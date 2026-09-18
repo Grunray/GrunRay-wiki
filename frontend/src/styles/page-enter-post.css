@@ -12,8 +12,8 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .post-detail-article:not(.page-enter--play) > *,
-  .project-detail:not(.page-enter--play) > * {
+  html[data-motion='full'] .post-detail-article:not(.page-enter--play) > *,
+  html[data-motion='full'] .project-detail:not(.page-enter--play) > * {
     opacity: 0;
     transform: translateY(-14px);
   }

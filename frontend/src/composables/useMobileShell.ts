@@ -68,19 +68,24 @@ export function useMobileShell(): MobileShellApi {
       fps: ui.fpsMeterEnabled,
       musicMinimized: ui.musicPlayerMinimized,
     }
-    ui.setPhotoBackgroundEnabled(false)
-    ui.setCursorTrailEnabled(false)
-    ui.setFpsMeterEnabled(false)
-    ui.setMusicPlayerMinimized(true)
+    ui.runWithoutToolPersist(() => {
+      ui.setPhotoBackgroundEnabled(false)
+      ui.setCursorTrailEnabled(false)
+      ui.setFpsMeterEnabled(false)
+      ui.setMusicPlayerMinimized(true)
+    })
   }
 
   function unlockTools() {
     if (!snapshot) return
-    ui.setPhotoBackgroundEnabled(snapshot.photo)
-    ui.setCursorTrailEnabled(snapshot.trail)
-    ui.setFpsMeterEnabled(snapshot.fps)
-    ui.setMusicPlayerMinimized(snapshot.musicMinimized)
+    const snap = snapshot
     snapshot = null
+    ui.runWithoutToolPersist(() => {
+      ui.setPhotoBackgroundEnabled(snap.photo)
+      ui.setCursorTrailEnabled(snap.trail)
+      ui.setFpsMeterEnabled(snap.fps)
+      ui.setMusicPlayerMinimized(snap.musicMinimized)
+    })
   }
 
   function sync(matches: boolean) {
@@ -123,10 +128,12 @@ export function useMobileShell(): MobileShellApi {
       ] as const,
     () => {
       if (!isMobileShell.value) return
-      if (ui.photoBackgroundEnabled) ui.setPhotoBackgroundEnabled(false)
-      if (ui.cursorTrailEnabled) ui.setCursorTrailEnabled(false)
-      if (ui.fpsMeterEnabled) ui.setFpsMeterEnabled(false)
-      if (!ui.musicPlayerMinimized) ui.setMusicPlayerMinimized(true)
+      ui.runWithoutToolPersist(() => {
+        if (ui.photoBackgroundEnabled) ui.setPhotoBackgroundEnabled(false)
+        if (ui.cursorTrailEnabled) ui.setCursorTrailEnabled(false)
+        if (ui.fpsMeterEnabled) ui.setFpsMeterEnabled(false)
+        if (!ui.musicPlayerMinimized) ui.setMusicPlayerMinimized(true)
+      })
     },
   )
 

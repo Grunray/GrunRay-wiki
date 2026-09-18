@@ -1,5 +1,7 @@
 import type { RouteLocationNormalized } from 'vue-router'
 
+import { isMotionCut } from '@/composables/useMotionPolicy'
+
 /** 与 `backend/import/film/...` 经媒体 API 暴露的路径一致 */
 export const DEFAULT_PAGE_PHOTO_BG_URL = '/api/media/files/film/main/background/bg_homeview.png'
 
@@ -15,9 +17,15 @@ export const PAGE_PHOTO_BG_BY_ROUTE_NAME: Partial<Record<string, string>> = {
   'friends-apply': DEFAULT_PAGE_PHOTO_BG_URL,
   'friends-admin': DEFAULT_PAGE_PHOTO_BG_URL,
   fragments: DEFAULT_PAGE_PHOTO_BG_URL,
+  'fragments-compose': DEFAULT_PAGE_PHOTO_BG_URL,
+  'fragments-edit': DEFAULT_PAGE_PHOTO_BG_URL,
   about: DEFAULT_PAGE_PHOTO_BG_URL,
+  'site-now': DEFAULT_PAGE_PHOTO_BG_URL,
   legal: DEFAULT_PAGE_PHOTO_BG_URL,
+  'design-system': DEFAULT_PAGE_PHOTO_BG_URL,
   recommend: DEFAULT_PAGE_PHOTO_BG_URL,
+  'recommend-compose': DEFAULT_PAGE_PHOTO_BG_URL,
+  'recommend-edit': DEFAULT_PAGE_PHOTO_BG_URL,
   'post-detail': '/api/media/files/film/main/background/bg_secondary.png',
   'not-found': '/api/media/files/film/404/404_not_found.jpg',
 }
@@ -44,11 +52,6 @@ export function resolvePagePhotoBackgroundUrl(route: RouteLocationNormalized): s
   }
   const name = typeof route.name === 'string' ? route.name : ''
   return PAGE_PHOTO_BG_BY_ROUTE_NAME[name] ?? DEFAULT_PAGE_PHOTO_BG_URL
-}
-
-function prefersReducedMotion(): boolean {
-  if (typeof window === 'undefined') return false
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
 function photoBgEnabledOnDocument(): boolean {
@@ -87,7 +90,7 @@ export function applyPagePhotoBackgroundToDocument(route: RouteLocationNormalize
   const enabled = photoBgEnabledOnDocument()
   const nextVal = cssUrlValue(url)
 
-  if (enabled && !prefersReducedMotion() && lastResolvedPhotoBgUrl !== null && lastResolvedPhotoBgUrl !== url) {
+  if (enabled && !isMotionCut() && lastResolvedPhotoBgUrl !== null && lastResolvedPhotoBgUrl !== url) {
     root.style.setProperty(CSS_VAR_PREV, cssUrlValue(lastResolvedPhotoBgUrl))
     root.style.setProperty(CSS_VAR, nextVal)
     root.classList.remove(SWAP_CLASS)

@@ -4,9 +4,10 @@ import { gsap } from 'gsap'
 import { useI18n } from 'vue-i18n'
 
 import AppImage from '@/components/ui/AppImage.vue'
-import { prefersReducedMotionMedia } from '@/composables/usePageEnterAnimation'
+import { useUiStore } from '@/stores/ui'
 
 const { t } = useI18n()
+const ui = useUiStore()
 
 type MediaType = 'image' | 'gif' | 'video'
 type MediaItem = {
@@ -33,20 +34,15 @@ const trackRef = ref<HTMLElement | null>(null)
 /** 无缝循环至少 2 组；单组窄于视口时再加组，避免宽屏右侧露白后突然接上 */
 const repeatCount = ref(2)
 const MAX_REPEAT = 24
-const reducedMotion = ref(false)
+const reducedMotion = computed(() => ui.motionCut)
 const filmHovered = ref(false)
 const shiftHeld = ref(false)
 const hintRef = ref<HTMLElement | null>(null)
 const hintVisible = computed(() => filmHovered.value && !viewerItem.value)
 let loopObserver: ResizeObserver | null = null
-let motionMql: MediaQueryList | null = null
 let hintTween: gsap.core.Timeline | gsap.core.Tween | null = null
 let measureQueued = false
 let measuring = false
-
-function syncReducedMotion() {
-  reducedMotion.value = prefersReducedMotionMedia()
-}
 
 async function loadMedia() {
   loading.value = true
@@ -142,9 +138,6 @@ watch(hintVisible, (show) => {
 
 onMounted(() => {
   loadMedia()
-  syncReducedMotion()
-  motionMql = window.matchMedia('(prefers-reduced-motion: reduce)')
-  motionMql.addEventListener('change', syncReducedMotion)
   window.addEventListener('keydown', onKeydown)
   window.addEventListener('keyup', onShiftKeyup)
   loopObserver = new ResizeObserver(() => scheduleMeasureLoopCopies())
@@ -197,8 +190,6 @@ onBeforeUnmount(() => {
   hintTween = null
   window.removeEventListener('keydown', onKeydown)
   window.removeEventListener('keyup', onShiftKeyup)
-  motionMql?.removeEventListener('change', syncReducedMotion)
-  motionMql = null
   loopObserver?.disconnect()
   loopObserver = null
 })

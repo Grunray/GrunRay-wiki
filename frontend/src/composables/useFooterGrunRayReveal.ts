@@ -273,7 +273,6 @@ export function useFooterGrunRayReveal(
       return { progress: 0, remaining: revealSpacePx() + 999 }
     }
 
-    const reducedMotion = ui.prefersReducedMotion
     const { remaining, progress, atBottom, hasRevealRoom } = getScrollMetrics()
 
     if (!hasRevealRoom) {
@@ -281,7 +280,10 @@ export function useFooterGrunRayReveal(
       return { progress: 0, remaining: revealSpacePx() + 999 }
     }
 
-    if (reducedMotion || atBottom || progress >= 0.998) {
+    /* REDUCED/MINIMAL：揭开仍跟滚动，只去掉缓动；不要把 progress 钉成 1，否则大字常驻视口 */
+    if (ui.motionCut) {
+      smoothedProgress = progress
+    } else if (atBottom || progress >= 0.998) {
       smoothedProgress = 1
     } else if (progress > smoothedProgress) {
       const delta = progress - smoothedProgress
@@ -381,9 +383,25 @@ export function useFooterGrunRayReveal(
     for (let i = 0; i < targetOffsets.length; i++) targetOffsets[i] = 0
   }
 
+  const snapDistortOff = () => {
+    resetTargets()
+    if (distortRaf) {
+      cancelAnimationFrame(distortRaf)
+      distortRaf = 0
+    }
+    for (let i = 0; i < sliceEls.length; i++) {
+      currentOffsets[i] = 0
+      sliceEls[i]?.inner.style.setProperty('--slice-offset', '0px')
+    }
+  }
+
   const tickDistortion = () => {
     distortRaf = 0
-    const ease = ui.prefersReducedMotion ? 1 : 0.2
+    if (!ui.motionFull) {
+      snapDistortOff()
+      return
+    }
+    const ease = 0.2
     let settled = true
 
     for (let i = 0; i < sliceEls.length; i++) {
@@ -397,6 +415,7 @@ export function useFooterGrunRayReveal(
   }
 
   const requestDistortTick = () => {
+    if (!ui.motionFull) return
     if (!distortRaf) distortRaf = requestAnimationFrame(tickDistortion)
   }
 
@@ -427,7 +446,7 @@ export function useFooterGrunRayReveal(
   }
 
   const bindBrandPointer = () => {
-    if (isMobileShell.value) return
+    if (isMobileShell.value || !ui.motionFull) return
     const brandWord = brandWordRef.value
     if (!brandWord) return
     brandWord.addEventListener('pointerenter', onPointerEnter)
@@ -487,7 +506,7 @@ export function useFooterGrunRayReveal(
   )
 
   watch(
-    () => route.fullPath,
+    () => route.path,
     () => {
       startRouteLayoutSettling()
     },
@@ -510,6 +529,19 @@ export function useFooterGrunRayReveal(
       })
     },
     { flush: 'post' },
+  )
+
+  watch(
+    () => ui.motionFull,
+    (full) => {
+      if (!full) {
+        unbindBrandPointer()
+        snapDistortOff()
+      } else {
+        void nextTick(() => bindBrandPointer())
+      }
+      requestScrollUpdate()
+    },
   )
 
   onUnmounted(() => {

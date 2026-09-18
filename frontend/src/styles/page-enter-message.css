@@ -12,12 +12,12 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .message-page:not(.page-enter--play) > * {
+  html[data-motion='full'] .message-page:not(.page-enter--play) > * {
     opacity: 0;
     transform: translateY(18px);
   }
 
-  .message-page:not(.page-enter--play) .message-row {
+  html[data-motion='full'] .message-page:not(.page-enter--play) .message-row {
     opacity: 0;
     transform: translateY(14px);
   }

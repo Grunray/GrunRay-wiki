@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
 
+import { useUiStore } from '@/stores/ui'
+
+const ui = useUiStore()
+
 const props = defineProps<{
   playing: boolean
   hasPrev: boolean
@@ -21,10 +25,7 @@ const animOffset = ref('0px')
 const centerDimmed = ref(false)
 let pendingDir: 'prev' | 'next' | null = null
 
-const prefersReducedMotion = computed(() => {
-  if (typeof window === 'undefined') return false
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-})
+const prefersReducedMotion = computed(() => ui.motionCut)
 
 function onArmClick() {
   emit('toggle')

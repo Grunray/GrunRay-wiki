@@ -267,6 +267,12 @@
   color: var(--color-text-muted);
 }
 
+.message-list-status {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
 .message-row {
   padding: 0.85rem 1.65rem 0.9rem;
   margin: 0 -1.65rem;

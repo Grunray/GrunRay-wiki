@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { gsap } from 'gsap'
 import { storeToRefs } from 'pinia'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
@@ -10,8 +10,10 @@ import {
   playToolbarFlipAfterRemove,
   playToolbarFlipBeforeReveal,
 } from '@/composables/useHeaderToolbarLayoutShift'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 import { useMobileShell } from '@/composables/useMobileShell'
 import { useNavScrollCompact } from '@/composables/useNavScrollCompact'
+import { stampPageEnterPlay } from '@/composables/usePageEnterAnimation'
 import { persistLocale } from '@/i18n'
 import '@/styles/nav-toolbar.css'
 
@@ -24,8 +26,6 @@ import TrailNavIcon from '@/components/icons/TrailNavIcon.vue'
 import FpsNavIcon from '@/components/icons/FpsNavIcon.vue'
 
 import BackToTop from './BackToTop.vue'
-import CursorTrail from './CursorTrail.vue'
-import FpsMeter from './FpsMeter.vue'
 import FooterGrunRayPanel from './FooterGrunRayPanel.vue'
 import ScrollProgress from './ScrollProgress.vue'
 import SiteNav from './SiteNav.vue'
@@ -33,21 +33,41 @@ import ThemeDayNightToggle from './ThemeDayNightToggle.vue'
 import PhotoBgBlurAdjuster, { type PhotoBgBlurAnchorRect } from './PhotoBgBlurAdjuster.vue'
 import EdKicker from '@/components/editorial/EdKicker.vue'
 
+import { useMotionPerformanceHint } from '@/composables/useMotionPerformanceHint'
 import { useUiStore } from '@/stores/ui'
+import type { MotionPreference } from '@/composables/useMotionPolicy'
+
+const CursorTrail = defineAsyncComponent(() => import('./CursorTrail.vue'))
+const FpsMeter = defineAsyncComponent(() => import('./FpsMeter.vue'))
 
 const { t, locale } = useI18n()
 const route = useRoute()
 const ui = useUiStore()
 const { musicPlayerMinimized, musicPlayerPlaying, photoBackgroundEnabled } = storeToRefs(ui)
+const { hintOpen: motionHintOpen, dismissHint, acceptHint } = useMotionPerformanceHint()
 const { isMobileShell, acquireScrollLock, releaseScrollLock } = useMobileShell()
 const { compact: navCompactScroll } = useNavScrollCompact()
 /** 手机壳层强制横条，禁用滚动收成胶囊 */
-const navCompact = computed(() => (isMobileShell.value ? false : navCompactScroll.value))
+const navCompact = computed(() =>
+  isMobileShell.value || ui.motionCut ? false : navCompactScroll.value,
+)
 
 const mobileNavOpen = ref(false)
+const drawerRef = ref<HTMLElement | null>(null)
+const mainRef = ref<HTMLElement | null>(null)
 
 function closeMobileNav() {
   mobileNavOpen.value = false
+}
+
+useFocusTrap(drawerRef, mobileNavOpen)
+
+function skipToMain(event: MouseEvent) {
+  event.preventDefault()
+  const el = mainRef.value
+  if (!el) return
+  el.focus({ preventScroll: true })
+  el.scrollIntoView({ block: 'start' })
 }
 
 function toggleMobileNav() {
@@ -70,7 +90,7 @@ watch(isMobileShell, (mobile) => {
 })
 
 const musicNavPlayingAnimated = computed(
-  () => musicPlayerMinimized.value && musicPlayerPlaying.value && !ui.prefersReducedMotion,
+  () => musicPlayerMinimized.value && musicPlayerPlaying.value && !ui.motionCut,
 )
 
 /** 播放器展开或正在播放时，音乐按钮固定在顶栏；否则收进溢出面板 */
@@ -108,6 +128,7 @@ function closePhotoBlurAdjuster() {
 
 const overflowOpen = ref(false)
 const overflowWrapRef = ref<HTMLElement | null>(null)
+const overflowPanelRef = ref<HTMLElement | null>(null)
 const headerRightRef = ref<HTMLElement | null>(null)
 /** 顶栏工具收进溢出后：溢出按钮先切到「音乐已展开未播放」配色，再播出现弹跳，最后还原 */
 const overflowTriggerCueMusicOpen = ref(false)
@@ -145,7 +166,7 @@ async function runOverflowToolbarCueAfterToolbarLeave() {
   overflowTriggerCueMusicOpen.value = false
   await nextTick()
 
-  if (ui.prefersReducedMotion) {
+  if (ui.motionCut) {
     overflowTriggerCueMusicOpen.value = true
     overflowToolbarCueTimer = window.setTimeout(() => {
       overflowTriggerCueMusicOpen.value = false
@@ -168,7 +189,7 @@ function onToolbarAfterLeave() {
   const snap = toolbarFlipSnap
   toolbarFlipSnap = null
   if (!snap?.size) return
-  void playToolbarFlipAfterRemove(snap, headerRightRef.value, ui.prefersReducedMotion)
+  void playToolbarFlipAfterRemove(snap, headerRightRef.value, ui.motionCut)
   void runOverflowToolbarCueAfterToolbarLeave()
 }
 
@@ -193,6 +214,8 @@ function closeNavOverflow() {
 function toggleNavOverflow() {
   overflowOpen.value = !overflowOpen.value
 }
+
+useFocusTrap(overflowPanelRef, overflowOpen)
 
 function onDocPointerDown(ev: PointerEvent) {
   const el = overflowWrapRef.value
@@ -220,7 +243,7 @@ watch(overflowOpen, (open) => {
 })
 
 watch(
-  () => route.fullPath,
+  () => route.path,
   () => {
     closeNavOverflow()
     closeMobileNav()
@@ -262,7 +285,7 @@ const headerLeftSettlePop = ref(false)
 
 watch(isHomeRoute, async (isHome, wasHome) => {
   if (!isHome || wasHome === true) return
-  if (ui.prefersReducedMotion) return
+  if (ui.motionCut) return
   headerLeftSettlePop.value = false
   await nextTick()
   headerLeftSettlePop.value = true
@@ -301,6 +324,16 @@ function toggleFpsMeter() {
   ui.fpsMeterEnabled = !ui.fpsMeterEnabled
 }
 
+const motionChoices: { id: MotionPreference; labelKey: 'motionAuto' | 'motionReduced' | 'motionFull' }[] = [
+  { id: 'auto', labelKey: 'motionAuto' },
+  { id: 'reduced', labelKey: 'motionReduced' },
+  { id: 'full', labelKey: 'motionFull' },
+]
+
+function setMotionPreference(preference: MotionPreference) {
+  ui.setMotionPreference(preference)
+}
+
 /** 面板内按钮先播「消失」再改状态，顶栏再「出现」；回退到仅面板时重置为可再次挂载 */
 const photoPanelBtnVisible = ref(true)
 const trailPanelBtnVisible = ref(true)
@@ -337,23 +370,23 @@ watch(showMusicInBar, (on) => {
 })
 
 const navToolbarTransitionMs = computed(() =>
-  ui.prefersReducedMotion ? { enter: 100, leave: 90 } : { enter: 440, leave: 260 },
+  ui.motionCut ? { enter: 100, leave: 90 } : { enter: 440, leave: 260 },
 )
 
 /** 幽灵占位时跳过 Transition 的 enter，避免与 FLIP 后的一次性 spring 叠两次 */
 const photoToolbarTransitionMs = computed(() =>
   photoBarGhost.value
-    ? { enter: 0, leave: ui.prefersReducedMotion ? 90 : 260 }
+    ? { enter: 0, leave: ui.motionCut ? 90 : 260 }
     : navToolbarTransitionMs.value,
 )
 const trailToolbarTransitionMs = computed(() =>
   trailBarGhost.value
-    ? { enter: 0, leave: ui.prefersReducedMotion ? 90 : 260 }
+    ? { enter: 0, leave: ui.motionCut ? 90 : 260 }
     : navToolbarTransitionMs.value,
 )
 const musicToolbarTransitionMs = computed(() =>
   musicBarGhost.value
-    ? { enter: 0, leave: ui.prefersReducedMotion ? 90 : 260 }
+    ? { enter: 0, leave: ui.motionCut ? 90 : 260 }
     : navToolbarTransitionMs.value,
 )
 
@@ -366,7 +399,7 @@ function onToolbarSlotSpringEnd(ev: AnimationEvent, slot: 'photo' | 'trail' | 'm
 }
 
 function startPhotoFromPanel() {
-  if (ui.prefersReducedMotion) {
+  if (ui.motionCut) {
     ui.togglePhotoBackground()
     closeNavOverflow()
     return
@@ -378,7 +411,7 @@ async function commitPhotoFromPanel() {
   photoPanelBtnVisible.value = true
   closeNavOverflow()
   ui.togglePhotoBackground()
-  if (ui.prefersReducedMotion) return
+  if (ui.motionCut) return
 
   deferPhotoBar.value = true
   await nextTick()
@@ -392,16 +425,16 @@ async function commitPhotoFromPanel() {
     narrow,
     wide,
     headerRightRef.value,
-    ui.prefersReducedMotion,
+    ui.motionCut,
     new Set(['photo']),
   )
   photoBarGhost.value = false
   await nextTick()
-  if (!ui.prefersReducedMotion) photoBarSpringPop.value = true
+  if (!ui.motionCut) photoBarSpringPop.value = true
 }
 
 function startTrailFromPanel() {
-  if (ui.prefersReducedMotion) {
+  if (ui.motionCut) {
     toggleCursorTrail()
     closeNavOverflow()
     return
@@ -413,7 +446,7 @@ async function commitTrailFromPanel() {
   trailPanelBtnVisible.value = true
   closeNavOverflow()
   toggleCursorTrail()
-  if (ui.prefersReducedMotion) return
+  if (ui.motionCut) return
 
   deferTrailBar.value = true
   await nextTick()
@@ -427,16 +460,16 @@ async function commitTrailFromPanel() {
     narrow,
     wide,
     headerRightRef.value,
-    ui.prefersReducedMotion,
+    ui.motionCut,
     new Set(['trail']),
   )
   trailBarGhost.value = false
   await nextTick()
-  if (!ui.prefersReducedMotion) trailBarSpringPop.value = true
+  if (!ui.motionCut) trailBarSpringPop.value = true
 }
 
 function startMusicFromPanel() {
-  if (ui.prefersReducedMotion) {
+  if (ui.motionCut) {
     closeNavOverflow()
     onMusicNavClick()
     return
@@ -447,7 +480,7 @@ function startMusicFromPanel() {
 async function commitMusicFromPanel() {
   musicPanelBtnVisible.value = true
   closeNavOverflow()
-  if (ui.prefersReducedMotion) {
+  if (ui.motionCut) {
     if (musicPlayerMinimized.value) ui.expandMusicPlayer()
     return
   }
@@ -467,12 +500,12 @@ async function commitMusicFromPanel() {
       narrow,
       wide,
       headerRightRef.value,
-      ui.prefersReducedMotion,
+      ui.motionCut,
       new Set(['music']),
     )
     musicBarGhost.value = false
     await nextTick()
-    if (!ui.prefersReducedMotion) musicBarSpringPop.value = true
+    if (!ui.motionCut) musicBarSpringPop.value = true
   }
 }
 
@@ -481,6 +514,15 @@ onMounted(() => {
   mql = window.matchMedia('(prefers-reduced-motion: reduce)')
   mql.addEventListener('change', syncMotion)
 })
+
+watch(
+  () => ui.motionCut,
+  async (cut) => {
+    if (!cut) return
+    await nextTick()
+    stampPageEnterPlay(mainRef.value)
+  },
+)
 
 onUnmounted(() => {
   mql?.removeEventListener('change', syncMotion)
@@ -497,9 +539,17 @@ onUnmounted(() => {
 })
 
 /** 路由跳转转场（GSAP 驱动 Vue Transition，:css=false）：离开淡出上移、进入淡入浮起；尊重 reduced-motion */
+function finishJsRouteTransition(el: Element, done: () => void) {
+  gsap.killTweensOf(el)
+  if (el.isConnected) {
+    gsap.set(el, { clearProps: 'transform,opacity,visibility' })
+  }
+  requestAnimationFrame(() => done())
+}
+
 function onRouteLeave(el: Element, done: () => void) {
-  if (ui.prefersReducedMotion) {
-    done()
+  if (ui.motionCut || !el.isConnected) {
+    finishJsRouteTransition(el, done)
     return
   }
   gsap.to(el, { autoAlpha: 0, y: -10, duration: 0.26, ease: 'power2.in', onComplete: done })
@@ -508,8 +558,8 @@ function onRouteLeave(el: Element, done: () => void) {
 function onRouteEnter(el: Element, done: () => void) {
   // 新页进入时才切换容器布局（此刻旧页 leave 已结束），避免转场前的宽度突变
   displayedLayout.value = route.meta.appMainLayout
-  if (ui.prefersReducedMotion) {
-    done()
+  if (ui.motionCut || !el.isConnected) {
+    finishJsRouteTransition(el, done)
     return
   }
   gsap.from(el, {
@@ -527,6 +577,7 @@ function onRouteEnter(el: Element, done: () => void) {
   <div class="abstract-grid-bg" aria-hidden="true" />
   <FooterGrunRayPanel />
   <div class="app-root">
+    <a class="skip-link" href="#main" @click="skipToMain">{{ t('nav.skipToMain') }}</a>
     <!-- 须先于 RouterView 挂上，避免详情页 Teleport 找不到目标 -->
     <div id="detail-scroll-rail-host" class="detail-scroll-rail-host" />
     <ScrollProgress />
@@ -537,7 +588,7 @@ function onRouteEnter(el: Element, done: () => void) {
         <div class="header-left">
           <div
             class="header-brand-row"
-            :class="{ 'header-brand-row--settle-pop': headerLeftSettlePop && !ui.prefersReducedMotion }"
+            :class="{ 'header-brand-row--settle-pop': headerLeftSettlePop && !ui.motionCut }"
           >
             <template v-if="!isHomeRoute">
               <Transition
@@ -732,8 +783,11 @@ function onRouteEnter(el: Element, done: () => void) {
               <div
                 v-show="overflowOpen"
                 id="nav-overflow-panel"
+                ref="overflowPanelRef"
                 class="nav-overflow-panel card-overflow-visible"
-                role="region"
+                :role="overflowOpen ? 'dialog' : undefined"
+                :aria-modal="overflowOpen ? 'true' : undefined"
+                :aria-hidden="overflowOpen ? undefined : 'true'"
                 :aria-label="t('nav.overflowRegion')"
               >
                 <div class="nav-overflow-panel-tools">
@@ -825,10 +879,49 @@ function onRouteEnter(el: Element, done: () => void) {
                   <span class="nav-pill-grow-line" aria-hidden="true" />
                 </button>
                 </div>
+                <div class="nav-overflow-motion">
+                  <EdKicker :en="t('nav.motionKickerEn')" :zh="t('nav.motionKickerZh')" />
+                  <div
+                    class="nav-overflow-motion-actions"
+                    role="radiogroup"
+                    :aria-label="t('nav.motionGroup')"
+                  >
+                    <button
+                      v-for="choice in motionChoices"
+                      :key="choice.id"
+                      type="button"
+                      class="ed-action"
+                      :class="{ 'is-current': ui.motionPreference === choice.id }"
+                      :aria-pressed="ui.motionPreference === choice.id ? 'true' : 'false'"
+                      @click="setMotionPreference(choice.id)"
+                    >
+                      {{ t(`nav.${choice.labelKey}`) }}
+                    </button>
+                  </div>
+                  <p v-if="ui.prefersReducedMotion" class="nav-overflow-motion-hint">
+                    {{ t('nav.motionSystemReduce') }}
+                  </p>
+                </div>
               </div>
             </Transition>
+            <div
+              v-if="motionHintOpen"
+              class="nav-motion-hint card-overflow-visible"
+              role="status"
+              :aria-label="t('nav.motionHintRegion')"
+            >
+              <EdKicker :en="t('nav.motionHintKickerEn')" :zh="t('nav.motionHintKickerZh')" />
+              <p class="nav-motion-hint-body">{{ t('nav.motionHintBody') }}</p>
+              <div class="nav-motion-hint-actions">
+                <button type="button" class="ed-action" @click="acceptHint">
+                  {{ t('nav.motionHintAccept') }}
+                </button>
+                <button type="button" class="ed-action" @click="dismissHint">
+                  {{ t('nav.motionHintDismiss') }}
+                </button>
+              </div>
+            </div>
           </div>
-          <span v-if="ui.prefersReducedMotion" class="hint">{{ t('ui.cursorTrailReduced') }}</span>
         </div>
       </div>
       </div>
@@ -847,6 +940,7 @@ function onRouteEnter(el: Element, done: () => void) {
         <aside
           v-if="isMobileShell && mobileNavOpen"
           id="mobile-nav-drawer"
+          ref="drawerRef"
           class="mobile-nav-drawer"
           role="dialog"
           aria-modal="true"
@@ -868,16 +962,16 @@ function onRouteEnter(el: Element, done: () => void) {
       </Transition>
     </Teleport>
 
-    <main class="app-main" :class="appMainClasses">
+    <main id="main" ref="mainRef" class="app-main" tabindex="-1" :class="appMainClasses">
       <RouterView v-slot="{ Component }">
         <Transition :css="false" mode="out-in" @enter="onRouteEnter" @leave="onRouteLeave">
-          <component :is="Component" :key="route.fullPath" />
+          <component :is="Component" :key="route.path" />
         </Transition>
       </RouterView>
     </main>
     </div>
 
-    <CursorTrail />
+    <CursorTrail v-if="ui.cursorTrailActive" />
     <BackToTop />
     <FpsMeter v-if="ui.fpsMeterEnabled" />
     <PhotoBgBlurAdjuster
@@ -889,6 +983,26 @@ function onRouteEnter(el: Element, done: () => void) {
 </template>
 
 <style scoped>
+.skip-link {
+  position: fixed;
+  left: 0.75rem;
+  top: 0.75rem;
+  z-index: 400;
+  padding: 0.42rem 0.7rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  text-decoration: none;
+  transform: translateY(calc(-100% - 1.5rem));
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: none;
+}
+
 .header-inner {
   position: relative;
   z-index: 1;
@@ -1248,12 +1362,13 @@ function onRouteEnter(el: Element, done: () => void) {
   line-height: 0;
 }
 
-.nav-overflow-panel {
+.nav-overflow-panel,
+.nav-motion-hint {
   position: absolute;
   top: calc(100% + 0.35rem);
   right: 0;
   z-index: 60;
-  min-width: 9rem;
+  min-width: 13.5rem;
   padding: 0.65rem 0.7rem;
   pointer-events: auto;
   overflow: visible;
@@ -1263,6 +1378,15 @@ function onRouteEnter(el: Element, done: () => void) {
   box-shadow:
     0 -1px 0 var(--color-border),
     0 1px 0 var(--color-border);
+}
+
+.nav-motion-hint {
+  z-index: 70;
+  width: min(13.5rem, calc(100vw - 2rem));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.42rem;
 }
 
 .nav-overflow-panel-tools [data-nav-tip]:hover,
@@ -1276,6 +1400,76 @@ function onRouteEnter(el: Element, done: () => void) {
   align-items: center;
   justify-content: flex-end;
   gap: 0.5rem;
+}
+
+.nav-overflow-motion {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.42rem;
+  margin-top: 0.7rem;
+  padding-top: 0.62rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.nav-overflow-motion :deep(.ed-kicker),
+.nav-motion-hint :deep(.ed-kicker) {
+  margin: 0;
+}
+
+.nav-overflow-motion-actions,
+.nav-motion-hint-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem 0.95rem;
+}
+
+.nav-overflow-motion .ed-action,
+.nav-motion-hint .ed-action {
+  appearance: none;
+  padding: 0;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-accent);
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.nav-overflow-motion .ed-action.is-current {
+  color: var(--color-text);
+  border-bottom-color: var(--color-text);
+}
+
+.nav-overflow-motion .ed-action:hover,
+.nav-motion-hint .ed-action:hover {
+  border-bottom-color: var(--color-accent);
+}
+
+.nav-overflow-motion-hint,
+.nav-motion-hint-body {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.nav-motion-hint-body {
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  width: 100%;
+}
+
+.nav-overflow-wrap:has(.nav-overflow-panel:not([aria-hidden='true'])) .nav-motion-hint {
+  right: calc(100% + 0.45rem);
 }
 
 /* 面板整体：从顶栏/触发器一侧落入，收起时回到上方（视觉上的「从 header-right 进出」） */
@@ -1379,6 +1573,20 @@ function onRouteEnter(el: Element, done: () => void) {
   .nav-toolbar-tool-leave-to.music-nav-btn {
     opacity: 0;
   }
+}
+
+:global(html[data-motion='reduced']) .nav-overflow-panel-enter-active,
+:global(html[data-motion='minimal']) .nav-overflow-panel-enter-active,
+:global(html[data-motion='reduced']) .nav-overflow-panel-leave-active,
+:global(html[data-motion='minimal']) .nav-overflow-panel-leave-active {
+  transition: opacity 0.12s ease;
+}
+
+:global(html[data-motion='reduced']) .nav-overflow-panel-enter-from,
+:global(html[data-motion='minimal']) .nav-overflow-panel-enter-from,
+:global(html[data-motion='reduced']) .nav-overflow-panel-leave-to,
+:global(html[data-motion='minimal']) .nav-overflow-panel-leave-to {
+  transform: none;
 }
 
 .brand {

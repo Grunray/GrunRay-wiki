@@ -25,7 +25,7 @@ export function useHomeHeroRelayout(opts: {
   scrollLayerRef: Ref<HTMLElement | null>
 }) {
   const ui = useUiStore()
-  const { photoBackgroundEnabled, photoBackgroundBlurPx, prefersReducedMotion } = storeToRefs(ui)
+  const { photoBackgroundEnabled, photoBackgroundBlurPx, motionCut } = storeToRefs(ui)
 
   let raf = 0
   let peekObserver: ResizeObserver | null = null
@@ -138,7 +138,7 @@ export function useHomeHeroRelayout(opts: {
   }
 
   function updatePhotoBgBlur(top: number) {
-    if (!photoBackgroundEnabled.value || prefersReducedMotion.value) {
+    if (!photoBackgroundEnabled.value || motionCut.value) {
       return
     }
     writeHeroBlur(photoBackgroundBlurPx.value * blurProgress(top))
@@ -211,7 +211,7 @@ export function useHomeHeroRelayout(opts: {
 
   onBeforeMount(() => {
     markPage()
-    if (photoBackgroundEnabled.value && !prefersReducedMotion.value) {
+    if (photoBackgroundEnabled.value && !motionCut.value) {
       lastWrittenBlurCss = '0px'
       document.documentElement.style.setProperty('--page-photo-bg-blur', '0px')
     }
@@ -255,7 +255,7 @@ export function useHomeHeroRelayout(opts: {
     syncScrollDriven()
   })
 
-  watch(prefersReducedMotion, (reduced) => {
+  watch(motionCut, (reduced) => {
     if (reduced) restoreUserBlur()
     else lastWrittenBlurCss = ''
     syncScrollDriven()
