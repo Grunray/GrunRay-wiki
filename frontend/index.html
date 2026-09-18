@@ -22,7 +22,7 @@
     <meta name="twitter:title" content="GrunRay" />
     <meta name="twitter:description" content="找不到实习捏——代码不跑我跑！" />
     <meta name="twitter:image" content="https://grunray.tech/favicon.jpg" />
-    <!-- 自托管字体：去 Google Fonts 外链（国内访问稳定、不依赖外部）；@font-face 用 display:swap，系统字体先排版 -->
+    <!-- 自托管字体：去 Google Fonts 外链；@font-face 用 display:swap。首页问候花体 Great Vibes 挂在 HomeView CSS，不进本表。 -->
     <link rel="stylesheet" href="/fonts/fonts.css" />
     <link
       rel="alternate"
@@ -31,6 +31,16 @@
       href="/rss.xml"
     />
     <title>GrunRay</title>
+    <script>
+      (function () {
+        try {
+          var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          var pref = localStorage.getItem('ui.motionPreference')
+          var level = reduce ? 'minimal' : pref === 'reduced' ? 'reduced' : 'full'
+          document.documentElement.setAttribute('data-motion', level)
+        } catch (e) {}
+      })()
+    </script>
   </head>
   <body>
     <div id="app"></div>

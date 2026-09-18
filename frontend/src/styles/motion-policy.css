@@ -1,0 +1,147 @@
+/*
+ * 用户 REDUCED / MINIMAL（系统未必是 prefers-reduced-motion: reduce）。
+ * 系统 reduce 仍走各文件原有 @media；这里补 dataset。
+ */
+
+html:is([data-motion='reduced'], [data-motion='minimal']) {
+  transition: none;
+}
+
+html[data-motion='minimal'] {
+  scroll-behavior: auto;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal']) .card,
+html:is([data-motion='reduced'], [data-motion='minimal']) .glass-nav-sticky-wrap,
+html:is([data-motion='reduced'], [data-motion='minimal']) .glass-nav-sticky-wrap::before,
+html:is([data-motion='reduced'], [data-motion='minimal']) .glass-nav-inner {
+  transition: none;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal']) .card:hover,
+html:is([data-motion='reduced'], [data-motion='minimal']) .btn-accent:hover:not(:disabled) {
+  transform: none;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal']) .card-hover-g::before,
+html:is([data-motion='reduced'], [data-motion='minimal']) .card-hover-g .card-corner-vine {
+  display: none;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal'])
+  .card-hover-g:is(:hover, :focus-visible, :focus-within),
+html:is([data-motion='reduced'], [data-motion='minimal'])
+  .card-hover-g:is(:hover, :focus-visible, :focus-within)
+  .timeline-title,
+html:is([data-motion='reduced'], [data-motion='minimal'])
+  .cover-story.card-hover-g:is(:hover, :focus-within)
+  .cover-story-title,
+html:is([data-motion='reduced'], [data-motion='minimal'])
+  .timeline-item:has(.card-hover-g:is(:hover, :focus-visible, :focus-within))
+  .timeline-date {
+  transform: none;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal'])
+  .cover-story.card-hover-g:is(:hover, :focus-within)
+  .cover-story-kicker {
+  letter-spacing: inherit;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal']) .footer-grunray-meta-bar__shell {
+  transition: opacity 0.2s ease;
+  transform: none;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal'])
+  .footer-grunray-meta-bar__shell:not(.is-visible) {
+  opacity: 0;
+  visibility: hidden;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal']) .footer-grunray-letter__slice-inner {
+  transform: none !important;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal']) .home-intro-stack {
+  transition: none;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal']) .home-layout.home-fonts-ready .home-intro-stack {
+  opacity: 1;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal']) .vinyl-record,
+html:is([data-motion='reduced'], [data-motion='minimal']) .vinyl-arm-wrap,
+html:is([data-motion='reduced'], [data-motion='minimal']) .vinyl-track.is-animating {
+  animation: none !important;
+  transition: none !important;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal']) .music-nav-btn--playing,
+html:is([data-motion='reduced'], [data-motion='minimal']) .music-nav-btn--playing .music-nav-btn-icon {
+  animation: none;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal']) .nav-pill-grow-line,
+html:is([data-motion='reduced'], [data-motion='minimal']) [data-nav-tip]::after {
+  transition: none;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal'])[data-photo-bg='true'] body::before {
+  transition: none;
+  filter: none;
+  transform: none;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal'])[data-photo-bg-loading='true'] body::before {
+  filter: none;
+  transform: none;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal'])[data-photo-bg-loading='true'] body::after {
+  animation: none;
+  opacity: 0.5;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal'])[data-photo-bg='true'].page-photo-bg--swap::after {
+  animation: none !important;
+  opacity: 0;
+  content: none;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal']) .ui-skeleton::after {
+  animation: none;
+}
+
+/* 入场：REDUCED/MINIMAL 仍打 page-enter--play，但不播时长；预隐藏选择器只对 full 生效见各 page-enter 文件 */
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play > *,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .home-mast,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .home-now,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .home-toc,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .cover-paper-peek,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .cover-story-peek,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .timeline-year-head,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .timeline-pin-head,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .timeline-date,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .timeline-dot,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .timeline-card,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .message-row,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .friend-row,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .friends-review-card,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .xiqi-hero,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .xiqi-hero-chips > *,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .xiqi-card,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .ed-feed-row,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .xiqi-split-main-inner > *,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .xiqi-split-mast > *,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .about-page-inner > * {
+  animation: none !important;
+  opacity: 1 !important;
+}
+
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .home-intro-stack,
+html:is([data-motion='reduced'], [data-motion='minimal']) .home-layout.home-fonts-ready .home-intro-stack {
+  animation: none !important;
+  opacity: 1;
+}

@@ -243,6 +243,14 @@
   color: var(--color-text-muted);
 }
 
+.habitat-owner-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.55rem 1.35rem;
+  margin: 0.15rem 0 0;
+}
+
 .habitat-page .ed-action {
   appearance: none;
   display: inline;

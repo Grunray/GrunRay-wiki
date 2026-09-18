@@ -68,8 +68,30 @@
 .locale-nav-btn:hover,
 .nav-overflow-trigger:hover,
 .mobile-nav-trigger:hover,
-.theme-nav-btn:hover {
+.theme-nav-btn:hover,
+.photo-bg-nav-btn:focus-visible,
+.trail-toggle:focus-visible,
+.music-nav-btn:focus-visible,
+.splash-nav-btn:focus-visible,
+.fps-nav-btn:focus-visible,
+.locale-nav-btn:focus-visible,
+.nav-overflow-trigger:focus-visible,
+.mobile-nav-trigger:focus-visible,
+.theme-nav-btn:focus-visible {
   color: var(--color-text);
+}
+
+.photo-bg-nav-btn:focus-visible,
+.trail-toggle:focus-visible,
+.music-nav-btn:focus-visible,
+.splash-nav-btn:focus-visible,
+.fps-nav-btn:focus-visible,
+.locale-nav-btn:focus-visible,
+.nav-overflow-trigger:focus-visible,
+.mobile-nav-trigger:focus-visible,
+.theme-nav-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 .nav-pill-grow-line {
@@ -94,6 +116,15 @@
 .nav-overflow-trigger:hover .nav-pill-grow-line,
 .mobile-nav-trigger:hover .nav-pill-grow-line,
 .theme-nav-btn:hover .nav-pill-grow-line,
+.photo-bg-nav-btn:focus-visible .nav-pill-grow-line,
+.trail-toggle:focus-visible .nav-pill-grow-line,
+.music-nav-btn:focus-visible .nav-pill-grow-line,
+.splash-nav-btn:focus-visible .nav-pill-grow-line,
+.fps-nav-btn:focus-visible .nav-pill-grow-line,
+.locale-nav-btn:focus-visible .nav-pill-grow-line,
+.nav-overflow-trigger:focus-visible .nav-pill-grow-line,
+.mobile-nav-trigger:focus-visible .nav-pill-grow-line,
+.theme-nav-btn:focus-visible .nav-pill-grow-line,
 .photo-bg-nav-btn.is-active .nav-pill-grow-line,
 .trail-toggle.is-active .nav-pill-grow-line,
 .fps-nav-btn.is-active .nav-pill-grow-line,

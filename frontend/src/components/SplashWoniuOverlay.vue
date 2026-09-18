@@ -63,11 +63,7 @@ function isOAuthReturn(): boolean {
 }
 
 function prefersReducedMotion(): boolean {
-  try {
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  } catch {
-    return false
-  }
+  return ui.motionCut
 }
 
 function ackHandoffToIframe() {
@@ -348,13 +344,7 @@ watch(
 
 onMounted(() => {
   window.addEventListener('message', onMessage)
-  let reduced = false
-  try {
-    reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  } catch {
-    /* ignore */
-  }
-  if (reduced) return
+  if (ui.motionCut) return
   if (hasSeen()) return
   if (isOAuthReturn()) {
     markSeen()

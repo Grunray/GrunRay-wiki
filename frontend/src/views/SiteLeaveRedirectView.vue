@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch, type ComponentPublicInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink, useRoute } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 
 import EdKicker from '@/components/editorial/EdKicker.vue'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
@@ -18,8 +18,12 @@ import '@/styles/page-leave-redirect.css'
 
 const { t } = useI18n()
 const route = useRoute()
+const router = useRouter()
 
 const pageRoot = ref<HTMLElement | null>(null)
+const confirmBtnRef = ref<HTMLButtonElement | null>(null)
+const backLinkRef = ref<ComponentPublicInstance | null>(null)
+const failStatusRef = ref<HTMLElement | null>(null)
 const invalid = ref(false)
 const leaving = ref(false)
 const closeFailed = ref(false)
@@ -85,12 +89,57 @@ function onCancelClose() {
   }, 120)
 }
 
+function onCancelNavigate() {
+  if (leaving.value || closeFailed.value) return
+  void router.push(returnTo.value)
+}
+
+function onLeaveKeydown(event: KeyboardEvent) {
+  if (event.key !== 'Escape') return
+  if (leaving.value) return
+  event.preventDefault()
+  if (invalid.value) {
+    void router.push(returnTo.value)
+    return
+  }
+  if (isTabLeave.value) {
+    onCancelClose()
+    return
+  }
+  onCancelNavigate()
+}
+
+function focusHost(target: unknown) {
+  if (target instanceof HTMLElement) {
+    target.focus()
+    return
+  }
+  if (target && typeof target === 'object' && '$el' in target) {
+    const el = (target as ComponentPublicInstance).$el
+    if (el instanceof HTMLElement) el.focus()
+  }
+}
+
 onMounted(async () => {
   if (!targetUrl.value) invalid.value = true
   await playPageEnter(pageRoot.value)
+  document.addEventListener('keydown', onLeaveKeydown)
+  await nextTick()
+  if (invalid.value) {
+    focusHost(backLinkRef.value)
+    return
+  }
+  confirmBtnRef.value?.focus()
+})
+
+watch(closeFailed, async (failed) => {
+  if (!failed) return
+  await nextTick()
+  failStatusRef.value?.focus()
 })
 
 onUnmounted(() => {
+  document.removeEventListener('keydown', onLeaveKeydown)
   if (leaveTimer !== null) window.clearTimeout(leaveTimer)
 })
 </script>
@@ -104,7 +153,6 @@ onUnmounted(() => {
       'leave-page--busy': leaving,
       'leave-page--close-failed': closeFailed,
     }"
-    aria-live="polite"
   >
     <h1 class="h">{{ pageTitle }}</h1>
 
@@ -131,17 +179,24 @@ onUnmounted(() => {
           >
             {{ cancelLabel }}
           </RouterLink>
-          <button type="button" class="ed-action" @click="onConfirm">
+          <button ref="confirmBtnRef" type="button" class="ed-action" @click="onConfirm">
             {{ t('leave.redirectConfirm') }}
           </button>
         </div>
-        <p v-if="closeFailed" class="leave-close-failed" role="status">
+        <p
+          v-if="closeFailed"
+          ref="failStatusRef"
+          class="leave-close-failed"
+          tabindex="-1"
+          role="status"
+          aria-live="assertive"
+        >
           {{ t('leave.tabCloseFailed') }}
         </p>
       </template>
 
       <p v-else class="leave-actions">
-        <RouterLink class="ed-action" :to="returnTo">{{ t('leave.redirectBack') }}</RouterLink>
+        <RouterLink ref="backLinkRef" class="ed-action" :to="returnTo">{{ t('leave.redirectBack') }}</RouterLink>
       </p>
     </div>
   </section>

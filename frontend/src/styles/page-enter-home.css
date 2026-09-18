@@ -24,16 +24,16 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .home-layout:not(.page-enter--play) .home-mast,
-  .home-layout:not(.page-enter--play) .home-now,
-  .home-layout:not(.page-enter--play) .home-toc {
+  html[data-motion='full'] .home-layout:not(.page-enter--play) .home-mast,
+  html[data-motion='full'] .home-layout:not(.page-enter--play) .home-now,
+  html[data-motion='full'] .home-layout:not(.page-enter--play) .home-toc {
     opacity: 0;
     transform: translateY(22px);
   }
 
-  .home-layout:not(.page-enter--play) .cover-paper-peek,
-  .home-layout:not(.page-enter--play) .cover-story-peek,
-  .home-layout:not(.page-enter--play) .home-intro-stack {
+  html[data-motion='full'] .home-layout:not(.page-enter--play) .cover-paper-peek,
+  html[data-motion='full'] .home-layout:not(.page-enter--play) .cover-story-peek,
+  html[data-motion='full'] .home-layout:not(.page-enter--play) .home-intro-stack {
     opacity: 0;
   }
 }

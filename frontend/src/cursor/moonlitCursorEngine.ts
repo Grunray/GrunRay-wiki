@@ -664,7 +664,7 @@ export class MoonlitCursorEngine {
     this.smoothMx = -100
     this.smoothMy = -100
     this.hoverPickT = 0
-    this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    this.reducedMotion = document.documentElement.dataset.motion !== 'full'
 
     this.onMove = this.onMove.bind(this)
     this.onDown = this.onDown.bind(this)
@@ -709,16 +709,6 @@ export class MoonlitCursorEngine {
     window.addEventListener('resize', this.onResize, { passive: true })
     document.addEventListener('visibilitychange', this.onVisibility)
     if (window.matchMedia) {
-      const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-      const onMotion = () => {
-        this.reducedMotion = mq.matches
-        this.wakeLoop()
-      }
-      this.reducedMotionMq = mq
-      this.reducedMotionHandler = onMotion
-      if (mq.addEventListener) mq.addEventListener('change', onMotion)
-      else if (mq.addListener) mq.addListener(onMotion)
-
       const pq = window.matchMedia('(pointer: fine)')
       const onPointer = () => {
         this.pointerFine = pq.matches
@@ -823,12 +813,6 @@ export class MoonlitCursorEngine {
     window.removeEventListener('pointerdown', this.onDown)
     window.removeEventListener('resize', this.onResize)
     document.removeEventListener('visibilitychange', this.onVisibility)
-    if (this.reducedMotionMq && this.reducedMotionHandler) {
-      if (this.reducedMotionMq.removeEventListener)
-        this.reducedMotionMq.removeEventListener('change', this.reducedMotionHandler)
-      else if (this.reducedMotionMq.removeListener)
-        this.reducedMotionMq.removeListener(this.reducedMotionHandler)
-    }
     if (this.pointerFineMq && this.pointerFineHandler) {
       if (this.pointerFineMq.removeEventListener)
         this.pointerFineMq.removeEventListener('change', this.pointerFineHandler)

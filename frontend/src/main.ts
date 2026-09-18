@@ -12,6 +12,9 @@ import './styles/page-detail-masthead.css'
 import './styles/markdown-reading.css'
 import './styles/page-status.css'
 import './styles/footer-grunray.css'
+import './styles/motion-policy.css'
+
+import { bootstrapMotionPolicy } from '@/composables/useMotionPolicy'
 
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -20,6 +23,8 @@ import { installExternalLeaveClickGuard } from '@/leave/installExternalLeaveClic
 
 // GSAP 插件全局注册一次（官方 gsap-skills 最佳实践）
 gsap.registerPlugin(ScrollTrigger)
+
+bootstrapMotionPolicy()
 
 const app = createApp(App)
 const head = createHead()

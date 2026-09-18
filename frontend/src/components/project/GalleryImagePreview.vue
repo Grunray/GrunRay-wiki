@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import AppImage from '@/components/ui/AppImage.vue'
-import { prefersReducedMotionMedia } from '@/composables/usePageEnterAnimation'
+import { useUiStore } from '@/stores/ui'
 import { sanitizeMediaUrl } from '@/utils/mediaUrl'
 
 const props = defineProps<{
@@ -12,6 +12,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const ui = useUiStore()
 
 const LENS_ZOOM = 2.4
 const WIDE_MQ = '(min-width: 1100px)'
@@ -21,7 +22,7 @@ const MAX_VIEWER_SCALE = 4
 const figRef = ref<HTMLElement | null>(null)
 const viewerOpen = ref(false)
 const hovered = ref(false)
-const reducedMotion = ref(false)
+const reducedMotion = computed(() => ui.motionCut)
 const wideEnough = ref(false)
 const pointer = ref({ x: 0.5, y: 0.5 })
 const viewerScale = ref(1)
@@ -44,16 +45,11 @@ const viewerImageStyle = computed(() => ({
 }))
 
 let hideTimer = 0
-let motionMql: MediaQueryList | null = null
 let wideMql: MediaQueryList | null = null
 let dragAnchor = { mx: 0, my: 0, px: 0, py: 0 }
 
 function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n))
-}
-
-function syncReducedMotion() {
-  reducedMotion.value = prefersReducedMotionMedia()
 }
 
 function syncWide() {
@@ -161,9 +157,6 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 onMounted(() => {
-  syncReducedMotion()
-  motionMql = window.matchMedia('(prefers-reduced-motion: reduce)')
-  motionMql.addEventListener('change', syncReducedMotion)
   wideMql = window.matchMedia(WIDE_MQ)
   syncWide()
   wideMql.addEventListener('change', syncWide)
@@ -172,7 +165,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.clearTimeout(hideTimer)
-  motionMql?.removeEventListener('change', syncReducedMotion)
   wideMql?.removeEventListener('change', syncWide)
   window.removeEventListener('keydown', onKeydown)
 })

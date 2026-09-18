@@ -3,6 +3,7 @@ import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { gsap } from 'gsap'
 
 import SnailNavIcon from '@/components/icons/SnailNavIcon.vue'
+import { isMotionCut } from '@/composables/useMotionPolicy'
 
 /**
  * 图片懒加载 + GSAP 蜗牛爬行加载动画。针对服务器慢、图片加载慢的场景：
@@ -79,7 +80,7 @@ function onError() {
 }
 
 onMounted(() => {
-  reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  reduced = isMotionCut()
   mountedAt = performance.now()
   const root = rootRef.value
   if (!root) return

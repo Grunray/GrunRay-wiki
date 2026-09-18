@@ -12,15 +12,15 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .friends-page:not(.page-enter--play) > *,
-  .friends-apply-page:not(.page-enter--play) > *,
-  .friends-admin-page:not(.page-enter--play) > * {
+  html[data-motion='full'] .friends-page:not(.page-enter--play) > *,
+  html[data-motion='full'] .friends-apply-page:not(.page-enter--play) > *,
+  html[data-motion='full'] .friends-admin-page:not(.page-enter--play) > * {
     opacity: 0;
     transform: translateY(18px);
   }
 
-  .friends-page:not(.page-enter--play) .friend-row,
-  .friends-admin-page:not(.page-enter--play) .friends-review-card {
+  html[data-motion='full'] .friends-page:not(.page-enter--play) .friend-row,
+  html[data-motion='full'] .friends-admin-page:not(.page-enter--play) .friends-review-card {
     opacity: 0;
     transform: translateY(14px);
   }

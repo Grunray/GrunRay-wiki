@@ -10,6 +10,15 @@ import {
   clampPhotoBackgroundBlur,
 } from '@/theme/photoBackgroundBlur'
 import { preloadCurrentPhotoBg } from '@/theme/pagePhotoBackgrounds'
+import {
+  applyMotionLevelToDocument,
+  persistMotionPreference,
+  readMotionPreference,
+  readSystemReducedMotion,
+  resolveMotionLevel,
+  type MotionLevel,
+  type MotionPreference,
+} from '@/composables/useMotionPolicy'
 
 const STORAGE_THEME = 'ui.theme'
 const STORAGE_THEME_ABSTRACT_UNLOCKED = 'ui.themeAbstractUnlocked'
@@ -17,6 +26,8 @@ const STORAGE_CURSOR = 'ui.cursorTrail'
 const STORAGE_FPS_METER = 'ui.fpsMeter'
 /** 音乐面板是否收起：'1' 收起（关闭 UI），'0' 展开；无键时默认收起 */
 const STORAGE_MUSIC_MINIMIZED = 'ui.musicPlayerMinimized'
+/** 壳层强制关工具时不写 localStorage，避免手机打开一次清掉桌面偏好 */
+let skipToolPersist = 0
 
 function readMusicPlayerMinimized(): boolean {
   const v = localStorage.getItem(STORAGE_MUSIC_MINIMIZED)
@@ -66,11 +77,12 @@ function applyThemeToDocument(theme: ThemeId) {
 
 export const useUiStore = defineStore('ui', () => {
   const theme = ref<ThemeId>(readTheme())
-  const cursorTrailEnabled = ref(localStorage.getItem(STORAGE_CURSOR) !== '0')
+  const cursorTrailEnabled = ref(localStorage.getItem(STORAGE_CURSOR) === '1')
   /** 帧率监视浮层；无键默认关，仅 `ui.fpsMeter=1` 才开 */
   const fpsMeterEnabled = ref(localStorage.getItem(STORAGE_FPS_METER) === '1')
-  const prefersReducedMotion = ref(false)
-  /** 音乐播放器是否收起（仅隐藏 UI，不卸载音频）；持久化，刷新后保持上次开/关 */
+  const prefersReducedMotion = ref(readSystemReducedMotion())
+  const motionPreference = ref<MotionPreference>(readMotionPreference())
+  /** 音乐播放器是否收起（隐藏 UI）；未展开过不挂载组件。持久化，刷新后保持上次开/关 */
   const musicPlayerMinimized = ref(readMusicPlayerMinimized())
   /** 供顶栏 🎵 状态：是否与音频播放同步 */
   const musicPlayerPlaying = ref(false)
@@ -95,21 +107,24 @@ export const useUiStore = defineStore('ui', () => {
   )
 
   watch(cursorTrailEnabled, (v) => {
+    if (skipToolPersist) return
     localStorage.setItem(STORAGE_CURSOR, v ? '1' : '0')
   })
 
   watch(fpsMeterEnabled, (v) => {
+    if (skipToolPersist) return
     localStorage.setItem(STORAGE_FPS_METER, v ? '1' : '0')
   })
 
   watch(musicPlayerMinimized, (m) => {
+    if (skipToolPersist) return
     localStorage.setItem(STORAGE_MUSIC_MINIMIZED, m ? '1' : '0')
   })
 
   watch(
     photoBackgroundEnabled,
     (v) => {
-      localStorage.setItem(STORAGE_PHOTO_BG, v ? '1' : '0')
+      if (!skipToolPersist) localStorage.setItem(STORAGE_PHOTO_BG, v ? '1' : '0')
       applyPhotoBgToDocument(v)
     },
     { immediate: true },
@@ -126,12 +141,34 @@ export const useUiStore = defineStore('ui', () => {
     { immediate: true },
   )
 
+  const motionLevel = computed<MotionLevel>(() =>
+    resolveMotionLevel({
+      systemReduce: prefersReducedMotion.value,
+      preference: motionPreference.value,
+    }),
+  )
+  const motionCut = computed(() => motionLevel.value !== 'full')
+  const motionFull = computed(() => motionLevel.value === 'full')
+
   const cursorTrailActive = computed(
-    () => cursorTrailEnabled.value && !prefersReducedMotion.value,
+    () => cursorTrailEnabled.value && motionLevel.value === 'full',
+  )
+
+  watch(
+    motionLevel,
+    (level) => {
+      applyMotionLevelToDocument(level)
+    },
+    { immediate: true },
   )
 
   function setReducedMotion(value: boolean) {
     prefersReducedMotion.value = value
+  }
+
+  function setMotionPreference(preference: MotionPreference) {
+    motionPreference.value = preference
+    persistMotionPreference(preference)
   }
 
   /** 顶栏轮换：未解锁时浅/深；解锁后 浅 → 深 → 隐藏 → 浅 */
@@ -203,11 +240,24 @@ export const useUiStore = defineStore('ui', () => {
     photoBackgroundBlurPx.value = clampPhotoBackgroundBlur(px)
   }
 
+  function runWithoutToolPersist(fn: () => void) {
+    skipToolPersist += 1
+    try {
+      fn()
+    } finally {
+      skipToolPersist -= 1
+    }
+  }
+
   return {
     theme,
     cursorTrailEnabled,
     fpsMeterEnabled,
     prefersReducedMotion,
+    motionPreference,
+    motionLevel,
+    motionCut,
+    motionFull,
     cursorTrailActive,
     musicPlayerMinimized,
     musicPlayerPlaying,
@@ -220,6 +270,7 @@ export const useUiStore = defineStore('ui', () => {
     cycleTheme,
     unlockAbstractTheme,
     setReducedMotion,
+    setMotionPreference,
     expandMusicPlayer,
     setMusicPlayerMinimized,
     setMusicPlayerPlaying,
@@ -230,5 +281,6 @@ export const useUiStore = defineStore('ui', () => {
     setCursorTrailEnabled,
     setFpsMeterEnabled,
     setPhotoBackgroundBlur,
+    runWithoutToolPersist,
   }
 })
