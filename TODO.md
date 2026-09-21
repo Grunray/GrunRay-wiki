@@ -84,7 +84,6 @@ pytest
 
 1. 首页 刊号、问候语等 卡片背景有些突兀
 
-2. 创建一个给Agent读的文件
 
 2. 
 博客/项目 详情页：
@@ -228,8 +227,54 @@ pytest
 ## 进行中
 
 > 对外变更摘要见 [docs/CHANGELOG.md](docs/CHANGELOG.md)。
->
-> 进行中暂无批次。
+
+## 154 · 2026-09-19 Lighthouse 首页跟进
+
+**状态**：进行中
+
+**方向**：对照 2026-09-19 Chrome Lighthouse 13.4.1 对 `https://www.grunray.tech/` 的审计（JSON：本机 Downloads `www.grunray.tech-20260919T032853.json`）。只改**站内能负责**、且能改善 LCP / 缓存 / 无障碍名称的项。不重做视觉语言，不追插件噪声，不做整站 SSR。
+
+**背景 / 现状**：四类分数 **性能 94 / 无障碍 100 / 最佳做法 100 / SEO 100**；新类 **Agentic browsing 67**。Core Web Vitals：FCP 0.8s、LCP **1.4s（0.84）**、TBT 20ms、CLS 0.001、Speed Index 1.4s。模拟视口约 412×823。报告里大量「未使用 JS 2.3 MiB / 未压缩 JS」来自 `chrome-extension://`（uBlock 等），**忽略**。`bf-cache` 失败原因是「内部出错了」，当噪声。三主题 CSS 未用规则（约 15 KiB）是纸面令牌设计，不拆主题。Noto SC 子集（各约 1.5 MB）批次 150 已明确本批不做。
+
+**依赖 / 冲突**：LCP 图是关照片背景时的舞台底图 `img.home-stage-art-base`（`/art/polonia_sandoren.webp`）。`docs/DESIGN.md` §14 写过舞台图 `fetchpriority="low"`、不加 `sizes`/`srcset`、不预拉其它主题 —— 本批只抬**当前主题底图**优先级，楔图与其它主题仍低；不要推翻 150 的横竖屏不换源。nginx 缓存草稿见 `designed/optimization/04-nginx-rss-cache-gzip.md`（已有 `/assets/` `/fonts/`，缺 `/art/` `/footer/`）。
+
+**P0 — 真瓶颈（先做）**
+
+- [ ] 154-1 nginx 打开 HTTP/2（报告 36 个资源全是 `http/1.1`，insight 估 660 ms）：生产 `listen 443 ssl http2`（或 HTTP/3 另议）；本仓库没有 conf 正文，改服务器 `/etc/nginx/conf.d/grunray_wiki.conf`，`nginx -t` 后 reload；用 `curl -sI --http2` 确认。不改 Vue。
+- [ ] 154-2 静态长缓存：`/art/*.webp`、`/footer/*.svg` 现 `Cache-Control` 寿命为 0（估 411 KiB）。给不可变静态加 `public, max-age=…`（可参考 04 文档的 fonts 一年；文件名无 hash 则用较短 max-age + 发版改名或 query）。`index.html` 继续禁缓存。`/api/media/` 头像已有 1 天，可并列看要不要缩图而不是再加长缓存。
+- [ ] 154-3 首页 LCP：关照片背景时 LCP 是舞台底图，且「初始 HTML 发现不了 / 未 `fetchpriority=high`」。只对**当前主题底图**（浅色默认 `/art/polonia_sandoren.webp`）`fetchpriority="high"`，或在 `index.html` `rel=preload` 默认浅色底图一张；楔图与其它主题仍 `low`、不预拉。禁止 `sizes`/`srcset`。开照片背景时不要误预载舞台图。
+- [ ] 154-4 语言钮无障碍名称：可见字是 `EN` / `中`，`aria-label` 却是 `t('ui.locale')`（「语言」），Lighthouse `label-content-name-mismatch`。把可访问名改成包含可见字（或拿掉 `aria-hidden` 让可见字成为名称）。`AppShell.vue` 语言钮；不要改成药丸皮肤。
+
+**P1 — 体积与字体**
+
+- [ ] 154-5 刊号头像：`touxiang.jpg` 约 80 KB，显示约 58×58，insight 估浪费 78 KB。做一版小图（如 ≤128 px WebP/JPEG）给首页 mast 用，或媒体管线缩略；不要把原图当 58px 图标。宽高属性已有则保留防 CLS。
+- [ ] 154-6 Great Vibes：`page-home-hero.css` 里 `font-display: block`，insight 估 140 ms。改为 `swap` 或 `optional` 后目视问候花体，闪一下系统草书可以、布局跳一下不行；若 `swap` 明显撑高卡片则维持 `block` 并在 DESIGN §14 写明例外。
+- [ ] 154-7 （可选）`llms.txt`：Agentic 67，现文件缺 H1、无链接（生产有文件、仓库无）。加一份带 `# 标题` 与站点主要路径链接的 `llms.txt`（前端 public 或后端与 `robots.txt` 同发），不写长文案堆砌。
+
+**P2 — 明确不做 / 以后再说**
+
+- ~~154-8 按 Lighthouse 砍「未使用 JS 2.3 MiB」~~ **不做**：几乎全是浏览器扩展。
+- ~~154-9 为三主题未用 CSS 拆包~~ **不做**：令牌三档同页切换。
+- ~~154-10 本批重做 Noto SC 子集~~ **不做**：见 150；体积仍大，需要时另开批次。
+- ~~154-11 为 bf-cache / 强制重排 insight 改架构~~ **不做**：bf-cache 是工具内部错误；reflow 0.4 ms。
+
+**⚠️ 回归 / 风险**
+
+- 抬 LCP 优先级后，弱网下舞台图可能抢问候字体；验收时看浅色首页问候是否仍先于楔图可读。
+- HTTP/2 只动 nginx，reload 失败要能回滚（沿用 04 文档流程）。
+- 验收：Chrome 再跑一次首页 Lighthouse（**无痕、关扩展**），对照 LCP、HTTP 协议、缓存寿命、语言钮；窄屏壳层头像不显示则 154-5 只验桌面刊号。
+
+**涉及文件**
+
+`frontend/src/views/HomeView.vue`、`frontend/index.html`、`frontend/src/styles/page-home-hero.css`、`frontend/src/components/layout/AppShell.vue`、`docs/DESIGN.md` §14、服务器 nginx conf、`designed/optimization/04-nginx-rss-cache-gzip.md`、可选 `frontend/public/llms.txt`
+
+**验收**
+
+- [ ] 无痕 Lighthouse 首页：LCP 仍 ≤2.5s 且发现项不再报缺 `fetchpriority` / 不可发现（或已说明 SPA 预载方案）
+- [ ] `curl -sI` 舞台 webp / footer svg 带缓存头；HTML 仍 no-cache
+- [ ] 语言钮：可见 EN/中 与可访问名一致；读屏不报名称不含可见字
+- [ ] 三主题 + 关/开照片背景：舞台图不错位、不预拉其它主题
+- [ ] DESIGN.md §14 补 LCP / 缓存 / font-display 例外（若有改契约）
 
 ---
 
@@ -308,7 +353,7 @@ pytest
 **验收**
 
 - [x] 本地 pytest 绿；前端 `vue-tsc -b` + `vite build` 可独立跑（与 CI 同命令）
-- [ ] `main` 上 CI 绿（合入后看 Actions）
+- [x] `main` 上 CI 绿（合入后看 Actions：#52 / #53 merge 与对应 PR 跑均绿）
 
 ---
 
