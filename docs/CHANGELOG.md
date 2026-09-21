@@ -6,7 +6,18 @@
 
 纸面重构批次（TODO 105）之前的条目，据 GitHub 提交与 PR #2–#4 整理，仓库 TODO 无对应勾选。
 
+## 2026-09-21
+
+### 内容
+
+- 新增项目 `proj-openclaw`（OpenClaw 技能与本地桥接）；CAD / 文件 RAG / ASR / Excel 排产四篇改为其 `project_note`（`/projects/openclaw/notes`）。
+- icpcCode 仍为普通博文；DeepSeek+Dify 糖尿病助手改为独立项目卡片。正文避开甲方公司名。
+
 ## 2026-09-19
+
+### 站长通知
+
+- 访客留言、非站长回复、友链申请写入成功后，经 SMTP 给站长发一封邮件。未配齐或发送失败不影响提交；站长自己的留言和回复不发。配置只放 `backend/.env`。
 
 ### Docs
 
