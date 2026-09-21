@@ -129,6 +129,22 @@ class Config:
         "找不到实习捏——代码不跑我跑！",
     ).strip()
 
+    # 站长通知。未显式开关时：SMTP 四项都有才发，缺任一项则静默跳过。
+    SMTP_HOST = os.getenv("SMTP_HOST", "").strip()
+    SMTP_PORT = _env_int("SMTP_PORT", 465)
+    SMTP_USE_SSL = _env_bool("SMTP_USE_SSL", True)
+    SMTP_USER = os.getenv("SMTP_USER", "").strip()
+    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "").strip()
+    NOTIFY_EMAIL_TO = os.getenv("NOTIFY_EMAIL_TO", "").strip() or SMTP_USER
+    NOTIFY_EMAIL_FROM = os.getenv("NOTIFY_EMAIL_FROM", "").strip() or SMTP_USER
+    _notify_raw = os.getenv("NOTIFY_EMAIL_ENABLED")
+    if _notify_raw is None or _notify_raw.strip() == "":
+        NOTIFY_EMAIL_ENABLED = bool(
+            SMTP_HOST and SMTP_USER and SMTP_PASSWORD and NOTIFY_EMAIL_TO
+        )
+    else:
+        NOTIFY_EMAIL_ENABLED = _env_bool("NOTIFY_EMAIL_ENABLED", False)
+
     def friends_site_logo_absolute(self) -> str:
         logo = self.FRIENDS_SITE_LOGO_URL
         if not logo:

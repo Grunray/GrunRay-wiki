@@ -18,6 +18,7 @@ from app.friend_serialize import application_result, row_to_admin_friend, row_to
 from app.friend_special import load_special_links
 from app.friend_status import STATUS_PENDING, STATUS_PUBLISHED
 from app.friend_validate import FriendValidationError, validate_application, validate_admin_update
+from app.owner_mail import notify_friend_application
 from app.site_owner import is_site_owner
 
 bp = Blueprint("friends_api", __name__, url_prefix="/api/friends")
@@ -133,6 +134,14 @@ def create_application():
         return _error("申请保存失败", status=500)
 
     record_application(request)
+
+    notify_friend_application(
+        name=fields["name"],
+        url=fields["url"],
+        description=fields["description"],
+        contact_email=fields["contact_email"],
+        pending=status != STATUS_PUBLISHED,
+    )
 
     if status != STATUS_PUBLISHED:
         return _ok(application_result(row), message="申请已提交，等待审核")

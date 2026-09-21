@@ -28,6 +28,7 @@ from app.message_rate_limit import (
     record_user_post,
 )
 from app.message_serialize import row_to_admin_message, row_to_message
+from app.owner_mail import notify_guest_message
 from app.message_status import STATUS_PENDING, STATUS_PUBLISHED
 from app.message_validate import ValidationError, validate_content
 from app.site_owner import is_site_owner
@@ -241,6 +242,14 @@ def create_message():
     record_ip_post(request)
     record_user_post(guest_user_id)
 
+    if not is_site_owner(user):
+        notify_guest_message(
+            author=user.get("name") or "访客",
+            content=content,
+            kind="留言",
+            pending=status != STATUS_PUBLISHED,
+        )
+
     if status != STATUS_PUBLISHED:
         return _ok(None, message="留言已提交，等待审核")
 
@@ -294,4 +303,11 @@ def create_reply(public_id: str):
         return _error("回复保存失败", status=500)
 
     record_owner_reply(request)
+    if not is_site_owner(user):
+        notify_guest_message(
+            author=user.get("name") or "访客",
+            content=content,
+            kind="回复",
+            pending=False,
+        )
     return _ok(row_to_message(parent, replies), message="回复成功")
