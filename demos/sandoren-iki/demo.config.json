@@ -1,0 +1,7 @@
+{
+  "type": "vue",
+  "version": "v1",
+  "projectDir": ".",
+  "buildCommand": "npm install && npm run build",
+  "distDir": "dist"
+}
