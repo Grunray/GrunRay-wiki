@@ -12,6 +12,7 @@ import {
   homeStageArtWedgeClipPath,
 } from '@/composables/homeStageArtWedge'
 import { useHomeHeroRelayout } from '@/composables/useHomeHeroRelayout'
+import { useHomeStageArtIntro } from '@/composables/useHomeStageArtIntro'
 import { injectMobileShell } from '@/composables/useMobileShell'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
@@ -21,6 +22,7 @@ import { fetchMessageAuthUser } from '@/services/messageAuth'
 import { fetchSiteNow } from '@/services/siteNowApi'
 import '@/styles/page-enter-home.css'
 import '@/styles/page-home-hero.css'
+import '@/styles/page-home-stage-intro.css'
 import '@/styles/page-toc-row.css'
 import { useUiStore } from '@/stores/ui'
 import type { Post, Project } from '@/types/content'
@@ -58,6 +60,12 @@ const nowDoingText = computed(() => nowDoing.value || t('home.nowDoing'))
 const nowReadingText = computed(() => nowReading.value || t('home.nowReading'))
 
 const { measureCoverPeek } = useHomeHeroRelayout({ peekRef, peekHeadRef, scrollLayerRef })
+
+/** 方案 D 开屏：状态类只打 stack（P11），节点只加在 stack 内 */
+const stageArtStackRef = ref<HTMLElement | null>(null)
+const { drawSvg: stageArtDrawSvg, tryArmOnce: tryArmStageArtIntro } = useHomeStageArtIntro({
+  stackRef: stageArtStackRef,
+})
 
 /**
  * 勿在 homeRoot 上再用 :class 绑 is-photo-bg：Vue 会重写 class，冲掉
@@ -229,6 +237,7 @@ onMounted(() => {
   void loadHomeProjects()
   void loadSiteNow()
   void loadOwnerFlag()
+  void tryArmStageArtIntro()
   void (async () => {
     await waitGreetingFonts()
     homeRoot.value?.classList.add('home-fonts-ready')
@@ -248,7 +257,11 @@ watch(coverStory, async () => {
   <section ref="homeRoot" class="home-layout">
     <section class="home-stage" aria-label="首屏">
       <figure v-if="!photoBackgroundEnabled" class="home-stage-art" aria-hidden="true">
-        <div class="home-stage-art-stack">
+        <div
+          ref="stageArtStackRef"
+          class="home-stage-art-stack"
+          :style="{ '--home-stage-wedge-clip': stageArtWedgeClip }"
+        >
           <img
             class="home-stage-art-base"
             :src="stageArtSrc"
@@ -272,6 +285,10 @@ watch(coverStory, async () => {
             class="home-stage-art-wash"
             :style="{ clipPath: stageArtWedgeClip, backgroundColor: stageArtWedgeColor }"
           />
+          <!-- 方案 D：光束 + SVG 临时描绘层（v-html 注入一次，播完 display:none 不拔） -->
+          <div class="home-stage-art-beam" aria-hidden="true" />
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <div class="home-stage-art-draw" aria-hidden="true" v-html="stageArtDrawSvg" />
         </div>
       </figure>
 

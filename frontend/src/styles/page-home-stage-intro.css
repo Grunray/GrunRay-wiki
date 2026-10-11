@@ -1,0 +1,97 @@
+/* ============================================================
+   首页底层图 · 开屏方案 D「墨起扇鸣」（批次见 CHANGELOG）
+   原型规格：designed/home-stage-intro/（shared.css/shared.js，勿凭感觉重调）
+   时序：描绘 0→1.9s → 扫扇+光束 1.95s 起 → 撤描绘层 3.25s → 环境态 3.4s 起
+   纪律：
+   - 预隐藏只挂 .stage-intro--armed（JS 确认 full 档 + 线稿就绪才武装，P1）
+   - 扫扇 clip / 光束角度由 composable rAF 写内联（P4），本文不含 @property 依赖
+   - 状态类只打在 .home-stage-art-stack 上（P11），禁绑 homeRoot
+   - 非 full 档 = 静态现状直接可见（P8 兜底在最下）
+   ============================================================ */
+
+/* ---------- 新节点：光束 + 描绘层（只许在 stack 内） ---------- */
+.home-stage-art-beam,
+.home-stage-art-draw {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  pointer-events: none;
+}
+
+.home-stage-art-beam {
+  /* 角度与透明度播放期由 JS 逐帧写（d-beam 133°→157°） */
+  background: conic-gradient(
+    from 133deg at 82.7428% 0%,
+    transparent 0deg,
+    rgb(255 248 230 / 0.8) 3.4deg,
+    transparent 6.2deg
+  );
+  opacity: 0;
+}
+
+/* 描绘层默认不显示。只在武装后露出（笔画已设 dashoffset，不会整图闪一下）。
+   播完由 JS 写 inline display:none。照片背景关掉再打开时 v-html 还在，
+   但没有武装类，不能把线稿整张盖在底图上。 */
+.home-stage-art-draw { z-index: 1; display: none; }
+.home-stage-art-stack.stage-intro--armed .home-stage-art-draw { display: block; }
+.home-stage-art-draw svg { width: 100%; height: 100%; display: block; }
+
+/* 描绘层 stroke 随主题换（P5；线稿原文 inline style 只能 !important 压） */
+.home-stage-art-draw path { stroke: #2b2823 !important; }
+html[data-theme='dark'] .home-stage-art-draw path { stroke: #abde6b !important; }
+html[data-theme='abstract'] .home-stage-art-draw path { stroke: #f4f1e8 !important; }
+
+/* ---------- 一段：武装态（JS 加 .stage-intro--armed 后才预隐藏，P1） ---------- */
+.home-stage-art-stack.stage-intro--armed .home-stage-art-base { opacity: 0; }
+/* tint / wash 的扇形收拢由 JS 把内联 clip-path 写到 wedgeClipPathAt(0)，CSS 不参与 */
+
+/* ---------- 二段：.stage-intro--inked（JS 在 1950ms 挂上） ---------- */
+.home-stage-art-stack.stage-intro--inked .home-stage-art-base {
+  opacity: 1;
+  transition: opacity 0.8s var(--ease-out);
+}
+.home-stage-art-stack.stage-intro--inked .home-stage-art-draw {
+  opacity: 0;
+  transition: opacity 0.75s ease 0.2s;
+}
+
+/* ---------- 环境态（仅 full 档；inked 后常驻） ---------- */
+@keyframes stage-intro-wash-breathe {
+  0%, 100% { opacity: 0.08; }
+  50% { opacity: 0.14; }
+}
+@keyframes stage-intro-art-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+html[data-motion='full'] .home-stage-art-stack.stage-intro--inked .home-stage-art-wash {
+  animation: stage-intro-wash-breathe 7s ease-in-out 1.6s infinite;
+}
+/* float 用 transform，与窄屏 stack 的独立 translate 属性不冲突（P13） */
+html[data-motion='full'] .home-stage-art-stack.stage-intro--inked {
+  animation: stage-intro-art-float 13s ease-in-out 3.5s infinite;
+}
+
+/* ---------- 非 full 档兜底（P8）：静态直接可见、装饰全撤 ----------
+   播放中途切档：JS 写的内联 clip-path 可能是中间值，用 --home-stage-wedge-clip
+   （HomeView 始终写在 stack 上的终态）!important 压回。变量必须常驻，
+   否则未注册的 var() 会把内联扇形算成 none。 */
+html[data-motion]:not([data-motion='full']) .home-stage-art-stack .home-stage-art-base {
+  opacity: 1 !important;
+  transition: none !important;
+}
+html[data-motion]:not([data-motion='full']) .home-stage-art-stack .home-stage-art-tint,
+html[data-motion]:not([data-motion='full']) .home-stage-art-stack .home-stage-art-wash {
+  clip-path: var(--home-stage-wedge-clip) !important;
+}
+html[data-motion]:not([data-motion='full']) .home-stage-art-stack .home-stage-art-beam,
+html[data-motion]:not([data-motion='full']) .home-stage-art-stack .home-stage-art-draw {
+  display: none !important;
+}
+html[data-motion]:not([data-motion='full']) .home-stage-art-stack,
+html[data-motion]:not([data-motion='full']) .home-stage-art-stack .home-stage-art-wash {
+  animation: none !important;
+}

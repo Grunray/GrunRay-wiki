@@ -90,6 +90,8 @@ export const useUiStore = defineStore('ui', () => {
   const splashWoniuReplayTick = ref(0)
   /** 开屏头像飞入首页时为 true，首页头像暂时隐藏避免叠影 */
   const splashAvatarHandoff = ref(false)
+  /** 蜗牛开屏遮罩在播时为 true；首页方案 D 等落幕再描绘（MERGE P2） */
+  const splashWoniuActive = ref(false)
   /** 全屏图片背景（与 main.css 中 html[data-photo-bg] 联动） */
   const photoBackgroundEnabled = ref(readPhotoBackground())
   /** 图片背景常态模糊（px）；右键顶栏照片钮可调 */
@@ -220,6 +222,10 @@ export const useUiStore = defineStore('ui', () => {
     splashAvatarHandoff.value = v
   }
 
+  function setSplashWoniuActive(v: boolean) {
+    splashWoniuActive.value = v
+  }
+
   function togglePhotoBackground() {
     photoBackgroundEnabled.value = !photoBackgroundEnabled.value
   }
@@ -263,6 +269,7 @@ export const useUiStore = defineStore('ui', () => {
     musicPlayerPlaying,
     splashWoniuReplayTick,
     splashAvatarHandoff,
+    splashWoniuActive,
     photoBackgroundEnabled,
     photoBackgroundBlurPx,
     abstractThemeUnlocked,
@@ -276,6 +283,7 @@ export const useUiStore = defineStore('ui', () => {
     setMusicPlayerPlaying,
     requestSplashWoniuReplay,
     setSplashAvatarHandoff,
+    setSplashWoniuActive,
     togglePhotoBackground,
     setPhotoBackgroundEnabled,
     setCursorTrailEnabled,

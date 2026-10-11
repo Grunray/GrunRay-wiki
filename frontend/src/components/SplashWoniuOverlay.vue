@@ -80,6 +80,7 @@ function dismiss() {
   revealBeneath.value = false
   ui.setSplashAvatarHandoff(false)
   visible.value = false
+  ui.setSplashWoniuActive(false)
   markSeen()
 }
 
@@ -339,6 +340,7 @@ watch(
     irisVeilActive.value = false
     clearIrisVeilStyles()
     visible.value = true
+    ui.setSplashWoniuActive(true)
   },
 )
 
@@ -352,6 +354,7 @@ onMounted(() => {
   }
   markSeen()
   visible.value = true
+  ui.setSplashWoniuActive(true)
 })
 
 onUnmounted(() => {
