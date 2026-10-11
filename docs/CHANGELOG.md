@@ -6,6 +6,16 @@
 
 纸面重构批次（TODO 105）之前的条目，据 GitHub 提交与 PR #2–#4 整理，仓库 TODO 无对应勾选。
 
+## 2026-10-11
+
+### 内容
+
+- 新增项目卡片「桑多涅的 live2d 小人」（`proj-sandoren-iki`）：立绘拆层后用 Iki 在浏览器里播放。仓库 [Sandoren_live2d](https://github.com/Grunray/Sandoren_live2d)；详情页 iframe 加载 `demos/sandoren-iki` 播放包（功能抽拉、下蹲确认、更新模型）。
+
+### 首页
+
+- 关照片背景时，full 档进首页会先把线稿描绘出来，再把扇形随光束扫开。首访等蜗牛落幕再播；reduced / minimal 直接看到静态扇形。同一标签页只播一次，再进首页不再重播（批次 155）。
+
 ## 2026-09-21
 
 ### 内容

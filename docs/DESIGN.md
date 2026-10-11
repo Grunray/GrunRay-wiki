@@ -298,6 +298,9 @@ REDUCED 仍要像这份纸面刊。MINIMAL 才对应系统无障碍。
 .home-layout                    ← 单根（禁止 fragment；见下方「路由转场」）
   .home-stage                   ← sticky 首屏；高度 = 100dvh − --home-nav-offset
     .home-stage-art             ← 仅关照片背景时挂载；右侧线稿
+      .home-stage-art-stack     ← 开屏状态类只打在这里（禁绑 .home-layout）
+        .home-stage-art-beam    ← 扫扇光束；终态 opacity 0
+        .home-stage-art-draw    ← SVG 临时描绘层；默认隐藏，播完 display:none
     .home-mast                  ← 刊号矩形卡 + 独立圆形头像卡
     .home-stage-dock
       .home-intro-track / .home-intro-stack
@@ -316,7 +319,8 @@ REDUCED 仍要像这份纸面刊。MINIMAL 才对应系统无障碍。
 
 - **通透首屏**：开照片背景时整页去掉纸面蒙层与 `html::before` 灰罩；中间留空看 `body::before` 照片。**禁止**再叠独立 `backdrop-filter` / `__veil`。
 - **滚动 blur**：仅写 `--page-photo-bg-blur`，从 0 插值到用户设定值（默认 6px）；跟手、无 0.85s filter 过渡。离页恢复用户值。写入前量化到 0.5px，同值不刷变量；progress 用缓存的纸面文档偏移 + `scrollY`，不要每帧 `getBoundingClientRect`。
-- **关照片背景**：底图用改线稿前的填充 WebP（`/art/polonia_sandoren.webp` | `-dark.webp` | `-abstract.webp`，Git 里那版 1536×1024）。扇形内叠当前线稿换墨 WebP（`-wedge.webp` / `-dark-wedge.webp` / `-abstract-wedge.webp`）+ 10% 扇形墨底。线稿源 `designed/home-hero-relayout/polonia_sandoren_line.svg`（`fill:none`，只改 `stroke` 再栅格）。扇形预设（`homeStageArtWedge.ts`）：顶点 `(1270.93, 0)`、夹角 `39°`、中轴 `-45°`；浅色扇形墨 `#38697a`，深色 `#abde6b`，abstract `#f4f1e8`。无虚线射线。高度：导航下缘 → COVER STORY 上缘。宽屏贴右可向左延伸；**窄屏（≤640px）** 铺满舞台 cover、锚点约 `50% 38%`（勿贴右 100%），露出角色正脸。主题 SVG 只留 `designed/`，勿当生产热路径。
+- **关照片背景**：底图用改线稿前的填充 WebP（`/art/polonia_sandoren.webp` | `-dark.webp` | `-abstract.webp`，Git 里那版 1536×1024）。扇形内叠当前线稿换墨 WebP（`-wedge.webp` / `-dark-wedge.webp` / `-abstract-wedge.webp`）+ 10% 扇形墨底。线稿源 `designed/home-hero-relayout/polonia_sandoren_line.svg`（`fill:none`，只改 `stroke` 再栅格）。扇形预设（`homeStageArtWedge.ts`）：顶点 `(1270.93, 0)`、夹角 `39°`、中轴 `-45°`；浅色扇形墨 `#38697a`，深色 `#abde6b`，abstract `#f4f1e8`。无虚线射线。高度：导航下缘 → COVER STORY 上缘。宽屏贴右可向左延伸；**窄屏（≤640px）** 铺满舞台 cover、锚点约 `50% 38%`（勿贴右 100%），露出角色正脸。主题 SVG 只留 `designed/`，勿当生产热路径。例外：开屏描绘层用 `/art/polonia_sandoren_line.svg`（见下条）。
+- **开屏 · 墨起扇鸣**：仅 `data-motion=full`、关照片背景、且首页首次挂载时底图已在场才播（`useHomeStageArtIntro`）。每个标签页会话只播一次（`sessionStorage` `grunray_home_stage_intro_v1`，开播时写入）；同会话再进首页直接静态扇形，不拉线稿。进站后才关掉照片背景不补播。首访等蜗牛落幕（`splashWoniuActive`）再起笔。预隐藏只挂 `.stage-intro--armed`。描绘层 `v-html` 注入一次，stroke 用 CSS `!important` 跟主题（浅 `#2b2823` / 深 `#abde6b` / abstract `#f4f1e8`）；未武装时 `display:none`。扫扇由 `wedgeClipPathAt(p)` 写内联 clip，终态与 `homeStageArtWedgeClipPath()` 一致。`--home-stage-wedge-clip` 常驻在 stack 上，非 full 档用它压回内联中间值。环境态只在 full：wash 呼吸 7s、整图 `transform` 漂浮 13s（不碰窄屏 `translate`）。纸面盖住后不另加滚动停表。描绘段中途切主题则提前收场。
 - **盖住后跳过绘制**：纸面顶缘落到导航下后给 `html` 打 `data-home-stage-covered`，`.home-stage` 用 `content-visibility: hidden`（自身 height 仍撑 sticky 占位）。回顶在露出前一截就去掉该标记，避免闪空白。
 - **纸面挤入**：`.home-rising` 负 margin 叠在首屏上。COVER STORY 整张卡坐在滚动纸面上（`.home-scroll-layer-paper`），不要再拆 sticky peek。纸面顶先一根通栏 2px ink（`.cover-paper-rule`，封住卡左右缺口），其下是 `SCROLL · 下读` + 极细 ∨（muted，不加粗、不用 accent），再与卡片留缝。卡顶是 kicker `COVER STORY · 封面故事` → 标题 / 摘要 / 元数据。`--cover-peek-height` / `--cover-lift` **从纸面顶量到卡内 kicker 底**（通栏线 + cue + 缝 + kicker），不要量整张卡；线稿与欢迎卡 `bottom` 跟着上移。造型是 editorial 纸面圆角矩形（`--radius-md` 四角），底色 `--cover-story-bg`（`--color-bg-base`，与滚动纸面同一色）。卡顶底 ink 2px（`--cover-ink`，对齐 `.home-toc` 顶线 / NOW 下方那根）；顶用外侧 `box-shadow` 随 R 角走弧（不要用通栏直线横切圆角），底用 `inset`（卡上 `overflow:hidden` 会裁外侧底影）。悬停时两根卡 ink 都要保留，不要被方案 G 的浮起阴影盖掉。卡下再一根同样 2px 直 ink（`.cover-story-foot-ink`）。无左侧 accent 脊、无玻璃。底部与 footer 揭示区用盖板纸色接上（`app-page-cover::after`），勿留空缝。勿做成卡片外悬浮条、大三角或圆形按钮。
 

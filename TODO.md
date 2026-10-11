@@ -323,6 +323,29 @@ pytest
 
 > 对外摘要见 [docs/CHANGELOG.md](docs/CHANGELOG.md)。已完成批次尽量在状态行挂对应日链（含 08-17 起回填）。
 
+## 155 · 2026-10-11 首页开屏 · 每会话只播一次
+
+**状态**：已完成（2026-10-11） · 摘要见 [CHANGELOG · 2026-10-11](docs/CHANGELOG.md#2026-10-11)
+
+**方向**：方案 D 开屏不要每次路由回到首页都重播。用 `sessionStorage` 记本标签页已播过；关标签或新开会话再播。不写入 `localStorage`（那是蜗牛开屏的跨访问记忆）。
+
+**P0**
+
+- [x] 155-1 开播时写 `grunray_home_stage_intro_v1`；同会话再进首页不武装、不拉线稿，静态扇形直接可见
+- [x] 155-2 未播成（非 full 档、线稿失败、蜗牛未落幕就离开）不记，下次仍可播
+- [x] 155-3 `DESIGN.md` §12 与当日 CHANGELOG 同步
+
+**涉及文件**
+
+`frontend/src/composables/useHomeStageArtIntro.ts`、`docs/DESIGN.md` §12
+
+**验收**
+
+- [x] full 档：首进播放；去别的页再回首页不重播；清掉 session 键后再进会播
+- [x] reduced 档仍静态，且不占用这次会话的播放资格
+
+---
+
 ## 153 · 2026-09-16 自动化测试 + CI（收尾）
 
 **状态**：已完成（2026-09-19） · 摘要见 [CHANGELOG · 2026-09-19](docs/CHANGELOG.md#2026-09-19)
