@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sandoren · Iki 人物</title>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="stage"></canvas>
+      <div class="hud">
+        <button type="button" id="toggle-panel">参数</button>
+        <div class="drawer" id="drawer">
+          <div class="drawer-bar">
+            <button type="button" id="toggle-drawer" aria-expanded="false">展开功能</button>
+            <p id="drawer-tip" class="drawer-tip">
+              表情和动作都收在这里。点「展开功能」就能用。
+            </p>
+          </div>
+          <div class="drawer-body" id="drawer-body" hidden>
+            <header>
+              <h1>Sandoren</h1>
+              <p id="hint">鼠标跟随视线。头一动，身体会晚一拍回弹。</p>
+            </header>
+            <div class="actions" id="expression-bar"></div>
+            <div class="actions" id="motion-bar"></div>
+            <p id="line" class="line"></p>
+          </div>
+        </div>
+        <aside id="panel" class="panel collapsed" aria-label="参数面板">
+          <div id="sliders"></div>
+        </aside>
+        <div id="notice" class="notice" hidden>
+          <div class="notice-card" role="dialog" aria-modal="true" aria-labelledby="notice-title">
+            <h2 id="notice-title">下蹲说明</h2>
+            <p id="notice-text"></p>
+            <div class="notice-actions">
+              <button type="button" id="notice-cancel">取消</button>
+              <button type="button" id="notice-continue">继续下蹲</button>
+            </div>
+          </div>
+        </div>
+        <footer id="status">加载中…</footer>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
