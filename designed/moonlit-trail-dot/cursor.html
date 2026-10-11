@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>光标点阵化实验室 · Moonlit Cursor — dot-motion-builder 原型</title>
+<style>
+  :root {
+    --paper: #f4f1e8;
+    --paper-dim: #ece7d8;
+    --ink: #2b2823;
+    --ink-soft: rgba(43, 40, 35, 0.62);
+    --ink-faint: rgba(43, 40, 35, 0.38);
+    --accent: #2e6b4f;
+    --hairline: rgba(43, 40, 35, 0.16);
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --cursor-ink: #0c485c;
+    --cursor-ink-dim: #072f3e;
+    --moon-lit: #d2ebf8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Noto Serif SC", "Source Han Serif SC", Georgia, serif;
+    line-height: 1.7;
+    padding: 48px 24px 96px;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; }
+  .kicker { font-size: 12px; letter-spacing: 0.28em; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: 0.02em; }
+  .lede { color: var(--ink-soft); font-size: 14px; margin-top: 10px; max-width: 720px; }
+  .lede code, .note code {
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 12px; background: var(--paper-dim); padding: 1px 6px; border-radius: 3px;
+  }
+  hr.rule { border: none; border-top: 1px solid var(--hairline); margin: 36px 0; }
+  h2 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .h2-note { font-size: 12.5px; color: var(--ink-faint); margin-bottom: 18px; }
+  .note { font-size: 13px; color: var(--ink-soft); background: var(--paper-dim); border-left: 3px solid var(--accent); padding: 12px 16px; border-radius: 0 6px 6px 0; margin-top: 22px; }
+
+  .row { display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-end; }
+  .cell-fig { text-align: center; }
+  .cell-fig figcaption { font-size: 11.5px; color: var(--ink-faint); margin-top: 8px; line-height: 1.5; }
+  .frame {
+    border: 1px solid var(--hairline);
+    background:
+      linear-gradient(45deg, rgba(43,40,35,0.045) 25%, transparent 25%, transparent 75%, rgba(43,40,35,0.045) 75%) 0 0 / 12px 12px,
+      linear-gradient(45deg, rgba(43,40,35,0.045) 25%, transparent 25%, transparent 75%, rgba(43,40,35,0.045) 75%) 6px 6px / 12px 12px,
+      var(--paper);
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+  }
+  canvas { display: block; image-rendering: pixelated; }
+
+  .controls {
+    display: flex; gap: 22px; flex-wrap: wrap; align-items: center;
+    padding: 14px 18px; border: 1px solid var(--hairline); border-radius: 8px;
+    background: var(--paper-dim); margin-bottom: 22px;
+    font-size: 12.5px; color: var(--ink-soft);
+  }
+  .controls label { display: flex; align-items: center; gap: 8px; }
+  .controls input[type="range"] { width: 130px; accent-color: var(--accent); }
+  .controls .val { font-family: ui-monospace, monospace; font-size: 12px; min-width: 34px; color: var(--ink); }
+  .btn {
+    font: inherit; font-size: 12.5px; padding: 6px 14px; border-radius: 6px;
+    border: 1px solid var(--hairline); background: var(--paper); color: var(--ink);
+    cursor: pointer; transition: border-color 0.2s var(--ease), color 0.2s var(--ease);
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+  .btn.primary:hover { color: #fff; }
+  .btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  #exportStatus { font-size: 12px; color: var(--accent); font-family: ui-monospace, monospace; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Prototype · dot-motion-builder</div>
+  <h1>光标点阵化实验室</h1>
+  <p class="lede">
+    方案 D 光标本体构成：<code>Damselette</code> 锚点 15px（尖端对齐热点）+
+    <code>Columbina</code> 主图 36px（偏移 +10/+9）+ 静止 <code>sleep</code> 40px + <code>Kuuhenki</code> 15px。
+    引擎把彩色 SVG 插画按 <code>mask = max(α, 亮度)</code> 转单色墨稿（浅色墨 <code>#0C485C</code>）。
+    本页 1:1 复刻该转换后采样进点阵网格，验证「光标也统一为点阵语言」的可行性。
+  </p>
+
+  <hr class="rule">
+
+  <h2>① 引擎 sprite 1:1 复刻</h2>
+  <p class="h2-note">svgLineArtFromImage 同款 mask + 浅色墨着色；左：实际显示尺寸，右：4× 放大</p>
+  <div class="row" id="origRow"></div>
+
+  <hr class="rule">
+
+  <h2>② Columbina 主图点阵采样（显示位 36/48/56/72px 可切）</h2>
+  <p class="h2-note">同一 mask 多档网格采样；峰值法保细线、面积法保剪影。此区滑杆仅实验 Columbina；锚点与小精灵为线条稿，固定峰值 0.14（见 TUNE）。点击「选为导出」定参数。</p>
+  <div class="controls">
+    <label>采样器
+      <button class="btn sampler" data-s="peak" aria-pressed="false">峰值</button>
+      <button class="btn sampler" data-s="cover" aria-pressed="true">面积</button>
+    </label>
+    <label>激活阈值 <input type="range" id="t0" min="4" max="40" value="30"><span class="val" id="t0v">0.30</span></label>
+    <label>高光档 <input type="range" id="t2" min="50" max="98" value="82"><span class="val" id="t2v">0.82</span></label>
+    <label><input type="checkbox" id="tri" checked> 三色分层（暗墨/主墨/冰蓝高光）</label>
+    <label><input type="checkbox" id="desp" checked> 降噪（去孤立点）</label>
+    <label>显示尺寸
+      <button class="btn dpx" data-p="36" aria-pressed="false">36</button>
+      <button class="btn dpx" data-p="48" aria-pressed="false">48</button>
+      <button class="btn dpx" data-p="56" aria-pressed="true">56</button>
+      <button class="btn dpx" data-p="72" aria-pressed="false">72</button>
+    </label>
+  </div>
+  <div class="row" id="gridRow"></div>
+
+  <hr class="rule">
+
+  <h2>③ Damselette 锚点 / Kuuhenki 小精灵点阵采样（15px 显示位）</h2>
+  <p class="h2-note">两个 15px 小件：锚点是点击热点的「笔尖」，Kuuhenki 是静止陪伴精灵——看简化到几格还能认</p>
+  <div class="row" id="anchorRow"></div>
+  <div class="row" id="kuuRow" style="margin-top:20px"></div>
+
+  <hr class="rule">
+
+  <h2>④ 场景模拟 · 光标组合对照</h2>
+  <p class="h2-note">移动定格：正弦轨迹 + 5 颗拖尾月相（r 3.2~5.2px · α0.4）+ 锚点 + 主图，全部按引擎真实尺寸。A 现状全位图 / B 全点阵 / C 折中（主图位图、锚点与拖尾点阵）</p>
+  <div id="sceneRow" style="display:flex;flex-direction:column;gap:18px"></div>
+
+  <hr class="rule">
+
+  <h2>⑤ 组件验证 · &lt;dot-sprite&gt;</h2>
+  <p class="h2-note">build-cursor-component.mjs 生成的 4.4KB 自包含组件；各显示实际尺寸 + 3× 放大</p>
+  <div class="row" id="compRow"></div>
+
+  <hr class="rule">
+
+  <h2>⑥ 导出</h2>
+  <p class="h2-note">先起接收服务器：<code>node designed/moonlit-trail-dot/recv-server.cjs</code>；导出选中档位的 Columbina + Damselette + Kuuhenki</p>
+  <div class="controls">
+    <button class="btn primary" id="exportFrames">导出 cursor-frames.json</button>
+    <button class="btn" id="exportProject">导出 cursor-project.json（工具工程）</button>
+    <span id="exportStatus"></span>
+  </div>
+
+  <p class="note">
+    判定标准：36px 实际尺寸下能否一眼认出「长翅膀的少女侧影」；15px 下锚点是否仍有「笔尖」方向感。
+    若自动采样不达标，退路：a) 只取剪影轮廓符号化；b) 调大 <code>spriteMaxPx</code>；c) 人物保留位图、仅锚点/装饰点阵化。
+  </p>
+
+  <hr class="rule">
+
+  <h2>⑦ 实验结论（2026-10-11）</h2>
+  <p class="h2-note">多轮采样迭代后的定型判断，作为合并决策依据</p>
+  <p class="note">
+    <strong>锚点 Damselette → 点阵化：直接可用。</strong>16×16 @ 15px 叶片/笔尖方向感完整。
+    迭代修正：锚点是 stroke 线条稿，面积采样会让暗档倒挂（暗 50 / 主 9）——按件独立 TUNE
+    （线条稿 → 峰值采样 t0=0.14 + t2≈1 不分高光档）后主色 114 绝对主导。<br>
+    <strong>Kuuhenki → 点阵化：可用。</strong>同峰值修正，16×16 @ 15px 主 111 / 暗 3 / 光 4；
+    静止组合（④ 区 D：sleep 位图 + 粒子雨）里点阵版与位图版几乎无差别。<br>
+    <strong>Columbina 主图 → 36px 不可行，56px 可行。</strong>复杂插画在 36px（cell 1.29px）下点阵糊成一团；
+    56px（cell 2px）+ 面积采样 t0=0.30 + 去孤立点后，翅膀少女剪影清晰可辨、三色分层有效（主 179 / 暗 90 / 光 73，
+    高光自然落于头/翼亮区）。代价：光标主图变大（36 → 56px），<code>SCHEMES.d.spriteMaxPx</code> 与偏移需同步调。<br>
+    <strong>sleep 静止图 → 未采样。</strong>同为复杂场景插画（40px），结论同 Columbina：点阵化需 64px+ 或保留位图；
+    其银河粒子雨与点阵语言天然兼容，保留即可。<br>
+    <strong>拖尾月相 → 真实尺寸点阵化可行但需饱满化渲染。</strong>r 3.2~5.2px 时 dot 仅 0.3~0.4px，
+    直接渲染会「虚」；dot 半径 ×1.4（cellPx×0.58）+ 盘体 alpha ×1.7 后颗粒感与月相形态兼具（见 ④ 区 B/C）。
+  </p>
+</div>
+
+<script>
+const ASSETS = {
+  columbina: { url: '/frontend/src/assets/cursor/Columbina.svg', ink: [12, 72, 92], px: 36, hot: [0.08, 0.08] },
+  damselette: { url: '/frontend/src/assets/cursor/Damselette.svg', ink: [12, 72, 92], px: 15, hot: [0.06, 0.06] },
+  sleep: { url: '/frontend/src/assets/cursor/sleep.svg', ink: [18, 78, 98], px: 40, hot: [0.08, 0.08] },
+  kuuhenki: { url: '/frontend/src/assets/cursor/Kuuhenki.svg', ink: [18, 78, 98], px: 15, hot: [0.5, 0.5] },
+}
+const INK_DIM_RATIO = 0.55 // 引擎 rgb*(0.55+0.45s) 的弱端
+const LIT = [210, 235, 248] // 月相 pal.lit，高光档呼应拖尾
+
+// 按件最优采样参数：实心插画用面积保剪影；线条稿（锚点/小精灵是 stroke 线稿）用峰值保线条
+// t2 高光档仅对实心插画的亮度分层有意义；线条稿 stroke 同色，t2≈1 即不分高光
+const TUNE = {
+  columbina: { sampler: 'cover', t0: 0.30, t2: 0.82 },
+  damselette: { sampler: 'peak', t0: 0.14, t2: 0.99 },
+  kuuhenki: { sampler: 'peak', t0: 0.14, t2: 0.99 },
+  sleep: { sampler: 'cover', t0: 0.30, t2: 0.85 },
+}
+
+function loadImage(url) {
+  return new Promise((res, rej) => {
+    const img = new Image()
+    img.onload = () => res(img)
+    img.onerror = rej
+    img.src = url
+  })
+}
+
+// --- 引擎 svgLineArtFromImage 1:1 复刻 -------------------------
+function maskFromImage(img, maxDim = 256) {
+  const srcW = img.naturalWidth || 800
+  const srcH = img.naturalHeight || 800
+  const s = maxDim / Math.max(srcW, srcH)
+  const w = Math.max(1, Math.round(srcW * s))
+  const h = Math.max(1, Math.round(srcH * s))
+  const c = document.createElement('canvas')
+  c.width = w; c.height = h
+  const cx = c.getContext('2d', { willReadFrequently: true })
+  cx.drawImage(img, 0, 0, w, h)
+  const d = cx.getImageData(0, 0, w, h).data
+  const mask = new Float32Array(w * h)
+  let minX = w, minY = h, maxX = 0, maxY = 0
+  for (let i = 0; i < d.length; i += 4) {
+    const a = d[i + 3]
+    if (a < 8) continue
+    const lum = d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114
+    const st = Math.max(a / 255, lum / 255)
+    const px = (i / 4) % w, py = Math.floor(i / 4 / w)
+    mask[py * w + px] = Math.max(mask[py * w + px], st)
+    if (px < minX) minX = px
+    if (py < minY) minY = py
+    if (px > maxX) maxX = px
+    if (py > maxY) maxY = py
+  }
+  const pad = 2
+  minX = Math.max(0, minX - pad); minY = Math.max(0, minY - pad)
+  maxX = Math.min(w - 1, maxX + pad); maxY = Math.min(h - 1, maxY + pad)
+  return { mask, w, h, minX, minY, maxX, maxY, outW: maxX - minX + 1, outH: maxY - minY + 1 }
+}
+
+// 引擎 columbinaCanvasFromMask 同款着色 → canvas
+function engineSpriteCanvas(m, ink) {
+  const c = document.createElement('canvas')
+  c.width = m.outW; c.height = m.outH
+  const cx = c.getContext('2d')
+  const id = cx.createImageData(m.outW, m.outH)
+  const d = id.data
+  for (let y = m.minY; y <= m.maxY; y++) {
+    for (let x = m.minX; x <= m.maxX; x++) {
+      const st = m.mask[y * m.w + x]
+      if (st <= 0) continue
+      const i = ((y - m.minY) * m.outW + (x - m.minX)) * 4
+      d[i] = Math.round(ink[0] * (INK_DIM_RATIO + st * 0.45))
+      d[i + 1] = Math.round(ink[1] * (INK_DIM_RATIO + st * 0.45))
+      d[i + 2] = Math.round(ink[2] * (INK_DIM_RATIO + st * 0.45))
+      d[i + 3] = Math.round(255 * (0.65 + st * 0.35))
+    }
+  }
+  cx.putImageData(id, 0, 0)
+  return c
+}
+
+// --- 点阵采样 ---------------------------------------------------
+// sampler: 'peak' 峰值（保细线） | 'cover' 面积加权（保剪影）
+function sampleGrid(m, cols, rows, sampler) {
+  const cw = m.outW / cols, ch = m.outH / rows
+  const score = new Float32Array(cols * rows)
+  for (let gy = 0; gy < rows; gy++) {
+    for (let gx = 0; gx < cols; gx++) {
+      const x0 = m.minX + Math.floor(gx * cw), x1 = m.minX + Math.max(Math.floor((gx + 1) * cw), Math.floor(gx * cw) + 1)
+      const y0 = m.minY + Math.floor(gy * ch), y1 = m.minY + Math.max(Math.floor((gy + 1) * ch), Math.floor(gy * ch) + 1)
+      let peak = 0, sum = 0, cnt = 0, total = 0
+      for (let y = y0; y < y1 && y <= m.maxY; y++) {
+        for (let x = x0; x < x1 && x <= m.maxX; x++) {
+          const st = m.mask[y * m.w + x]
+          total++
+          if (st > 0) { sum += st; cnt++; if (st > peak) peak = st }
+        }
+      }
+      if (!total) continue
+      score[gy * cols + gx] = sampler === 'peak'
+        ? peak * 0.72 + (cnt / total) * 0.28   // 峰值为主，覆盖率微补
+        : (cnt ? (sum / cnt) : 0) * (cnt / total) // 面积加权
+    }
+  }
+  return score
+}
+
+// 点阵渲染：dot 圆点，三色分层（state1 主墨 / state2 暗墨 / state3 冰蓝高光）
+function drawDotSprite(canvas, score, cols, rows, cellPx, opt) {
+  const dpr = Math.min(2, window.devicePixelRatio || 1)
+  canvas.width = cols * cellPx * dpr
+  canvas.height = rows * cellPx * dpr
+  canvas.style.width = cols * cellPx + 'px'
+  canvas.style.height = rows * cellPx + 'px'
+  const ctx = canvas.getContext('2d')
+  ctx.scale(dpr, dpr)
+  const [ir, ig, ib] = opt.ink
+  for (let gy = 0; gy < rows; gy++) {
+    for (let gx = 0; gx < cols; gx++) {
+      const s = score[gy * cols + gx]
+      if (s < opt.t0) continue
+      let r, g, b, a
+      if (opt.tri && s >= opt.t2) { [r, g, b] = LIT; a = 0.95 }
+      else if (opt.tri && s < opt.t0 + (opt.t2 - opt.t0) * 0.34) {
+        r = ir * INK_DIM_RATIO; g = ig * INK_DIM_RATIO; b = ib * INK_DIM_RATIO; a = 0.8
+      } else { r = ir; g = ig; b = ib; a = 0.95 }
+      ctx.fillStyle = `rgba(${r | 0},${g | 0},${b | 0},${a})`
+      ctx.beginPath()
+      ctx.arc((gx + 0.5) * cellPx, (gy + 0.5) * cellPx, cellPx * 0.42, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
+}
+
+// 形态学降噪：8 邻接数 < minNb 的孤立 cell 清零（迭代 iterations 轮）
+function despeckle(score, cols, rows, minNb = 1, iterations = 1) {
+  let cur = Float32Array.from(score)
+  for (let it = 0; it < iterations; it++) {
+    const next = Float32Array.from(cur)
+    for (let gy = 0; gy < rows; gy++) {
+      for (let gx = 0; gx < cols; gx++) {
+        const i = gy * cols + gx
+        if (cur[i] <= 0) continue
+        let nb = 0
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          if (!dx && !dy) continue
+          const x = gx + dx, y = gy + dy
+          if (x < 0 || y < 0 || x >= cols || y >= rows) continue
+          if (cur[y * cols + x] > 0) nb++
+        }
+        if (nb < minNb) next[i] = 0
+      }
+    }
+    cur = next
+  }
+  return cur
+}
+
+// score → 分层索引（导出用）：0 空 / 1 主墨 / 2 暗墨 / 3 高光
+function gridLayers(score, cols, rows, opt) {
+  const s1 = [], s2 = [], s3 = []
+  for (let i = 0; i < score.length; i++) {
+    const s = score[i]
+    if (s < opt.t0) continue
+    if (opt.tri && s >= opt.t2) s3.push(i)
+    else if (opt.tri && s < opt.t0 + (opt.t2 - opt.t0) * 0.34) s2.push(i)
+    else s1.push(i)
+  }
+  return { s1, s2, s3 }
+}
+
+// --- 页面装配 ---------------------------------------------------
+const state = {
+  masks: {},        // key -> mask 数据
+  sampler: 'cover', // UI 实验覆盖（仅作用 Columbina；锚点/小精灵固定 TUNE 峰值）
+  t0: 0.30,
+  t2: 0.82,
+  tri: true,
+  desp: true,
+  displayPx: 56,                      // Columbina 实验显示尺寸（结论值 56；引擎现值 36）
+  picked: { cols: 28, rows: 28 },     // Columbina 选中档位
+  pickedAnchor: { cols: 16, rows: 16 }, // Damselette 选中档位
+  pickedKuu: { cols: 16, rows: 16 },   // Kuuhenki 选中档位
+}
+// 按件采样：Columbina 可被 UI 滑杆临时覆盖，其余件固定 TUNE 最优
+function tuneFor(key) {
+  if (key === 'columbina') return { sampler: state.sampler, t0: state.t0 }
+  return TUNE[key]
+}
+function sampleFor(key, cols, rows) {
+  const t = tuneFor(key)
+  let score = sampleGrid(state.masks[key], cols, rows, t.sampler)
+  if (state.desp) score = despeckle(score, cols, rows, 1, 1)
+  return score
+}
+function t0For(key) { return tuneFor(key).t0 }
+function t2For(key) { return key === 'columbina' ? state.t2 : (TUNE[key].t2 ?? state.t2) }
+const COLUMBINA_GRIDS = [20, 24, 28, 32, 40]
+const ANCHOR_GRIDS = [12, 16, 20, 24]
+
+function fig(w, h, caption) {
+  const f = document.createElement('figure')
+  f.className = 'cell-fig'
+  const frame = document.createElement('div')
+  frame.className = 'frame'
+  frame.style.minWidth = w + 28 + 'px'
+  frame.style.minHeight = h + 28 + 'px'
+  const cv = document.createElement('canvas')
+  frame.appendChild(cv)
+  const cap = document.createElement('figcaption')
+  cap.innerHTML = caption
+  f.append(frame, cap)
+  return { f, cv, cap, frame }
+}
+
+function drawEngineInto(cv, sprite, cssW) {
+  const scale = cssW / sprite.width
+  const dpr = Math.min(2, window.devicePixelRatio || 1)
+  cv.width = sprite.width * scale * dpr
+  cv.height = sprite.height * scale * dpr
+  cv.style.width = sprite.width * scale + 'px'
+  cv.style.height = sprite.height * scale + 'px'
+  const ctx = cv.getContext('2d')
+  ctx.scale(dpr, dpr)
+  ctx.imageSmoothingEnabled = scale < 1 ? true : false
+  ctx.drawImage(sprite, 0, 0, sprite.width * scale, sprite.height * scale)
+}
+
+function renderOrig() {
+  const row = document.getElementById('origRow')
+  row.innerHTML = ''
+  for (const [key, a] of Object.entries(ASSETS)) {
+    const m = state.masks[key]
+    const sprite = engineSpriteCanvas(m, a.ink)
+    const { f, cv } = fig(a.px * 4, a.px * 4,
+      `${key} · 实际 ${a.px}px<br>bbox ${m.outW}×${m.outH}`)
+    drawEngineInto(cv, sprite, a.px)
+    row.appendChild(f)
+    const z = fig(a.px * 4, a.px * 4, '4× 放大')
+    drawEngineInto(z.cv, sprite, a.px * 4)
+    row.appendChild(z.f)
+  }
+}
+
+function gridDims(m, target) {
+  const ar = m.outW / m.outH
+  let cols = target, rows = Math.round(target / ar)
+  if (ar < 1) { rows = target; cols = Math.round(target * ar) }
+  return { cols, rows }
+}
+
+function renderGridRow() {
+  const row = document.getElementById('gridRow')
+  row.innerHTML = ''
+  const m = state.masks.columbina
+  const opt = { ink: ASSETS.columbina.ink, t0: t0For('columbina'), t2: t2For('columbina'), tri: state.tri }
+  for (const g of COLUMBINA_GRIDS) {
+    const { cols, rows } = gridDims(m, g)
+    const score = sampleFor('columbina', cols, rows)
+    const cellPx = state.displayPx / Math.max(cols, rows)
+    const { f, cap, frame } = fig(200, 200, '')
+    // 实际尺寸 + 放大并排
+    const pair = document.createElement('div')
+    pair.style.cssText = 'display:flex;gap:14px;align-items:center'
+    const cvReal = document.createElement('canvas')
+    const cvZoom = document.createElement('canvas')
+    pair.append(cvReal, cvZoom)
+    frame.insertBefore(pair, frame.firstChild)
+    drawDotSprite(cvReal, score, cols, rows, cellPx, opt)
+    drawDotSprite(cvZoom, score, cols, rows, Math.max(cellPx * 3, 108 / Math.max(cols, rows)), opt)
+    const ly = gridLayers(score, cols, rows, opt)
+    const isPicked = state.picked.cols === cols && state.picked.rows === rows
+    const btn = document.createElement('button')
+    btn.className = 'btn'
+    btn.textContent = isPicked ? '✓ 已选' : '选为导出'
+    btn.setAttribute('aria-pressed', String(isPicked))
+    btn.onclick = () => { state.picked = { cols, rows }; renderGridRow(); renderScenes() }
+    cap.innerHTML = `${cols}×${rows} · cell ${cellPx.toFixed(2)}px<br>主${ly.s1.length} 暗${ly.s2.length} 光${ly.s3.length} · 左:实际${state.displayPx}px 右:放大<br>`
+    cap.appendChild(btn)
+    row.appendChild(f)
+  }
+}
+
+function renderSmallRow(rowId, key, pickedKey) {
+  const row = document.getElementById(rowId)
+  row.innerHTML = ''
+  const m = state.masks[key]
+  const opt = { ink: ASSETS[key].ink, t0: t0For(key), t2: t2For(key), tri: state.tri }
+  for (const g of ANCHOR_GRIDS) {
+    const { cols, rows } = gridDims(m, g)
+    const score = sampleFor(key, cols, rows)
+    const cellPx = ASSETS[key].px / Math.max(cols, rows)
+    const { f, cap, frame } = fig(140, 140, '')
+    const pair = document.createElement('div')
+    pair.style.cssText = 'display:flex;gap:14px;align-items:center'
+    const cvReal = document.createElement('canvas')
+    const cvZoom = document.createElement('canvas')
+    pair.append(cvReal, cvZoom)
+    frame.insertBefore(pair, frame.firstChild)
+    drawDotSprite(cvReal, score, cols, rows, cellPx, opt)
+    drawDotSprite(cvZoom, score, cols, rows, cellPx * 5, opt)
+    const isPicked = state[pickedKey].cols === cols && state[pickedKey].rows === rows
+    const btn = document.createElement('button')
+    btn.className = 'btn'
+    btn.textContent = isPicked ? '✓ 已选' : '选为导出'
+    btn.setAttribute('aria-pressed', String(isPicked))
+    btn.onclick = () => { state[pickedKey] = { cols, rows }; refresh() }
+    cap.innerHTML = `${key} ${cols}×${rows} · cell ${cellPx.toFixed(2)}px<br>`
+    cap.appendChild(btn)
+    row.appendChild(f)
+  }
+}
+function renderAnchorRow() {
+  renderSmallRow('anchorRow', 'damselette', 'pickedAnchor')
+  renderSmallRow('kuuRow', 'kuuhenki', 'pickedKuu')
+}
+
+function renderAll() { renderOrig(); renderGridRow(); renderAnchorRow() }
+
+// --- ④ 场景模拟 -------------------------------------------------
+const SCENE_PHASES = [1, 0.92, 0.78, 0.64, 0.5] // 头月 → 尾
+const rgba = (arr, a) => `rgba(${arr[0]},${arr[1]},${arr[2]},${a})`
+
+function drawNodeGlow(ctx, x, y, r, g, pal, alpha) {
+  const glowR = r * g.glowR
+  const ox = x + g.offset * r
+  if (g.fullness >= 0.96) {
+    const grd = ctx.createRadialGradient(x, y, r * 0.2, x, y, glowR)
+    grd.addColorStop(0, rgba(pal.lit, 0.22 * alpha))
+    grd.addColorStop(0.35, rgba(pal.glow, 0.12 * alpha))
+    grd.addColorStop(0.7, rgba(pal.violet, 0.04 * alpha))
+    grd.addColorStop(1, rgba(pal.glow, 0))
+    ctx.fillStyle = grd
+    ctx.beginPath(); ctx.arc(x, y, glowR, 0, Math.PI * 2); ctx.fill()
+    return
+  }
+  const grd = ctx.createRadialGradient(ox, y, r * 0.15, ox, y, glowR)
+  grd.addColorStop(0, rgba(pal.lit, g.litStrength * alpha))
+  grd.addColorStop(0.45, rgba(pal.glow, g.litStrength * 0.42 * alpha))
+  grd.addColorStop(1, rgba(pal.glow, 0))
+  ctx.fillStyle = grd
+  ctx.beginPath(); ctx.arc(ox, y, glowR, 0, Math.PI * 2); ctx.fill()
+}
+
+// 点阵拖尾月相（moon-frames.json 双层渲染，同 moonlit-trail-dot.js）
+// 小尺寸可读性调优：dot 半径 ×1.4 更饱满、盘体 alpha 少衰减（glow 正常衰减）
+function drawDotMoonNode(ctx, x, y, r, fi, fd, alpha) {
+  const pal = fd.palette
+  const g = fd.glows[fi]
+  drawNodeGlow(ctx, x, y, r, g, pal, alpha * 1.35)
+  const cols = fd.grid.cols, cellPx = r / 5.6 // 盘半径 = 5.6 cell
+  const bodyAlpha = Math.min(1, alpha * 1.7)
+  const dot = (idx, color, a, rMul) => {
+    const row = Math.floor(idx / cols), col = idx % cols
+    ctx.fillStyle = rgba(color, Math.min(1, a * bodyAlpha))
+    ctx.beginPath()
+    ctx.arc(x + (col - 6) * cellPx, y + (row - 6) * cellPx, cellPx * 0.58 * rMul, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  const fr = fd.frames[fi]
+  for (const i of fr.dark) dot(i, pal.dark, 0.94, 1)
+  for (const i of fr.rim) dot(i, pal.line, 0.6, 0.85)
+  for (const i of fr.lit) dot(i, pal.lit, 0.96, 1)
+  for (const i of fr.flare) dot(i, pal.flare, 0.9, 1.15)
+}
+
+// 平滑拖尾月相（简化版引擎 bakeTrailMoonSprite，refR=10 缩放到 r）
+function drawSmoothMoonNode(ctx, x, y, r, phase, g, pal, alpha) {
+  drawNodeGlow(ctx, x, y, r, g, pal, alpha)
+  const s = r / 10
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.globalAlpha = alpha
+  ctx.beginPath(); ctx.arc(0, 0, 10 * s, 0, Math.PI * 2)
+  ctx.fillStyle = rgba(pal.dark, 0.94); ctx.fill()
+  ctx.strokeStyle = rgba(pal.line, 0.95); ctx.lineWidth = Math.max(0.4, 1.05 * 1.35 * s); ctx.stroke()
+  const waxing = phase <= 0.5
+  const t = waxing ? phase * 2 : (1 - phase) * 2
+  const off = (waxing ? 1 : -1) * (1 - t) * 10 * 0.92 * s
+  ctx.save()
+  ctx.beginPath(); ctx.arc(0, 0, (10 - 0.15) * s, 0, Math.PI * 2); ctx.clip()
+  ctx.beginPath(); ctx.arc(off, 0, 10 * s, 0, Math.PI * 2)
+  ctx.fillStyle = rgba(pal.lit, 0.96); ctx.fill()
+  ctx.restore()
+  if (phase >= 0.96) {
+    const fl = 10 * 2.8 * s
+    ctx.strokeStyle = rgba(pal.flare, 0.55)
+    ctx.lineWidth = Math.max(0.35, 0.5 * s)
+    ctx.beginPath()
+    ctx.moveTo(-fl, 0); ctx.lineTo(fl, 0); ctx.moveTo(0, -fl); ctx.lineTo(0, fl)
+    const d = fl * 0.62
+    ctx.moveTo(-d, -d); ctx.lineTo(d, d); ctx.moveTo(-d, d); ctx.lineTo(d, -d)
+    ctx.stroke()
+  }
+  ctx.restore()
+}
+
+// 位图 / 点阵 sprite 贴图
+function blitEngineSprite(ctx, key, x, y, px, hot) {
+  const sprite = engineSpriteCanvas(state.masks[key], ASSETS[key].ink)
+  const m = state.masks[key]
+  const scale = px / Math.max(m.outW, m.outH)
+  ctx.save()
+  ctx.globalAlpha = 0.9
+  ctx.imageSmoothingEnabled = true
+  ctx.drawImage(sprite, x - m.outW * scale * hot[0], y - m.outH * scale * hot[1], m.outW * scale, m.outH * scale)
+  ctx.restore()
+}
+
+function dotSpriteCanvas(key, picked, renderCellPx = 5) {
+  const m = state.masks[key]
+  const score = sampleFor(key, picked.cols, picked.rows)
+  const cv = document.createElement('canvas')
+  drawDotSprite(cv, score, picked.cols, picked.rows, renderCellPx,
+    { ink: ASSETS[key].ink, t0: t0For(key), t2: t2For(key), tri: state.tri })
+  return cv
+}
+
+
+function blitDotSprite(ctx, key, picked, x, y, px, hot) {
+  const cv = dotSpriteCanvas(key, picked)
+  const m = state.masks[key]
+  const ar = m.outW / m.outH
+  const w = ar >= 1 ? px : px * ar
+  const h = ar >= 1 ? px / ar : px
+  ctx.save()
+  ctx.globalAlpha = 0.95
+  ctx.imageSmoothingEnabled = false
+  ctx.drawImage(cv, x - w * hot[0], y - h * hot[1], w, h)
+  ctx.restore()
+}
+
+function drawScene(cv, fd, combo) {
+  const W = 720, H = 150, dpr = Math.min(2, window.devicePixelRatio || 1)
+  cv.width = W * dpr; cv.height = H * dpr
+  cv.style.width = W + 'px'; cv.style.height = H + 'px'
+  const ctx = cv.getContext('2d')
+  ctx.scale(dpr, dpr)
+  const ty = x => 72 + Math.sin(x * 0.012) * 16
+  const hotX = 620, hotY = ty(hotX)
+  const vis = 0.55 * 0.88 * 1.85 // idleAlpha × trailAlpha × tuning.visibility
+  // 拖尾（远的先画）
+  for (let i = SCENE_PHASES.length - 1; i >= 0; i--) {
+    const nx = hotX - 48 * (i + 1)
+    const ny = ty(nx)
+    const phase = SCENE_PHASES[i]
+    const t = (i + 1) / 6
+    const r = 3.2 + phase * 1.5 + t * 0.35
+    const alpha = 0.4 * 0.92 * vis
+    const fi = fd.phases.indexOf(phase)
+    if (combo.dotMoon) drawDotMoonNode(ctx, nx, ny, r, fi, fd, alpha)
+    else drawSmoothMoonNode(ctx, nx, ny, r, phase, fd.glows[fi], fd.palette, alpha)
+  }
+  // 锚点（热点）
+  if (combo.dotAnchor) blitDotSprite(ctx, 'damselette', state.pickedAnchor, hotX, hotY, 15, ASSETS.damselette.hot)
+  else blitEngineSprite(ctx, 'damselette', hotX, hotY, 15, ASSETS.damselette.hot)
+  // 主图（偏移 +10/+9）
+  const ox = hotX + 10, oy = hotY + 9
+  if (combo.dotCursor) blitDotSprite(ctx, 'columbina', state.picked, ox, oy, state.displayPx, ASSETS.columbina.hot)
+  else blitEngineSprite(ctx, 'columbina', ox, oy, 36, ASSETS.columbina.hot)
+  // 热点标记
+  ctx.fillStyle = 'rgba(200,60,60,0.75)'
+  ctx.fillRect(hotX - 0.5, hotY - 0.5, 1, 1)
+}
+
+let sceneFd = null
+async function renderScenes() {
+  const fd = sceneFd ||= await (await fetch('moon-frames.json')).json()
+  const row = document.getElementById('sceneRow')
+  row.innerHTML = ''
+  const combos = [
+    { label: `A · 现状（全位图：Columbina 36px + 锚点 15px + 平滑拖尾）`, dotMoon: false, dotCursor: false, dotAnchor: false },
+    { label: `B · 全点阵（主图 ${state.displayPx}px ${state.picked.cols}×${state.picked.rows} + 点阵锚点 + 点阵拖尾）`, dotMoon: true, dotCursor: true, dotAnchor: true },
+    { label: `C · 折中（主图位图 36px，锚点与拖尾点阵）`, dotMoon: true, dotCursor: false, dotAnchor: true },
+  ]
+  for (const combo of combos) {
+    const { f, cv, cap } = fig(720, 150, combo.label)
+    drawScene(cv, fd, combo)
+    row.appendChild(f)
+  }
+  // 组合 D · 静止态：sleep 位图 40px + Kuuhenki（左位图 / 右点阵）+ 简化银河粒子
+  for (const dotKuu of [false, true]) {
+    const { f, cv } = fig(720, 150,
+      `D · 静止态（sleep 位图 40px + Kuuhenki ${dotKuu ? '点阵 16×16' : '位图'} 15px + 粒子雨）`)
+    drawRestScene(cv, fd, dotKuu)
+    row.appendChild(f)
+  }
+}
+
+// 静止组合：sleep 线稿 + kuuhenki + 银河粒子（drawRestPointer 简化复刻）
+function drawRestScene(cv, fd, dotKuu) {
+  const W = 720, H = 150, dpr = Math.min(2, window.devicePixelRatio || 1)
+  cv.width = W * dpr; cv.height = H * dpr
+  cv.style.width = W + 'px'; cv.style.height = H + 'px'
+  const ctx = cv.getContext('2d')
+  ctx.scale(dpr, dpr)
+  const pal = fd.palette
+  const hotX = 470, hotY = 58
+  const sx = hotX + 10, sy = hotY + 9 // spriteAt = 热点 + 偏移
+  const sleepM = state.masks.sleep
+  const sleepMax = 40
+  const sleepScale = sleepMax / Math.max(sleepM.outW, sleepM.outH)
+  const sleepW = sleepM.outW * sleepScale
+  const sleepH = sleepM.outH * sleepScale
+  const hot = [0.08, 0.08]
+  // 月晕（bakeRestGlowSprite 简化：pal.glow 径向渐变，圆心在 sleep 图 48%/40% 处）
+  const moonCx = sx + sleepW * (0.48 - hot[0])
+  const moonCy = sy + sleepH * (0.4 - hot[1])
+  const grd = ctx.createRadialGradient(moonCx, moonCy, 2, moonCx, moonCy, sleepW * 1.12)
+  grd.addColorStop(0, rgba(pal.lit, 0.16))
+  grd.addColorStop(0.5, rgba(pal.glow, 0.08))
+  grd.addColorStop(1, rgba(pal.glow, 0))
+  ctx.fillStyle = grd
+  ctx.beginPath(); ctx.arc(moonCx, moonCy, sleepW * 1.12, 0, Math.PI * 2); ctx.fill()
+  // 银河粒子（deterministic 伪随机，sleepW 范围内下落带）
+  let seed = 42
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647
+  for (let i = 0; i < 54; i++) {
+    const px = sx + rnd() * sleepW - hot[0] * sleepW
+    const py = sy - sleepH * 0.55 + rnd() * sleepH * 1.2
+    const r = 0.28 + rnd() * 1.37
+    ctx.fillStyle = rgba(pal.glow, 0.14 + rnd() * 0.2)
+    ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.fill()
+    if (rnd() > 0.6) { // 短拖尾
+      ctx.fillStyle = rgba(pal.glow, 0.06)
+      ctx.fillRect(px - 0.25, py - 6 - rnd() * 8, 0.5, 6 + rnd() * 8)
+    }
+  }
+  // sleep 位图（引擎绘制：drawImage 在 spriteAt，hot 0.08）
+  const sleepSprite = engineSpriteCanvas(sleepM, ASSETS.sleep.ink)
+  ctx.save()
+  ctx.globalAlpha = 0.9
+  ctx.imageSmoothingEnabled = true
+  ctx.drawImage(sleepSprite, sx - sleepW * hot[0], sy - sleepH * hot[1], sleepW, sleepH)
+  ctx.restore()
+  // kuuhenki：contact (0.8, 0.91) + gap 2 + offset (0, 9)
+  const kuuX = sx + (0.8 * sleepW - sleepW * hot[0]) + 2
+  const kuuY = sy + (0.91 * sleepH - sleepH * hot[1]) + 9
+  if (dotKuu) {
+    const kcv = dotSpriteCanvas('kuuhenki', state.pickedKuu)
+    const km = state.masks.kuuhenki
+    const kar = km.outW / km.outH
+    const kw = kar >= 1 ? 15 : 15 * kar
+    const kh = kar >= 1 ? 15 / kar : 15
+    ctx.save()
+    ctx.globalAlpha = 0.95
+    ctx.imageSmoothingEnabled = false
+    ctx.drawImage(kcv, kuuX - kw * 0.22, kuuY - kh * 0.82, kw, kh) // 引擎 kuuPivot (0.22, 0.82)
+    ctx.restore()
+  } else {
+    const km = state.masks.kuuhenki
+    const kSprite = engineSpriteCanvas(km, ASSETS.kuuhenki.ink)
+    const kScale = 15 / Math.max(km.outW, km.outH)
+    ctx.save()
+    ctx.globalAlpha = 0.9
+    ctx.imageSmoothingEnabled = true
+    ctx.drawImage(kSprite, kuuX - km.outW * kScale * 0.22, kuuY - km.outH * kScale * 0.82, km.outW * kScale, km.outH * kScale)
+    ctx.restore()
+  }
+  ctx.fillStyle = 'rgba(200,60,60,0.75)'
+  ctx.fillRect(hotX - 0.5, hotY - 0.5, 1, 1)
+}
+
+// --- 导出 -------------------------------------------------------
+function hex(r, g, b) { return '#' + [r, g, b].map(v => Math.round(v).toString(16).padStart(2, '0')).join('') }
+
+function buildExport() {
+  const out = { kind: 'dot-cursor-sprites', version: 2, tune: TUNE, t2: state.t2, tri: state.tri, sprites: {} }
+  for (const [key, picked] of [['columbina', state.picked], ['damselette', state.pickedAnchor], ['kuuhenki', state.pickedKuu]]) {
+    const m = state.masks[key]
+    const a = ASSETS[key]
+    const score = sampleFor(key, picked.cols, picked.rows)
+    const opt = { ink: a.ink, t0: t0For(key), t2: t2For(key), tri: state.tri }
+    const ly = gridLayers(score, picked.cols, picked.rows, opt)
+    out.sprites[key] = {
+      grid: { cols: picked.cols, rows: picked.rows },
+      displayPx: key === 'columbina' ? state.displayPx : a.px,
+      enginePx: a.px,
+      hot: { x: a.hot[0], y: a.hot[1] },
+      palette: {
+        primary: hex(...a.ink),
+        secondary: hex(a.ink[0] * INK_DIM_RATIO, a.ink[1] * INK_DIM_RATIO, a.ink[2] * INK_DIM_RATIO),
+        tertiary: hex(...LIT),
+      },
+      layers: { state1: ly.s1, state2: ly.s2, state3: ly.s3 },
+    }
+  }
+  return out
+}
+
+function buildProjectJson() {
+  // dot-motion-builder 工程（单帧，cellStates 多色格式），可直接塞编辑器手修
+  const ex = buildExport()
+  const mkFrames = (sp) => [{
+    activeCells: [...sp.layers.state1, ...sp.layers.state2, ...sp.layers.state3],
+    cellStates: Object.fromEntries([
+      ...sp.layers.state2.map(i => [i, 2]),
+      ...sp.layers.state3.map(i => [i, 3]),
+    ]),
+  }]
+  const col = ex.sprites.columbina
+  return {
+    version: '0.17.0',
+    project: {
+      name: 'moonlit-cursor',
+      grid: { kind: 'rect', cols: col.grid.cols, rows: col.grid.rows },
+      fps: 6,
+      loop: true,
+      style: {
+        primaryColor: col.palette.primary,
+        secondaryColor: col.palette.secondary,
+        tertiaryColor: col.palette.tertiary,
+        backgroundColor: '#f4f1e8',
+        backgroundOpacity: 0,
+      },
+      sequences: [{ id: 'main', name: 'Columbina', frames: mkFrames(col) }],
+    },
+  }
+}
+
+async function post(name, obj) {
+  const st = document.getElementById('exportStatus')
+  try {
+    const r = await fetch('http://127.0.0.1:9977/save?name=' + name, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(obj, null, 2),
+    })
+    st.textContent = r.ok ? `✓ ${name} 已落盘` : `✗ ${name} HTTP ${r.status}`
+  } catch {
+    st.textContent = '✗ 接收服务器未启动（node recv-server.cjs）'
+  }
+}
+
+document.getElementById('exportFrames').onclick = () => post('cursor-frames.json', buildExport())
+document.getElementById('exportProject').onclick = () => post('cursor-project.json', buildProjectJson())
+
+// --- 控件 -------------------------------------------------------
+const refresh = () => { renderGridRow(); renderAnchorRow(); renderScenes() }
+document.querySelectorAll('.sampler').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.sampler').forEach(x => x.setAttribute('aria-pressed', 'false'))
+  b.setAttribute('aria-pressed', 'true')
+  state.sampler = b.dataset.s
+  refresh()
+})
+document.getElementById('t0').oninput = e => {
+  state.t0 = e.target.value / 100
+  document.getElementById('t0v').textContent = state.t0.toFixed(2)
+  refresh()
+}
+document.getElementById('t2').oninput = e => {
+  state.t2 = e.target.value / 100
+  document.getElementById('t2v').textContent = state.t2.toFixed(2)
+  refresh()
+}
+document.getElementById('tri').onchange = e => { state.tri = e.target.checked; refresh() }
+document.getElementById('desp').onchange = e => { state.desp = e.target.checked; refresh() }
+document.querySelectorAll('.dpx').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.dpx').forEach(x => x.setAttribute('aria-pressed', 'false'))
+  b.setAttribute('aria-pressed', 'true')
+  state.displayPx = +b.dataset.p
+  refresh()
+})
+
+// --- ⑤ 组件验证 -------------------------------------------------
+async function renderCompRow() {
+  await import('./dot-cursor-sprites.js')
+  const row = document.getElementById('compRow')
+  row.innerHTML = ''
+  for (const [name, px] of [['columbina', 56], ['damselette', 15], ['kuuhenki', 15]]) {
+    const { f, cap, frame } = fig(170, 170, '')
+    const pair = document.createElement('div')
+    pair.style.cssText = 'display:flex;gap:16px;align-items:center'
+    const el = document.createElement('dot-sprite')
+    el.setAttribute('name', name)
+    el.setAttribute('px', String(px))
+    const zoom = document.createElement('dot-sprite')
+    zoom.setAttribute('name', name)
+    zoom.setAttribute('px', String(px * 3))
+    pair.append(el, zoom)
+    frame.insertBefore(pair, frame.firstChild)
+    cap.innerHTML = `${name} · 实际 ${px}px + 3×`
+    row.appendChild(f)
+  }
+}
+
+// --- 启动 -------------------------------------------------------
+;(async () => {
+  for (const [key, a] of Object.entries(ASSETS)) {
+    const img = await loadImage(a.url)
+    state.masks[key] = maskFromImage(img)
+  }
+  renderAll()
+  renderScenes()
+  renderCompRow()
+})()
+</script>
+</body>
+</html>
