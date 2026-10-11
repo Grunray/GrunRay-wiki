@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>月相点阵 · Moonlit Trail — dot-motion-builder 原型</title>
+<style>
+  :root {
+    --paper: #f4f1e8;
+    --paper-dim: #ece7d8;
+    --ink: #2b2823;
+    --ink-soft: rgba(43, 40, 35, 0.62);
+    --ink-faint: rgba(43, 40, 35, 0.38);
+    --accent: #2e6b4f;
+    --moon-blue: #205f7d;
+    --moon-glow: #3791b9;
+    --hairline: rgba(43, 40, 35, 0.16);
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Noto Serif SC", "Source Han Serif SC", Georgia, serif;
+    line-height: 1.7;
+    padding: 48px 24px 96px;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+
+  .kicker {
+    font-size: 12px;
+    letter-spacing: 0.28em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: 0.02em; }
+  .lede { color: var(--ink-soft); font-size: 14px; margin-top: 10px; max-width: 640px; }
+  .lede code, .spec td code {
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 12px;
+    background: var(--paper-dim);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+
+  hr.rule { border: none; border-top: 1px solid var(--hairline); margin: 36px 0; }
+
+  h2 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .h2-note { font-size: 12.5px; color: var(--ink-faint); margin-bottom: 18px; }
+
+  /* --- 主舞台 --- */
+  .stage {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+  .stage-moon {
+    width: 216px;
+    height: 216px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    background:
+      radial-gradient(closest-side, rgba(55, 145, 185, 0.06), transparent),
+      var(--paper);
+  }
+  .stage-moon dot-moon-phase { width: 168px; }
+  .stage-meta { flex: 1; min-width: 260px; }
+  .phase-readout {
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 13px;
+    color: var(--moon-blue);
+    margin-bottom: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+  .controls button {
+    font: inherit;
+    font-size: 12.5px;
+    padding: 6px 14px;
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: color 0.25s var(--ease), border-color 0.25s var(--ease), background 0.25s var(--ease);
+  }
+  .controls button:hover { color: var(--ink); border-color: var(--ink-faint); }
+  .controls button[aria-pressed="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+
+  /* --- 14 帧图谱 --- */
+  .frames {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 12px;
+  }
+  .frame-cell {
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    padding: 10px 8px 8px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.24);
+  }
+  .frame-cell dot-moon-phase { width: 56px; }
+  .frame-cell .cap {
+    display: block;
+    margin-top: 6px;
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 10.5px;
+    color: var(--ink-faint);
+  }
+
+  /* --- 形态对照 --- */
+  .compare { display: flex; flex-direction: column; gap: 6px; }
+  .cmp-row {
+    display: grid;
+    grid-template-columns: 44px 72px 72px 1fr;
+    align-items: center;
+    gap: 14px;
+    padding: 4px 10px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+  }
+  .cmp-row:nth-child(odd) { background: rgba(255, 255, 255, 0.22); }
+  .cmp-row .cap {
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+  }
+  .cmp-row canvas { width: 56px; height: 56px; display: block; }
+  .cmp-row dot-moon-phase { width: 56px; }
+  .cmp-row .note-cell { font-size: 12px; color: var(--ink-soft); }
+  .cmp-head { font-size: 11.5px; color: var(--ink-faint); }
+
+  /* --- 对照表 --- */
+  .spec {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .spec th, .spec td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--hairline);
+    vertical-align: top;
+  }
+  .spec th { color: var(--ink-faint); font-weight: 400; font-size: 12px; width: 130px; }
+  .spec td:last-child { color: var(--ink-soft); }
+
+  .note {
+    margin-top: 28px;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    border-left: 2px solid var(--accent);
+    padding-left: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="kicker">Prototype · dot-motion-builder</p>
+  <h1>月相点阵 · Moonlit Trail</h1>
+  <p class="lede">
+    把前端拖尾引擎 <code>moonlitCursorEngine.ts</code> 的月相数学 1:1 移植到
+    <strong>dot-motion-builder</strong>（13×13 circle 点阵 · 14 帧序列 · 6 FPS 循环）。
+    亮部判定与 <code>bakeTrailMoonSprite</code> 相同：
+    主盘 <code>R−0.15</code> ∩ 偏移圆 <code>(1−t)·R·0.92</code>，盈亮右、亏亮左；
+    相位循环 <code>[0.08 … 1 … 0.1]</code> 与引擎同序，满月出现两次（0.5 与 1）。
+    光标本体（Columbina / Damselette / Kuuhenki）的点阵化实验在
+    <a href="cursor.html" style="color: var(--accent);">cursor.html · 光标点阵化实验室</a>。
+  </p>
+
+  <hr class="rule">
+
+  <h2>播放</h2>
+  <p class="h2-note">双层渲染 Web Component（16.8KB 自包含）：glow 径向渐变 → 暗盘 → 盘缘 → 亮部 → 星芒，分层与引擎 sprite 一致</p>
+  <div class="stage">
+    <div class="stage-moon">
+      <dot-moon-phase id="hero"></dot-moon-phase>
+    </div>
+    <div class="stage-meta">
+      <p class="phase-readout" id="readout">—</p>
+      <div class="controls" id="speeds">
+        <button type="button" data-speed="0.5">0.5×</button>
+        <button type="button" data-speed="1" aria-pressed="true">1×</button>
+        <button type="button" data-speed="2">2×</button>
+        <button type="button" id="toggle">暂停</button>
+      </div>
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <h2>14 帧图谱</h2>
+  <p class="h2-note">盈 → 满（0.5）→ 亏 → 满（1，引擎的 flare 峰）→ 亏至 0.1 回环</p>
+  <div class="frames" id="frames"></div>
+
+  <hr class="rule">
+
+  <h2>形态对照 · 引擎 sprite vs 点阵帧</h2>
+  <p class="h2-note">左列：引擎 <code>bakeTrailMoonSprite</code> 1:1 直渲（浅色档 tuning，refR=10）；右列：点阵帧定格</p>
+  <div class="compare" id="compare"></div>
+
+  <hr class="rule">
+
+  <h2>与拖尾引擎的参数对照</h2>
+  <p class="h2-note">移植映射关系；后续优化拖尾时改哪边、怎么同步</p>
+  <table class="spec">
+    <tr><th>相位循环</th><td><code>MOON_PHASE_CYCLE</code> 14 相（0.08→1→0.1）</td><td>14 帧序列，同序</td></tr>
+    <tr><th>亮部数学</th><td>canvas：主盘 <code>arc(0,0,R−0.15)</code> clip + 偏移圆 <code>arc(±(1−t)·R·0.92, 0, R)</code></td><td>cell 中心点判定同一公式，R=5.6 cell</td></tr>
+    <tr><th>颜色（浅色档）</th><td><code>line rgba(32,95,125)</code> · <code>glow rgba(55,145,185)</code></td><td><code>#205F7D</code> 实心 + 同色 shadowBlur 10</td></tr>
+    <tr><th>节奏</th><td>拖尾节点间距 48px，每节点推进一相</td><td>6 FPS（≈167ms/帧）循环播放</td></tr>
+    <tr><th>暗盘</th><td><code>pal.dark 0.94</code> 整盘 + 亮部叠加</td><td>同构：state1 暗盘 + state2 亮部叠加，盘缘 <code>pal.line</code> 由几何自动推导</td></tr>
+    <tr><th>满月 flare</th><td><code>pal.flare</code> 十字 + 对角线（<code>fl = R×2.8</code>）</td><td>state3 星芒：盘外 8 方向 cell（网格放不下 15.7 cell 的线，单点近似）</td></tr>
+    <tr><th>产物</th><td>sprite 预烘焙（每相位一张 canvas）</td><td><code>moon-frames.json</code>（11.4KB 帧数据）/ <code>moonlit-trail-dot.js</code>（16.8KB 组件）</td></tr>
+  </table>
+
+  <p class="note">
+    管线（dot-motion-builder 已改造支持多色）：<code>build-moon-project.mjs</code> 按引擎公式生成 14 帧多色工程
+    （state1 暗盘 / state2 亮部 / state3 星芒）→ 注入工具（localStorage <code>dot-motion-builder.project.v9</code>）
+    用 <strong>笔刷</strong>（主色/次色/第三色/擦除）可视化手调 → 导出 <strong>Frames JSON</strong>（18.5KB 紧凑分层格式，
+    新增第三种导出格式）→ <code>sync-from-export.mjs</code> 补全 rim/glow/相位 → <code>build-component.mjs</code>
+    重生成组件。接收服务器 <code>recv-server.cjs</code> 负责把浏览器里的导出落盘。
+  </p>
+
+</div>
+
+<script src="moonlit-trail-dot.js"></script>
+<script>
+  const PHASES = [0.08, 0.22, 0.36, 0.5, 0.64, 0.78, 0.92, 1, 0.88, 0.72, 0.56, 0.4, 0.24, 0.1]
+  const DURATION = PHASES.length / 6
+
+  // ===== 引擎 bakeTrailMoonSprite 1:1 复刻（浅色档）作为形态标准答案 =====
+  const PAL = {
+    line: 'rgba(32, 95, 125, ',
+    dark: 'rgba(18, 48, 68, ',
+    lit: 'rgba(210, 235, 248, ',
+    glow: 'rgba(55, 145, 185, ',
+    flare: 'rgba(70, 165, 205, ',
+    violet: 'rgba(88, 72, 128, '
+  }
+  const TUNING = { visibility: 1.85, lineMul: 1.35 }
+  const BREATHE = 0.5
+
+  function drawEngineGlow(ctx, radius, phase, pal, alpha, tuning) {
+    const fullness = phase >= 0.96 ? 1 : Math.max(0.06, phase)
+    const glowR = radius * (1.9 + fullness * 2.4)
+    const vis = alpha * tuning.visibility
+    if (phase >= 0.96) {
+      const grd = ctx.createRadialGradient(0, 0, radius * 0.2, 0, 0, glowR)
+      grd.addColorStop(0, pal.lit + `${0.22 * vis})`)
+      grd.addColorStop(0.35, pal.glow + `${0.12 * vis})`)
+      grd.addColorStop(0.7, pal.violet + `${0.04 * vis})`)
+      grd.addColorStop(1, pal.glow + '0)')
+      ctx.fillStyle = grd
+      ctx.beginPath(); ctx.arc(0, 0, glowR, 0, Math.PI * 2); ctx.fill()
+      return
+    }
+    if (phase < 0.08) {
+      const grd = ctx.createRadialGradient(0, 0, 0, 0, 0, glowR * 0.55)
+      grd.addColorStop(0, pal.glow + `${0.03 * vis})`)
+      grd.addColorStop(1, pal.glow + '0)')
+      ctx.fillStyle = grd
+      ctx.beginPath(); ctx.arc(0, 0, glowR * 0.55, 0, Math.PI * 2); ctx.fill()
+      return
+    }
+    const waxing = phase <= 0.5
+    const litT = waxing ? phase * 2 : (1 - phase) * 2
+    const offset = (waxing ? 1 : -1) * radius * (0.35 + (1 - litT) * 0.45)
+    const litStrength = 0.05 + litT * 0.16
+    const grd = ctx.createRadialGradient(offset, 0, radius * 0.15, offset, 0, glowR)
+    grd.addColorStop(0, pal.lit + `${litStrength * vis})`)
+    grd.addColorStop(0.45, pal.glow + `${(litStrength * 0.42) * vis})`)
+    grd.addColorStop(1, pal.glow + '0)')
+    ctx.fillStyle = grd
+    ctx.beginPath(); ctx.arc(offset, 0, glowR, 0, Math.PI * 2); ctx.fill()
+  }
+
+  function drawEngineSprite(canvas, phase, refR = 10) {
+    const pal = PAL
+    const tuning = TUNING
+    const pad = refR * 5.5
+    const size = Math.ceil(refR * 2 + pad * 2)
+    canvas.width = size
+    canvas.height = size
+    const ctx = canvas.getContext('2d')
+    ctx.translate(size / 2, size / 2)
+
+    drawEngineGlow(ctx, refR, phase, pal, 1, tuning)
+
+    ctx.beginPath()
+    ctx.arc(0, 0, refR + 0.6, 0, Math.PI * 2)
+    ctx.strokeStyle = pal.line + '0.35)'
+    ctx.lineWidth = 0.5
+    ctx.stroke()
+
+    ctx.beginPath()
+    ctx.arc(0, 0, refR, 0, Math.PI * 2)
+    ctx.fillStyle = pal.dark + '0.94)'
+    ctx.fill()
+    ctx.strokeStyle = pal.line + '0.95)'
+    ctx.lineWidth = 1.05 * tuning.lineMul
+    ctx.stroke()
+
+    if (phase > 0.04 && phase < 0.96) {
+      ctx.save()
+      ctx.beginPath()
+      ctx.arc(0, 0, refR - 0.15, 0, Math.PI * 2)
+      ctx.clip()
+      const waxing = phase <= 0.5
+      const t = waxing ? phase * 2 : (1 - phase) * 2
+      const offset = (waxing ? 1 : -1) * (1 - t) * refR * 0.92
+      ctx.beginPath()
+      ctx.arc(offset, 0, refR, 0, Math.PI * 2)
+      ctx.fillStyle = pal.lit + '0.98)'
+      ctx.fill()
+      ctx.restore()
+    } else if (phase >= 0.96) {
+      ctx.beginPath()
+      ctx.arc(0, 0, refR, 0, Math.PI * 2)
+      ctx.fillStyle = pal.lit + '1)'
+      ctx.fill()
+      const fl = refR * 2.8
+      ctx.strokeStyle = pal.flare + `${0.55 + BREATHE * 0.3})`
+      ctx.lineWidth = 0.75 * tuning.lineMul
+      ctx.beginPath()
+      ctx.moveTo(-fl, 0); ctx.lineTo(fl, 0)
+      ctx.moveTo(0, -fl); ctx.lineTo(0, fl)
+      const dg = fl * 0.52
+      ctx.moveTo(-dg, -dg); ctx.lineTo(dg, dg)
+      ctx.moveTo(dg, -dg); ctx.lineTo(-dg, dg)
+      ctx.stroke()
+    }
+  }
+
+  // ===== 并排对照 =====
+  const cmp = document.getElementById('compare')
+  const head = document.createElement('div')
+  head.className = 'cmp-row cmp-head'
+  head.innerHTML = '<span class="cap">相位</span><span>引擎 sprite</span><span>点阵帧</span><span>差异备注</span>'
+  cmp.appendChild(head)
+  PHASES.forEach((phase, i) => {
+    const row = document.createElement('div')
+    row.className = 'cmp-row'
+    row.innerHTML = `<span class="cap">${String(i + 1).padStart(2, '0')} · ${phase}</span><canvas></canvas><dot-moon-phase paused></dot-moon-phase><span class="note-cell"></span>`
+    cmp.appendChild(row)
+    drawEngineSprite(row.querySelector('canvas'), phase)
+    const el = row.querySelector('dot-moon-phase')
+    requestAnimationFrame(() => el.seek((i + 0.5) * DURATION / PHASES.length))
+  })
+
+  // 14 帧图谱：paused 实例 + seek 定格
+  const framesBox = document.getElementById('frames')
+  PHASES.forEach((phase, i) => {
+    const cell = document.createElement('div')
+    cell.className = 'frame-cell'
+    cell.innerHTML = `<dot-moon-phase paused></dot-moon-phase><span class="cap">${String(i + 1).padStart(2, '0')} · ${phase}</span>`
+    framesBox.appendChild(cell)
+    const el = cell.querySelector('dot-moon-phase')
+    requestAnimationFrame(() => el.seek((i + 0.5) * DURATION / PHASES.length))
+  })
+
+  // 播放控制
+  const hero = document.getElementById('hero')
+  const readout = document.getElementById('readout')
+  const toggle = document.getElementById('toggle')
+  document.getElementById('speeds').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-speed]')
+    if (!btn) return
+    hero.setAttribute('speed', btn.dataset.speed)
+    document.querySelectorAll('#speeds button[data-speed]').forEach((b) =>
+      b.setAttribute('aria-pressed', String(b === btn)))
+  })
+  toggle.addEventListener('click', () => {
+    const paused = hero.hasAttribute('paused')
+    if (paused) hero.play()
+    else hero.pause()
+    toggle.textContent = paused ? '暂停' : '播放'
+  })
+  ;(function loop() {
+    const idx = Math.min(PHASES.length - 1, Math.floor(((hero.currentTime % DURATION) / DURATION) * PHASES.length))
+    readout.textContent = `帧 ${String(idx + 1).padStart(2, '0')}/14 · phase=${PHASES[idx]} · t=${(hero.currentTime % DURATION).toFixed(2)}s`
+    requestAnimationFrame(loop)
+  })()
+</script>
+</body>
+</html>
