@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>首页底层图 · 开屏动画原型（参考：原神活动开场）</title>
+<link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+  <!-- 原型控制条（非站点部分） -->
+  <div class="chrome">
+    <div class="chrome-row">
+      <span class="chrome-title">STAGE ART INTRO</span>
+      <button class="scheme-btn active" data-scheme="a">方案 A · 扇启晨光</button>
+      <button class="scheme-btn" data-scheme="b">方案 B · 纸上描绘</button>
+      <button class="scheme-btn" data-scheme="c">方案 C · 云开雾散</button>
+      <button class="scheme-btn" data-scheme="d">方案 D · 墨起扇鸣</button>
+      <button class="tool-btn" id="replayBtn">▶ 重播</button>
+      <button class="tool-btn ghost" id="motionBtn">动效：完整</button>
+      <span style="flex:1"></span>
+      <details class="refs">
+        <summary>参考帧 · BV1bmab61E6a</summary>
+        <div class="refs-panel">
+          <figure><img src="refs/frame-6s.jpg" alt="" />六周年 · 金框描绘</figure>
+          <figure><img src="refs/frame-40s.jpg" alt="" />海灯节 · 层山升起</figure>
+          <figure><img src="refs/frame-180s.jpg" alt="" />琉形蜃境 · 纸剧场</figure>
+          <figure><img src="refs/frame-375s.jpg" alt="" />水墨 · 枝桠生长</figure>
+        </div>
+      </details>
+    </div>
+    <p class="chrome-desc" id="schemeDesc"></p>
+  </div>
+
+  <!-- 模拟首页首屏（几何对齐 .home-stage / .home-stage-art） -->
+  <div id="mock" data-scheme="a">
+    <nav class="mock-nav">
+      <span class="brand">GrunRay</span>
+      <div class="nav-caps">
+        <span>首页</span><span>博客</span><span>项目</span><span>碎念</span><span>友链</span><span>关于</span>
+      </div>
+    </nav>
+
+    <section class="stage">
+      <figure class="stage-art" aria-hidden="true">
+        <div class="stack" id="stack">
+          <img class="base" src="../../frontend/public/art/polonia_sandoren.webp" alt="" />
+          <img class="tint" src="../../frontend/public/art/polonia_sandoren-wedge.webp" alt="" />
+          <div class="wash" id="wash" style="background-color:#38697a"></div>
+          <div class="beam" aria-hidden="true"></div>
+          <div class="draw-layer" id="drawLayer" aria-hidden="true"></div>
+        </div>
+      </figure>
+
+      <!-- 方案 C 装饰：纸云带 ×2 / 纸鸟 ×2 / 残云 -->
+      <div class="mist mist-back" aria-hidden="true">
+        <svg viewBox="0 0 1200 180" preserveAspectRatio="none">
+          <path fill="#e6e0cd" d="M0 180 L0 120 Q60 70 130 100 Q170 40 260 70 Q320 20 410 60 Q480 10 560 55 Q640 15 720 60 Q800 20 880 65 Q950 30 1030 75 Q1110 45 1200 95 L1200 180 Z"/>
+        </svg>
+      </div>
+      <div class="mist mist-front" aria-hidden="true">
+        <svg viewBox="0 0 1200 180" preserveAspectRatio="none">
+          <path fill="#f4f1e8" d="M0 180 L0 110 Q80 55 160 92 Q220 30 310 66 Q390 14 470 60 Q550 20 640 58 Q720 12 800 62 Q880 26 960 70 Q1050 34 1120 82 Q1170 60 1200 80 L1200 180 Z"/>
+        </svg>
+      </div>
+      <div class="bird bird-1" aria-hidden="true">
+        <svg viewBox="0 0 24 12"><path d="M1 8 Q7 1 12 8 M12 8 Q18 1 23 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="bird bird-2" aria-hidden="true">
+        <svg viewBox="0 0 24 12"><path d="M1 8 Q7 1 12 8 M12 8 Q18 1 23 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="drift-cloud" aria-hidden="true">
+        <svg viewBox="0 0 300 70"><path fill="#e6e0cd" opacity="0.85" d="M10 70 Q12 44 44 46 Q58 22 92 30 Q112 8 148 20 Q176 6 206 24 Q238 16 252 38 Q286 40 288 70 Z"/></svg>
+      </div>
+
+      <header class="mast">
+        <p class="mast-vol"><b>GrunRay</b> · VOL.2026 · NO.41 · 2026/10/11</p>
+        <div class="mast-avatar"></div>
+      </header>
+
+      <div class="intro">
+        <h1 class="intro-greeting">你好，我是<span class="brand-script">GrunRay</span></h1>
+        <p class="intro-note">找不到实习捏——代码不跑我跑！</p>
+      </div>
+
+      <div class="paper-peek">
+        <div class="paper-rule"></div>
+        <p class="paper-cue">SCROLL · 下读 ⌄</p>
+        <div class="paper-card">COVER STORY · 封面故事</div>
+      </div>
+    </section>
+  </div>
+
+  <script src="line-art.js"></script>
+  <script src="shared.js"></script>
+</body>
+</html>
