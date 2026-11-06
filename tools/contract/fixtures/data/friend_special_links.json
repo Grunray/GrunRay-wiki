@@ -1,0 +1,21 @@
+[
+  {
+    "id": "contract-special",
+    "title": "契约特别链接",
+    "description": "带白名单 icon 的合成条目",
+    "url": "https://special.contract.example.test/",
+    "icon": "travellings"
+  },
+  {
+    "id": "contract-special-noicon",
+    "title": "契约特别链接二",
+    "description": "icon 不在白名单，应被丢弃",
+    "url": "https://special2.contract.example.test/",
+    "icon": "unknown-icon"
+  },
+  {
+    "id": "",
+    "title": "缺 id 的条目应被过滤",
+    "url": "https://special3.contract.example.test/"
+  }
+]
