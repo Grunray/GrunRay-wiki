@@ -193,6 +193,11 @@ def latest_updated_post():
             SELECT id, legacy_id, slug, title, md_url, summary, keywords, category_id, type,
                    views, created_at, updated_at, published_at, locale, pinned, pinned_order, cover, extra
             FROM post
+            WHERE type <> 1 OR EXISTS (
+                SELECT 1 FROM wiki_project wp
+                WHERE wp.public_id = JSON_UNQUOTE(JSON_EXTRACT(post.extra, '$.project_id'))
+                  AND wp.status <> 2
+            )
             ORDER BY COALESCE(updated_at, published_at, created_at) DESC, id DESC
             LIMIT 3
             """
@@ -211,6 +216,11 @@ def random_recommend_post():
             SELECT id, legacy_id, slug, title, md_url, summary, keywords, category_id, type,
                    views, created_at, updated_at, published_at, locale, pinned, pinned_order, cover, extra
             FROM post
+            WHERE type <> 1 OR EXISTS (
+                SELECT 1 FROM wiki_project wp
+                WHERE wp.public_id = JSON_UNQUOTE(JSON_EXTRACT(post.extra, '$.project_id'))
+                  AND wp.status <> 2
+            )
             ORDER BY RAND()
             LIMIT 1
             """
