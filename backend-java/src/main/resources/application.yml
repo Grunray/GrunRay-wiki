@@ -1,0 +1,64 @@
+# 配置名沿用 Flask 的环境变量（MYSQL_*、CONTENT_ROOT、CORS_ORIGINS），不读 backend/.env。
+server:
+  address: ${BIND_ADDRESS:127.0.0.1}
+  port: ${PORT:5010}
+  shutdown: graceful
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        name: session
+        http-only: true
+        same-site: lax
+        path: /
+        max-age: -1
+  error:
+    include-stacktrace: never
+  tomcat:
+    # Werkzeug 对查询串 / 路径里的这些字符不报错，Tomcat 默认 400
+    relaxed-query-chars: "[,],|,{,},^,`,\",<,>"
+    relaxed-path-chars: "[,],|,{,},^,`,\",<,>"
+    # Flask 会解码 %2F；默认拒绝会让媒体路径穿越变成 400 而不是 404
+    encoded-solidus-handling: decode
+
+spring:
+  application:
+    name: grunray-wiki-api
+  main:
+    banner-mode: off
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:grunray_wiki}?characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${MYSQL_POOL_SIZE:8}
+      leak-detection-threshold: 2000
+      # 数据库不可用时照样启动：/api/health 不查库（API_CONTRACT #6）
+      initialization-fail-timeout: -1
+  flyway:
+    # 启动不迁移。空库 / 已有库基线只走 tools/contract/flyway_check.py。
+    enabled: false
+  jackson:
+    serialization:
+      order-map-entries-by-keys: true
+    mapper:
+      sort-properties-alphabetically: true
+  web:
+    resources:
+      add-mappings: false
+
+grunray:
+  content-root: ${CONTENT_ROOT:content}
+  cors-origins: ${CORS_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
+  frontend-origin: ${FRONTEND_ORIGIN:http://localhost:5173}
+  site-url: ${FRIENDS_SITE_URL:}
+  site-title: ${FRIENDS_SITE_TITLE:}
+  site-description: ${FRIENDS_SITE_DESCRIPTION:}
+  site-logo-url: ${FRIENDS_SITE_LOGO_URL:}
+
+logging:
+  pattern:
+    console: "%d{HH:mm:ss} %-5level %logger{36} - %msg%n"
+  level:
+    root: WARN
+    tech.grunray: INFO

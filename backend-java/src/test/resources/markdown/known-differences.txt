@@ -1,0 +1,2 @@
+# 与 Python-Markdown 输出允许不一致的快照（文件名<TAB>原因）。每条都要在 docs/API_CONTRACT.md 有记录。
+algorithm-luogu-p1347.md	正文「A<B，可以转化为图中A->B」被 Python-Markdown 的行内 HTML 正则当成标签吞掉文字；Java 按 CommonMark 原样输出（API_CONTRACT §4.12）

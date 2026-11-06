@@ -1,0 +1,13 @@
+# 契约沙箱：与 tools/contract 的 Flask 5001 读同一个库和同一份内容副本。
+# MYSQL_HOST / PORT / USER / PASSWORD 由 tools/contract/services.py 从环境变量传入。
+server:
+  port: 5010
+
+spring:
+  flyway:
+    enabled: false
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/grunray_wiki_contract?characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci
+
+grunray:
+  content-root: ${CONTENT_ROOT:../.contract-sandbox/backend/content}
