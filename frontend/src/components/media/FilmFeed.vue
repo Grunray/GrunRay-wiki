@@ -4,6 +4,7 @@ import { gsap } from 'gsap'
 import { useI18n } from 'vue-i18n'
 
 import AppImage from '@/components/ui/AppImage.vue'
+import { apiUrl } from '@/api/http'
 import { useUiStore } from '@/stores/ui'
 
 const { t } = useI18n()
@@ -52,7 +53,7 @@ async function loadMedia() {
       page: '1',
       size: '50',
     })
-    const res = await fetch(`/api/media/list/filmfeed?${q.toString()}`)
+    const res = await fetch(apiUrl(`/api/media/list/filmfeed?${q.toString()}`))
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const json = (await res.json()) as { code: number; data: MediaItem[]; message: string }
     if (json.code !== 0) throw new Error(json.message || '加载失败')

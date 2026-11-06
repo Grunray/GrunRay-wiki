@@ -1,6 +1,5 @@
 import type { FriendLink, SpecialLink } from '@/content/data/mockFriends'
-import { MOCK_FRIEND_LINKS, MOCK_SPECIAL_LINKS } from '@/content/data/mockFriends'
-import { getFriendsApplySiteProfile } from '@/config/friendsSiteProfile'
+import { csrfHeaders } from '@/api/csrf'
 
 export interface FriendsSiteProfile {
   title: string
@@ -64,6 +63,7 @@ async function friendsFetch<T>(path: string, init?: RequestInit): Promise<T> {
     headers: {
       Accept: 'application/json',
       ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+      ...csrfHeaders(init?.method),
       ...(init?.headers ?? {}),
     },
   })
@@ -86,6 +86,7 @@ async function friendsFetchWithMessage<T>(
     headers: {
       Accept: 'application/json',
       ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+      ...csrfHeaders(init?.method),
       ...(init?.headers ?? {}),
     },
   })
@@ -99,35 +100,17 @@ async function friendsFetchWithMessage<T>(
 }
 
 export async function fetchFriendLinks(): Promise<FriendLink[]> {
-  try {
-    const data = await friendsFetch<FriendListResult>('/api/friends')
-    return data.items
-  } catch {
-    return [...MOCK_FRIEND_LINKS]
-  }
+  const data = await friendsFetch<FriendListResult>('/api/friends')
+  return data.items
 }
 
 export async function fetchSpecialLinks(): Promise<SpecialLink[]> {
-  try {
-    const data = await friendsFetch<{ items: SpecialLink[] }>('/api/friends/special')
-    return data.items
-  } catch {
-    return [...MOCK_SPECIAL_LINKS]
-  }
+  const data = await friendsFetch<{ items: SpecialLink[] }>('/api/friends/special')
+  return data.items
 }
 
 export async function fetchFriendsSiteProfile(): Promise<FriendsSiteProfile> {
-  try {
-    return await friendsFetch<FriendsSiteProfile>('/api/friends/site-profile')
-  } catch {
-    const local = getFriendsApplySiteProfile()
-    return {
-      title: local.title,
-      url: local.url,
-      logo: local.logo,
-      description: '',
-    }
-  }
+  return friendsFetch<FriendsSiteProfile>('/api/friends/site-profile')
 }
 
 export async function fetchFriendCaptcha(): Promise<FriendCaptcha> {
@@ -180,6 +163,7 @@ export async function patchAdminFriend(
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
+      ...csrfHeaders('PATCH'),
     },
     body: JSON.stringify(payload),
   })
