@@ -445,23 +445,23 @@ watch(coverStory, async () => {
           <div class="self-intro-tech">
             <p class="self-intro-tech-title">技术栈 · Languages</p>
             <div class="self-intro-tech-grid">
-              <p>● Python 0.0%</p>
-              <p>● JAVA 0.0%</p>
-              <p>● C/C++ 0.0%</p>
-              <p>● MySQL 0.0%</p>
-              <p>● Vue3 0.0%</p>
-              <p>● Linux 0.0%</p>
+              <p>● Python 80.0%</p>
+              <p>● JAVA 60.0%</p>
+              <p>● C/C++ 80.0%</p>
+              <p>● MySQL 60.0%</p>
+              <p>● Vue3 50.0%</p>
+              <p>● Linux 50.0%</p>
               <p class="self-intro-tech-ai">● Artificial Intelligence 10000.0%</p>
             </div>
           </div>
           <p class="self-intro-text">
-            大三纯正全栈优质牛马，正宗新代码
+            大四纯正全栈优质牛马，正宗新代码
             <br />
             从小写代码跑路长大，100%AI添加。
             <br />
             究极二刺螈，看番堪比吃盐。
             <br />
-            爱好：喜欢去算法竞赛现场看男娘。
+            爱好：去算法竞赛现场看男娘(bushi)。
             <br />
             部分奖项：ICPC/CCPC不屈铜牌，省赛甚至难铜，有没有懂的。
             <br />
