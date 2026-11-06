@@ -42,12 +42,27 @@ export function sortPosts<T extends Pick<Post, 'pinned' | 'pinned_order' | 'publ
       const bo = b.pinned_order ?? 9999
       if (ao !== bo) return ao - bo
     }
-    return new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
+    const time = (value: string) => {
+      if (!value) return Number.NEGATIVE_INFINITY
+      const parsed = new Date(value).getTime()
+      return Number.isNaN(parsed) ? Number.NEGATIVE_INFINITY : parsed
+    }
+    return time(b.published_at) - time(a.published_at)
   })
 }
 
 export function getProjectById(id: string): Project | undefined {
   return byId(projectsCache, id)
+}
+
+export async function fetchProjectBySlug(slug: string): Promise<Project | undefined> {
+  try {
+    return await apiGet<Project>(`/api/projects/${encodeURIComponent(slug)}`)
+  } catch (e) {
+    const status = (e as Error & { status?: number }).status
+    if (status === 404) return undefined
+    throw e
+  }
 }
 
 export function getProjectBySlug(slug: string): Project | undefined {

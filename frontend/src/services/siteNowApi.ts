@@ -1,3 +1,5 @@
+import { csrfHeaders } from '@/api/csrf'
+
 interface ApiEnvelope<T> {
   code: number
   data: T
@@ -22,6 +24,7 @@ async function siteNowFetch<T>(path: string, init?: RequestInit): Promise<T> {
     credentials: 'include',
     headers: {
       Accept: 'application/json',
+      ...csrfHeaders(init?.method),
       ...(init?.headers ?? {}),
     },
   })

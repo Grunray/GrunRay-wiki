@@ -2,6 +2,7 @@ import {
   buildOAuthApiStartUrl,
   type OAuthProvider,
 } from '@/config/oauthRedirect'
+import { csrfHeaders } from '@/api/csrf'
 
 export interface MessageAuthUser {
   guest_user_id?: number
@@ -38,6 +39,7 @@ async function authFetch<T>(path: string, init?: RequestInit): Promise<T> {
     credentials: 'include',
     headers: {
       Accept: 'application/json',
+      ...csrfHeaders(init?.method),
       ...(init?.headers ?? {}),
     },
   })

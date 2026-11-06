@@ -1,4 +1,5 @@
 import type { AdminGuestMessage, GuestMessage } from '@/content/data/mockMessages'
+import { csrfHeaders } from '@/api/csrf'
 
 export type ModerationAction = 'approve' | 'reject' | 'hide' | 'restore'
 
@@ -32,6 +33,7 @@ async function messageFetch<T>(path: string, init?: RequestInit): Promise<T> {
     credentials: 'include',
     headers: {
       Accept: 'application/json',
+      ...csrfHeaders(init?.method),
       ...(init?.headers ?? {}),
     },
   })

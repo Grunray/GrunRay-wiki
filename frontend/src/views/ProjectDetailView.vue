@@ -14,7 +14,7 @@ import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
 import ProjectBlockRenderer from '@/project-blocks/ProjectBlockRenderer.vue'
 import '@/styles/page-enter-post.css'
-import { canAccessProjectPublic, ensureProjectsLoaded, getProjectBySlug } from '@/services/contentRepository'
+import { canAccessProjectPublic, ensureProjectsLoaded, fetchProjectBySlug, getProjectBySlug } from '@/services/contentRepository'
 import type { Project } from '@/types/content'
 import { stampHeadingIds, type TocItem } from '@/utils/headingToc'
 
@@ -63,7 +63,7 @@ async function loadProject(slug: string) {
   loadError.value = false
   try {
     await ensureProjectsLoaded()
-    project.value = getProjectBySlug(slug) ?? null
+    project.value = (await fetchProjectBySlug(slug)) ?? getProjectBySlug(slug) ?? null
   } catch {
     loadError.value = true
     project.value = null

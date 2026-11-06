@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 
+import { apiUrl } from '@/api/http'
 import CardCornerVineLazy from '@/components/hover/CardCornerVineLazy.vue'
 import AvatarCircleSkeleton from '@/components/ui/AvatarCircleSkeleton.vue'
 import {
@@ -119,7 +120,7 @@ async function loadAvatar() {
       size: '1',
       folder: 'film/homeView/center/avatar',
     })
-    const res = await fetch(`/api/media/list?${q.toString()}`)
+    const res = await fetch(apiUrl(`/api/media/list?${q.toString()}`))
     if (!res.ok) return
     const json = (await res.json()) as {
       code: number
@@ -141,7 +142,7 @@ async function loadLatestUpdatedPost() {
     return
   }
   try {
-    const res = await fetch('/api/posts/latest-updated')
+    const res = await fetch(apiUrl('/api/posts/latest-updated'))
     if (!res.ok) return
     const json = (await res.json()) as { posts?: Post[] }
     latestUpdatedPosts.value = json.posts ?? []
@@ -158,7 +159,7 @@ async function loadRandomRecommendedPost() {
     return
   }
   try {
-    const res = await fetch('/api/posts/random-recommend')
+    const res = await fetch(apiUrl('/api/posts/random-recommend'))
     if (!res.ok) return
     const json = (await res.json()) as { post?: Post }
     randomRecommendedPost.value = json.post ?? null

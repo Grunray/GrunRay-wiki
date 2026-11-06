@@ -1,5 +1,6 @@
 import type { RouteLocationNormalized } from 'vue-router'
 
+import { apiUrl } from '@/api/http'
 import { isMotionCut } from '@/composables/useMotionPolicy'
 
 /** 与 `backend/import/film/...` 经媒体 API 暴露的路径一致 */
@@ -43,15 +44,19 @@ function cssUrlValue(path: string): string {
   return `url('${safe}')`
 }
 
+function mediaUrl(path: string): string {
+  return path.startsWith('/api/') ? apiUrl(path) : path
+}
+
 export function resolvePagePhotoBackgroundUrl(route: RouteLocationNormalized): string {
   for (let i = route.matched.length - 1; i >= 0; i -= 1) {
     const raw = route.matched[i]?.meta?.photoBackgroundImage
     if (typeof raw === 'string' && raw.trim() !== '') {
-      return raw.trim()
+      return mediaUrl(raw.trim())
     }
   }
   const name = typeof route.name === 'string' ? route.name : ''
-  return PAGE_PHOTO_BG_BY_ROUTE_NAME[name] ?? DEFAULT_PAGE_PHOTO_BG_URL
+  return mediaUrl(PAGE_PHOTO_BG_BY_ROUTE_NAME[name] ?? DEFAULT_PAGE_PHOTO_BG_URL)
 }
 
 function photoBgEnabledOnDocument(): boolean {

@@ -1,5 +1,6 @@
 import type { FragmentMood } from '@/content/data/mockFragments'
 import type { RecommendCategory } from '@/services/recommendApi'
+import { csrfHeaders } from '@/api/csrf'
 
 export interface FragmentImageRef {
   url: string
@@ -76,6 +77,7 @@ async function adminFetch<T>(path: string, init?: RequestInit): Promise<{ data: 
     headers: {
       Accept: 'application/json',
       ...(init?.body instanceof FormData ? {} : init?.body ? { 'Content-Type': 'application/json' } : {}),
+      ...csrfHeaders(init?.method),
       ...(init?.headers ?? {}),
     },
   })
