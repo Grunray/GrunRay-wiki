@@ -1,0 +1,18 @@
+[
+  {
+    "id": "api",
+    "text": "Vue3 与 Flask 后端联调时，接口契约要用固定夹具，不要连生产库。"
+  },
+  {
+    "id": "import",
+    "text": "碎念导入要写 public_id、配图和 cover_index，关于页履历不能只留别名。"
+  },
+  {
+    "id": "friend",
+    "text": "友链审核可以改头像和邮箱；已经发布的站点地址重复时要拒绝。"
+  },
+  {
+    "id": "flyway",
+    "text": "Flyway 基线不能带 DROP TABLE，应用启动不要自动迁移。"
+  }
+]
