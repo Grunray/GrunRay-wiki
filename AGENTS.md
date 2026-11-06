@@ -17,6 +17,8 @@ Vue 3 + Vite + Pinia 个人编辑式 wiki（纸面杂志气质），Flask 后端
 | 已踩坑：现象 → 根因 → 解法 | [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) | 未修完的活仍写 TODO，不要只写在这里 |
 | 博客 / 项目 Markdown 导入格式 | [`.cursor/skills/create-blog-md`](.cursor/skills/create-blog-md/SKILL.md)、[`create-project-md`](.cursor/skills/create-project-md/SKILL.md) | 不要自创 front matter 字段 |
 | 路由 SEO / OG / JSON-LD | [`.cursor/skills/seo-head-vue`](.cursor/skills/seo-head-vue/SKILL.md) | — |
+| 后端接口契约（逐路由参数 / 状态码 / 响应 / 验证状态） | [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md)；复测脚本 `tools/contract/` | 改接口行为前不先更新这里；契约沙箱不要连生产库 |
+| 后端迁 Java 总体计划（阶段 0–5） | [`docs/JAVA_MIGRATION.md`](docs/JAVA_MIGRATION.md)；勾选在 TODO 批次 156 | 不要把进度勾选写进计划文档 |
 
 排障新条目：复制 `TROUBLESHOOTING.md` 文首「条目骨架」，贴到对应分区**最上方**。
 

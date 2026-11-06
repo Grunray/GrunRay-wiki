@@ -78,19 +78,87 @@ pytest
 
 ### 当前提示词（复制给 AI）
 
-（无）
+你先阅读 @AGENTS.md ，然后写一份计划，计划放到 \docs 目录下，就是将后端全面转向Java。
+
+你正在迁移已上线的 GrunRay wiki。目标是用 Java 21 + Spring Boot 3.5.x
+替换 Flask 后端。最终范围包括在线 API、OAuth、站长操作、媒体服务、订阅、
+内容导入工具及部署运维。以当前仓库的 Flask 实现、Vue 调用方和已有数据为准。
+
+技术与目录
+- 采用 Spring MVC、Maven Wrapper、Spring JDBC JdbcClient、MySQL。
+- 在 backend-java/ 并行实现。按业务分包，包内按需要拆 Web、业务与数据访问。
+- 迁移期间保留 Flask，供行为对照和生产回退。Java 和 Flask 使用同一份隔离
+  MySQL 测试数据及内容副本做对照。写入测试各用独立副本，避免互相污染。
+
+兼容要求
+- 逐路由保留 HTTP 方法、路径、查询参数及默认值、状态码、JSON 字段与类型、
+  缺失字段和 null、排序、分页、时间格式、错误结构。动态值定义可验证规则。
+- 复用现有 MySQL 数据、ID、slug、md_url、Markdown front matter 和媒体 URL。
+  核对 Markdown 渲染、代码块、RSS、sitemap、robots、音频 Range、图片 WebP
+  协商与缓存，以及项目 Demo iframe。检查 Nginx 下的实际行为。
+- 搜索和相关推荐先复用库中已有关键词，对照 Flask 的匹配、打分与排序。
+  导入时的中文关键词抽取单独迁移，用固定语料比较，不批量重算历史数据。
+- 保留 GitHub／Google 登录路径、回跳及站长身份判定。接受切换后重新登录。
+  用 Spring Security 实现 OAuth2 Client、会话及 CSRF 防护。验证匿名、普通访客、
+  站长三类权限，以及登录失败、非法回跳、登出和带凭证的前端请求。
+- 导入和站长写入同时涉及文件与数据库时，定义失败补偿、重试和重复导入规则。
+  覆盖验证码、限流、审核、封禁及邮件。验证邮件失败时已成功的提交仍可用。
+
+迁移顺序
+0. 盘点契约。扫描路由、Vue 调用方、SQL、序列化、配置、导入脚本和部署文档，
+   输出接口矩阵、每个接口的成功与关键失败用例、测试数据计划及风险清单。
+1. 搭建 Java 工程、配置和测试入口。先用 /api/health 和一条完整的文章
+   列表 → 详情链路打通 Vue、Java、MySQL 与 Markdown。
+2. 迁完公开读取、搜索、项目、栖息内容、媒体与订阅。用固定数据逐项对比。
+3. 迁 OAuth、留言、友链、审核、站长写入与上传。验收权限和失败路径。
+4. 迁内容导入 CLI 与运维能力。逐个标记原有脚本的替代入口或退役理由。
+   分别验证空库初始化与已有库 baseline。仓库旧 SQL 须审查后再使用，
+   应用启动时禁止自动对现网执行迁移。
+5. 用生产同类环境演练。实测目标主机上的 JDK 21、内存、systemd 和 Nginx
+   代理行为。完成备份恢复演练、预发布冒烟、切换步骤及回退条件。
+   生产切换时只开放一个写入后端，并验证 Java 已写入的数据可由 Flask
+   继续读取。生产执行另行授权。
+
+验收方式
+- 用 Flask 与 Java 对同一组请求的对照测试验证契约。记录预期差异及原因，
+  不通过忽略字段或排序来掩盖差异。
+- 普通测试不连生产 MySQL。关键 SQL、JSON 字段、事务、导入和 Flyway
+  使用隔离 MySQL 做集成测试。用现有 Vue 跑通主要访客及站长流程。
+- 每批交付修改范围、验证命令、通过项和未验证项，能独立审阅和复测。
+
+本轮只执行批次 0。把现有接口契约写入 docs/API_CONTRACT.md。
+
+先建立完整路由索引，展开 Flask Blueprint 前缀，覆盖 Vue 当前未调用的
+接口，以及 RSS、sitemap、robots 和媒体文件。每条接口记录：
+
+- HTTP 方法、完整路径、用途、权限
+- 参数位置、类型、必填项和默认值
+- 成功与关键失败的状态码、响应结构和脱敏示例
+- 客户端依赖的行为，例如排序、分页、Cookie、重定向和缓存
+- Flask 实现位置、Vue 调用位置（如有）及验证状态
+
+区分「代码已确认」「本地实测通过」「待实测」。发现代码与调用方不一致时，
+记录差异和复现方法。使用本地测试数据，不录入生产凭证或真实会话。
+
+交付前把文档与 Flask 路由表、Vue 请求逐项核对。后续每个 Java 迁移批次
+按本文档验收，并把关键成功与失败用例加入契约测试。
 
 ### 灵感（未排期）
 
 1. 首页 刊号、问候语等 卡片背景有些突兀
 
+2. 可以给桑多涅live2d做一个彩蛋：
+      当开启月相拖尾的时候，点击桑多涅的头部，可以触发那个表情包，哥伦比娅咬桑多涅耳朵的gif
+
+2. 首页精选可以更主动地策划。
+目前封面故事和最新文章偏向站点自身的动效、无障碍与实现笔记。建议允许手动选择封面，把最能代表你的项目实践或文章放上来，最新更新继续留在目录中。第一次访问的人会更快看到你的代表作。
 
 2. 
 博客/项目 详情页：
 （1）左侧侧栏的Contents·目录改为右侧，原本的图片预览改到左侧侧栏项目信息部分的下方
 （2）左侧侧栏项目信息部分、左侧图片预览部分、右侧Contents·目录部分，都添加一个功能，可以临时关闭
 
-2. 此项搁置
+3. 此项搁置
 碎念/推荐 改为 绝区零绳网展示方式
 - 通用：
 （1）顶部为标题，标题下方为图片（如果有），再下方为详情，点击卡片的整个区域都可以跳转；
@@ -102,7 +170,7 @@ pytest
 - 如果是博客界面：
 （1）有没有技术能够把代码给做成预览，就像是项目界面的图片一样，这样比较高级；
 
-3. 内容备份：脚本将数据库导出到本地，并定期推送到 GitHub。
+4. 内容备份：脚本将数据库导出到本地，并定期推送到 GitHub。
 
 ---
 
@@ -227,6 +295,77 @@ pytest
 ## 进行中
 
 > 对外变更摘要见 [docs/CHANGELOG.md](docs/CHANGELOG.md)。
+
+## 157 · 2026-11-07 契约 §4 前后端不一致
+
+**状态**：进行中 · 已修 §4.1 / §4.3 / §4.5 / §4.6 / §4.10，摘要见 [CHANGELOG · 2026-11-06](docs/CHANGELOG.md#2026-11-06)
+
+**方向**：批次 156 标明不在迁移里改的几处。隐藏项目笔记不再出现在首页旁路；项目详情改为打详情接口；友链失败不再显示假数据；`/api` 地址尊重 `VITE_API_BASE_URL`；无发布时间的文章排序稳定。
+
+- [x] 157-1 `latest-updated` / `random-recommend` 排除 hidden 项目笔记（Flask 与 Java 一起改，R09 / R10）
+- [x] 157-2 项目详情页请求 `GET /api/projects/<slug>`
+- [x] 157-3 友链列表、特殊链接、本站资料失败时不再回退 mock
+- [x] 157-4 首页、胶片栏、头像、页面背景的 `/api/` 走 `apiUrl()`
+- [x] 157-5 `sortPosts` 把空日期当成最早
+
+**验收**
+
+- [x] R09 / R10 对 Flask 5001 与 Java 5010 通过
+
+## 156 · 2026-11-06 后端迁 Java（Spring Boot）
+
+**状态**：进行中 · 阶段 5 本机演练已完成（2026-11-06），生产切换未授权，摘要见 [CHANGELOG · 2026-11-06](docs/CHANGELOG.md#2026-11-06)
+
+**方向**：用 Java 21 + Spring Boot 3.5.x 在 `backend-java/` 并行重写 Flask 后端，按 [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md) 逐路由验收；Flask 保留到切换完成，供对照与回退。不改前端视觉，不重设计表结构。总体计划与阶段 0–5 见 [`docs/JAVA_MIGRATION.md`](docs/JAVA_MIGRATION.md)。
+
+**依赖 / 冲突**：契约沙箱 `tools/contract/`（本机库 `grunray_wiki_contract`，端口 Flask 5001 / 模拟 OAuth 5002 / SMTP 1025）。生产执行每次另行授权。
+
+**P0 — 阶段 0 · 契约盘点**
+
+- [x] 156-1 搭隔离沙箱：新库 `grunray_wiki_contract`、合成夹具、独立 `content/` `import/` 副本；执行 `schema.sql` 前核对主机与库名；OAuth / SMTP 用模拟服务
+- [x] 156-2 写 `docs/API_CONTRACT.md`：62 个「方法 + 路径」的索引与详情（参数、状态码、脱敏示例、客户端依赖行为、Flask / Vue 位置、验证状态）
+- [x] 156-3 跑契约用例 125 个（匿名 / 访客 / 站长，含 OAuth 失败、非法回跳、验证码、限流、邮件失败、Range、WebP），全部通过后回填状态
+- [x] 156-4 `tools/contract/crosscheck.py` 核对索引、Flask `url_map`、实测结果、Vue 请求，0 处不一致；记录代码与调用方不一致 11 条、接口风险 15 条
+- [x] 156-5 写 `docs/JAVA_MIGRATION.md`（范围、迁移期规则、对照测试、阶段 0–5、风险）
+
+**P1 — 阶段 1–3 · 在线 API**
+
+- [x] 156-6 阶段 1：建 `backend-java/`（Maven Wrapper、profile、测试入口、CI `mvnw verify`）；打通 `/api/health` 与文章列表 → 详情；Markdown 先做 `body_html` 快照比对再选型
+- [x] 156-7 对照测试：`run_cases.py` 目标地址可配置，同一组请求分别打 Flask 与 Java、规范化 JSON 后比对；写入用例的独立库留到阶段 3（本阶段只读，共用契约库）
+- [x] 156-8 阶段 2：公开读取、搜索、项目、栖息内容、媒体（Range / WebP / Demo iframe）、RSS / sitemap / robots；搜索先复用库里关键词
+- [x] 156-9 阶段 3：OAuth（保留 `/api/auth/{provider}` 与回调路径、回跳规则、站长判定）、会话、CSRF（前端同批改）、留言、友链、审核、封禁、验证码、限流、邮件、站长写入与上传、文件与数据库双写补偿
+- [x] 156-9a 阶段 3 缺口：Java 站长 import 的 Markdown 与 Flask `xiqi_md_write.py` 对齐（碎念含 `created_at` / `images` / `cover_index`；推荐含 `category` / `rating` / `status` / `url` / 配图；页面含 hero；关于页写全履历，不只 `alias`）
+- [x] 156-9b 阶段 3 缺口：友链 PATCH 写入 `avatarUrl`（同步封面）和 `contactEmail`；已发布友链改 URL 时按规范化地址查重，文案「该站点 URL 已有已发布友链」
+- [x] 156-9c 阶段 3 缺口：删掉盖住 `.ts` 的未跟踪 `.js`，让留言、友链、此刻、站长保存实际带上 `X-XSRF-TOKEN`（Vite 默认先解析 `.js`）
+
+**P2 — 阶段 4–5 · 工具与切换**
+
+- [x] 156-10 阶段 4：`backend/scripts/` 逐个标替代入口或退役理由；中文抽词用固定语料对比，不重算历史数据；Flyway 分别验证空库初始化与已有库 baseline，启动不自动迁移
+- [x] 156-11 阶段 5 本机演练：冒烟、Java 写入后停掉 Java 再由 Flask 读取、契约库备份恢复、`-Xmx256m` 工作集约 256 MB；切换步骤只改 `proxy_pass`，同时只留一个写入进程
+- [ ] 156-11b 生产主机：安装 JDK、改 systemd / Nginx、在 2 GB 机器上量内存。未授权前不做
+- [x] 156-12 另开批次 157 处理：`API_CONTRACT.md` §4.1 首页隐藏项目笔记、§4.3 项目详情接口、§4.5 友链 mock、§4.6 裸 `fetch`、§4.10 无发布时间排序
+
+**⚠️ 回归 / 风险**
+
+- 切换后所有人需要重新登录（Flask 签名 Cookie 无法被 Java 读取）。
+- CSRF 是新增约束，前端写请求要和 Java 阶段 3 同批改。
+- 其余见 `docs/API_CONTRACT.md` §6 与 `docs/JAVA_MIGRATION.md` §6。
+
+**涉及文件**
+
+`docs/API_CONTRACT.md`、`docs/JAVA_MIGRATION.md`、`tools/contract/`、`.gitignore`（`.contract-sandbox/`、`backend-java/target/`）、`AGENTS.md` §2、`backend-java/`、`.github/workflows/ci.yml`、`frontend/vite.config.ts`（`VITE_API_PROXY`）；后续 `frontend/src/services/*`（CSRF）
+
+**验收**
+
+- [x] 阶段 0：125 个契约用例通过，`crosscheck.py` 退出码 0
+- [x] 阶段 1：Java 契约 R01–R08、R11–R14 通过；`compare_bases.py` Flask↔Java 一致；CI `./mvnw verify`（不连 MySQL）
+- [x] 阶段 2：Java 5010 上 A/G/R/F 与 X01，除 G01、G02、R17b 三条已约定差异外 63/63 通过；RSS / sitemap 正文与 Flask 一致
+- [x] 阶段 3：Java 5010 上 U/M/FR/X 55/55、自动发布档 B 5/5；CSRF 与前端写请求同批；碎念路径穿越与失败残留按约定修正
+- [x] 阶段 3 缺口：import 文件含 156-9a 的字段；友链头像、邮箱与已发布 URL 冲突与 Flask 一致；Vite 解析到 `messageApi.ts` 等 TypeScript 源
+- [x] 阶段 4：脚本去向已填；jieba 固定语料见 `backend-java/src/test/resources/keywords/jieba.json`，不重算历史关键词；`flyway_check.py` 在隔离库跑通空库 migrate 与已有库 baseline，启动不迁移
+- [x] 阶段 5 本机：`rollback_drill.py` 冒烟 9 项、回退读取、契约库备份恢复均通过；生产主机未改
+- [ ] 后续每个阶段：该批路由的契约用例对 Java 通过；交付写清修改范围、验证命令、通过项、未验证项
+- [x] 用现有 Vue 对上 Java 5010：首页、博客、文章、项目、友链、留言、碎念、推荐、关于能打开契约数据；友链申请在浏览器里提交成功。项目 demo 曾被 `X-Frame-Options: DENY` 挡成空白，已改为 `SAMEORIGIN`。站长页未登录会拦住；浏览器没有走完真实 GitHub 登录
 
 ## 154 · 2026-09-19 Lighthouse 首页跟进
 

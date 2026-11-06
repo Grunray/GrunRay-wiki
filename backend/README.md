@@ -75,7 +75,7 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-排障见仓库 [`docs/TROUBLESHOOTING.md`](../docs/TROUBLESHOOTING.md)。
+排障见仓库 [`docs/TROUBLESHOOTING.md`](../docs/TROUBLESHOOTING.md)。连库的契约、Java 对照和回退演练见 [`tools/contract/README.md`](../tools/contract/README.md)，一条命令是 `python tools/contract/run_dev_suite.py`（在仓库根目录执行）。
 
 ## API 摘要
 

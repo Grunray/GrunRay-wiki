@@ -45,7 +45,8 @@
 - 任意 `import_*.py` / 数据库灌数  
 - `run_sql.py` 全量或任意迁移  
 - `sync_film_media_from_import.py`（会删库删文件）  
-- 改 nginx / 证书 / MySQL 密码  
+- 改 nginx / 证书 / MySQL 密码
+- 把 Nginx 上游从 Flask 改到 Java（见 `docs/JAVA_MIGRATION.md` 阶段 5；未授权不切换）  
 - `git push` / 提交本地变更  
 
 ---
