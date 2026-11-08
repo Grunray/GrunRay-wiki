@@ -65,7 +65,7 @@ class MarkdownSnapshotTest {
         int exact = 0;
         for (Path md : sources) {
             Path htmlPath = md.resolveSibling(md.getFileName().toString().replaceAll("\\.md$", ".html"));
-            String expected = Files.readString(htmlPath, StandardCharsets.UTF_8);
+            String expected = ContentFiles.universalNewlines(Files.readString(htmlPath, StandardCharsets.UTF_8));
             String source = ContentFiles.universalNewlines(Files.readString(md, StandardCharsets.UTF_8));
             String actual = renderer.render(source);
             Path actualOut = Path.of("target", "markdown-actual", dir.getFileName().toString(),
