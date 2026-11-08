@@ -2,10 +2,12 @@
 public_id: proj-grunray-wiki
 slug: grunray-wiki
 title: GrunRay Wiki — 个人成果与博客站
-summary: Vue 3 + TypeScript + Vite 前端，Flask + MySQL 后端；Markdown 驱动内容，涵盖项目展示、算法博文、碎念、友链与留言等模块。
+summary: Vue 3 + TypeScript + Vite 前端，Java 21 + Spring Boot 生产 API，Flask 留作回退与内容导入；Markdown 驱动内容，涵盖项目展示、算法博文、碎念、友链与留言等模块。
 tags:
   - Vue
   - TypeScript
+  - Java
+  - Spring Boot
   - Flask
   - MySQL
   - Vite
@@ -26,7 +28,7 @@ layout:
 
       设计原则来自仓库内 designed/site-design-spec.md：数据驱动、易于扩展——新增一篇博文、一个项目卡片或一条碎念，优先通过 Markdown 与 import 脚本写入数据库，而不是改业务页面代码。现行视觉与动效契约在 docs/DESIGN.md（根 DESIGN.md 为指针）；键盘与焦点见 docs/ACCESSIBILITY.md。主站与项目 Demo 解耦：Demo 以独立子工程构建，静态产物由后端 /api/media/files/... 托管，详情页以 iframe 嵌入。
 
-      仓库为 monorepo：frontend/（主站）、backend/（API 与内容）、demos/（可独立构建的演示页）、designed/（设计稿与规范）、backend/import/（各类内容的 Markdown 源）、docs/（DESIGN、ACCESSIBILITY、CHANGELOG、TROUBLESHOOTING）。编码代理入口是根目录 AGENTS.md。CI（.github/workflows/ci.yml）在 push / PR 跑前端 vue-tsc + vite build，以及后端 pytest（不连 MySQL）。
+      仓库为 monorepo：frontend/（主站）、backend-java/（生产 API）、backend/（Flask 回退、content/、import 与导入脚本）、demos/（可独立构建的演示页）、designed/（设计稿与规范）、docs/（DESIGN、ACCESSIBILITY、API_CONTRACT、JAVA_MIGRATION、CHANGELOG、TROUBLESHOOTING）。说明见根目录 README.md / README.zh-CN.md，编码代理入口是 AGENTS.md。CI（.github/workflows/ci.yml）在 push / PR 跑前端 vue-tsc + vite build、Flask pytest，以及 backend-java 的 mvnw verify（都不连生产 MySQL）。
   - type: markdown
     title: 整体架构
     body: |
@@ -35,18 +37,23 @@ layout:
       | 层级 | 技术 | 职责 |
       |------|------|------|
       | 展示层 | Vue 3 SPA（Vite 构建） | 路由、组件、主题/i18n、SEO、Markdown 渲染与消毒 |
-      | API 层 | Flask 3 + flask-cors | 只读/写 JSON API、会话 OAuth、静态媒体、RSS |
+      | API 层 | Java 21 + Spring Boot 3.5.x | 生产 JSON API、会话 OAuth、CSRF、静态媒体、RSS |
+      | 回退 API | Flask 3 + gunicorn | 同一套表与 `content/`；导入脚本仍走这里 |
       | 存储层 | MySQL 8 | 元数据、索引字段、关系表（项目、留言、友链等） |
       | 内容层 | `backend/content/` | Markdown 正文、配图、Demo 静态包、BGM 等 |
 
-      文章**正文不落库**：`post` 表仅存 `md_url`（相对 `CONTENT_ROOT` 的路径），详情接口按需读取文件；可选 `?html=1` 由服务端 `markdown` + Pygments 渲染 `body_html`。
+      2026-11-08 起，公网 `/api/`、`/rss.xml`、`/sitemap.xml`、`/robots.txt` 由 Nginx 转到 `grunray-wiki-java`（`127.0.0.1:5010`）。Flask 的 `grunray-wiki`（`:5000`）停着，留作回退。两边读同一份 MySQL 和 `content/`，Java 写进库的数据 Flask 能接着读。启动不跑 Flyway。
+
+      文章**正文不落库**：`post` 表仅存 `md_url`（相对 `CONTENT_ROOT` 的路径），详情接口按需读取文件；可选 `?html=1` 由服务端渲染 `body_html`。Java 用 flexmark 对齐 Python-Markdown + Pygments；行内 `A<B` 仍是已知差异（见 `docs/API_CONTRACT.md` §4.12）。
 
       ## 开发联调
 
-      - 后端：`cd backend && python run.py`，默认 `http://127.0.0.1:5000`（先激活本目录 `.venv` 或 `venv`）
-      - 前端：`cd frontend && npm run dev`，Vite 将 `/api` 与 `/rss.xml` **代理**到 Flask（见 `frontend/vite.config.ts`）
-      - 检查：前端 `npx vue-tsc -b` 与 `npx vite build`；后端同一 venv 内 `pip install -r requirements-dev.txt` 后 `pytest`（不连 MySQL）
-      - 生产：前端 `npm run build` 产出静态资源；API 与 `content/` 由同一 Flask 进程或反向代理统一对外
+      - Java：`backend-java` 里 `mvnw -B -DskipTests package`，再 `java -jar target/grunray-wiki-api.jar --spring.profiles.active=local`（未设 `PORT` 时是 8080）
+      - Flask：`cd backend && python run.py`，默认 `http://127.0.0.1:5000`（先激活本目录 `.venv` 或 `venv`）
+      - 前端：`cd frontend && npm run dev`。Vite 默认把 `/api` 代理到 `5000`；打 Java 时设 `VITE_API_PROXY=http://127.0.0.1:5010`
+      - 检查：前端 `npx vue-tsc -b` 与 `npx vite build`；Flask `pytest`（不连 MySQL）；Java `mvnw verify`
+      - 整套本机契约（隔离库 `grunray_wiki_contract`，不连生产）见 `tools/contract/README.md`
+      - 生产：前端 `npm run build` 产出静态资源；jar 单独上传，不要打进 `deploy-backend.tar`。步骤见 `DEPLOY_SERVER.md`
 
       ## Demo 子工程策略
 
@@ -65,12 +72,19 @@ layout:
       - **动效**：GSAP（部分页面过渡）；顶栏工具按钮 FLIP 动画（`useHeaderToolbarLayoutShift`）
       - **构建**：Vite 8 + `@vitejs/plugin-vue`；路径别名 `@` → `src`，`@xiqi_img` → `designed/xiqi_img`
 
-      ## 后端（`backend/requirements.txt`）
+      ## 生产 API（`backend-java/`）
+
+      - Java 21、Spring Boot 3.5.x、Spring MVC、Spring Security
+      - JdbcClient 手写 SQL，不用 ORM 生成语句
+      - flexmark 渲染 Markdown；会话 Cookie 名 `session`，写请求要带 `X-XSRF-TOKEN`
+      - 构建用 Maven Wrapper（`mvnw` / `mvnw.cmd`）
+
+      ## Flask（`backend/requirements.txt`，回退与导入）
 
       - Flask 3、flask-cors、python-dotenv
       - PyMySQL + **cryptography**（MySQL 8 `caching_sha2_password`）
       - **markdown**、Pygments（服务端 HTML）
-      - **jieba**（中文关键词 TF-IDF 抽词）
+      - **jieba**（中文关键词 TF-IDF 抽词；历史关键词不在 Java 侧重算）
       - **PyYAML**（front matter 解析）
 
       ## 数据库
@@ -169,7 +183,9 @@ layout:
   - type: markdown
     title: 后端 API 一览
     body: |
-      ## 只读内容（`read_api` Blueprint，`/api`）
+      线上实现是 `backend-java/`，路径与 JSON 信封沿用 Flask。逐条参数见 `docs/API_CONTRACT.md`。写请求要先拿到 `XSRF-TOKEN` Cookie，再回传 `X-XSRF-TOKEN`。未知路由和 405 返回 JSON，不再是 HTML。
+
+      ## 只读内容（`/api`）
 
       | 方法 | 路径 | 说明 |
       |------|------|------|
@@ -195,7 +211,8 @@ layout:
 
       ## 认证（`auth_api`，`/api/auth`）
 
-      - GitHub / Google OAuth 2.0；Flask session + `SESSION_COOKIE_SAMESITE=Lax`
+      - GitHub / Google OAuth 2.0；会话 Cookie `session`，`SameSite=Lax`
+      - 从 Flask 切到 Java 后旧会话作废，需要重新登录
       - 回调 `OAUTH_PUBLIC_BASE`；登录后跳转 `FRONTEND_ORIGIN` 安全路径
       - 站长判定：`MESSAGE_OWNER_PROFILE_URLS` / `MESSAGE_OWNER_*_IDS`（`.env`）
 
@@ -222,7 +239,7 @@ layout:
     body: |
       ## 关键词抽取
 
-      - `app/keywords_extract.py`：jieba TF-IDF，导入文章时可写入 `post.keywords`
+      - `app/keywords_extract.py`：jieba TF-IDF，导入文章时可写入 `post.keywords`（仍是 Python；Java 不重算已有关键词）
       - CLI：`scripts/content_tools/extract_keywords.py`
 
       ## 搜索方案 C（`app/keywords_match.py`）
@@ -258,7 +275,7 @@ layout:
   - type: markdown
     title: 配置与环境变量
     body: |
-      复制 `backend/.env.example` → `.env`，关键项：
+      复制 `backend/.env.example` → `.env`。Java 不直接读这份文件，生产 unit 在加载它之后把 `PORT` 设为 `5010`，并设置 `SPRING_PROFILES_ACTIVE=prod`。不要用开发机的 `.env` 覆盖服务器。关键项：
 
       - **MySQL**：`MYSQL_*`、`CONTENT_ROOT=content`
       - **CORS / 前端**：`FRONTEND_ORIGIN`、`CORS_ORIGINS`
@@ -267,7 +284,9 @@ layout:
       - **站长**：`MESSAGE_OWNER_PROFILE_URLS`、`SITE_OWNER_NAME`
       - **友链站点元信息**：`FRIENDS_SITE_URL`（RSS 链接根、OG 用）
 
-      Flask `SECRET_KEY` 生产环境必须替换为随机长串。
+      Flask `SECRET_KEY` 生产环境必须替换为随机长串。Java 的会话密钥走 Spring 配置，不复用 Flask 签过的 Cookie。
+
+      表结构变更不在启动时执行。Flyway 脚本在 `backend-java/src/main/resources/db/migration/`，只对隔离库手动跑。`schema.sql` 含 `DROP TABLE`，不能对着生产库执行。
   - type: changelog
     title: 里程碑
     body: |
@@ -346,6 +365,10 @@ layout:
       2026-09-18  博客 / 项目列表筛选与 URL 同步，返回尽量恢复滚动；文章 TOC 与邻接篇（147）。首页「此刻」站长可写；碎念 / 推荐撰写与名录编辑合入（148）。Skip link、抽屉与 Read sheet 焦点陷阱（149）。拖尾 / 音乐 / FPS 按需加载（150）。Motion Policy：`html[data-motion]` 三档，REDUCED 仍瞬切可见、不伪造页脚揭开（151）。设计契约迁到 `docs/DESIGN.md`，并加 CHANGELOG 与 ACCESSIBILITY。
 
       2026-09-19  GitHub Actions：前端类型检查 + 生产构建、后端 pytest（153）。新增 `docs/TROUBLESHOOTING.md` 与根目录 `AGENTS.md`（代理文档地图）。
+
+      2026-11-06  后端迁 Java：`backend-java/` 按接口契约对齐 Flask；本机契约沙箱跑通读取、登录、留言、友链与站长写入。批量导入和 jieba 抽词仍留在 Python。
+
+      2026-11-08  生产 API 切到 Java 21（`grunray-wiki-java`，`127.0.0.1:5010`，堆 `-Xmx256m`）。Nginx 只改 `/api/`、`/rss.xml`、`/sitemap.xml`、`/robots.txt` 的上游。Flask unit 保留作回退。写请求启用 CSRF；已有登录会话失效。
 related_posts:
   - slug: grunray-wiki-note-home
     label: 首页布局与 API
