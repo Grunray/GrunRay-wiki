@@ -10,6 +10,7 @@ Vue 3 + Vite + Pinia 个人编辑式 wiki（纸面杂志气质），Flask 后端
 
 | 需求 | 读 | 不要做 |
 | --- | --- | --- |
+| 仓库是什么、怎么在本机跑起来 | 根 [`README.md`](README.md)（中文 [`README.zh-CN.md`](README.zh-CN.md)） | 不要把长契约或批次清单写进 README |
 | 未完成任务 / 优先级 / 验收 / 涉及文件 | [`TODO.md`](TODO.md) | 不要把勾选清单抄进 CHANGELOG 或排障文 |
 | 视觉 / 动效 / 令牌契约 | [`docs/DESIGN.md`](docs/DESIGN.md)（根 [`DESIGN.md`](DESIGN.md) 只是指针） | 不要凭「好看」改色或加第二强调色 |
 | 键盘 / Skip / 焦点陷阱 | [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md) | 关面板前勿先 `aria-hidden` / `inert` 内部仍聚焦的节点 |

@@ -17,10 +17,10 @@
 |----|-----|
 | 服务器项目根 | `/var/www/GrunRay_wiki` |
 | SSH | `root@118.25.138.103`（本机密钥：`~/.ssh/id_ed25519`） |
-| 后端服务 | systemd：`grunray-wiki` |
+| 后端服务 | systemd：`grunray-wiki-java`（回退用 `grunray-wiki`） |
 | 反向代理 | nginx（站点：`/etc/nginx/conf.d/grunray_wiki.conf`） |
 | 前端产物 | `frontend/dist`（Nginx `root`） |
-| 后端 API | `127.0.0.1:5000`，Nginx `location ^~ /api/` 反代 |
+| 后端 API | Java `127.0.0.1:5010`。Flask 回退是 `127.0.0.1:5000`。`/api/` 仍是 `location ^~ /api/` |
 
 **绝对不要**用本机的 `backend/.env` 或 `backend/.venv` 覆盖服务器：
 
@@ -37,8 +37,10 @@
 2. 打包并上传 `backend/`（排除 `.venv`、`.env`）与 `frontend/dist/`  
 3. 服务器解压时**先备份再还原** `.env`  
 4. `pip install -r requirements.txt`（在服务器 venv 内）  
-5. `systemctl restart grunray-wiki`  
+5. `systemctl restart grunray-wiki-java`（不要用这次上传去重启已停掉的 Flask，除非正在回退）  
 6. 健康检查
+
+Java 包不要打进 `deploy-backend.tar`。`backend-java` 有改动时，本机用 JDK 21 在 `backend-java` 执行 `.\mvnw.cmd -B -DskipTests package`，把 `target\grunray-wiki-api.jar` 单独传到 `/var/www/GrunRay_wiki/backend-java/grunray-wiki-api.jar`（`grunray` 可读），再重启 `grunray-wiki-java`。只更新 `frontend/dist` 或 Python 树、不换这个 jar，线上 API 不会变。
 
 **默认不做**（除非用户明确说）：
 
@@ -46,7 +48,7 @@
 - `run_sql.py` 全量或任意迁移  
 - `sync_film_media_from_import.py`（会删库删文件）  
 - 改 nginx / 证书 / MySQL 密码
-- 把 Nginx 上游从 Flask 改到 Java（见 `docs/JAVA_MIGRATION.md` 阶段 5；未授权不切换）  
+- 把 Nginx 上游改回 Flask，或再改端口（回退步骤见 `docs/JAVA_MIGRATION.md` 阶段 5）  
 - `git push` / 提交本地变更  
 
 ---
@@ -114,16 +116,16 @@ source .venv/bin/activate
 pip install -q -r requirements.txt
 deactivate
 
-systemctl restart grunray-wiki
+systemctl restart grunray-wiki-java
 sleep 2
-systemctl is-active grunray-wiki nginx
-curl -s http://127.0.0.1:5000/api/health
+systemctl is-active grunray-wiki-java nginx
+curl -s http://127.0.0.1:5010/api/health
 curl -sk -o /dev/null -w "home:%{http_code}\n" https://127.0.0.1/
 ```
 
 期望：
 
-- `grunray-wiki`、`nginx` 均为 `active`
+- `grunray-wiki-java`、`nginx` 均为 `active`（`grunray-wiki` 保持 inactive，除非正在回退到 Flask）
 - `/api/health` 返回 `{"ok": true}`（或等价健康 JSON）
 - 首页 HTTPS 为 `200`
 
@@ -168,7 +170,7 @@ python scripts/xiqi_tools/import_xiqi.py pages
 python scripts/xiqi_tools/import_xiqi.py about
 python scripts/xiqi_tools/import_xiqi.py recommendations
 
-systemctl restart grunray-wiki
+systemctl restart grunray-wiki-java
 ```
 
 注意：
@@ -205,7 +207,7 @@ systemctl restart grunray-wiki
 
 - [ ] `frontend/dist/index.html` 已更新（服务器 mtime）
 - [ ] `backend/.env` 仍是生产配置（未被本机覆盖）
-- [ ] `systemctl is-active grunray-wiki nginx` → active
-- [ ] `curl http://127.0.0.1:5000/api/health` → ok
+- [ ] `systemctl is-active grunray-wiki-java nginx` → active
+- [ ] `curl http://127.0.0.1:5010/api/health` → ok
 - [ ] `https://grunray.tech` 强刷后为新版本
 - [ ] Demo：`https://grunray.tech/api/media/files/demos/crsea-threejs/v1/index.html` 标题为 Demo，而非主站 SPA

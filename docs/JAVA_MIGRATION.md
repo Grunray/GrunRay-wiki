@@ -5,9 +5,9 @@
 
 | 项 | 值 |
 | --- | --- |
-| 当前阶段 | 阶段 5 本机演练已完成（2026-11-06）；生产主机未授权，未切换 |
+| 当前阶段 | 阶段 5 已在生产切换（2026-11-08）：Nginx 上游为 Java `127.0.0.1:5010` |
 | 基线 | Flask `0fb0ec6`，61 条业务路由 + 1 条内置 `static`（[`API_CONTRACT.md` §2](API_CONTRACT.md#2-路由索引)） |
-| 生产 | 仍是 Flask：systemd `grunray-wiki`，gunicorn 3 worker，`127.0.0.1:5000`，Nginx 反代（[`API_CONTRACT.md` §1.9](API_CONTRACT.md#19-生产部署映射)） |
+| 生产 | Java：systemd `grunray-wiki-java`，Temurin 21，`-Xmx256m`，`127.0.0.1:5010`。Flask `grunray-wiki`（gunicorn `:5000`）已停，留作回退 |
 | 生产执行 | 每次都要另行授权；本计划内任何阶段都不默认动生产 |
 
 ## 1. 范围
@@ -148,9 +148,9 @@ Flyway：`V1__baseline.sql` 去掉了一切 `DROP`。`application.yml`、`applic
 
 验收（2026-11-06，本机回环 MySQL）：`python tools/contract/flyway_check.py`。空库 migrate 后有 `category` 3 行和栖息表，历史为 `1 / SQL`；再 migrate 一次，事先写入的 `site_now` 还在。已有库先手工建表并写入标记，baseline 后历史为 `1 / BASELINE`，标记还在；随后 migrate 没有执行 V1。两个隔离库还留着，不用了可以 `DROP DATABASE grunray_wiki_flyway_empty;` 和 `DROP DATABASE grunray_wiki_flyway_baseline;`。没有对 `grunray_wiki_contract` 和生产库执行。
 
-### 阶段 5 · 演练与切换（本机演练完成 2026-11-06；生产主机未执行）
+### 阶段 5 · 演练与切换（本机演练 2026-11-06；生产切换 2026-11-08）
 
-生产主机上的 systemd、Nginx 和数据库**没有动**。`DEPLOY_SERVER.md` 要求改 Nginx / 证书 / MySQL 必须另行授权，这次只在本机隔离环境做了能做的部分。
+本机演练没有动生产库。2026-11-08 在授权后切换了生产 systemd 与 Nginx 上游，没有跑 Flyway，没有改 MySQL 密码或证书。
 
 本机命令：`python tools/contract/rollback_drill.py`（回环 MySQL，库 `grunray_wiki_contract`）。
 
@@ -170,7 +170,7 @@ proxy_pass http://127.0.0.1:5010;
 
 Java 用单独的 unit，监听 5010，堆先封在 256 MB。`EnvironmentFile` 用服务器现有的 `backend/.env`（不要用开发机的 `.env` 覆盖它），`PORT=5010` 写在 `EnvironmentFile` 之后，避免被 Flask 的 `PORT=5000` 盖住。`SPRING_PROFILES_ACTIVE=prod`。启动不跑 Flyway。切换后所有人要重新登录；写请求要带 CSRF。
 
-未做：没有登录 `118.25.138.103`，没有安装 JDK、没有改 unit、没有 `nginx -t`、没有在 2 GB 主机上量 RSS。这些要等单独授权。生产切换不在默认部署动作里。
+生产（2026-11-08）：Temurin 21.0.13+9 在 glibc 2.17 上 `java -version` 通过。单独 unit `grunray-wiki-java` 读服务器 `backend/.env` 后把 `PORT` 设为 5010，日志无 Flyway。当时 `MemAvailable` 约 915 MB，Java RSS 约 167 MB，停 gunicorn 后仍远高于 200 MB。冒烟 10 项均为 200 后，才把 `/api/`、`/rss.xml`、`/sitemap.xml`、`/robots.txt` 的上游改到 5010，并停掉 `grunray-wiki`。回退仍是先拉起 Flask，再把上游改回 5000，然后停 Java。
 
 ## 6. 主要风险
 
@@ -181,7 +181,7 @@ Java 用单独的 unit，监听 5010，堆先封在 256 MB。`EnvironmentFile` �
 | Markdown 与代码高亮输出对不齐 | 正文排版、代码配色变化 | 阶段 1 快照比对后选型；差异写明 |
 | 中文抽词替代（jieba） | 新导入文章的标签、搜索、相关推荐漂移 | 阶段 4 固定语料对比；历史数据不重算 |
 | Spring Security 默认行为（OAuth 路径、登录跳转、CSRF） | 回调地址失效、前端写请求 403 | 阶段 3 显式改路径与未登录响应；CSRF 与前端同批 |
-| 2 GB 主机内存 | JVM 与 MySQL 争内存 | 本机 `-Xmx256m` 时工作集约 256 MB；生产主机尚未实测 |
+| 2 GB 主机内存 | JVM 与 MySQL 争内存 | 生产 `-Xmx256m` 时 Java RSS 约 167 MB，当时可用内存约 915 MB |
 | 会话不可迁移 | 切换后全员重新登录 | 接受；低峰切换并公告 |
 | 进程内限流 | 多实例失效，XFF 可伪造 | 第一版单实例；可信 XFF 另开批次 |
 | 文件与数据库双写 | 半成品文件、重复导入 | 阶段 3 定补偿规则并测失败路径 |

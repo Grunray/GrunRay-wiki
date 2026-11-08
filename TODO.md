@@ -78,70 +78,27 @@ pytest
 
 ### 当前提示词（复制给 AI）
 
-你先阅读 @AGENTS.md ，然后写一份计划，计划放到 \docs 目录下，就是将后端全面转向Java。
+这次授权你在生产机上完成 TODO 156-11b：安装 JDK 21，让 Java 后端先在 5010 旁路跑通，再切 Nginx。先读 `DEPLOY_SERVER.md`、`docs/JAVA_MIGRATION.md` 阶段 5、`designed/optimization/09-backend-gunicorn.md`。本提示词只授权下面这些步骤。不要覆盖服务器 `backend/.env`，不要跑 Flyway、`schema.sql`、`run_sql.py` 或任何 import，不要改 MySQL 密码或证书，不要把密钥写进仓库或贴进对话。
 
-你正在迁移已上线的 GrunRay wiki。目标是用 Java 21 + Spring Boot 3.5.x
-替换 Flask 后端。最终范围包括在线 API、OAuth、站长操作、媒体服务、订阅、
-内容导入工具及部署运维。以当前仓库的 Flask 实现、Vue 调用方和已有数据为准。
+主机 `root@118.25.138.103`，项目根 `/var/www/GrunRay_wiki`，系统是 CentOS 7（glibc 很旧）。现网仍是 Flask：systemd `grunray-wiki`（User=`grunray`，WorkingDirectory 为 `backend`，gunicorn `127.0.0.1:5000`）。Nginx 配置在 `/etc/nginx/conf.d/grunray_wiki.conf`。任一步失败就停，不要改对外流量。
 
-技术与目录
-- 采用 Spring MVC、Maven Wrapper、Spring JDBC JdbcClient、MySQL。
-- 在 backend-java/ 并行实现。按业务分包，包内按需要拆 Web、业务与数据访问。
-- 迁移期间保留 Flask，供行为对照和生产回退。Java 和 Flask 使用同一份隔离
-  MySQL 测试数据及内容副本做对照。写入测试各用独立副本，避免互相污染。
+1. 在本机 Windows 打包，不要在服务器上编译。`JAVA_HOME` 用 `C:\Users\Grunray\.jdks\jdk-21.0.13+9`，在 `backend-java` 执行 `.\mvnw.cmd -B -DskipTests package`，把 `backend-java\target\grunray-wiki-api.jar` 上传到 `/var/www/GrunRay_wiki/backend-java/grunray-wiki-api.jar`。不要放进默认的 `deploy-backend.tar`，避免下次上传 Flask 时被盖掉。属主让 `grunray` 能读。
 
-兼容要求
-- 逐路由保留 HTTP 方法、路径、查询参数及默认值、状态码、JSON 字段与类型、
-  缺失字段和 null、排序、分页、时间格式、错误结构。动态值定义可验证规则。
-- 复用现有 MySQL 数据、ID、slug、md_url、Markdown front matter 和媒体 URL。
-  核对 Markdown 渲染、代码块、RSS、sitemap、robots、音频 Range、图片 WebP
-  协商与缓存，以及项目 Demo iframe。检查 Nginx 下的实际行为。
-- 搜索和相关推荐先复用库中已有关键词，对照 Flask 的匹配、打分与排序。
-  导入时的中文关键词抽取单独迁移，用固定语料比较，不批量重算历史数据。
-- 保留 GitHub／Google 登录路径、回跳及站长身份判定。接受切换后重新登录。
-  用 Spring Security 实现 OAuth2 Client、会话及 CSRF 防护。验证匿名、普通访客、
-  站长三类权限，以及登录失败、非法回跳、登出和带凭证的前端请求。
-- 导入和站长写入同时涉及文件与数据库时，定义失败补偿、重试和重复导入规则。
-  覆盖验证码、限流、审核、封禁及邮件。验证邮件失败时已成功的提交仍可用。
+2. 在服务器安装 Temurin 21（Linux x64，解压到 `/usr/lib/jvm/temurin-21`）。装完立刻执行 `java -version`。若出现 `GLIBC_2.xx not found`，停在这里：不要升级 glibc，不要改 systemd / Nginx，把原文发回来。
 
-迁移顺序
-0. 盘点契约。扫描路由、Vue 调用方、SQL、序列化、配置、导入脚本和部署文档，
-   输出接口矩阵、每个接口的成功与关键失败用例、测试数据计划及风险清单。
-1. 搭建 Java 工程、配置和测试入口。先用 /api/health 和一条完整的文章
-   列表 → 详情链路打通 Vue、Java、MySQL 与 Markdown。
-2. 迁完公开读取、搜索、项目、栖息内容、媒体与订阅。用固定数据逐项对比。
-3. 迁 OAuth、留言、友链、审核、站长写入与上传。验收权限和失败路径。
-4. 迁内容导入 CLI 与运维能力。逐个标记原有脚本的替代入口或退役理由。
-   分别验证空库初始化与已有库 baseline。仓库旧 SQL 须审查后再使用，
-   应用启动时禁止自动对现网执行迁移。
-5. 用生产同类环境演练。实测目标主机上的 JDK 21、内存、systemd 和 Nginx
-   代理行为。完成备份恢复演练、预发布冒烟、切换步骤及回退条件。
-   生产切换时只开放一个写入后端，并验证 Java 已写入的数据可由 Flask
-   继续读取。生产执行另行授权。
+3. 新建单独的 unit（例如 `grunray-wiki-java.service`），不要改 `grunray-wiki.service` 的 `ExecStart`。User/Group 用 `grunray`，WorkingDirectory 用 `/var/www/GrunRay_wiki/backend`，这样相对的 `CONTENT_ROOT` 与 Flask 一致。只监听 `127.0.0.1:5010`，堆 `-Xmx256m`，`SPRING_PROFILES_ACTIVE=prod`。密钥只读服务器现有的 `backend/.env`。先看键名、不要看值；Java 生产配置需要 `MYSQL_HOST`、`MYSQL_PORT`、`MYSQL_DATABASE`、`MYSQL_USER`、`MYSQL_PASSWORD`、`CONTENT_ROOT`、`CORS_ORIGINS`。CentOS 7 的 systemd 219 里 `EnvironmentFile=` 会盖过 `Environment=`，`.env` 里若已有 `PORT=5000`，在 unit 里后写 `PORT=5010` 可能无效。用启动脚本在读完 `.env` 之后再导出 `PORT=5010` 和 `SPRING_PROFILES_ACTIVE=prod`，不要改 `.env` 本身。启动后确认监听的是 5010，Flask 的 5000 仍在。日志里不应出现 Flyway migrate。
 
-验收方式
-- 用 Flask 与 Java 对同一组请求的对照测试验证契约。记录预期差异及原因，
-  不通过忽略字段或排序来掩盖差异。
-- 普通测试不连生产 MySQL。关键 SQL、JSON 字段、事务、导入和 Flyway
-  使用隔离 MySQL 做集成测试。用现有 Vue 跑通主要访客及站长流程。
-- 每批交付修改范围、验证命令、通过项和未验证项，能独立审阅和复测。
+4. 记下 `java`、`mysqld`、`nginx`、gunicorn 的 RSS 和 `MemAvailable`。切流量前会停 gunicorn。若停掉 gunicorn 后可用内存仍低于约 200MB，不要改 Nginx，把数字发回来。
 
-本轮只执行批次 0。把现有接口契约写入 docs/API_CONTRACT.md。
+5. 对 `127.0.0.1:5010` 冒烟，全部应 200：`/api/health`、`/api/posts?size=1`、一篇已发布文章加 `?html=1`、`/rss.xml`、`/sitemap.xml`、`/robots.txt`、`/api/friends`、`/api/messages/captcha`、`/api/site/now`。此时公网仍走 Flask。再看 `/api/auth/providers` 是否 200。不要为了测试去改 OAuth 回调或密钥。
 
-先建立完整路由索引，展开 Flask Blueprint 前缀，覆盖 Vue 当前未调用的
-接口，以及 RSS、sitemap、robots 和媒体文件。每条接口记录：
+6. 切 Nginx 之前，在服务器 `frontend/dist` 的 js 里确认已经会发 `X-XSRF-TOKEN`。若没有，先按 `DEPLOY_SERVER.md` 第 2–3 节更新前端产物，并还原 `.env`。不要在旧前端上把 API 切到 Java。
 
-- HTTP 方法、完整路径、用途、权限
-- 参数位置、类型、必填项和默认值
-- 成功与关键失败的状态码、响应结构和脱敏示例
-- 客户端依赖的行为，例如排序、分页、Cookie、重定向和缓存
-- Flask 实现位置、Vue 调用位置（如有）及验证状态
+7. 冒烟通过后再切。先备份 nginx conf。停 `grunray-wiki`，让同一时间只有 Java 对外写。`nginx -t` 通过后，只把 `/api/`、`/rss.xml`、`/sitemap.xml`、`/robots.txt` 的 `proxy_pass` 从 `127.0.0.1:5000` 改成 `127.0.0.1:5010`，location 其余部分不动。`/api/` 必须仍是 `location ^~ /api/`。reload 后确认 `https://grunray.tech/api/health` 和首页。
 
-区分「代码已确认」「本地实测通过」「待实测」。发现代码与调用方不一致时，
-记录差异和复现方法。使用本地测试数据，不录入生产凭证或真实会话。
+回退：先启动 `grunray-wiki`，把上述上游改回 `5000`，`nginx -t` 后 reload，再停 Java。Java 已写入的数据不用倒库。
 
-交付前把文档与 Flask 路由表、Vue 请求逐项核对。后续每个 Java 迁移批次
-按本文档验收，并把关键成功与失败用例加入契约测试。
+做完告诉我：JDK 版本、监听端口、内存数字、冒烟结果、Nginx 是否已切、失败停在哪一步。切换成功后，用户需要重新登录。然后勾 TODO 156-11b，并在 `docs/CHANGELOG.md` 当天写一句。不要提交 `.env`、密钥或服务器配置里的密码。
 
 ### 灵感（未排期）
 
@@ -314,7 +271,7 @@ pytest
 
 ## 156 · 2026-11-06 后端迁 Java（Spring Boot）
 
-**状态**：进行中 · 阶段 5 本机演练已完成（2026-11-06），生产切换未授权，摘要见 [CHANGELOG · 2026-11-06](docs/CHANGELOG.md#2026-11-06)
+**状态**：进行中 · 生产已切到 Java 5010（2026-11-08），摘要见 [CHANGELOG · 2026-11-08](docs/CHANGELOG.md#2026-11-08)
 
 **方向**：用 Java 21 + Spring Boot 3.5.x 在 `backend-java/` 并行重写 Flask 后端，按 [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md) 逐路由验收；Flask 保留到切换完成，供对照与回退。不改前端视觉，不重设计表结构。总体计划与阶段 0–5 见 [`docs/JAVA_MIGRATION.md`](docs/JAVA_MIGRATION.md)。
 
@@ -342,7 +299,7 @@ pytest
 
 - [x] 156-10 阶段 4：`backend/scripts/` 逐个标替代入口或退役理由；中文抽词用固定语料对比，不重算历史数据；Flyway 分别验证空库初始化与已有库 baseline，启动不自动迁移
 - [x] 156-11 阶段 5 本机演练：冒烟、Java 写入后停掉 Java 再由 Flask 读取、契约库备份恢复、`-Xmx256m` 工作集约 256 MB；切换步骤只改 `proxy_pass`，同时只留一个写入进程
-- [ ] 156-11b 生产主机：安装 JDK、改 systemd / Nginx、在 2 GB 机器上量内存。未授权前不做
+- [x] 156-11b 生产主机：安装 Temurin 21，Java 旁路 5010 冒烟后切 Nginx；Flask unit 保留作回退。切换后需重新登录
 - [x] 156-12 另开批次 157 处理：`API_CONTRACT.md` §4.1 首页隐藏项目笔记、§4.3 项目详情接口、§4.5 友链 mock、§4.6 裸 `fetch`、§4.10 无发布时间排序
 
 **⚠️ 回归 / 风险**
