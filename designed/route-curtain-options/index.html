@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light" data-motion="full">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>107 · 纸间换页 · 全屏转场方案</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js" defer></script>
+</head>
+<body>
+  <main class="workbench">
+    <header class="lab-head">
+      <p class="edition">GRUNRAY / MOTION STUDY 107</p>
+      <h1>纸间换页<span>全屏转场 · 新方案</span></h1>
+      <p class="intro">点击下方模拟导航，比较一页内容如何交给下一页。</p>
+    </header>
+
+    <div class="options" role="group" aria-label="转场方案">
+      <button class="option is-active" data-scheme="spine" aria-pressed="true"><span>A / SPINE</span><strong>中缝展纸</strong></button>
+      <button class="option" data-scheme="columns" aria-pressed="false"><span>B / COLUMNS</span><strong>栏目叠页</strong></button>
+      <button class="option" data-scheme="iris" aria-pressed="false"><span>C / APERTURE</span><strong>墨窗揭页</strong></button>
+    </div>
+    <section class="scheme-detail" aria-label="方案说明">
+      <p id="description"></p>
+      <p class="scheme-cost" id="cost"></p>
+    </section>
+    <div class="tools">
+      <label>纸面<select id="theme"><option value="light">浅色</option><option value="dark">深色</option></select></label>
+      <label>动效<select id="motion"><option value="full">FULL · 完整</option><option value="reduced">REDUCED · 瞬切</option><option value="minimal">MINIMAL · 瞬切</option></select></label>
+      <button class="text-action" id="replay">重播当前方案 ↗</button>
+    </div>
+
+    <section class="stage" aria-label="模拟页面">
+      <header class="site-head">
+        <span class="brand">GrunRay</span>
+        <nav aria-label="模拟导航">
+          <button data-page="blog" aria-current="page">博客</button>
+          <button data-page="projects">项目</button>
+          <button data-page="about">关于</button>
+        </nav>
+        <span class="site-number">VOL. 01</span>
+      </header>
+      <article class="page-content">
+        <div class="page-mast">
+          <p class="edition" id="page-kicker">JOURNAL / 文字与记录</p>
+          <div class="page-title"><h2 id="page-title">写下，便有了回声。</h2><span class="page-index" id="page-index">01</span></div>
+          <p id="page-summary">关于代码、日常，以及那些值得慢慢想清楚的事。</p>
+        </div>
+        <div class="ledger" id="ledger"></div>
+      </article>
+      <footer class="site-foot"><span>GRUNRAY · 一直在写</span><span>纸面之间，留一点时间。</span></footer>
+    </section>
+    <footer class="lab-foot">
+      <p id="status" role="status" aria-live="polite">就绪 · 点击博客 / 项目 / 关于体验</p>
+      <p>遮罩覆盖整个窗口 · Esc 可结束转场 · 系统减少动态效果优先</p>
+    </footer>
+  </main>
+  <div class="curtain" id="curtain" aria-hidden="true" hidden>
+    <div class="sheet sheet-single"></div>
+    <div class="column-sheets"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="curtain-title"><span id="destination-label">PROJECTS</span><strong id="destination">项目</strong><span class="destination-rule"></span></div>
+  </div>
+</body>
+</html>
