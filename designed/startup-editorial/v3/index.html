@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light" data-motion="full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>纸上来信 v3 · 细部构形</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="line-art.js" defer></script>
+    <script src="prototype.js" defer></script>
+  </head>
+  <body>
+    <header class="preview-header" id="previewHeader">
+      <div class="preview-intro">
+        <p class="kicker">GRUNRAY / OPENING STUDY</p>
+        <h1>纸上来信<span>v3 · 细部构形</span><a class="version-link" href="../v2/index.html">v2 存档</a></h1>
+        <p class="preview-description">从五官的朝向，到躯干的转折。搭骨架 → 细分体面 → 描绘落版 · 12 秒。</p>
+      </div>
+      <div class="preview-tools" aria-label="预览设置">
+        <label>纸色
+          <select id="themeSelect">
+            <option value="light">浅色</option>
+            <option value="dark">深色</option>
+            <option value="abstract">抽象</option>
+          </select>
+        </label>
+        <label>动效
+          <select id="motionSelect">
+            <option value="full">完整</option>
+            <option value="reduced">降级</option>
+            <option value="minimal">最简</option>
+          </select>
+        </label>
+        <button class="text-button" id="immerseButton" type="button" aria-pressed="false">沉浸预览
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3H3v4m10-4h4v4M3 13v4h4m10-4v4h-4" /></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="stage" id="stage" aria-label="纸上来信启动动画" data-chapter="3" tabindex="-1">
+      <svg class="filter-definitions" aria-hidden="true" width="0" height="0">
+        <defs>
+          <!-- 以原图纸色 / 墨色映射主题，不引入额外强调色。 -->
+          <filter id="portrait-dark" color-interpolation-filters="sRGB">
+            <feColorMatrix type="matrix" values="-1.010 0 0 0 1.017  -1.035 0 0 0 1.061  -1.015 0 0 0 1.034  0 0 0 1 0" />
+          </filter>
+          <filter id="portrait-abstract" color-interpolation-filters="sRGB">
+            <feColorMatrix type="matrix" values="-1.144 0 0 0 1.134  -1.060 0 0 0 1.151  -1.010 0 0 0 1.154  0 0 0 1 0" />
+          </filter>
+        </defs>
+      </svg>
+
+      <div class="stage-masthead" id="masthead">
+        <span class="stage-brand">GrunRay<span class="brand-divider">/</span>个人刊</span>
+        <span class="kicker edition">AN UNFINISHED JOURNAL · 2026</span>
+      </div>
+
+      <figure class="portrait" aria-label="Polonia Sandoren 人物插画">
+        <div class="portrait-stack" id="portraitStack">
+          <!-- 辅助线与原人物共用坐标、裁切和缩放，仅在 full 档描绘时显示。 -->
+          <svg class="construction" id="construction" viewBox="0 0 1536 1024" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <g class="guide-perspective" data-guide="perspective">
+              <!-- 机械物的透视延长线，不铺全屏网格。 -->
+              <path d="M1269 -45 235 1055 M1269 -45 68 681 M1269 -45 1147 1065" />
+              <path d="m119 688 455 164-71 195L51 884Z M119 688 75 657 527 819 574 852 M75 657 15 850 51 884 M527 819 465 1012 503 1047" />
+              <path d="M130 354 352 119 439 235 216 470Z M352 119 382 92 469 207 439 235 M469 207 248 444 216 470" />
+              <path d="M978 901 1511 780 M1217 1051 1374 638" />
+            </g>
+            <g class="guide-gesture" data-guide="gesture">
+              <!-- 头颈、胸腔和腰腹的流向，以及双肩与抱臂的走势。 -->
+              <path d="M853 15C860 127 838 211 819 319S808 439 831 531 801 701 768 790Q760 870 814 986" />
+              <path d="M423 416Q610 347 799 403T1194 450" />
+              <path d="M512 456Q488 608 601 754T849 869Q929 842 1029 716T1088 470" />
+            </g>
+            <g class="guide-proportion" data-guide="proportion">
+              <!-- 头颅椭圆、下颌、面中轴与五官比例线。 -->
+              <ellipse cx="850" cy="175" rx="166" ry="197" transform="rotate(9 850 175)" />
+              <path d="M681 174Q688 282 760 357L834 396 906 367Q982 301 1008 205" />
+              <path class="guide-axis" d="M857 -40Q869 131 841 228T815 334Q817 372 837 410" />
+              <path d="M686 166Q840 170 1003 219 M682 233Q824 232 985 281 M711 311Q821 309 953 342 M750 370Q834 378 908 369" />
+              <path class="guide-measure" d="M1038 -14 1038 401 M1027 17h23 M1027 211h23 M1027 275h23 M1027 338h23 M1027 394h23 M652 233 1041 281 M665 311 1006 348" />
+              <path d="M764 247 757 284 M899 263 890 300 M803 324l24 3" />
+              <path class="guide-measure" d="M415 415 1183 454 M430 403l-3 24 M785 421l-3 25 M1174 441l-3 25" />
+            </g>
+            <g class="guide-volume" data-guide="volume">
+              <!-- 胸腔蛋形与三分之四视角块面。 -->
+              <ellipse cx="821" cy="540" rx="146" ry="163" transform="rotate(-13 821 540)" />
+              <path d="m755 411 154 45 33 166-134 81-105-132Z M755 411l53 150 134 61 M808 561v142 M703 571l105-10 101-105" />
+              <path d="M702 484Q820 431 926 507 M701 577Q816 635 938 566 M775 395Q743 548 817 699" />
+              <path d="m710 698 181 28 66 167-218 91-81-168Z M710 698l29 286 M658 816l185 24 114 53 M843 840l48-114" />
+              <!-- 肩肘腕关节与圆柱截面，接上抱臂姿态。 -->
+              <ellipse cx="524" cy="451" rx="45" ry="53" transform="rotate(-17 524 451)" />
+              <ellipse cx="1076" cy="473" rx="54" ry="48" transform="rotate(18 1076 473)" />
+              <path d="M486 476Q464 607 559 741 M564 466Q544 613 635 713 M559 741Q692 831 791 863 M635 713Q718 768 827 807" />
+              <ellipse cx="596" cy="727" rx="43" ry="24" transform="rotate(-23 596 727)" />
+              <ellipse cx="810" cy="835" rx="25" ry="40" transform="rotate(-56 810 835)" />
+              <path d="M1039 490Q1080 601 1039 709L901 821 M1111 489Q1153 620 1091 742L943 882" />
+              <ellipse cx="1065" cy="722" rx="32" ry="24" transform="rotate(20 1065 722)" />
+              <ellipse cx="922" cy="852" rx="30" ry="42" transform="rotate(36 922 852)" />
+              <!-- 机械圆盘的截面、厚度和轴。 -->
+              <ellipse cx="1296" cy="850" rx="254" ry="112" transform="rotate(-10 1296 850)" />
+              <ellipse cx="1290" cy="891" rx="254" ry="112" transform="rotate(-10 1290 891)" />
+              <path d="m1047 894-6 41 M1544 805l-5 41 M1064 751l432 211" />
+              <!-- 少量排线提示头部与躯干块面的转折。 -->
+              <path class="guide-hatch" d="m690 168 39-31m-38 51 43-35m-40 57 45-38m-34 60 39-37 M878 480l38 32m-36-9 38 32m-35-9 38 32m-36-9 38 32 M720 851l34 27m-32-4 34 27m-32-4 34 27" />
+            </g>
+            <g class="guide-detail guide-face" data-guide="face">
+              <!-- 头颅经纬与额骨：沿头部转向包裹，不套平面方格。 -->
+              <path d="M780 -8C739 105 742 242 829 389 M922 2C977 125 956 281 867 377" />
+              <path d="M714 90Q853 45 1005 136 M701 147Q849 111 1002 210 M692 206Q833 183 991 269" />
+              <path class="guide-plane" d="m724 173 86-31 99 23 74 60 M724 173l-15 62 67-24 64 17 69-12 74 9" />
+              <!-- 眼眶是有转向的体积，眼位 / 眉弓有近远差。 -->
+              <ellipse cx="758" cy="262" rx="44" ry="23" transform="rotate(9 758 262)" />
+              <ellipse cx="888" cy="278" rx="51" ry="25" transform="rotate(8 888 278)" />
+              <path d="M712 243Q755 225 801 249L799 287Q759 297 719 272Z" />
+              <path d="M837 251Q891 239 943 268L929 304Q881 312 837 285Z" />
+              <path class="guide-fine" d="m732 228 5 61m28-56-5 62m-49-36 91 16 M856 243l-5 64m47-57-7 65m-54-42 105 15" />
+              <!-- 鼻梁楔体、鼻底截面与两侧颧骨。 -->
+              <path class="guide-plane" d="m825 260-8 42-17 20 24 12 26-9-12-44Z M817 302l21-21 M800 322l27-7 23 10" />
+              <path d="M813 281q14-6 26 3 M806 305q16-7 33 2 M800 322q24 16 50 3" />
+              <path d="m718 264 23 42 45 29 15-38 M941 280l-23 42-54 26-20-42" />
+              <path class="guide-plane" d="m719 302 27 42 45 26 M921 321l-27 38-37 16" />
+              <!-- 口吻区 / 下唇 / 下颌小块面，逐层接回面中轴。 -->
+              <path d="m784 340 38-5 37 18-9 18-37 4-32-16Z M784 340l29 18 46-5 M813 358v17" />
+              <path class="guide-fine" d="M779 348Q816 345 857 359 M786 363Q819 376 849 368 M758 344Q831 399 904 357" />
+              <path class="guide-plane" d="m766 351 31 33 38 12 47-18 25-26 M797 384l16-15 22 27 21-21" />
+              <path class="guide-fine" d="M753 230 748 316 M891 248 881 332 M791 338l-5 29 M846 345l-5 29" />
+              <path class="guide-hatch" d="m724 299 17-13m-12 23 18-14m-12 24 18-14 M905 318l16 15m-23-8 17 16m-24-9 17 16" />
+            </g>
+            <g class="guide-detail guide-neck" data-guide="neck">
+              <!-- 颈部圆柱的上下截面、斜肌与锁骨桥接。 -->
+              <ellipse cx="844" cy="401" rx="38" ry="16" transform="rotate(-9 844 401)" />
+              <ellipse cx="845" cy="440" rx="48" ry="20" transform="rotate(-11 845 440)" />
+              <path d="M806 399q-6 28-9 50 M882 392q-1 26 12 44 M845 391q-12 30 1 66" />
+              <path class="guide-plane" d="M807 400q13 31 39 57 M881 391q-10 42-35 66" />
+              <path d="M843 455Q718 388 524 451 M849 456Q959 413 1076 473" />
+              <path class="guide-fine" d="M837 466Q708 413 549 465 M853 467q103-26 198 18" />
+              <path class="guide-plane" d="m804 392-109 35-84 49 M882 385l80 57 67 43" />
+              <path d="m824 450 21 10 19-6 M845 460l-9 32" />
+              <path class="guide-hatch" d="m802 419 17 13m-20-3 18 14m62-33-16 17m21-7-17 18" />
+            </g>
+            <g class="guide-detail guide-torso" data-guide="torso">
+              <!-- 胸腔横截面与纵向经线，随蛋形体积转动。 -->
+              <ellipse cx="815" cy="469" rx="111" ry="35" transform="rotate(-13 815 469)" />
+              <ellipse cx="821" cy="535" rx="141" ry="43" transform="rotate(-13 821 535)" />
+              <ellipse cx="824" cy="602" rx="124" ry="35" transform="rotate(-13 824 602)" />
+              <path d="M758 414Q704 553 791 690 M801 394Q751 547 810 701 M856 400Q839 550 832 689 M905 443Q935 561 860 675" />
+              <path class="guide-plane" d="M845 458Q829 523 817 593L809 654 824 691" />
+              <path d="M833 483Q778 473 723 507 M832 486q40 8 81 43" />
+              <path d="M825 528q-58 1-109 28 M825 529q50 14 97 46" />
+              <path d="M818 573q-47 12-86 36 M817 575q44 18 87 45" />
+              <path d="M810 613q-17 21-35 40 M812 614q24 15 53 43" />
+              <!-- 腰腹由胸腔收窄，和骨盆相对倾斜。 -->
+              <path class="guide-plane" d="M762 648Q819 678 887 661L878 753Q815 776 754 741Z M762 648l43 73 82-60 M805 721l-51 20 M805 721l73 32" />
+              <path d="M757 682Q817 710 886 691 M754 712q61 38 129 13 M788 668q-4 44 16 88 M848 674q-12 43-6 84" />
+              <ellipse cx="813" cy="809" rx="115" ry="57" transform="rotate(15 813 809)" />
+              <path class="guide-plane" d="m703 754 176 16 60 100-185 82-55-112Z M703 754l51 198 M754 952l56-117 129 35 M810 835l69-65" />
+              <path d="M701 809Q810 773 930 833 M727 885Q814 860 917 892 M808 704Q831 777 812 838T800 964" />
+              <path class="guide-fine" d="M681 754 948 799 M692 746l-2 18 M935 787l-2 19 M730 964l27 5 M907 902l25 9" />
+              <path class="guide-hatch" d="m717 533 22-13m-23 24 24-14m-23 25 24-14 M876 599l24 23m-27-12 23 22m-27-11 23 22 M759 714l19 18m-21-7 19 18m-22-7 19 18" />
+            </g>
+            <g class="guide-detail guide-limbs" data-guide="limbs">
+              <!-- 上臂 / 前臂补横截面和中线，不重画真实轮廓。 -->
+              <ellipse cx="514" cy="559" rx="37" ry="18" transform="rotate(-13 514 559)" />
+              <ellipse cx="552" cy="665" rx="39" ry="19" transform="rotate(-26 552 665)" />
+              <ellipse cx="1083" cy="559" rx="36" ry="18" transform="rotate(12 1083 559)" />
+              <ellipse cx="1083" cy="659" rx="34" ry="18" transform="rotate(24 1083 659)" />
+              <path d="M523 465Q502 607 596 728 M1078 487q43 129-13 235 M598 726q106 84 210 109 M1064 723 924 851" />
+              <!-- 手掌体块、指根弧线和指骨走向。 -->
+              <path class="guide-plane" d="m812 830 57 21-14 46-52-19Z M812 830l18 39 39-18 M830 869l-27 9 M830 869l25 28" />
+              <path d="M803 866q29-1 55 22 M797 882q31 3 52 21" />
+              <path class="guide-fine" d="m808 880-31 47m43-43-24 59m37-53-17 55m31-50-8 43" />
+              <path class="guide-hatch" d="m532 611 24-10m-21 23 24-11m498 9 20 11m-23 2 20 11" />
+            </g>
+            <g class="guide-detail guide-mechanics" data-guide="mechanics">
+              <!-- 圆盘补同心截面；肩侧机械铰链补体积轴。 -->
+              <ellipse cx="1296" cy="850" rx="184" ry="79" transform="rotate(-10 1296 850)" />
+              <ellipse cx="1291" cy="878" rx="184" ry="79" transform="rotate(-10 1291 878)" />
+              <ellipse cx="542" cy="183" rx="53" ry="48" transform="rotate(16 542 183)" />
+              <ellipse cx="549" cy="189" rx="31" ry="29" transform="rotate(16 549 189)" />
+              <path class="guide-fine" d="m482 166 123 37m-47-82-31 123 M1043 882l510-89 M1268 748l54 207" />
+              <path class="guide-hatch" d="m1123 941 10-23m2 26 11-24m2 26 11-24 M1497 793l-11 23m24-24-12 24" />
+            </g>
+          </svg>
+          <div class="drawing" id="drawing" aria-hidden="true"></div>
+          <img class="printed-art" id="printedArt" src="assets/polonia_sandoren.webp" width="1536" height="1024" alt="Polonia Sandoren 的纸面墨色插画" fetchpriority="high" />
+        </div>
+        <figcaption class="art-caption" id="artCaption"><span class="caption-rule"></span>POLONIA SANDOREN <span>FIG. 01</span></figcaption>
+      </figure>
+
+      <section class="prologue" id="prologue" aria-hidden="true">
+        <div class="opening-number">序<span>01</span></div>
+        <p class="prologue-title">GrunRay</p>
+        <div class="opening-rule" id="openingRule"></div>
+        <p class="prologue-note">每一个故事，都从翻开这一页开始。</p>
+        <span class="kicker prologue-foot">A PERSONAL JOURNAL, STILL IN THE MAKING.</span>
+      </section>
+
+      <div class="spread-copy" id="spreadCopy" aria-hidden="true">
+        <section class="chapter-copy copy-ink" id="copyInk">
+          <p class="kicker chapter-kicker">01 / 起笔</p>
+          <h2>让思绪，<br />慢慢成形。</h2>
+          <p class="chapter-note">先勾勒姿态，再慢慢落笔。<br />一些灵光，在纸上有了轮廓。</p>
+        </section>
+        <section class="chapter-copy copy-print" id="copyPrint">
+          <p class="kicker chapter-kicker">02 / 落版</p>
+          <h2>把好奇，<br />留在纸上。</h2>
+          <p class="chapter-note">关于代码，也关于生活。<br />散落的片段，在这里装订成册。</p>
+        </section>
+        <section class="chapter-copy copy-welcome" id="copyWelcome">
+          <p class="kicker chapter-kicker">03 / 开卷</p>
+          <h2>你好，我是<br /><span class="signature">GrunRay</span><span class="welcome-period">。</span></h2>
+          <p class="chapter-note">欢迎来到我的个人刊。<br />这本杂志，一直在写。</p>
+        </section>
+      </div>
+
+      <div class="margin-note" id="marginNote" aria-hidden="true">WORDS, WORKS &amp; WANDERINGS</div>
+      <div class="stage-foot" id="stageFoot" aria-hidden="true">
+        <span class="foot-phrase">读写之间，来日方长。</span>
+        <span class="kicker">PERSONAL WIKI <span class="foot-slash">/</span> EST. 2026</span>
+      </div>
+
+      <div class="immersive-tools" id="immersiveTools" hidden>
+        <button type="button" class="text-button" id="immersiveSkip">跳过开场</button>
+        <button type="button" class="text-button" id="exitImmerse">退出沉浸</button>
+      </div>
+      <p class="sr-only" id="stageNarration">你好，我是 GrunRay。欢迎来到我的个人刊，这本杂志，一直在写。</p>
+      <noscript><p class="no-script">你好，我是 GrunRay。欢迎来到我的个人刊。</p></noscript>
+    </main>
+
+    <footer class="playback" id="playback">
+      <div class="transport-row">
+        <div class="transport-buttons">
+          <button class="text-button" id="replayButton" type="button">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4.1 7a6.2 6.2 0 1 1-.3 5M4 2.5V7h4.5" /></svg>重播
+          </button>
+          <button class="text-button" id="pauseButton" type="button" aria-pressed="false">暂停</button>
+          <button class="text-button skip-button" id="skipButton" type="button">跳过开场
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 4 7 6-7 6m10-12v12" /></svg>
+          </button>
+        </div>
+        <div class="playback-meta"><span class="kicker" id="playState" role="status">准备开场</span><output id="timeOutput" for="seek">00.0 / 12.0s</output></div>
+      </div>
+      <label class="sr-only" for="seek">动画进度（秒）</label>
+      <input class="seek" id="seek" type="range" min="0" max="12" step="0.01" value="12" aria-valuetext="12 秒，开场结束" />
+      <div class="chapters" aria-label="分镜跳转">
+        <button type="button" class="chapter-button" data-seek="0" aria-current="false"><span class="chapter-index">00</span><span>封签</span><small>一页将启</small><span class="chapter-time">00.0</span></button>
+        <button type="button" class="chapter-button" data-seek="2.1" aria-current="false"><span class="chapter-index">01</span><span>起笔</span><small>打型与描绘</small><span class="chapter-time">02.1</span></button>
+        <button type="button" class="chapter-button" data-seek="6" aria-current="false"><span class="chapter-index">02</span><span>落版</span><small>原图渐显</small><span class="chapter-time">06.0</span></button>
+        <button type="button" class="chapter-button" data-seek="9.3" aria-current="true"><span class="chapter-index">03</span><span>开卷</span><small>欢迎入刊</small><span class="chapter-time">09.3</span></button>
+      </div>
+      <p class="preview-hint" id="previewHint">空格 暂停 / 继续 · Esc 跳过 · 分镜与进度均可拖看。此页只演示启动动画及落幕首屏。</p>
+    </footer>
+  </body>
+</html>
