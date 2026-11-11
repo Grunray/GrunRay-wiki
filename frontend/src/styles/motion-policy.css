@@ -117,6 +117,7 @@ html:is([data-motion='reduced'], [data-motion='minimal']) .ui-skeleton::after {
 /* 入场：REDUCED/MINIMAL 仍打 page-enter--play，但不播时长；预隐藏选择器只对 full 生效见各 page-enter 文件 */
 html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play > *,
 html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .home-mast,
+html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .home-spread,
 html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .home-now,
 html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .home-toc,
 html:is([data-motion='reduced'], [data-motion='minimal']) .page-enter--play .cover-paper-peek,
