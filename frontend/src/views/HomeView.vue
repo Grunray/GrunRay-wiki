@@ -6,15 +6,7 @@ import { RouterLink, useRoute } from 'vue-router'
 
 import { apiUrl } from '@/api/http'
 import CardCornerVineLazy from '@/components/hover/CardCornerVineLazy.vue'
-import AvatarCircleSkeleton from '@/components/ui/AvatarCircleSkeleton.vue'
-import {
-  HOME_STAGE_ART_VB,
-  HOME_STAGE_ART_WEDGE_COLOR,
-  homeStageArtWedgeClipPath,
-} from '@/composables/homeStageArtWedge'
 import { useHomeHeroRelayout } from '@/composables/useHomeHeroRelayout'
-import { useHomeStageArtIntro } from '@/composables/useHomeStageArtIntro'
-import { injectMobileShell } from '@/composables/useMobileShell'
 import { playPageEnter } from '@/composables/usePageEnterAnimation'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { SITE_NAME } from '@/config/site'
@@ -23,7 +15,7 @@ import { fetchMessageAuthUser } from '@/services/messageAuth'
 import { fetchSiteNow } from '@/services/siteNowApi'
 import '@/styles/page-enter-home.css'
 import '@/styles/page-home-hero.css'
-import '@/styles/page-home-stage-intro.css'
+import '@/styles/page-home-spread.css'
 import '@/styles/page-toc-row.css'
 import { useUiStore } from '@/stores/ui'
 import type { Post, Project } from '@/types/content'
@@ -33,7 +25,6 @@ const { t } = useI18n()
 const route = useRoute()
 const ui = useUiStore()
 const { photoBackgroundEnabled, theme } = storeToRefs(ui)
-const { isMobileShell } = injectMobileShell()
 
 useSeoMeta(() => ({
   title: `${t('nav.home')} | ${SITE_NAME}`,
@@ -46,14 +37,12 @@ const homeRoot = ref<HTMLElement | null>(null)
 const peekRef = ref<HTMLElement | null>(null)
 const peekHeadRef = ref<HTMLElement | null>(null)
 const scrollLayerRef = ref<HTMLElement | null>(null)
-const avatarUrl = ref('')
 const latestUpdatedPosts = ref<Post[]>([])
 const randomRecommendedPost = ref<Post | null>(null)
 const homeProjects = ref<Project[]>([])
 const nowDoing = ref('')
 const nowReading = ref('')
 const isSiteOwner = ref(false)
-const CACHE_HOME_AVATAR = 'grunray.home.avatarUrl.v1'
 const CACHE_HOME_LATEST = 'grunray.home.latestPosts.v1'
 const CACHE_HOME_RANDOM = 'grunray.home.randomPost.v1'
 
@@ -62,40 +51,22 @@ const nowReadingText = computed(() => nowReading.value || t('home.nowReading'))
 
 const { measureCoverPeek } = useHomeHeroRelayout({ peekRef, peekHeadRef, scrollLayerRef })
 
-/** 方案 D 开屏：状态类只打 stack（P11），节点只加在 stack 内 */
-const stageArtStackRef = ref<HTMLElement | null>(null)
-const { drawSvg: stageArtDrawSvg, tryArmOnce: tryArmStageArtIntro } = useHomeStageArtIntro({
-  stackRef: stageArtStackRef,
-})
-
 /**
  * 勿在 homeRoot 上再用 :class 绑 is-photo-bg：Vue 会重写 class，冲掉
  * classList 写入的 page-enter--play / home-fonts-ready。左右位移走 html[data-photo-bg]。
  * 模板必须保持单根，否则 AppShell 的 out-in Transition 会卡死成空白页。
+ * 扇形描绘（useHomeStageArtIntro）不在开卷跨页上武装，避免和纸上来信叠播。
  */
 
 /** 封面故事 = 最新一篇；其余进「最新文章」栏 */
 const coverStory = computed(() => latestUpdatedPosts.value[0] ?? null)
 const latestList = computed(() => latestUpdatedPosts.value.slice(1, 5))
 
-const stageArtSrc = computed(() => {
-  if (theme.value === 'light') return '/art/polonia_sandoren.webp'
+const spreadArtSrc = computed(() => {
   if (theme.value === 'abstract') return '/art/polonia_sandoren-abstract.webp'
-  return '/art/polonia_sandoren-dark.webp'
+  if (theme.value === 'dark') return '/art/polonia_sandoren-dark.webp'
+  return '/art/polonia_sandoren.webp'
 })
-
-const stageArtTintSrc = computed(() => {
-  if (theme.value === 'light') return '/art/polonia_sandoren-wedge.webp'
-  if (theme.value === 'abstract') return '/art/polonia_sandoren-abstract-wedge.webp'
-  return '/art/polonia_sandoren-dark-wedge.webp'
-})
-
-/** 舞台图只挂当前主题底图 + 楔形，整文件下载。不加 sizes/srcset，横竖屏不换源、不重拉。 */
-
-const stageArtWedgeClip = homeStageArtWedgeClipPath()
-const stageArtWedgeColor = computed(
-  () => HOME_STAGE_ART_WEDGE_COLOR[theme.value] ?? HOME_STAGE_ART_WEDGE_COLOR.light,
-)
 
 /** 刊号：VOL.年 · NO.年内周数 · 今天日期 */
 const issue = computed(() => {
@@ -107,33 +78,6 @@ const issue = computed(() => {
   const day = String(d.getDate()).padStart(2, '0')
   return { year: y, no: String(week).padStart(2, '0'), date: `${y}/${m}/${day}` }
 })
-
-async function loadAvatar() {
-  const cached = readSessionJson<{ url: string }>(CACHE_HOME_AVATAR)
-  if (cached?.url) {
-    avatarUrl.value = cached.url
-    return
-  }
-  try {
-    const q = new URLSearchParams({
-      page: '1',
-      size: '1',
-      folder: 'film/homeView/center/avatar',
-    })
-    const res = await fetch(apiUrl(`/api/media/list?${q.toString()}`))
-    if (!res.ok) return
-    const json = (await res.json()) as {
-      code: number
-      data: Array<{ url: string }>
-      message: string
-    }
-    if (json.code !== 0 || !json.data?.length) return
-    avatarUrl.value = json.data[0].url
-    writeSessionJson(CACHE_HOME_AVATAR, { url: avatarUrl.value })
-  } catch {
-    // 头像加载失败时保留默认占位
-  }
-}
 
 async function loadLatestUpdatedPost() {
   const cached = readSessionJson<{ posts: Post[] }>(CACHE_HOME_LATEST)
@@ -232,13 +176,11 @@ async function waitGreetingFonts() {
 }
 
 onMounted(() => {
-  loadAvatar()
   loadLatestUpdatedPost()
   loadRandomRecommendedPost()
   void loadHomeProjects()
   void loadSiteNow()
   void loadOwnerFlag()
-  void tryArmStageArtIntro()
   void (async () => {
     await waitGreetingFonts()
     homeRoot.value?.classList.add('home-fonts-ready')
@@ -257,70 +199,59 @@ watch(coverStory, async () => {
 <template>
   <section ref="homeRoot" class="home-layout">
     <section class="home-stage" aria-label="首屏">
-      <figure v-if="!photoBackgroundEnabled" class="home-stage-art" aria-hidden="true">
-        <div
-          ref="stageArtStackRef"
-          class="home-stage-art-stack"
-          :style="{ '--home-stage-wedge-clip': stageArtWedgeClip }"
-        >
-          <img
-            class="home-stage-art-base"
-            :src="stageArtSrc"
-            alt=""
-            :width="HOME_STAGE_ART_VB.w"
-            :height="HOME_STAGE_ART_VB.h"
-            decoding="async"
-            fetchpriority="low"
-          />
-          <img
-            class="home-stage-art-tint"
-            :src="stageArtTintSrc"
-            alt=""
-            :width="HOME_STAGE_ART_VB.w"
-            :height="HOME_STAGE_ART_VB.h"
-            decoding="async"
-            fetchpriority="low"
-            :style="{ clipPath: stageArtWedgeClip }"
-          />
-          <div
-            class="home-stage-art-wash"
-            :style="{ clipPath: stageArtWedgeClip, backgroundColor: stageArtWedgeColor }"
-          />
-          <!-- 方案 D：光束 + SVG 临时描绘层（v-html 注入一次，播完 display:none 不拔） -->
-          <div class="home-stage-art-beam" aria-hidden="true" />
-          <!-- eslint-disable-next-line vue/no-v-html -->
-          <div class="home-stage-art-draw" aria-hidden="true" v-html="stageArtDrawSvg" />
-        </div>
-      </figure>
-
-      <div class="home-wrap home-stage-inner">
-        <header v-if="!isMobileShell" class="home-mast" aria-label="刊号">
-          <p class="mast-vol card">
-            <strong>{{ SITE_NAME }}</strong> · VOL.{{ issue.year }} · NO.{{ issue.no }} · {{ issue.date }}
+      <div class="home-spread">
+        <header class="home-spread-mast">
+          <p class="home-spread-brand">
+            {{ SITE_NAME }}<span class="home-spread-slash">/</span>{{ t('home.spreadJournal') }}
           </p>
-          <div class="home-mast-avatar card">
-            <img
-              v-if="avatarUrl"
-              data-splash-avatar-target
-              :class="{ 'home-avatar--splash-fly': ui.splashAvatarHandoff }"
-              :src="avatarUrl"
-              alt="头像"
-            />
-            <AvatarCircleSkeleton v-else />
-          </div>
+          <p class="home-spread-edition">
+            VOL.{{ issue.year }} · NO.{{ issue.no }} · {{ issue.date }}
+          </p>
         </header>
 
-        <div class="home-stage-void" aria-hidden="true"></div>
+        <div class="home-spread-stage">
+          <p class="home-spread-gutter" aria-hidden="true">
+            <span class="home-spread-initial">W</span>ORDS,
+            <span class="home-spread-initial">W</span>ORKS &amp;
+            <span class="home-spread-initial">W</span>ANDERINGS
+          </p>
 
-        <div class="home-stage-dock">
-          <div class="home-intro-track">
-            <div class="home-intro-stack">
-              <h1 class="home-intro-greeting card">
-                {{ t('home.greeting') }}<span class="home-intro-brand">{{ t('home.greetingBrand') }}</span>
-              </h1>
-              <p class="home-intro-note card">{{ t('home.internshipNote') }}</p>
-            </div>
+          <div class="home-spread-copy">
+            <p class="home-spread-kicker">{{ t('home.spreadKicker') }}</p>
+            <h1 class="home-spread-greeting">
+              {{ t('home.greeting') }}<br />
+              <span class="home-spread-sign">{{ t('home.greetingBrand') }}</span><span class="home-spread-period">{{ t('home.greetingPeriod') }}</span>
+            </h1>
+            <p class="home-spread-note">
+              {{ t('home.spreadWelcome1') }}<br />
+              {{ t('home.spreadWelcome2') }}
+            </p>
           </div>
+
+          <figure v-if="!photoBackgroundEnabled" class="home-spread-art">
+            <img
+              :src="spreadArtSrc"
+              alt=""
+              width="1536"
+              height="1024"
+            />
+            <figcaption>
+              <span class="home-spread-caption-rule" aria-hidden="true"></span>
+              {{ t('home.spreadCaption') }}
+              <span>{{ t('home.spreadFig') }}</span>
+            </figcaption>
+          </figure>
+        </div>
+
+        <div class="home-spread-foot">
+          <p class="home-spread-phrase">{{ t('home.spreadFoot') }}</p>
+          <p class="home-spread-scroll" aria-hidden="true">
+            <span>{{ t('home.scrollCueEn') }} · {{ t('home.scrollCueZh') }}</span>
+            <svg viewBox="0 0 12 8" aria-hidden="true">
+              <path d="M1 1.5 L6 6 L11 1.5" />
+            </svg>
+          </p>
+          <p class="home-spread-wiki">{{ t('home.spreadWiki') }}</p>
         </div>
       </div>
     </section>
@@ -330,14 +261,6 @@ watch(coverStory, async () => {
         <div class="home-scroll-layer-paper">
           <div ref="peekRef" class="cover-paper-peek">
             <div class="cover-paper-rule" aria-hidden="true"></div>
-            <p class="cover-scroll-cue" aria-hidden="true">
-              <span class="cover-scroll-cue-en">{{ t('home.scrollCueEn') }}</span>
-              <span class="cover-scroll-cue-mid">·</span>
-              <span class="cover-scroll-cue-zh">{{ t('home.scrollCueZh') }}</span>
-              <svg class="cover-scroll-cue-chev" viewBox="0 0 12 8" aria-hidden="true">
-                <path d="M1 1.5 L6 6 L11 1.5" />
-              </svg>
-            </p>
           </div>
           <div class="home-wrap">
             <article

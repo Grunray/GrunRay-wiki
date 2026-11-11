@@ -25,6 +25,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   html[data-motion='full'] .home-layout:not(.page-enter--play) .home-mast,
+  html[data-motion='full'] .home-layout:not(.page-enter--play) .home-spread,
   html[data-motion='full'] .home-layout:not(.page-enter--play) .home-now,
   html[data-motion='full'] .home-layout:not(.page-enter--play) .home-toc {
     opacity: 0;
@@ -38,7 +39,8 @@
   }
 }
 
-.home-layout.page-enter--play .home-mast {
+.home-layout.page-enter--play .home-mast,
+.home-layout.page-enter--play .home-spread {
   animation: page-enter-home-from-bottom 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: 0.05s;
 }
@@ -66,6 +68,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .home-layout.page-enter--play .home-mast,
+  .home-layout.page-enter--play .home-spread,
   .home-layout.page-enter--play .home-intro-stack,
   .home-layout.page-enter--play .cover-paper-peek,
   .home-layout.page-enter--play .cover-story-peek,
