@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN" data-scheme="a">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>首页首屏 v2 · 中轴方案</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="scheme-bar">
+      <span class="scheme-kicker">V2</span>
+      <div role="tablist" aria-label="中轴方案">
+        <button type="button" role="tab" data-scheme="a" aria-selected="true">A 线过中轴</button>
+        <button type="button" role="tab" data-scheme="b" aria-selected="false">B 文案内收</button>
+        <button type="button" role="tab" data-scheme="c" aria-selected="false">C 放大压中</button>
+        <button type="button" role="tab" data-scheme="d" aria-selected="false">D 中缝旁注</button>
+      </div>
+      <p class="scheme-note" id="schemeNote">线稿向左越过中线，中轴留下浅线，字仍在左侧空白里。</p>
+      <a class="version-link" href="../v1/index.html">v1 存档</a>
+    </div>
+
+    <div class="sheet">
+      <header class="nav">
+        <a class="wordmark" href="#spread">GrunRay</a>
+        <nav class="nav-links" aria-label="主导航">
+          <a class="nav-link" href="#spread" aria-current="page">首页</a>
+          <a class="nav-link" href="#spread">创作<span class="plus" aria-hidden="true">+</span></a>
+          <a class="nav-link" href="#spread">社区<span class="plus" aria-hidden="true">+</span></a>
+          <a class="nav-link" href="#spread">栖息<span class="plus" aria-hidden="true">+</span></a>
+        </nav>
+        <div class="nav-tools">
+          <button class="icon-button" type="button" aria-label="切换主题">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15.5 14.5A6.5 6.5 0 0 1 9 4.2 6.5 6.5 0 1 0 15.5 14.5Z" />
+            </svg>
+          </button>
+          <span class="tool-rule" aria-hidden="true"></span>
+          <button class="lang" type="button">EN</button>
+        </div>
+      </header>
+
+      <div class="spread" id="spread">
+        <div class="mast">
+          <p class="mast-brand">GrunRay<span class="slash">/</span>个人刊</p>
+          <p class="edition">VOL.2026 · NO.46 · 2026/11/11</p>
+        </div>
+
+        <div class="stage">
+          <p class="margin-note" aria-hidden="true">WORDS, WORKS &amp; WANDERINGS</p>
+
+          <div class="copy">
+            <p class="kicker">05 / 开卷</p>
+            <h1 class="greeting">
+              你好，我是<br />
+              <span class="signature">GrunRay</span><span class="period">。</span>
+            </h1>
+            <p class="note">欢迎来到我的个人刊。<br />这本杂志，一直在写。</p>
+          </div>
+
+          <figure class="art">
+            <img
+              src="../../../frontend/public/art/polonia_sandoren_line.svg"
+              alt=""
+              width="1536"
+              height="1024"
+            />
+            <figcaption>
+              <span class="caption-rule" aria-hidden="true"></span>
+              POLONIA SANDOREN <span>FIG. 01</span>
+            </figcaption>
+          </figure>
+        </div>
+
+        <div class="foot">
+          <p class="phrase">读写之间，来日方长。</p>
+          <p class="scroll" aria-hidden="true">
+            <span>SCROLL · 下读</span>
+            <svg viewBox="0 0 12 8" aria-hidden="true">
+              <path d="M1 1.5 L6 6 L11 1.5" />
+            </svg>
+          </p>
+          <p class="wiki">PERSONAL WIKI / EST. 2026</p>
+        </div>
+      </div>
+
+      <p class="cover">COVER STORY · 封面故事</p>
+    </div>
+
+    <script>
+      const notes = {
+        a: '线稿向左越过中线，中轴留下浅线，字仍在左侧空白里。',
+        b: '文案向中轴收一截，图仍贴右，两边把空隙挤窄。',
+        c: '线稿放大，角色和旁边的结构一起压过中线。',
+        d: '图文位置不动，左侧竖排旁注挪到中轴，配一条中缝。',
+      }
+      const bar = document.querySelector('.scheme-bar')
+      const note = document.getElementById('schemeNote')
+
+      function apply(id) {
+        const scheme = notes[id] ? id : 'a'
+        document.documentElement.dataset.scheme = scheme
+        bar.querySelectorAll('[data-scheme]').forEach((button) => {
+          button.setAttribute('aria-selected', button.dataset.scheme === scheme ? 'true' : 'false')
+        })
+        note.textContent = notes[scheme]
+        if (location.hash !== '#' + scheme) history.replaceState(null, '', '#' + scheme)
+      }
+
+      bar.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-scheme]')
+        if (!button) return
+        apply(button.dataset.scheme)
+      })
+
+      apply((location.hash || '#a').slice(1))
+    </script>
+  </body>
+</html>

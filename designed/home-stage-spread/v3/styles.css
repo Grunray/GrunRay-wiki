@@ -1,0 +1,91 @@
+@import url('../v1/styles.css');
+
+/* 单套 E：文字和插画都在正常布局中，图文间距不随视口宽度增长。 */
+:root { --spread-gap: 40px; }
+
+.study-controls { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem 1.5rem; }
+.study-controls > p { flex: 1 1 29rem; }
+.study-links { display: flex; gap: .85rem; }
+.study-links a { display: inline-flex; align-items: center; min-height: 44px; white-space: nowrap; }
+.gap-control { display: flex; align-items: center; gap: .6rem; min-height: 44px; white-space: nowrap; }
+.gap-control input { width: 6rem; min-height: 44px; margin: 0; accent-color: var(--accent); cursor: ew-resize; }
+.gap-control input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.gap-control output { width: 3rem; font: 500 .77rem/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.study { font-size: .78rem; }
+.wordmark { font: 600 1.2rem/1 var(--font-sans); padding-block: .5rem; }
+.nav-tools .icon-button, .nav-tools .lang { cursor: default; }
+.edition, .art figcaption, .wiki, .cover, .margin-note, .scroll { font-size: .77rem; }
+.nav-link { display: inline-flex; align-items: center; min-height: 44px; }
+
+.stage { container-type: size; }
+.margin-note { top: 50%; transform: translateY(-50%) rotate(180deg); white-space: nowrap; }
+.composition {
+  width: max-content;
+  max-width: 100%;
+  height: 100%;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--spread-gap);
+}
+.copy {
+  flex: none;
+  width: max-content;
+  max-width: 38cqw;
+  height: auto;
+  margin: 0;
+  padding: 0 0 3.4rem;
+}
+.greeting { white-space: nowrap; }
+.signature { font-size: clamp(3.35rem, 5.6vw, 4.125rem); }
+.note { font: 400 1.02rem/1.85 var(--font-sans); }
+.art {
+  flex: none;
+  position: relative;
+  inset: auto;
+  /* 高度限定原图比例，宽度上限给文字和可调间距留出位置。 */
+  width: min(54cqw, calc(150cqh - 5.1rem));
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.art img {
+  flex: none;
+  position: static;
+  width: 100%;
+  height: auto;
+  /* 只柔化图边；缩短原版 26% 的淡入范围，减少图框内部的空白。 */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%);
+  mask-image: linear-gradient(90deg, transparent, #000 14%);
+}
+.art figcaption { position: static; align-self: flex-end; margin-top: .7rem; min-height: 1rem; white-space: nowrap; }
+
+@media (max-width: 980px) and (min-width: 721px) {
+  .composition { gap: min(var(--spread-gap), 4cqw); }
+  .copy { width: max-content; max-width: 38cqw; }
+  .art { left: auto; width: min(52cqw, calc(150cqh - 5.1rem)); }
+  .greeting { font-size: clamp(1.7rem, 4vw, 2.4rem); }
+  .signature { font-size: clamp(2.8rem, 7vw, 3.6rem); }
+  .note { font-size: .94rem; }
+}
+
+@media (max-width: 720px) {
+  .sheet { flex: none; }
+  .study-controls { gap: .1rem 1rem; }
+  .study-controls > p { flex-basis: 100%; }
+  .gap-control { display: none; }
+  .study-links { margin-left: auto; }
+  .edition { display: none; }
+  .nav { grid-template-columns: 1fr auto; }
+  .nav-tools { grid-column: 2; }
+  .spread { flex: none; }
+  .stage { container-type: normal; }
+  .composition { flex-direction: column-reverse; align-items: stretch; gap: 1rem; width: 100%; height: auto; padding: 1rem 0 1.6rem; }
+  .art { left: auto; width: 100%; height: clamp(220px, 40svh, 360px); opacity: 1; }
+  .art img { inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center; -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%); mask-image: linear-gradient(90deg, transparent, #000 14%); }
+  .copy { width: auto; max-width: none; height: auto; padding: 0 0 0 .35rem; }
+  .greeting { font-size: 2rem; }
+  .signature { font-size: 3.35rem; }
+  .note { margin-top: .8rem; }
+}
