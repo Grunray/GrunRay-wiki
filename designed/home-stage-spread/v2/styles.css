@@ -1,0 +1,567 @@
+@font-face {
+  font-family: 'Noto Serif SC';
+  src: url('../../startup-editorial/v4/assets/noto-serif-sc-chinese-simplified-600-normal.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Serif SC';
+  src: url('../../../frontend/public/fonts/noto-serif-sc-chinese-simplified-500-normal.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Playfair Display';
+  src: url('../../startup-editorial/v4/assets/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKd3vXDXbtPK-F2qC0s.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Great Vibes';
+  src: url('../../startup-editorial/v4/assets/great-vibes-latin-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 纸面令牌以 docs/DESIGN.md 为准。浅色生产 accent 与文档不一致，本原型不跟那处漂移。 */
+:root {
+  --paper: #f4f1e8;
+  --elevated: #ece7d8;
+  --ink: #2b2823;
+  --muted: #6e675b;
+  --accent: #2e6b4f;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-serif: 'Playfair Display', 'Noto Serif SC', 'Songti SC', SimSun, serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+  --inset: clamp(2.4rem, 4.2vw, 3.75rem);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 106.25%; }
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 1rem/1.7 var(--font-sans);
+}
+
+p { margin: 0; }
+
+a { color: inherit; text-decoration: none; }
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.study {
+  flex: none;
+  margin: 0;
+  padding: 0.55rem var(--inset);
+  background: var(--elevated);
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.study strong {
+  margin-right: 0.45rem;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.study a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.sheet {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 640px;
+  padding-inline: var(--inset);
+  background: var(--paper);
+}
+
+.nav {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  min-height: 4.15rem;
+  border-bottom: 1px solid var(--ink);
+}
+
+.wordmark {
+  justify-self: start;
+  font-family: 'Great Vibes', 'Segoe Script', cursive;
+  font-size: 1.95rem;
+  font-weight: 400;
+  line-height: 1;
+  padding: 0.35rem 0 0.15rem;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.65rem;
+}
+
+.nav-link {
+  position: relative;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 0.35rem 0 0.28rem;
+}
+
+.nav-link[aria-current='page'] {
+  color: var(--ink);
+}
+
+.nav-link[aria-current='page']::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--ink);
+}
+
+.plus {
+  margin-left: 0.28rem;
+  font-weight: 400;
+}
+
+.nav-tools {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  color: var(--ink);
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.icon-button svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tool-rule {
+  width: 1px;
+  height: 0.95rem;
+  background: var(--ink);
+  opacity: 0.55;
+}
+
+.lang {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: 500 0.78rem/1 var(--font-sans);
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  padding: 0.35rem 0;
+}
+
+.spread {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.mast {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.95rem 0 0.72rem;
+  border-bottom: 1px solid var(--ink);
+}
+
+.mast-brand {
+  margin: 0;
+  font: 500 1.08rem/1.4 var(--font-serif);
+}
+
+.slash {
+  margin: 0 0.55rem;
+  color: var(--muted);
+  font: 400 0.78rem/1 var(--font-mono);
+}
+
+.edition {
+  color: var(--muted);
+  font: 500 0.72rem/1.4 var(--font-mono);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.stage {
+  position: relative;
+  min-height: 0;
+}
+
+.margin-note {
+  position: absolute;
+  z-index: 3;
+  left: calc(var(--inset) * -1 + 0.7rem);
+  top: 46%;
+  margin: 0;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  color: var(--muted);
+  font: 500 0.68rem/1 var(--font-mono);
+  letter-spacing: 0.14em;
+}
+
+.copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  width: min(46%, 34rem);
+  padding: 1.5rem 0 8%;
+  pointer-events: none;
+}
+
+.kicker {
+  margin: 0;
+  color: var(--accent);
+  font: 500 0.78rem/1.4 var(--font-mono);
+  letter-spacing: 0.08em;
+}
+
+.greeting {
+  margin: 0.7rem 0 0;
+  font: 600 clamp(2.05rem, 3.4vw, 3.05rem)/1.35 var(--font-serif);
+  letter-spacing: 0.04em;
+}
+
+.signature {
+  display: inline-block;
+  margin: 0.02em 0.06em 0 0;
+  font-family: 'Great Vibes', 'Segoe Script', cursive;
+  font-size: clamp(3.35rem, 5.6vw, 4.45rem);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+.period {
+  color: var(--accent);
+  font-size: 0.92em;
+}
+
+.note {
+  margin: 1.15rem 0 0;
+  max-width: 16em;
+  color: var(--muted);
+  font: 500 0.98rem/1.85 var(--font-serif);
+}
+
+.art {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  margin: 0;
+  pointer-events: none;
+}
+
+/* 整张 1536×1024 靠右，底边让开图注。左边淡进纸面，字不压线。 */
+.art img {
+  position: absolute;
+  top: 0.45rem;
+  right: 0;
+  height: calc(100% - 3.4rem);
+  width: auto;
+  max-width: none;
+  aspect-ratio: 1536 / 1024;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 45%) 12%, #000 26%);
+  mask-image: linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 45%) 12%, #000 26%);
+}
+
+.art figcaption {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  bottom: 0.15rem;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0.12rem 0 0.12rem 0.35rem;
+  background: var(--paper);
+  font: 500 0.68rem/1 var(--font-mono);
+  letter-spacing: 0.08em;
+}
+
+.art figcaption span:last-child {
+  margin-left: 0.35rem;
+  color: var(--muted);
+}
+
+.caption-rule {
+  width: 1.15rem;
+  height: 1px;
+  background: var(--accent);
+}
+
+.foot {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.72rem 0 0.62rem;
+  border-top: 1px solid var(--ink);
+}
+
+.phrase {
+  font: 600 0.95rem/1.4 var(--font-serif);
+  letter-spacing: 0.12em;
+}
+
+.scroll {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.22rem;
+  color: var(--muted);
+  font: 500 0.68rem/1 var(--font-mono);
+  letter-spacing: 0.16em;
+}
+
+.scroll svg {
+  width: 0.62rem;
+  height: 0.42rem;
+  stroke: currentColor;
+  stroke-width: 1.15;
+  fill: none;
+}
+
+.wiki {
+  justify-self: end;
+  color: var(--muted);
+  font: 500 0.68rem/1.4 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-align: right;
+}
+
+.cover {
+  margin: 0;
+  padding: 0.95rem 0 1.15rem;
+  border-top: 1px solid var(--ink);
+  font: 500 0.72rem/1 var(--font-mono);
+  letter-spacing: 0.16em;
+}
+
+/* 四条横线贴齐窗口左右缘，字仍留在原边距里。 */
+.nav,
+.mast,
+.foot,
+.cover {
+  margin-inline: calc(var(--inset) * -1);
+  padding-inline: var(--inset);
+}
+
+@media (max-width: 980px) {
+  .nav { grid-template-columns: auto 1fr auto; }
+  .nav-links { gap: 0.85rem; justify-self: center; }
+  .copy { width: min(58%, 22rem); }
+  .art { left: 28%; }
+  .greeting { font-size: clamp(1.7rem, 4vw, 2.4rem); }
+  .signature { font-size: clamp(2.8rem, 7vw, 3.6rem); }
+}
+
+@media (max-width: 720px) {
+  .sheet { --inset: 1.2rem; min-height: 0; }
+  .nav { min-height: 3.4rem; }
+  .nav-links,
+  .margin-note,
+  .art figcaption { display: none; }
+  .wordmark { font-size: 1.6rem; }
+  .copy {
+    width: auto;
+    padding-bottom: 1.2rem;
+  }
+  .art {
+    left: 0;
+    opacity: 0.34;
+  }
+  .art img {
+    object-position: 70% 20%;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 70%, transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 70%, transparent 100%);
+  }
+  .foot {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    gap: 0.45rem;
+  }
+  .scroll { align-items: flex-start; }
+  .wiki { justify-self: start; text-align: left; }
+  .phrase { letter-spacing: 0.04em; }
+}
+
+.scheme-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.15rem;
+  padding: 0.4rem var(--inset) 0.35rem;
+  background: var(--elevated);
+  border-bottom: 1px solid var(--ink);
+}
+
+.scheme-kicker {
+  margin-right: 0.65rem;
+  font: 600 0.72rem/1 var(--font-mono);
+  letter-spacing: 0.12em;
+}
+
+.scheme-bar button {
+  min-height: 2.15rem;
+  padding: 0.15rem 0.7rem 0.2rem;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font: 500 0.78rem/1.3 var(--font-sans);
+  cursor: pointer;
+}
+
+.scheme-bar button[aria-selected='true'] {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+.scheme-note {
+  flex: 1 1 18rem;
+  margin: 0 0 0 0.85rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.version-link {
+  margin-left: auto;
+  color: var(--accent);
+  font-size: 0.75rem;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+/* A 线过中轴：图框从左栏右侧铺到右缘，裁出线稿中段，浅线越过视口中线。 */
+html[data-scheme='a'] .stage { overflow: hidden; }
+
+html[data-scheme='a'] .art img {
+  top: 0;
+  right: 0;
+  bottom: 1.5rem;
+  left: 16%;
+  height: auto;
+  width: auto;
+  object-fit: cover;
+  object-position: 64% 38%;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 40%) 10%, #000 28%);
+  mask-image: linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 40%) 10%, #000 28%);
+}
+
+/* B 文案内收：图不动，字块向中轴靠。 */
+html[data-scheme='b'] .copy {
+  margin-left: clamp(3rem, 14vw, 13rem);
+}
+
+/* C 放大压中：图框更靠左，角色身体压过中线。 */
+html[data-scheme='c'] .stage { overflow: hidden; }
+
+html[data-scheme='c'] .art img {
+  top: -4%;
+  right: -6%;
+  bottom: -8%;
+  left: 8%;
+  height: auto;
+  width: auto;
+  object-fit: cover;
+  object-position: 58% 42%;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 55%) 8%, #000 22%);
+  mask-image: linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 55%) 8%, #000 22%);
+}
+
+/* D 中缝旁注：图文位置不动，竖排旁注挪到中轴。 */
+html[data-scheme='d'] .stage::before {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  left: 38%;
+  top: 7%;
+  bottom: 11%;
+  width: 1px;
+  background: color-mix(in srgb, var(--ink) 42%, transparent);
+  pointer-events: none;
+}
+
+html[data-scheme='d'] .margin-note {
+  left: 38%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(180deg);
+  background: var(--paper);
+  padding: 0.45rem 0;
+}
+
+@media (max-width: 980px) {
+  html[data-scheme='b'] .copy { margin-left: clamp(1rem, 6vw, 4rem); }
+  html[data-scheme='a'] .art img,
+  html[data-scheme='c'] .art img { right: -4%; }
+  html[data-scheme='d'] .margin-note { left: calc(var(--inset) * -1 + 0.7rem); top: 46%; transform: rotate(180deg); background: transparent; padding: 0; }
+  html[data-scheme='d'] .stage::before { display: none; }
+}
+
+@media (max-width: 720px) {
+  html[data-scheme='b'] .copy { margin-left: 0; }
+  html[data-scheme='a'] .art img,
+  html[data-scheme='c'] .art img {
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 100%;
+  }
+}

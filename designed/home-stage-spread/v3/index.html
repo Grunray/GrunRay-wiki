@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>首页首屏 v3 · 图文合组</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="prototype.js" defer></script>
+  </head>
+  <body>
+    <div class="study study-controls">
+      <p><strong>E · 图文合组</strong>先固定图文间距，再把整组居中；原图完整保留，余白落在两侧。</p>
+      <label class="gap-control" for="gap">图文间距 <input id="gap" type="range" aria-label="图文间距" min="16" max="112" value="40" step="4" /><output id="gapValue" for="gap">40px</output></label>
+      <div class="study-links"><a href="../v2/index.html#b">回看 B</a><a href="../v2/index.html#d">回看 D</a></div>
+    </div>
+
+    <div class="sheet">
+      <header class="nav" aria-label="导航位置示意">
+        <a class="wordmark" href="#spread">GrunRay</a>
+        <div class="nav-links" aria-hidden="true">
+          <span class="nav-link" aria-current="page">首页</span>
+          <span class="nav-link">创作<span class="plus">+</span></span>
+          <span class="nav-link">社区<span class="plus">+</span></span>
+          <span class="nav-link">栖息<span class="plus">+</span></span>
+        </div>
+        <div class="nav-tools" aria-hidden="true">
+          <span class="icon-button"><svg viewBox="0 0 24 24"><path d="M15.5 14.5A6.5 6.5 0 0 1 9 4.2 6.5 6.5 0 1 0 15.5 14.5Z" /></svg></span>
+          <span class="tool-rule"></span><span class="lang">EN</span>
+        </div>
+      </header>
+
+      <main class="spread" id="spread" tabindex="-1">
+        <div class="mast">
+          <p class="mast-brand">GrunRay<span class="slash">/</span>个人刊</p>
+          <p class="edition">VOL.2026 · NO.46 · 2026/11/11</p>
+        </div>
+
+        <div class="stage">
+          <p class="margin-note" aria-hidden="true">WORDS, WORKS &amp; WANDERINGS</p>
+
+          <div class="composition">
+            <div class="copy">
+              <p class="kicker">05 / 开卷</p>
+              <h1 class="greeting">你好，我是<br /><span class="signature">GrunRay</span><span class="period">。</span></h1>
+              <p class="note">欢迎来到我的个人刊。<br />这本杂志，一直在写。</p>
+            </div>
+
+            <figure class="art">
+              <img src="../../../frontend/public/art/polonia_sandoren_line.svg" alt="Polonia Sandoren 人物线稿" width="1536" height="1024" />
+              <figcaption><span class="caption-rule" aria-hidden="true"></span>POLONIA SANDOREN <span>FIG. 01</span></figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <div class="foot">
+          <p class="phrase">读写之间，来日方长。</p>
+          <p class="scroll" aria-hidden="true"><span>SCROLL · 下读</span><svg viewBox="0 0 12 8"><path d="M1 1.5 L6 6 L11 1.5" /></svg></p>
+          <p class="wiki">PERSONAL WIKI / EST. 2026</p>
+        </div>
+      </main>
+
+      <p class="cover">COVER STORY · 封面故事</p>
+    </div>
+  </body>
+</html>
