@@ -78,31 +78,11 @@ pytest
 
 ### 当前提示词（复制给 AI）
 
-这次授权你在生产机上完成 TODO 156-11b：安装 JDK 21，让 Java 后端先在 5010 旁路跑通，再切 Nginx。先读 `DEPLOY_SERVER.md`、`docs/JAVA_MIGRATION.md` 阶段 5、`designed/optimization/09-backend-gunicorn.md`。本提示词只授权下面这些步骤。不要覆盖服务器 `backend/.env`，不要跑 Flyway、`schema.sql`、`run_sql.py` 或任何 import，不要改 MySQL 密码或证书，不要把密钥写进仓库或贴进对话。
 
-主机 `root@118.25.138.103`，项目根 `/var/www/GrunRay_wiki`，系统是 CentOS 7（glibc 很旧）。现网仍是 Flask：systemd `grunray-wiki`（User=`grunray`，WorkingDirectory 为 `backend`，gunicorn `127.0.0.1:5000`）。Nginx 配置在 `/etc/nginx/conf.d/grunray_wiki.conf`。任一步失败就停，不要改对外流量。
-
-1. 在本机 Windows 打包，不要在服务器上编译。`JAVA_HOME` 用 `C:\Users\Grunray\.jdks\jdk-21.0.13+9`，在 `backend-java` 执行 `.\mvnw.cmd -B -DskipTests package`，把 `backend-java\target\grunray-wiki-api.jar` 上传到 `/var/www/GrunRay_wiki/backend-java/grunray-wiki-api.jar`。不要放进默认的 `deploy-backend.tar`，避免下次上传 Flask 时被盖掉。属主让 `grunray` 能读。
-
-2. 在服务器安装 Temurin 21（Linux x64，解压到 `/usr/lib/jvm/temurin-21`）。装完立刻执行 `java -version`。若出现 `GLIBC_2.xx not found`，停在这里：不要升级 glibc，不要改 systemd / Nginx，把原文发回来。
-
-3. 新建单独的 unit（例如 `grunray-wiki-java.service`），不要改 `grunray-wiki.service` 的 `ExecStart`。User/Group 用 `grunray`，WorkingDirectory 用 `/var/www/GrunRay_wiki/backend`，这样相对的 `CONTENT_ROOT` 与 Flask 一致。只监听 `127.0.0.1:5010`，堆 `-Xmx256m`，`SPRING_PROFILES_ACTIVE=prod`。密钥只读服务器现有的 `backend/.env`。先看键名、不要看值；Java 生产配置需要 `MYSQL_HOST`、`MYSQL_PORT`、`MYSQL_DATABASE`、`MYSQL_USER`、`MYSQL_PASSWORD`、`CONTENT_ROOT`、`CORS_ORIGINS`。CentOS 7 的 systemd 219 里 `EnvironmentFile=` 会盖过 `Environment=`，`.env` 里若已有 `PORT=5000`，在 unit 里后写 `PORT=5010` 可能无效。用启动脚本在读完 `.env` 之后再导出 `PORT=5010` 和 `SPRING_PROFILES_ACTIVE=prod`，不要改 `.env` 本身。启动后确认监听的是 5010，Flask 的 5000 仍在。日志里不应出现 Flyway migrate。
-
-4. 记下 `java`、`mysqld`、`nginx`、gunicorn 的 RSS 和 `MemAvailable`。切流量前会停 gunicorn。若停掉 gunicorn 后可用内存仍低于约 200MB，不要改 Nginx，把数字发回来。
-
-5. 对 `127.0.0.1:5010` 冒烟，全部应 200：`/api/health`、`/api/posts?size=1`、一篇已发布文章加 `?html=1`、`/rss.xml`、`/sitemap.xml`、`/robots.txt`、`/api/friends`、`/api/messages/captcha`、`/api/site/now`。此时公网仍走 Flask。再看 `/api/auth/providers` 是否 200。不要为了测试去改 OAuth 回调或密钥。
-
-6. 切 Nginx 之前，在服务器 `frontend/dist` 的 js 里确认已经会发 `X-XSRF-TOKEN`。若没有，先按 `DEPLOY_SERVER.md` 第 2–3 节更新前端产物，并还原 `.env`。不要在旧前端上把 API 切到 Java。
-
-7. 冒烟通过后再切。先备份 nginx conf。停 `grunray-wiki`，让同一时间只有 Java 对外写。`nginx -t` 通过后，只把 `/api/`、`/rss.xml`、`/sitemap.xml`、`/robots.txt` 的 `proxy_pass` 从 `127.0.0.1:5000` 改成 `127.0.0.1:5010`，location 其余部分不动。`/api/` 必须仍是 `location ^~ /api/`。reload 后确认 `https://grunray.tech/api/health` 和首页。
-
-回退：先启动 `grunray-wiki`，把上述上游改回 `5000`，`nginx -t` 后 reload，再停 Java。Java 已写入的数据不用倒库。
-
-做完告诉我：JDK 版本、监听端口、内存数字、冒烟结果、Nginx 是否已切、失败停在哪一步。切换成功后，用户需要重新登录。然后勾 TODO 156-11b，并在 `docs/CHANGELOG.md` 当天写一句。不要提交 `.env`、密钥或服务器配置里的密码。
 
 ### 灵感（未排期）
 
-1. 首页 刊号、问候语等 卡片背景有些突兀
+1. 首页 刊号、问候语等 卡片背景有些突兀 → 已开批次 158（合入 `designed/home-stage-spread/v4`）
 
 2. 可以给桑多涅live2d做一个彩蛋：
       当开启月相拖尾的时候，点击桑多涅的头部，可以触发那个表情包，哥伦比娅咬桑多涅耳朵的gif
@@ -251,78 +231,77 @@ pytest
 
 ## 进行中
 
-> 对外变更摘要见 [docs/CHANGELOG.md](docs/CHANGELOG.md)。
+> 对外变更摘要见 [docs/CHANGELOG.md](docs/CHANGELOG.md)。未做完的勾选只留在本文件。
 
-## 157 · 2026-11-07 契约 §4 前后端不一致
+## 158 · 2026-11-11 开屏换纸上来信 · 首页改开卷跨页
 
-**状态**：进行中 · 已修 §4.1 / §4.3 / §4.5 / §4.6 / §4.10，摘要见 [CHANGELOG · 2026-11-06](docs/CHANGELOG.md#2026-11-06)
+**状态**：已完成（2026-11-11） · 摘要见 [CHANGELOG · 2026-11-11](docs/CHANGELOG.md#2026-11-11)
 
-**方向**：批次 156 标明不在迁移里改的几处。隐藏项目笔记不再出现在首页旁路；项目详情改为打详情接口；友链失败不再显示假数据；`/api` 地址尊重 `VITE_API_BASE_URL`；无发布时间的文章排序稳定。
+**方向**：把两份已选定原型合入生产。开屏换成 `designed/startup-editorial/v4`（纸上来信 · 铅笔底稿），替换顶栏工具区现在触发的蜗牛开屏。首页首屏换成 `designed/home-stage-spread/v4`（开卷跨页），撤掉左上刊号/头像卡和左下问候/实习备注卡。蜗牛动画先整份备份到 `designed/`，不删历史。不改封面故事以下的目录、NOW、导航分组。
 
-- [x] 157-1 `latest-updated` / `random-recommend` 排除 hidden 项目笔记（Flask 与 Java 一起改，R09 / R10）
-- [x] 157-2 项目详情页请求 `GET /api/projects/<slug>`
-- [x] 157-3 友链列表、特殊链接、本站资料失败时不再回退 mock
-- [x] 157-4 首页、胶片栏、头像、页面背景的 `/api/` 走 `apiUrl()`
-- [x] 157-5 `sortPosts` 把空日期当成最早
+**背景 / 现状**
 
-**验收**
+- 开屏入口：顶栏右侧工具区 `splash-nav-btn`（`AppShell.vue`，蜗牛图标，`onSplashNavClick` → `ui.requestSplashWoniuReplay()`）。自动播放在 `SplashWoniuOverlay.vue`，片子在 `frontend/public/splash-woniu/index.html`（iframe）。「已看过」是 `localStorage` `grunray_splash_woniu_v1`（批次 124）。头像飞入首页 `[data-splash-avatar-target]`。
+- 动效表：`docs/DESIGN.md` §12「开屏蜗牛」full 才播，reduced / minimal 跳过。首页扇形描绘 `useHomeStageArtIntro` 会等 `splashWoniuActive` 落幕（批次 155，会话键 `grunray_home_stage_intro_v1`）。
+- 首页现状：`HomeView.vue` 左上 `.mast-vol.card` + `.home-mast-avatar.card`，左下 `.home-intro-greeting.card` + `.home-intro-note.card`（实习备注）。线稿是贴右的扇形叠层，不是 v4 那种顶底右三边贴齐。
+- 选定原型：开屏 `designed/startup-editorial/v4/`（16 秒：封签 → 身体打型 → 铅笔稿 → 描墨 → 落版 → 开卷）。首页 `designed/home-stage-spread/v4/`。中缝只认样式里的 `--gutter`（现 `46vw`，距窗口左缘）。顶栏刊名保持生产里的无衬线粗体，不要带上首页原型里的花体。
 
-- [x] R09 / R10 对 Flask 5001 与 Java 5010 通过
+**依赖 / 冲突**
 
-## 156 · 2026-11-06 后端迁 Java（Spring Boot）
+- 新开屏不再做蜗牛头像飞入。首页 v4 没有头像卡，`data-splash-avatar-target` 一并去掉。
+- 新首页版式不再武装扇形描绘（`useHomeStageArtIntro`）。文件先留，避免和纸上来信叠播。会话键行为不在本批改写。
+- 已看过蜗牛的访客仍应看到一次新开屏：自动播放用新键，不要复用 `grunray_splash_woniu_v1`。
+- 浅色生产 accent 与 `DESIGN.md` 的 `#2e6b4f` 不一致。原型按 DESIGN.md。合入时开屏与首页的强调色跟文档，不顺手改全局令牌。
 
-**状态**：进行中 · 生产已切到 Java 5010（2026-11-08），摘要见 [CHANGELOG · 2026-11-08](docs/CHANGELOG.md#2026-11-08)
+**P0 — 备份蜗牛（先做）**
 
-**方向**：用 Java 21 + Spring Boot 3.5.x 在 `backend-java/` 并行重写 Flask 后端，按 [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md) 逐路由验收；Flask 保留到切换完成，供对照与回退。不改前端视觉，不重设计表结构。总体计划与阶段 0–5 见 [`docs/JAVA_MIGRATION.md`](docs/JAVA_MIGRATION.md)。
+- [x] 158-1 把 `frontend/public/splash-woniu/` 原样拷到 `designed/splash-woniu/`（`index.html`、两份 svg、`All.svg`）。目录里写三五行说明：这是换纸上来信之前的生产开屏，宿主曾是 `SplashWoniuOverlay.vue`，重播钮是顶栏 `splash-nav-btn`。不改备份内容。
 
-**依赖 / 冲突**：契约沙箱 `tools/contract/`（本机库 `grunray_wiki_contract`，端口 Flask 5001 / 模拟 OAuth 5002 / SMTP 1025）。生产执行每次另行授权。
+**P0 — 开屏换成纸上来信 v4**
 
-**P0 — 阶段 0 · 契约盘点**
+- [x] 158-2 冷启动与顶栏重播都播 `startup-editorial/v4` 的时间轴（封签、打型、铅笔、描墨、落版、开卷）。跳过、空格暂停、Esc 跳过、reduced / minimal 直接终帧，对齐现有动效表。
+- [x] 158-3 自动播放「已看过」改新 `localStorage` 键；开始播就写入。`?auth=success` / `auth_error` 回跳仍跳过。顶栏 `splash-nav-btn` 仍可手动重播，不看已看过。
+- [x] 158-4 去掉头像飞入与首页飞入目标。落幕只揭开下面的页面。`splashWoniuActive` 若扇形还在等它，改成新开屏的占用标志，或让扇形不再等待。
+- [x] 158-5 三主题（浅色 / 深色 / 抽象）走原型里的纸色映射。素材用 v4 已带的字体与 `polonia_sandoren.webp`，不临时换一张别的图。
 
-- [x] 156-1 搭隔离沙箱：新库 `grunray_wiki_contract`、合成夹具、独立 `content/` `import/` 副本；执行 `schema.sql` 前核对主机与库名；OAuth / SMTP 用模拟服务
-- [x] 156-2 写 `docs/API_CONTRACT.md`：62 个「方法 + 路径」的索引与详情（参数、状态码、脱敏示例、客户端依赖行为、Flask / Vue 位置、验证状态）
-- [x] 156-3 跑契约用例 125 个（匿名 / 访客 / 站长，含 OAuth 失败、非法回跳、验证码、限流、邮件失败、Range、WebP），全部通过后回填状态
-- [x] 156-4 `tools/contract/crosscheck.py` 核对索引、Flask `url_map`、实测结果、Vue 请求，0 处不一致；记录代码与调用方不一致 11 条、接口风险 15 条
-- [x] 156-5 写 `docs/JAVA_MIGRATION.md`（范围、迁移期规则、对照测试、阶段 0–5、风险）
+**P0 — 首页换成开卷跨页 v4**
 
-**P1 — 阶段 1–3 · 在线 API**
+- [x] 158-6 首屏撤掉四张卡：刊号、头像、问候、实习备注。刊号改到刊头右端一行；左栏是 `05 / 开卷`、`你好，我是 GrunRay。`、欢迎两句。实习备注本批不另找位置。
+- [x] 158-7 线稿顶贴刊号下缘那条墨线，底贴 `SCROLL · 下读` 上缘那条墨线，右缘贴窗口右缘。图注叠在线稿上，文案是 `SANDOREN FIG. 01`（无 POLONIA）。
+- [x] 158-8 中缝竖线与 `WORDS, WORKS & WANDERINGS` 读 `--gutter`（默认 `46vw`）。三个 W 用强调色。问候语比贴左边距再稍向右。四条横墨线从窗口左缘拉到右缘。
+- [x] 158-9 `SCROLL · 下读` 留在底边中线。封面故事仍从底边下面探出。封面故事以下的目录与 NOW 不动。
 
-- [x] 156-6 阶段 1：建 `backend-java/`（Maven Wrapper、profile、测试入口、CI `mvnw verify`）；打通 `/api/health` 与文章列表 → 详情；Markdown 先做 `body_html` 快照比对再选型
-- [x] 156-7 对照测试：`run_cases.py` 目标地址可配置，同一组请求分别打 Flask 与 Java、规范化 JSON 后比对；写入用例的独立库留到阶段 3（本阶段只读，共用契约库）
-- [x] 156-8 阶段 2：公开读取、搜索、项目、栖息内容、媒体（Range / WebP / Demo iframe）、RSS / sitemap / robots；搜索先复用库里关键词
-- [x] 156-9 阶段 3：OAuth（保留 `/api/auth/{provider}` 与回调路径、回跳规则、站长判定）、会话、CSRF（前端同批改）、留言、友链、审核、封禁、验证码、限流、邮件、站长写入与上传、文件与数据库双写补偿
-- [x] 156-9a 阶段 3 缺口：Java 站长 import 的 Markdown 与 Flask `xiqi_md_write.py` 对齐（碎念含 `created_at` / `images` / `cover_index`；推荐含 `category` / `rating` / `status` / `url` / 配图；页面含 hero；关于页写全履历，不只 `alias`）
-- [x] 156-9b 阶段 3 缺口：友链 PATCH 写入 `avatarUrl`（同步封面）和 `contactEmail`；已发布友链改 URL 时按规范化地址查重，文案「该站点 URL 已有已发布友链」
-- [x] 156-9c 阶段 3 缺口：删掉盖住 `.ts` 的未跟踪 `.js`，让留言、友链、此刻、站长保存实际带上 `X-XSRF-TOKEN`（Vite 默认先解析 `.js`）
+**P1 — 契约**
 
-**P2 — 阶段 4–5 · 工具与切换**
-
-- [x] 156-10 阶段 4：`backend/scripts/` 逐个标替代入口或退役理由；中文抽词用固定语料对比，不重算历史数据；Flyway 分别验证空库初始化与已有库 baseline，启动不自动迁移
-- [x] 156-11 阶段 5 本机演练：冒烟、Java 写入后停掉 Java 再由 Flask 读取、契约库备份恢复、`-Xmx256m` 工作集约 256 MB；切换步骤只改 `proxy_pass`，同时只留一个写入进程
-- [x] 156-11b 生产主机：安装 Temurin 21，Java 旁路 5010 冒烟后切 Nginx；Flask unit 保留作回退。切换后需重新登录
-- [x] 156-12 另开批次 157 处理：`API_CONTRACT.md` §4.1 首页隐藏项目笔记、§4.3 项目详情接口、§4.5 友链 mock、§4.6 裸 `fetch`、§4.10 无发布时间排序
+- [x] 158-10 `docs/DESIGN.md` §12 动效表「开屏蜗牛」改为纸上来信（full 播、reduced / minimal 跳过）；§14 首页首屏改成 v4 跨页，并写明扇形描绘不在这版式上播。当日 `docs/CHANGELOG.md` 各记一两句。
 
 **⚠️ 回归 / 风险**
 
-- 切换后所有人需要重新登录（Flask 签名 Cookie 无法被 Java 读取）。
-- CSRF 是新增约束，前端写请求要和 Java 阶段 3 同批改。
-- 其余见 `docs/API_CONTRACT.md` §6 与 `docs/JAVA_MIGRATION.md` §6。
+- 现象：开屏与首页扇鸣叠在一起，或旧头像飞入找不到目标。
+- 根因：`useHomeStageArtIntro` 仍等蜗牛落幕；`data-splash-avatar-target` 还挂在已删除的头像上。
+- 验收：full 档冷启动只看到纸上来信，落幕后是开卷跨页，没有第二段扇形起笔，没有飞头像。顶栏按钮能再播一次。reduced 档打开即终帧，首页文字可见。Edge 或 Chrome 停在首页 30 秒不卡死。浅色 / 深色 / 抽象各看一次。窄屏问候语不被线稿盖住。
+
+**方案对照**
+
+| 代号 | 名称 | 说明 |
+| --- | --- | --- |
+| 开屏 v4 | 纸上来信 · 铅笔底稿 | 已选定，合入目标。v1–v3 只作存档 |
+| 首页 v4 | 开卷跨页 | 已选定。由 v2 方案 D 改来：贴齐三边、图注去 POLONIA、中缝 `--gutter` |
+| 首页 v2 A/B/C | 线过中轴 / 文案内收 / 放大压中 | 不合入 |
 
 **涉及文件**
 
-`docs/API_CONTRACT.md`、`docs/JAVA_MIGRATION.md`、`tools/contract/`、`.gitignore`（`.contract-sandbox/`、`backend-java/target/`）、`AGENTS.md` §2、`backend-java/`、`.github/workflows/ci.yml`、`frontend/vite.config.ts`（`VITE_API_PROXY`）；后续 `frontend/src/services/*`（CSRF）
+`designed/splash-woniu/`、`designed/startup-editorial/v4/`、`designed/home-stage-spread/v4/`、`frontend/public/splash-woniu/`、`frontend/src/components/SplashWoniuOverlay.vue`、`frontend/src/App.vue`、`frontend/src/components/layout/AppShell.vue`、`frontend/src/stores/ui.ts`、`frontend/src/views/HomeView.vue`、`frontend/src/styles/page-home-hero.css`、`frontend/src/composables/useHomeStageArtIntro.ts`、`frontend/src/i18n/locales/zh.json`、`frontend/src/i18n/locales/en.json`、`docs/DESIGN.md`、`docs/CHANGELOG.md`
 
 **验收**
 
-- [x] 阶段 0：125 个契约用例通过，`crosscheck.py` 退出码 0
-- [x] 阶段 1：Java 契约 R01–R08、R11–R14 通过；`compare_bases.py` Flask↔Java 一致；CI `./mvnw verify`（不连 MySQL）
-- [x] 阶段 2：Java 5010 上 A/G/R/F 与 X01，除 G01、G02、R17b 三条已约定差异外 63/63 通过；RSS / sitemap 正文与 Flask 一致
-- [x] 阶段 3：Java 5010 上 U/M/FR/X 55/55、自动发布档 B 5/5；CSRF 与前端写请求同批；碎念路径穿越与失败残留按约定修正
-- [x] 阶段 3 缺口：import 文件含 156-9a 的字段；友链头像、邮箱与已发布 URL 冲突与 Flask 一致；Vite 解析到 `messageApi.ts` 等 TypeScript 源
-- [x] 阶段 4：脚本去向已填；jieba 固定语料见 `backend-java/src/test/resources/keywords/jieba.json`，不重算历史关键词；`flyway_check.py` 在隔离库跑通空库 migrate 与已有库 baseline，启动不迁移
-- [x] 阶段 5 本机：`rollback_drill.py` 冒烟 9 项、回退读取、契约库备份恢复均通过；生产主机未改
-- [ ] 后续每个阶段：该批路由的契约用例对 Java 通过；交付写清修改范围、验证命令、通过项、未验证项
-- [x] 用现有 Vue 对上 Java 5010：首页、博客、文章、项目、友链、留言、碎念、推荐、关于能打开契约数据；友链申请在浏览器里提交成功。项目 demo 曾被 `X-Frame-Options: DENY` 挡成空白，已改为 `SAMEORIGIN`。站长页未登录会拦住；浏览器没有走完真实 GitHub 登录
+- [x] 本地目视：浅色 / 深色 / 抽象；full 与 reduced
+- [x] 冷启动、顶栏重播、已看过不再自动播、OAuth 回跳不播
+- [x] 首页四条墨线贴窗口左右缘；线稿贴上、下、右
+- [x] Edge 或 Chrome 首页停留 30 秒无卡死
+- [x] 158-10 的 DESIGN / CHANGELOG 在合入时写，不在开批时提前写成已发生
+
+---
 
 ## 154 · 2026-09-19 Lighthouse 首页跟进
 
@@ -386,11 +365,11 @@ pytest
 
 **背景 / 现状**：`AppShell` 仅有正文 GSAP `out-in`（淡出上移），无盖住导航的全屏遮罩。
 
-**流程**：先 `designed/page-transition/index.html` 预览 → 选定 → 再落地 Vue。
+**流程**：先 `designed/route-curtain-options/index.html` 预览 → 选定 → 再落地 Vue。旧 `designed/page-transition/` 原型已废弃。
 
 **P0 — 原型与落地**
 
-- [ ] 107-1 原型：打开 `designed/page-transition/index.html`，点壳内导航，对比 A–F
+- [x] 107-1 原型重做：新建 `designed/route-curtain-options/index.html`，模拟导航对比 A–C，含深浅主题、FULL / REDUCED / MINIMAL 与系统降级；待用户选定。[CHANGELOG · 2026-11-11](docs/CHANGELOG.md#2026-11-11)
 - [ ] 107-2 选定后落地：遮罩挂在 `AppShell` 最外层（`position:fixed`，盖住 nav/main/footer）；内容在完全盖住时替换
 - [ ] 107-3 与 `page-enter--play`：遮罩揭开后再播页内入场，或揭开当帧跳过位移
 - [ ] 107-4 `prefers-reduced-motion`：无遮罩，直接切页
@@ -401,23 +380,94 @@ pytest
 
 | 代号  | 名称   | 说明                          |
 | --- | ---- | --------------------------- |
-| A   | 双层横刮 | 墨绿先刮、墨色跟上，中间衬线去向，再向左刮走      |
-| B   | 整页落纸 | 暖纸从上落下，顶边 accent 发丝         |
-| C   | 对开合页 | 左右纸面向中缝合上再打开                |
-| D   | 墨色盖印 | 墨色从下铺满，再向上揭开                |
-| E   | 花藤勾帘 | 主茎勾到约 3/4，细梢扣帘边；墨帘从下盖满后整帘上收 |
-| F   | 墨上生枝 | 纯 D 墨色盖满，中央再长简化花藤，随后连帘带枝上收  |
+| A   | 中缝展纸 | 竖缝向两侧展开盖满，再收成横缝露出新页 |
+| B   | 栏目叠页 | 五列纸页交错合拢，盖满换页后逐列向上抽走 |
+| C   | 墨窗揭页 | 墨色从左下沿圆弧展开，盖满换页后沿同一位置收回 |
 
 
 **涉及文件**
 
-`AppShell`、路由切换逻辑、`designed/page-transition/`、`DESIGN.md`
+`AppShell`、路由切换逻辑、`designed/route-curtain-options/`、`DESIGN.md`
 
 ---
 
 ## 已完成
 
 > 对外摘要见 [docs/CHANGELOG.md](docs/CHANGELOG.md)。已完成批次尽量在状态行挂对应日链（含 08-17 起回填）。
+
+
+## 157 · 2026-11-07 契约 §4 前后端不一致
+
+**状态**：进行中 · 已修 §4.1 / §4.3 / §4.5 / §4.6 / §4.10，摘要见 [CHANGELOG · 2026-11-06](docs/CHANGELOG.md#2026-11-06)
+
+**方向**：批次 156 标明不在迁移里改的几处。隐藏项目笔记不再出现在首页旁路；项目详情改为打详情接口；友链失败不再显示假数据；`/api` 地址尊重 `VITE_API_BASE_URL`；无发布时间的文章排序稳定。
+
+- [x] 157-1 `latest-updated` / `random-recommend` 排除 hidden 项目笔记（Flask 与 Java 一起改，R09 / R10）
+- [x] 157-2 项目详情页请求 `GET /api/projects/<slug>`
+- [x] 157-3 友链列表、特殊链接、本站资料失败时不再回退 mock
+- [x] 157-4 首页、胶片栏、头像、页面背景的 `/api/` 走 `apiUrl()`
+- [x] 157-5 `sortPosts` 把空日期当成最早
+
+**验收**
+
+- [x] R09 / R10 对 Flask 5001 与 Java 5010 通过
+
+
+## 156 · 2026-11-06 后端迁 Java（Spring Boot）
+
+**状态**：进行中 · 生产已切到 Java 5010（2026-11-08），摘要见 [CHANGELOG · 2026-11-08](docs/CHANGELOG.md#2026-11-08)
+
+**方向**：用 Java 21 + Spring Boot 3.5.x 在 `backend-java/` 并行重写 Flask 后端，按 [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md) 逐路由验收；Flask 保留到切换完成，供对照与回退。不改前端视觉，不重设计表结构。总体计划与阶段 0–5 见 [`docs/JAVA_MIGRATION.md`](docs/JAVA_MIGRATION.md)。
+
+**依赖 / 冲突**：契约沙箱 `tools/contract/`（本机库 `grunray_wiki_contract`，端口 Flask 5001 / 模拟 OAuth 5002 / SMTP 1025）。生产执行每次另行授权。
+
+**P0 — 阶段 0 · 契约盘点**
+
+- [x] 156-1 搭隔离沙箱：新库 `grunray_wiki_contract`、合成夹具、独立 `content/` `import/` 副本；执行 `schema.sql` 前核对主机与库名；OAuth / SMTP 用模拟服务
+- [x] 156-2 写 `docs/API_CONTRACT.md`：62 个「方法 + 路径」的索引与详情（参数、状态码、脱敏示例、客户端依赖行为、Flask / Vue 位置、验证状态）
+- [x] 156-3 跑契约用例 125 个（匿名 / 访客 / 站长，含 OAuth 失败、非法回跳、验证码、限流、邮件失败、Range、WebP），全部通过后回填状态
+- [x] 156-4 `tools/contract/crosscheck.py` 核对索引、Flask `url_map`、实测结果、Vue 请求，0 处不一致；记录代码与调用方不一致 11 条、接口风险 15 条
+- [x] 156-5 写 `docs/JAVA_MIGRATION.md`（范围、迁移期规则、对照测试、阶段 0–5、风险）
+
+**P1 — 阶段 1–3 · 在线 API**
+
+- [x] 156-6 阶段 1：建 `backend-java/`（Maven Wrapper、profile、测试入口、CI `mvnw verify`）；打通 `/api/health` 与文章列表 → 详情；Markdown 先做 `body_html` 快照比对再选型
+- [x] 156-7 对照测试：`run_cases.py` 目标地址可配置，同一组请求分别打 Flask 与 Java、规范化 JSON 后比对；写入用例的独立库留到阶段 3（本阶段只读，共用契约库）
+- [x] 156-8 阶段 2：公开读取、搜索、项目、栖息内容、媒体（Range / WebP / Demo iframe）、RSS / sitemap / robots；搜索先复用库里关键词
+- [x] 156-9 阶段 3：OAuth（保留 `/api/auth/{provider}` 与回调路径、回跳规则、站长判定）、会话、CSRF（前端同批改）、留言、友链、审核、封禁、验证码、限流、邮件、站长写入与上传、文件与数据库双写补偿
+- [x] 156-9a 阶段 3 缺口：Java 站长 import 的 Markdown 与 Flask `xiqi_md_write.py` 对齐（碎念含 `created_at` / `images` / `cover_index`；推荐含 `category` / `rating` / `status` / `url` / 配图；页面含 hero；关于页写全履历，不只 `alias`）
+- [x] 156-9b 阶段 3 缺口：友链 PATCH 写入 `avatarUrl`（同步封面）和 `contactEmail`；已发布友链改 URL 时按规范化地址查重，文案「该站点 URL 已有已发布友链」
+- [x] 156-9c 阶段 3 缺口：删掉盖住 `.ts` 的未跟踪 `.js`，让留言、友链、此刻、站长保存实际带上 `X-XSRF-TOKEN`（Vite 默认先解析 `.js`）
+
+**P2 — 阶段 4–5 · 工具与切换**
+
+- [x] 156-10 阶段 4：`backend/scripts/` 逐个标替代入口或退役理由；中文抽词用固定语料对比，不重算历史数据；Flyway 分别验证空库初始化与已有库 baseline，启动不自动迁移
+- [x] 156-11 阶段 5 本机演练：冒烟、Java 写入后停掉 Java 再由 Flask 读取、契约库备份恢复、`-Xmx256m` 工作集约 256 MB；切换步骤只改 `proxy_pass`，同时只留一个写入进程
+- [x] 156-11b 生产主机：安装 Temurin 21，Java 旁路 5010 冒烟后切 Nginx；Flask unit 保留作回退。切换后需重新登录
+- [x] 156-12 另开批次 157 处理：`API_CONTRACT.md` §4.1 首页隐藏项目笔记、§4.3 项目详情接口、§4.5 友链 mock、§4.6 裸 `fetch`、§4.10 无发布时间排序
+
+**⚠️ 回归 / 风险**
+
+- 切换后所有人需要重新登录（Flask 签名 Cookie 无法被 Java 读取）。
+- CSRF 是新增约束，前端写请求要和 Java 阶段 3 同批改。
+- 其余见 `docs/API_CONTRACT.md` §6 与 `docs/JAVA_MIGRATION.md` §6。
+
+**涉及文件**
+
+`docs/API_CONTRACT.md`、`docs/JAVA_MIGRATION.md`、`tools/contract/`、`.gitignore`（`.contract-sandbox/`、`backend-java/target/`）、`AGENTS.md` §2、`backend-java/`、`.github/workflows/ci.yml`、`frontend/vite.config.ts`（`VITE_API_PROXY`）；后续 `frontend/src/services/*`（CSRF）
+
+**验收**
+
+- [x] 阶段 0：125 个契约用例通过，`crosscheck.py` 退出码 0
+- [x] 阶段 1：Java 契约 R01–R08、R11–R14 通过；`compare_bases.py` Flask↔Java 一致；CI `./mvnw verify`（不连 MySQL）
+- [x] 阶段 2：Java 5010 上 A/G/R/F 与 X01，除 G01、G02、R17b 三条已约定差异外 63/63 通过；RSS / sitemap 正文与 Flask 一致
+- [x] 阶段 3：Java 5010 上 U/M/FR/X 55/55、自动发布档 B 5/5；CSRF 与前端写请求同批；碎念路径穿越与失败残留按约定修正
+- [x] 阶段 3 缺口：import 文件含 156-9a 的字段；友链头像、邮箱与已发布 URL 冲突与 Flask 一致；Vite 解析到 `messageApi.ts` 等 TypeScript 源
+- [x] 阶段 4：脚本去向已填；jieba 固定语料见 `backend-java/src/test/resources/keywords/jieba.json`，不重算历史关键词；`flyway_check.py` 在隔离库跑通空库 migrate 与已有库 baseline，启动不迁移
+- [x] 阶段 5 本机：`rollback_drill.py` 冒烟 9 项、回退读取、契约库备份恢复均通过；生产主机未改
+- [ ] 后续每个阶段：该批路由的契约用例对 Java 通过；交付写清修改范围、验证命令、通过项、未验证项
+- [x] 用现有 Vue 对上 Java 5010：首页、博客、文章、项目、友链、留言、碎念、推荐、关于能打开契约数据；友链申请在浏览器里提交成功。项目 demo 曾被 `X-Frame-Options: DENY` 挡成空白，已改为 `SAMEORIGIN`。站长页未登录会拦住；浏览器没有走完真实 GitHub 登录
+
 
 ## 155 · 2026-10-11 首页开屏 · 每会话只播一次
 

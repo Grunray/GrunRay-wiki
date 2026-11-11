@@ -6,6 +6,27 @@
 
 纸面重构批次（TODO 105）之前的条目，据 GitHub 提交与 PR #2–#4 整理，仓库 TODO 无对应勾选。
 
+## 2026-11-11
+
+合入：
+
+- [PR #69](https://github.com/Grunray/GrunRay-wiki/pull/69) — 首页开卷跨页
+- [PR #70](https://github.com/Grunray/GrunRay-wiki/pull/70) — 纸上来信开屏
+- [PR #71](https://github.com/Grunray/GrunRay-wiki/pull/71) — 首页跨页原型
+- [PR #72](https://github.com/Grunray/GrunRay-wiki/pull/72) — 开屏原型与蜗牛备份
+- [PR #73](https://github.com/Grunray/GrunRay-wiki/pull/73) — 切页帘原型
+
+### 开屏与首页（批次 158）
+
+- 冷启动开屏换成纸上来信（铅笔底稿，16 秒）。顶栏原蜗牛按钮改为重播这一版；已看过蜗牛的人仍会自动看一次。蜗牛片子备份在 `designed/splash-woniu/`。
+- 首页首屏改成开卷跨页：刊号、问候直接排在纸上，线稿贴上、下、右三边。封面故事以下的目录不动。
+- 开屏从封签直接起播，不再先闪终帧。首页底图改为各主题不带楔形的填充图。六段改回原来的时长，整段约 16 秒。左侧问候从第一帧起就落在首页那一栏里。
+- 开屏收场时遮罩淡出，导航、刊头、中缝和问候跟着透出来，不再整页突然揭开。登录回跳不再误播开屏。
+
+### 转场原型
+
+- 全屏切页原型在 `designed/route-curtain-options/` 重做为中缝展纸、栏目叠页、墨窗揭页三种可切换方案，提供深浅主题与动效降级预览。旧 `designed/page-transition/` 原型废弃（批次 107）。
+
 ## 2026-11-08
 
 ### Docs
