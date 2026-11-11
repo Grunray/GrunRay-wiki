@@ -223,7 +223,7 @@
 | 音乐音频 | 开 | 开 | 开（不自动播） |
 | 碟片持续旋转 | 开 | 关 | 关 |
 | 照片 blur-up | 开 | 直接到位 | 直接到位 |
-| 开屏蜗牛 | 开 | 跳过 | 跳过 |
+| 开屏 · 纸上来信 | 开 | 跳过（直接终帧，宿主不挂 iframe） | 跳过 |
 | FPS 调试浮层 | 用户手动才挂 | 同左（不是降级手段） | 同左 |
 | 滚动 smooth | 开 | 可保留 | `auto` |
 
@@ -295,19 +295,18 @@ REDUCED 仍要像这份纸面刊。MINIMAL 才对应系统无障碍。
 ### 结构契约
 
 ```
-.home-layout                    ← 单根（禁止 fragment；见下方「路由转场」）
+.home-layout
   .home-stage                   ← sticky 首屏；高度 = 100dvh − --home-nav-offset
-    .home-stage-art             ← 仅关照片背景时挂载；右侧线稿
-      .home-stage-art-stack     ← 开屏状态类只打在这里（禁绑 .home-layout）
-        .home-stage-art-beam    ← 扫扇光束；终态 opacity 0
-        .home-stage-art-draw    ← SVG 临时描绘层；默认隐藏，播完 display:none
-    .home-mast                  ← 刊号矩形卡 + 独立圆形头像卡
-    .home-stage-dock
-      .home-intro-track / .home-intro-stack
-        .home-intro-greeting.card / .home-intro-note.card
+    .home-spread                ← 开卷跨页（批次 158）；不用卡片
+      .home-spread-mast         ← GrunRay / 个人刊 | VOL；底 ink 线
+      .home-spread-stage
+        .home-spread-copy       ← 05 / 开卷 + 问候
+        .home-spread-gutter     ← --gutter（默认 46vw）；三个 W 用 DESIGN accent
+        .home-spread-art        ← 关照片背景才挂；线稿顶贴刊号下缘、底贴 SCROLL 上缘、右贴窗口
+      .home-spread-foot         ← 短语 | SCROLL · 下读 | PERSONAL WIKI；顶 ink 线
   .home-rising
     .home-scroll-layer > …paper
-      .cover-paper-peek           ← 通栏 2px ink + SCROLL · 下读；与卡留缝
+      .cover-paper-peek           ← 通栏 2px ink；SCROLL 已在 foot，不在这里再放一条
       .cover-story.card-hover-g  ← 整张卡（kicker + 正文 + CardCornerVineLazy）
         .cover-story-peek-head   ← 卡内刊头（kicker）；peek 高度 = 纸面顶 → 此条底
       .home-sheet                ← NOW + TOC（无 FilmFeed）
@@ -319,18 +318,19 @@ REDUCED 仍要像这份纸面刊。MINIMAL 才对应系统无障碍。
 
 - **通透首屏**：开照片背景时整页去掉纸面蒙层与 `html::before` 灰罩；中间留空看 `body::before` 照片。**禁止**再叠独立 `backdrop-filter` / `__veil`。
 - **滚动 blur**：仅写 `--page-photo-bg-blur`，从 0 插值到用户设定值（默认 6px）；跟手、无 0.85s filter 过渡。离页恢复用户值。写入前量化到 0.5px，同值不刷变量；progress 用缓存的纸面文档偏移 + `scrollY`，不要每帧 `getBoundingClientRect`。
-- **关照片背景**：底图用改线稿前的填充 WebP（`/art/polonia_sandoren.webp` | `-dark.webp` | `-abstract.webp`，Git 里那版 1536×1024）。扇形内叠当前线稿换墨 WebP（`-wedge.webp` / `-dark-wedge.webp` / `-abstract-wedge.webp`）+ 10% 扇形墨底。线稿源 `designed/home-hero-relayout/polonia_sandoren_line.svg`（`fill:none`，只改 `stroke` 再栅格）。扇形预设（`homeStageArtWedge.ts`）：顶点 `(1270.93, 0)`、夹角 `39°`、中轴 `-45°`；浅色扇形墨 `#38697a`，深色 `#abde6b`，abstract `#f4f1e8`。无虚线射线。高度：导航下缘 → COVER STORY 上缘。宽屏贴右可向左延伸；**窄屏（≤640px）** 铺满舞台 cover、锚点约 `50% 38%`（勿贴右 100%），露出角色正脸。主题 SVG 只留 `designed/`，勿当生产热路径。例外：开屏描绘层用 `/art/polonia_sandoren_line.svg`（见下条）。
-- **开屏 · 墨起扇鸣**：仅 `data-motion=full`、关照片背景、且首页首次挂载时底图已在场才播（`useHomeStageArtIntro`）。每个标签页会话只播一次（`sessionStorage` `grunray_home_stage_intro_v1`，开播时写入）；同会话再进首页直接静态扇形，不拉线稿。进站后才关掉照片背景不补播。首访等蜗牛落幕（`splashWoniuActive`）再起笔。预隐藏只挂 `.stage-intro--armed`。描绘层 `v-html` 注入一次，stroke 用 CSS `!important` 跟主题（浅 `#2b2823` / 深 `#abde6b` / abstract `#f4f1e8`）；未武装时 `display:none`。扫扇由 `wedgeClipPathAt(p)` 写内联 clip，终态与 `homeStageArtWedgeClipPath()` 一致。`--home-stage-wedge-clip` 常驻在 stack 上，非 full 档用它压回内联中间值。环境态只在 full：wash 呼吸 7s、整图 `transform` 漂浮 13s（不碰窄屏 `translate`）。纸面盖住后不另加滚动停表。描绘段中途切主题则提前收场。
+- **关照片背景**：右侧底图用填充 WebP，不要楔形切片：浅色 `/art/polonia_sandoren.webp`，深色 `polonia_sandoren-dark.webp`，抽象 `polonia_sandoren-abstract.webp`。顶贴刊号下缘墨线，底贴 `SCROLL · 下读` 上缘墨线，右贴窗口右缘；左侧淡出，不压问候语。图注 `SANDOREN FIG. 01` 叠在图上。窄屏（≤720px）改成低透明度底纹，藏中缝与图注。开照片背景时不挂这张图。扇形 WebP 与 `useHomeStageArtIntro` 仍留在仓库，**这版式不武装**，避免和纸上来信叠播。
+- **开屏 · 纸上来信**：片子在 `frontend/public/splash-editorial/`（由 `designed/startup-editorial/v4` 合入），`SplashWoniuOverlay` 用 iframe 播放。full 才自动播；reduced / minimal 不挂 iframe。已看过记 `localStorage` `grunray_splash_editorial_v1`（开始播就写；不读旧的 `grunray_splash_woniu_v1`，所以换片后每人还会看一次）。OAuth `?auth=success` / `auth_error` 回跳跳过并记已看过。顶栏 `splash-nav-btn` 手动重播，不看已看过。从第一帧起，辅助线、铅笔、墨线和成图都落在首页 `.home-spread-art img` 那一块图框里（靠右、同样上下边界、`object-position: right center`、左侧同样 14% 淡出），揭开时像素不跳。左侧章节文案也从第一帧起落在首页 `.home-spread-copy` 那一块框里，字号与问候栏相同。收场约 0.4 秒把整层遮罩淡出，导航、刊头、中缝、底边和问候用首页那一份跟着透出来。开屏里的刊头、中缝、底边和图注不显示；淡出一开始就把章节文案收掉，避免和首页问候叠成两行。Esc / 跳过同样淡出，不做头像飞入。reduced / minimal 不播这段淡出。蜗牛片子备份在 `designed/splash-woniu/`。
+- **开屏 · 墨起扇鸣（本版式不播）**：`useHomeStageArtIntro` 与扇形叠层仍在代码里，首页不再调用。旧契约：仅 `data-motion=full`、关照片背景、且首页首次挂载时底图已在场才播。每个标签页会话只播一次（`sessionStorage` `grunray_home_stage_intro_v1`）。首访曾等 `splashWoniuActive` 落幕再起笔。不要在开卷跨页上重新武装。
 - **盖住后跳过绘制**：纸面顶缘落到导航下后给 `html` 打 `data-home-stage-covered`，`.home-stage` 用 `content-visibility: hidden`（自身 height 仍撑 sticky 占位）。回顶在露出前一截就去掉该标记，避免闪空白。
 - **纸面挤入**：`.home-rising` 负 margin 叠在首屏上。COVER STORY 整张卡坐在滚动纸面上（`.home-scroll-layer-paper`），不要再拆 sticky peek。纸面顶先一根通栏 2px ink（`.cover-paper-rule`，封住卡左右缺口），其下是 `SCROLL · 下读` + 极细 ∨（muted，不加粗、不用 accent），再与卡片留缝。卡顶是 kicker `COVER STORY · 封面故事` → 标题 / 摘要 / 元数据。`--cover-peek-height` / `--cover-lift` **从纸面顶量到卡内 kicker 底**（通栏线 + cue + 缝 + kicker），不要量整张卡；线稿与欢迎卡 `bottom` 跟着上移。造型是 editorial 纸面圆角矩形（`--radius-md` 四角），底色 `--cover-story-bg`（`--color-bg-base`，与滚动纸面同一色）。卡顶底 ink 2px（`--cover-ink`，对齐 `.home-toc` 顶线 / NOW 下方那根）；顶用外侧 `box-shadow` 随 R 角走弧（不要用通栏直线横切圆角），底用 `inset`（卡上 `overflow:hidden` 会裁外侧底影）。悬停时两根卡 ink 都要保留，不要被方案 G 的浮起阴影盖掉。卡下再一根同样 2px 直 ink（`.cover-story-foot-ink`）。无左侧 accent 脊、无玻璃。底部与 footer 揭示区用盖板纸色接上（`app-page-cover::after`），勿留空缝。勿做成卡片外悬浮条、大三角或圆形按钮。
 
 ### 刊号 / 问候
 
-- `.home-stage` 顶一条 ink 线（`--color-text`），贴导航下缘。纸面顶用通栏 2px `--cover-ink` 封缝；COVER STORY 上圆角仍由卡顶弧 ink 负责，不要再用通栏直线切卡。
-- 刊号与头像分卡：上方矩形 `.mast-vol.card`，下方圆形 `.home-mast-avatar.card`，中间留间距。刊号字号与头像都略大于目录 kicker。
-- 问候语与介绍语分卡；问候略加宽。默认靠左下（关照片背景再向左收一截）；**开照片背景**时整组 `transform` 滑到右侧（`.home-intro-track` 容器查询），关掉滑回。位移跟 `html[data-photo-bg]`，**不要**在 `.home-layout` 上绑 `is-photo-bg` 的 Vue `:class`。
-- 四张欢迎卡（刊号 / 头像 / 问候 / 介绍）始终有 `.card` 纸面。关照片（线稿）时底改为不透明 `--color-bg-surface`、关掉 `backdrop-filter`，避免线稿透字；开照片走默认玻璃卡。开照片背景时问候整组仍滑到右下；关则滑回左下。`prefers-reduced-motion` 时位移直接到位。
-- 问候入场只淡入，不动 `transform`（避免冲掉左下/右下偏移）。只等 Great Vibes（短超时），**不要** `fonts.load` 不存在的 Noto 700 italic，也不要等整页 `fonts.ready`。就绪后加 `home-fonts-ready`。
+- `.home-stage` 顶一条 ink 线（`--color-text`），贴导航下缘。刊头底、底边顶、纸面顶各自再一条通栏墨线，从窗口左缘到右缘。COVER STORY 上圆角仍由卡顶弧 ink 负责，不要用通栏直线切卡。
+- 刊头不是卡片：左 `GrunRay / 个人刊`，右 `VOL · NO · 日期`。没有头像卡。
+- 问候不是卡片：`05 / 开卷`、`你好，我是` 换行花体刊名、欢迎两句。整组比左边距再向右一截（`margin-left`）。开照片背景时不把这组滑到右侧。强调色（kicker、句号、中缝的 W、图注短线）用 DESIGN 的 accent（浅 `#2e6b4f` / 深 `#abde6b` / 抽象 `#ffdb00`），不跟浅色令牌里漂移的 `#38697a`。
+- 中缝位置只改 `--gutter`（默认 `46vw`，距窗口左缘）。竖排 `WORDS, WORKS & WANDERINGS` 与竖线共用它。
+- 问候入场只淡入 `.home-spread`。只等 Great Vibes（短超时），**不要** `fonts.load` 不存在的 Noto 700 italic，也不要等整页 `fonts.ready`。就绪后加 `home-fonts-ready`。
 
 ### COVER STORY 悬停
 
