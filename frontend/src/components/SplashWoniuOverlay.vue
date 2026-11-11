@@ -1,38 +1,147 @@
 <script setup lang="ts">
 /**
- * 蜗牛开屏：动画逻辑在 `public/splash-woniu/index.html`（独立静态页 + iframe）。
- * path_walk 结束后 iframe 发 `grunray-splash-avatar-start`，本组件在螺旋壳屏幕坐标处放大头像并飞入首页 `[data-splash-avatar-target]`。
- * 「已看过」记在 localStorage（跨标签、OAuth 整页回跳仍跳过）；顶栏 🐌 走 replay tick，不读这个 key。
+ * 纸上来信开屏：时间轴在 `public/splash-editorial/`（独立页 + iframe）。
+ * 「已看过」记在 localStorage（跨标签、OAuth 整页回跳仍跳过）；顶栏重播走 replay tick，不读这个键。
+ * 不再做蜗牛头像飞入。
  */
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
 import { useUiStore } from '@/stores/ui'
 
-const STORAGE_KEY = 'grunray_splash_woniu_v1'
+const STORAGE_KEY = 'grunray_splash_editorial_v1'
 
 const { t } = useI18n()
 const route = useRoute()
 const ui = useUiStore()
 
 const visible = ref(false)
-/** 与 store 的 tick 同步，用于强制 iframe 重载 */
+const leaving = ref(false)
 const iframeKey = ref(0)
 const splashIframeRef = ref<HTMLIFrameElement | null>(null)
-const flyVisible = ref(false)
-const flyAvatarSrc = ref('')
-const flyImgRef = ref<HTMLImageElement | null>(null)
-const handoffRunning = ref(false)
-/** 落地后透明遮罩 + 隐藏 iframe，便于与首页头像交叉淡化，避免「整块底色」闪烁 */
-const revealBeneath = ref(false)
-/** 圆形揭幕层：实心背景 + 径向 mask 扩大透明孔，从头像中心「撑开」露出首页 */
-const irisVeilActive = ref(false)
-const irisVeilRef = ref<HTMLElement | null>(null)
+let splashTimer = 0
+let leaveTimer = 0
+let frameRaf = 0
+let lastFrameKey = ''
+const frameQuery = ref('')
+
+function captureFrameQuery() {
+  const frame = homeLayoutFrame()
+  if (!frame) {
+    frameQuery.value = ''
+    return
+  }
+  const q = new URLSearchParams()
+  if (frame.width >= 8 && frame.height >= 8) {
+    q.set('ft', String(Math.round(frame.top)))
+    q.set('fl', String(Math.round(frame.left)))
+    q.set('fw', String(Math.round(frame.width)))
+    q.set('fh', String(Math.round(frame.height)))
+    q.set('fsrc', frame.src)
+  }
+  const copy = frame.copy
+  if (copy) {
+    q.set('ct', String(Math.round(copy.top)))
+    q.set('cl', String(Math.round(copy.left)))
+    q.set('cw', String(Math.round(copy.width)))
+    q.set('ch', String(Math.round(copy.height)))
+    q.set('pt', String(Math.round(copy.padTop)))
+    q.set('pr', String(Math.round(copy.padRight)))
+    q.set('pb', String(Math.round(copy.padBottom)))
+    q.set('pl', String(Math.round(copy.padLeft)))
+  }
+  frameQuery.value = q.toString()
+}
+
+function homeArtFrame() {
+  const img = document.querySelector<HTMLImageElement>('.home-spread-art img')
+  if (!img) return null
+  const rect = img.getBoundingClientRect()
+  if (rect.width < 8 || rect.height < 8) return null
+  return {
+    top: rect.top,
+    left: rect.left,
+    width: rect.width,
+    height: rect.height,
+    src: img.currentSrc || img.getAttribute('src') || '',
+  }
+}
+
+function homeCopyFrame() {
+  const el = document.querySelector<HTMLElement>('.home-spread-copy')
+  if (!el) return null
+  const rect = el.getBoundingClientRect()
+  if (rect.width < 8 || rect.height < 8) return null
+  const cs = getComputedStyle(el)
+  return {
+    top: rect.top,
+    left: rect.left,
+    width: rect.width,
+    height: rect.height,
+    padTop: parseFloat(cs.paddingTop) || 0,
+    padRight: parseFloat(cs.paddingRight) || 0,
+    padBottom: parseFloat(cs.paddingBottom) || 0,
+    padLeft: parseFloat(cs.paddingLeft) || 0,
+  }
+}
+
+function homeLayoutFrame() {
+  const art = homeArtFrame()
+  const copy = homeCopyFrame()
+  if (!art && !copy) return null
+  return {
+    top: art?.top ?? 0,
+    left: art?.left ?? 0,
+    width: art?.width ?? 0,
+    height: art?.height ?? 0,
+    src: art?.src ?? '',
+    copy,
+  }
+}
+
+function postHomeFrame(force = false) {
+  const frame = homeLayoutFrame()
+  if (!frame || !visible.value) return
+  const copy = frame.copy
+  const key = [
+    frame.top, frame.left, frame.width, frame.height, frame.src,
+    copy?.top, copy?.left, copy?.width, copy?.height,
+    copy?.padTop, copy?.padRight, copy?.padBottom, copy?.padLeft,
+  ].join('|')
+  if (!force && key === lastFrameKey) return
+  lastFrameKey = key
+  splashIframeRef.value?.contentWindow?.postMessage({ type: 'grunray-splash-frame', frame }, '*')
+}
+
+function onSplashLoad() {
+  lastFrameKey = ''
+  postHomeFrame(true)
+}
+
+function syncHomeFrame() {
+  window.cancelAnimationFrame(frameRaf)
+  const loop = () => {
+    if (!visible.value) return
+    postHomeFrame()
+    frameRaf = window.requestAnimationFrame(loop)
+  }
+  frameRaf = window.requestAnimationFrame(loop)
+}
+
+function armSplashTimeout() {
+  window.clearTimeout(splashTimer)
+  // 片子约 16 秒。播完会自己收；若重播后停在终帧，到点也揭开，避免盖住页面。
+  splashTimer = window.setTimeout(() => {
+    if (visible.value) dismiss()
+  }, 20000)
+}
 
 const iframeSrc = computed(() => {
-  const theme = ui.theme === 'dark' ? 'dark' : 'light'
-  return `/splash-woniu/index.html?theme=${theme}`
+  const theme = ui.theme === 'dark' || ui.theme === 'abstract' ? ui.theme : 'light'
+  const motion = ui.motionCut ? 'minimal' : 'full'
+  const frame = frameQuery.value ? `&${frameQuery.value}` : ''
+  return `/splash-editorial/index.html?theme=${theme}&motion=${motion}&play=${iframeKey.value}${frame}`
 })
 
 function markSeen() {
@@ -45,307 +154,103 @@ function markSeen() {
 
 function hasSeen(): boolean {
   try {
-    if (localStorage.getItem(STORAGE_KEY)) return true
-    if (sessionStorage.getItem(STORAGE_KEY)) {
-      localStorage.setItem(STORAGE_KEY, '1')
-      return true
-    }
+    return Boolean(localStorage.getItem(STORAGE_KEY))
   } catch {
-    /* ignore */
+    return false
   }
-  return false
+}
+
+function queryValue(key: string): string {
+  const fromRoute = route.query[key]
+  if (typeof fromRoute === 'string' && fromRoute.length > 0) return fromRoute
+  // 首屏 onMounted 时路由可能还停在空起点，整页回跳要以地址栏为准。
+  return new URLSearchParams(window.location.search).get(key) ?? ''
 }
 
 function isOAuthReturn(): boolean {
-  if (route.query.auth === 'success') return true
-  const err = route.query.auth_error
-  return typeof err === 'string' && err.length > 0
+  if (queryValue('auth') === 'success') return true
+  return queryValue('auth_error').length > 0
 }
 
-function prefersReducedMotion(): boolean {
-  return ui.motionCut
+function beginSplash() {
+  window.clearTimeout(leaveTimer)
+  leaving.value = false
+  visible.value = true
+  ui.setSplashWoniuActive(true)
+  armSplashTimeout()
+  syncHomeFrame()
 }
 
-function ackHandoffToIframe() {
-  splashIframeRef.value?.contentWindow?.postMessage({ type: 'grunray-splash-handoff-done' }, '*')
+function endSplash() {
+  window.clearTimeout(leaveTimer)
+  leaving.value = false
+  visible.value = false
+  window.cancelAnimationFrame(frameRaf)
+  lastFrameKey = ''
+  ui.setSplashWoniuActive(false)
 }
 
 function dismiss() {
-  if (!visible.value) return
-  flyImgRef.value?.getAnimations?.().forEach((a) => a.cancel())
-  flyVisible.value = false
-  flyAvatarSrc.value = ''
-  irisVeilActive.value = false
-  clearIrisVeilStyles()
-  revealBeneath.value = false
-  ui.setSplashAvatarHandoff(false)
-  visible.value = false
-  ui.setSplashWoniuActive(false)
+  if (!visible.value || leaving.value) return
+  window.clearTimeout(splashTimer)
   markSeen()
-}
-
-function clearIrisVeilStyles() {
-  const el = irisVeilRef.value
-  if (!el) return
-  el.style.maskImage = ''
-  el.style.removeProperty('-webkit-mask-image')
-  el.style.maskRepeat = ''
-  el.style.removeProperty('-webkit-mask-repeat')
-}
-
-function easeOutCubic(t: number) {
-  return 1 - (1 - t) ** 3
-}
-
-/** 从 (cx,cy) 扩大透明孔，露出下层页面；末段可顺带降低 fly 图层不透明度 */
-async function playIrisReveal(
-  veilEl: HTMLElement,
-  cx: number,
-  cy: number,
-  rStartPx: number,
-  rEndPx: number,
-  durationMs: number,
-  flyEl: HTMLImageElement | null,
-  flyFadeFromU: number,
-) {
-  const t0 = performance.now()
-  await new Promise<void>((resolve) => {
-    function frame(now: number) {
-      const u = Math.min(1, (now - t0) / durationMs)
-      const eased = easeOutCubic(u)
-      const r = rStartPx + (rEndPx - rStartPx) * eased
-      const inner = Math.max(0, r - 2)
-      const grad = `radial-gradient(circle at ${cx}px ${cy}px, transparent ${inner}px, black ${r}px)`
-      veilEl.style.maskImage = grad
-      veilEl.style.setProperty('-webkit-mask-image', grad)
-      veilEl.style.maskRepeat = 'no-repeat'
-      veilEl.style.setProperty('-webkit-mask-repeat', 'no-repeat')
-
-      if (flyEl && u >= flyFadeFromU) {
-        const fu = (u - flyFadeFromU) / (1 - flyFadeFromU)
-        flyEl.style.opacity = String(Math.max(0, 1 - easeOutCubic(fu)))
-      }
-
-      if (u < 1) {
-        requestAnimationFrame(frame)
-      } else {
-        resolve()
-      }
-    }
-    requestAnimationFrame(frame)
-  })
-}
-
-async function runAvatarHandoff(startX: number, startY: number) {
-  if (handoffRunning.value) return
-  handoffRunning.value = true
-  let landedCrossfade = false
-  try {
-    await nextTick()
-    await new Promise<void>((r) => requestAnimationFrame(() => r()))
-
-    const target = document.querySelector<HTMLImageElement>('[data-splash-avatar-target]')
-    const onHome = route.name === 'home'
-    const mobileShell = document.documentElement.dataset.mobileShell === 'true'
-
-    /* 手机壳隐藏刊号头像：跳过飞入，直接揭开 */
-    if (!onHome || mobileShell || !target?.src || prefersReducedMotion()) {
-      return
-    }
-
-    const rect = target.getBoundingClientRect()
-    const src = target.currentSrc || target.src
-    if (rect.width < 8 || rect.height < 8) {
-      return
-    }
-
-    const doubleRaf = () =>
-      new Promise<void>((r) => {
-        requestAnimationFrame(() => requestAnimationFrame(() => r()))
-      })
-
-    /** 与首页 `.avatar` 一致：正圆裁切，边长取可视区域较小边 */
-    const dFinal = Math.min(rect.width, rect.height)
-    const cx = rect.left + rect.width / 2
-    const cy = rect.top + rect.height / 2
-    const leftFinal = cx - dFinal / 2
-    const topFinal = cy - dFinal / 2
-    const br = '50%'
-
-    const w0 = 48
-    const wMid = Math.min(260, Math.max(168, dFinal * 0.45))
-
-    ui.setSplashAvatarHandoff(true)
-    flyAvatarSrc.value = src
-    flyVisible.value = true
-
-    await nextTick()
-    const img = flyImgRef.value
-    if (!img) {
-      return
-    }
-
-    img.style.position = 'fixed'
-    img.style.zIndex = '260'
-    img.style.objectFit = 'cover'
-    img.style.pointerEvents = 'none'
-    img.style.borderRadius = br
-    img.style.overflow = 'hidden'
-    img.style.boxShadow = '0 16px 48px rgb(0 0 0 / 22%)'
-    img.style.filter = 'brightness(1.04) saturate(1.03)'
-    img.style.left = `${startX - w0 / 2}px`
-    img.style.top = `${startY - w0 / 2}px`
-    img.style.width = `${w0}px`
-    img.style.height = `${w0}px`
-
-    const easingPop = 'cubic-bezier(0.34, 1.35, 0.64, 1)'
-    /** 飞行末段略「冲」再收束，配合阴影/亮度变化 */
-    const easingMove = 'cubic-bezier(0.22, 1.12, 0.28, 1)'
-
-    const a1 = img.animate(
-      [
-        {
-          left: `${startX - w0 / 2}px`,
-          top: `${startY - w0 / 2}px`,
-          width: `${w0}px`,
-          height: `${w0}px`,
-          borderRadius: br,
-          opacity: 0.72,
-          boxShadow: '0 12px 36px rgb(0 0 0 / 20%)',
-          filter: 'brightness(1.02) saturate(1.02)',
-        },
-        {
-          left: `${startX - wMid / 2}px`,
-          top: `${startY - wMid / 2}px`,
-          width: `${wMid}px`,
-          height: `${wMid}px`,
-          borderRadius: br,
-          opacity: 1,
-          boxShadow: '0 20px 56px rgb(0 0 0 / 26%)',
-          filter: 'brightness(1.06) saturate(1.04)',
-        },
-      ],
-      { duration: 540, easing: easingPop, fill: 'forwards' },
-    )
-    await a1.finished.catch(() => {})
-    await new Promise((r) => setTimeout(r, 200))
-
-    const settle = 1.038
-    const dBurst = dFinal * settle
-    const leftBurst = cx - dBurst / 2
-    const topBurst = cy - dBurst / 2
-
-    const a2 = img.animate(
-      [
-        {
-          left: `${startX - wMid / 2}px`,
-          top: `${startY - wMid / 2}px`,
-          width: `${wMid}px`,
-          height: `${wMid}px`,
-          borderRadius: br,
-          boxShadow: '0 22px 60px rgb(0 0 0 / 28%)',
-          filter: 'brightness(1.06) saturate(1.05)',
-        },
-        {
-          offset: 0.8,
-          left: `${leftBurst}px`,
-          top: `${topBurst}px`,
-          width: `${dBurst}px`,
-          height: `${dBurst}px`,
-          borderRadius: br,
-          boxShadow: '0 26px 64px rgb(56 189 248 / 22%)',
-          filter: 'brightness(1.08) saturate(1.06)',
-        },
-        {
-          left: `${leftFinal}px`,
-          top: `${topFinal}px`,
-          width: `${dFinal}px`,
-          height: `${dFinal}px`,
-          borderRadius: br,
-          boxShadow: '0 6px 20px rgb(0 0 0 / 12%)',
-          filter: 'brightness(1) saturate(1)',
-        },
-      ],
-      { duration: 1080, easing: easingMove, fill: 'forwards' },
-    )
-    await a2.finished.catch(() => {})
-
-    landedCrossfade = true
-    revealBeneath.value = true
-    await nextTick()
-    await doubleRaf()
-
-    ui.setSplashAvatarHandoff(false)
-    await nextTick()
-    await doubleRaf()
-
-    const vw = window.innerWidth
-    const vh = window.innerHeight
-    const rEnd =
-      Math.hypot(Math.max(cx, vw - cx), Math.max(cy, vh - cy)) + Math.max(vw, vh) * 0.08
-    const rStart = Math.max(12, dFinal * 0.44)
-
-    irisVeilActive.value = true
-    await nextTick()
-    const veil = irisVeilRef.value
-    if (veil) {
-      await playIrisReveal(veil, cx, cy, rStart, rEnd, 820, img, 0.62)
-    } else if (img) {
-      img.style.opacity = '0'
-    }
-
-    clearIrisVeilStyles()
-    irisVeilActive.value = false
-    if (img) img.style.opacity = ''
-    flyVisible.value = false
-    flyAvatarSrc.value = ''
-  } finally {
-    flyImgRef.value?.getAnimations?.().forEach((a) => a.cancel())
-    if (!landedCrossfade) {
-      flyVisible.value = false
-      flyAvatarSrc.value = ''
-      irisVeilActive.value = false
-      clearIrisVeilStyles()
-      ui.setSplashAvatarHandoff(false)
-      revealBeneath.value = false
-    }
-    handoffRunning.value = false
-    ackHandoffToIframe()
+  if (ui.motionCut) {
+    endSplash()
+    return
   }
+  /* 遮罩先淡出。章节文案先收掉，底下的导航、刊头、中缝、问候跟着透出来。 */
+  leaving.value = true
+  splashIframeRef.value?.contentWindow?.postMessage({ type: 'grunray-splash-handoff' }, '*')
+  leaveTimer = window.setTimeout(() => {
+    if (leaving.value) endSplash()
+  }, 440)
 }
 
 function onMessage(ev: MessageEvent) {
-  const t = ev.data?.type
-  if (t === 'grunray-splash-complete') {
+  if (ev.data?.type !== 'grunray-splash-complete') return
+  const play = ev.data.play
+  if (play != null && String(play) !== String(iframeKey.value)) return
+  dismiss()
+}
+
+function onKeydown(event: KeyboardEvent) {
+  if (!visible.value) return
+  if (event.key === 'Escape') {
+    event.preventDefault()
     dismiss()
     return
   }
-  if (t === 'grunray-splash-avatar-start') {
-    const x = Number(ev.data?.x)
-    const y = Number(ev.data?.y)
-    if (!Number.isFinite(x) || !Number.isFinite(y)) {
-      ackHandoffToIframe()
-      return
-    }
-    void runAvatarHandoff(x, y)
-  }
+  if (event.code !== 'Space' || event.repeat || event.altKey || event.ctrlKey || event.metaKey) return
+  const target = event.target
+  if (target instanceof Element && target.closest('button, a, input, select, textarea')) return
+  event.preventDefault()
+  splashIframeRef.value?.contentWindow?.postMessage({ type: 'grunray-splash-toggle' }, '*')
 }
 
 watch(
   () => ui.splashWoniuReplayTick,
   (tick) => {
     if (tick <= 0) return
+    captureFrameQuery()
     iframeKey.value = tick
-    revealBeneath.value = false
-    irisVeilActive.value = false
-    clearIrisVeilStyles()
-    visible.value = true
-    ui.setSplashWoniuActive(true)
+    beginSplash()
+  },
+)
+
+watch(
+  () => ui.theme,
+  (theme) => {
+    if (!visible.value) return
+    splashIframeRef.value?.contentWindow?.postMessage(
+      { type: 'grunray-splash-theme', theme },
+      '*',
+    )
   },
 )
 
 onMounted(() => {
   window.addEventListener('message', onMessage)
+  window.addEventListener('keydown', onKeydown)
   if (ui.motionCut) return
   if (hasSeen()) return
   if (isOAuthReturn()) {
@@ -353,12 +258,17 @@ onMounted(() => {
     return
   }
   markSeen()
-  visible.value = true
-  ui.setSplashWoniuActive(true)
+  captureFrameQuery()
+  beginSplash()
 })
 
 onUnmounted(() => {
   window.removeEventListener('message', onMessage)
+  window.removeEventListener('keydown', onKeydown)
+  window.clearTimeout(splashTimer)
+  window.clearTimeout(leaveTimer)
+  window.cancelAnimationFrame(frameRaf)
+  if (visible.value) ui.setSplashWoniuActive(false)
 })
 </script>
 
@@ -367,7 +277,7 @@ onUnmounted(() => {
     <div
       v-if="visible"
       class="splash-woniu"
-      :class="{ 'splash-woniu--reveal-beneath': revealBeneath }"
+      :class="{ 'is-leaving': leaving }"
       role="dialog"
       aria-modal="true"
       aria-label="开屏"
@@ -382,22 +292,7 @@ onUnmounted(() => {
         :src="iframeSrc"
         title="开屏动画"
         referrerpolicy="no-referrer"
-      />
-      <div
-        v-show="irisVeilActive"
-        ref="irisVeilRef"
-        class="splash-woniu__iris-veil"
-        aria-hidden="true"
-      />
-      <img
-        v-show="flyVisible"
-        ref="flyImgRef"
-        class="splash-woniu__fly-avatar"
-        :src="flyAvatarSrc"
-        alt=""
-        width="1"
-        height="1"
-        aria-hidden="true"
+        @load="onSplashLoad"
       />
     </div>
   </Teleport>
@@ -415,20 +310,10 @@ onUnmounted(() => {
   padding: 0;
   margin: 0;
   background: var(--color-bg-base);
+  transition: opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/** 落地后立刻透出主页，避免飞层与真实头像之间夹一层纯色遮罩造成闪烁 */
-.splash-woniu--reveal-beneath {
-  background-color: transparent;
-}
-
-.splash-woniu--reveal-beneath .splash-woniu__frame {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.splash-woniu--reveal-beneath .splash-woniu__skip {
+.splash-woniu.is-leaving {
   opacity: 0;
   pointer-events: none;
 }
@@ -451,31 +336,6 @@ onUnmounted(() => {
 .splash-woniu__skip:hover {
   color: var(--color-text);
   border-color: var(--color-accent-muted);
-}
-
-/** 盖在 iframe 之上、飞层之下：用 mask 在中心「挖洞」并扩大，类似主题按钮 hover 的亮块向外推开 */
-.splash-woniu__iris-veil {
-  position: fixed;
-  inset: 0;
-  z-index: 250;
-  pointer-events: none;
-  background: var(--color-bg-base);
-}
-
-.splash-woniu__fly-avatar {
-  position: fixed;
-  inset: 0 auto auto 0;
-  width: 0;
-  height: 0;
-  margin: 0;
-  padding: 0;
-  border: none;
-  pointer-events: none;
-  z-index: 260;
-  object-fit: cover;
-  object-position: center;
-  border-radius: 50%;
-  overflow: hidden;
 }
 
 .splash-woniu__frame {
